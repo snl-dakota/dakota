@@ -16,6 +16,7 @@
 #include "PRPMultiIndex.hpp"
 #include "DakotaGraphics.hpp"
 #include "DiscrepancyCorrection.hpp"
+#include "IRStore.hpp"
 
 namespace Dakota {
 
@@ -29,6 +30,21 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& para
   SurrBasedLocalMinimizer(problem_db, parallel_lib, model,
     std::shared_ptr<TraitsBase>(new HierarchSurrBasedLocalTraits())),
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
+{ initialize_hierarchy(); }
+
+
+HierarchSurrBasedLocalMinimizer::
+HierarchSurrBasedLocalMinimizer(const IRStore& method_store,
+                                std::shared_ptr<Model> model,
+                                std::shared_ptr<StudyServices> services):
+  SurrBasedLocalMinimizer(std::move(services), method_store, model,
+    std::shared_ptr<TraitsBase>(new HierarchSurrBasedLocalTraits())),
+  minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
+{ initialize_hierarchy(&method_store); }
+
+
+void HierarchSurrBasedLocalMinimizer::
+initialize_hierarchy(const IRStore* method_store)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel->surrogate_type() == "ensemble")
@@ -67,7 +83,7 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& para
   }
 
   // Simpler case than DFSBLM:
-  short corr_order = model->correction_order();
+  short corr_order = iteratedModel->correction_order();
   approxSetRequest = truthSetRequest = 1;
   if (corr_order >= 1 )// || meritFnType      == LAGRANGIAN_MERIT
                        // || approxSubProbObj == LAGRANGIAN_OBJECTIVE )
@@ -102,7 +118,8 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& para
 
   // Instantiate the Model and Minimizer for the approximate sub-problem
   initialize_sub_model();
-  initialize_sub_minimizer();
+  if (method_store) initialize_sub_minimizer(*method_store);
+  else              initialize_sub_minimizer();
   // Initialize any Lagrange multiplier arrays
   initialize_multipliers();
 }

@@ -11,6 +11,9 @@
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
 #include "StudyRuntime.hpp"
+#include "IRStore.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include <stdexcept>
 
 static const char rcsId[]="@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-02 21:58:15Z wjbohnh $";
 
@@ -105,6 +108,47 @@ CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
 }
 
 
+CollabHybridMetaIterator::
+CollabHybridMetaIterator(const IRStore& method_store,
+                         std::vector<std::shared_ptr<Iterator>> sub_iterators,
+                         std::shared_ptr<StudyServices> services):
+  MetaIterator(std::move(services), method_store,
+               (!sub_iterators.empty() && sub_iterators.front()) ?
+               sub_iterators.front()->iterated_model() : nullptr),
+  lightwtMethodCtor(false), singlePassedModel(false)
+{
+  if (sub_iterators.empty())
+    throw std::runtime_error(
+      "CollabHybridMetaIterator requires at least one sub_iterator in DI construction.");
+
+  size_t i, num_iterators = sub_iterators.size();
+  for (i=0; i<num_iterators; ++i) {
+    if (!sub_iterators[i])
+      throw std::runtime_error(
+        "CollabHybridMetaIterator requires non-null sub_iterators in DI construction.");
+    if (!sub_iterators[i]->iterated_model())
+      throw std::runtime_error(
+        "CollabHybridMetaIterator requires sub_iterator->iterated_model() in DI construction.");
+    detail::validate_services(
+      "CollabHybridMetaIterator", study_services(),
+      {detail::runtime_dependency("Iterator", sub_iterators[i]),
+       detail::runtime_dependency("Model", sub_iterators[i]->iterated_model())});
+  }
+
+  // each sub-iterator carries its own model; method identifiers are used for
+  // reporting only
+  selectedIterators = std::move(sub_iterators);
+  selectedModels.resize(num_iterators);
+  methodStrings.resize(num_iterators);
+  for (i=0; i<num_iterators; ++i) {
+    selectedModels[i] = selectedIterators[i]->iterated_model();
+    methodStrings[i]  = selectedIterators[i]->method_string();
+  }
+
+  maxIteratorConcurrency = num_iterators;
+}
+
+
 CollabHybridMetaIterator::~CollabHybridMetaIterator()
 { }
 
@@ -124,7 +168,8 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
     // compute min/max processors per iterator for each method
     auto the_iterator = selectedIterators[i];
     auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
-    ppi_pr_i = (lightwtMethodCtor) ?
+    ppi_pr_i = (&probDescDB == &dummy_db) ? iterSched.configure(selectedIterators[i]) :
+      (lightwtMethodCtor) ?
       estimate_by_name(methodStrings[i], modelStrings[i], the_iterator,
 		       the_model) :
       estimate_by_pointer(methodStrings[i], the_iterator, the_model);
@@ -144,7 +189,10 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // Instantiate all Models and Iterators
   for (i=0; i<num_iterators; ++i) {
     auto the_model = (singlePassedModel) ? iteratedModel : selectedModels[i];
-    if (lightwtMethodCtor)
+    if (&probDescDB == &dummy_db) // DI: iterators and models already exist
+      iterSched.initialize_iterator(methodStrings[i], selectedIterators[i],
+				    the_model);
+    else if (lightwtMethodCtor)
       allocate_by_name(methodStrings[i], modelStrings[i],
 		       selectedIterators[i], the_model);
     else
@@ -200,7 +248,9 @@ IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
   size_t i, num_meth = selectedIterators.size();  String empty_str;
   for (i=0; i<num_meth; ++i)  {
     auto model = (singlePassedModel) ? iteratedModel : selectedModels[i];
-    if (lightwtMethodCtor)
+    if (&probDescDB == &dummy_db)
+      ; // DI: sub-iterators are injected at construction
+    else if (lightwtMethodCtor)
       iterSched.construct_sub_iterator(probDescDB, parallelLib, selectedIterators[i], model,
 				       empty_str, methodStrings[i], // ptr, name
 				       modelStrings[i]); // ptr

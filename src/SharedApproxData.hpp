@@ -191,6 +191,9 @@ public:
   /// return discrepancy emulation mode for approximating response differences
   short discrepancy_emulation_mode() const;
 
+  /// return the order of the data used for surrogate construction
+  short build_data_order() const;
+
   /// query whether the form of an approximation has been updated
   bool formulation_updated() const;
   /// assign the status of approximation formulation updates
@@ -331,6 +334,10 @@ inline void SharedApproxData::discrepancy_emulation_mode(short mode)
 
 inline short SharedApproxData::discrepancy_emulation_mode() const
 { return (dataRep) ? dataRep->discrepEmulationMode : discrepEmulationMode; }
+
+
+inline short SharedApproxData::build_data_order() const
+{ return (dataRep) ? dataRep->buildDataOrder : buildDataOrder; }
 
 
 inline void SharedApproxData::

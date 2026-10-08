@@ -18,6 +18,8 @@
 #include "DakotaGraphics.hpp"
 #include "RecastModel.hpp"
 #include "DiscrepancyCorrection.hpp"
+#include "IRStore.hpp"
+#include <stdexcept>
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
 #endif // HAVE_NPSOL
@@ -57,6 +59,32 @@ SurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib
     probDescDB.get<const Real>("method.trust_region.contraction_factor")),
   gammaExpand(probDescDB.get<const Real>("method.trust_region.expansion_factor")),
   softConvLimit(probDescDB.get<unsigned short>("method.soft_convergence_limit"))
+{ initialize(); }
+
+
+SurrBasedLocalMinimizer::
+SurrBasedLocalMinimizer(std::shared_ptr<StudyServices> services,
+                        const IRStore& method_store, std::shared_ptr<Model> model,
+                        std::shared_ptr<TraitsBase> traits):
+  SurrBasedMinimizer(std::move(services), method_store, model, traits),
+  approxSubProbObj(method_store.get<short>("sbl.subproblem_objective")),
+  approxSubProbCon(method_store.get<short>("sbl.subproblem_constraints")),
+  meritFnType(method_store.get<short>("sbl.merit_function")),
+  acceptLogic(method_store.get<short>("sbl.acceptance_logic")),
+  trConstraintRelax(method_store.get<short>("sbl.constraint_relax")),
+  minimizeCycles(0), penaltyIterOffset(-200),
+  origTrustRegionFactor(
+    method_store.get<RealVector>("trust_region.initial_size")),
+  minTrustRegionFactor(
+    method_store.get<Real>("trust_region.minimum_size")),
+  trRatioContractValue(
+    method_store.get<Real>("trust_region.contract_threshold")),
+  trRatioExpandValue(
+    method_store.get<Real>("trust_region.expand_threshold")),
+  gammaContract(
+    method_store.get<Real>("trust_region.contraction_factor")),
+  gammaExpand(method_store.get<Real>("trust_region.expansion_factor")),
+  softConvLimit(method_store.get<unsigned short>("soft_convergence_limit"))
 { initialize(); }
 
 
@@ -286,6 +314,34 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
       (approxSubProbMinimizer);
     aspm->constraint_tolerance(constraintTol);
   }
+}
+
+
+void SurrBasedLocalMinimizer::
+initialize_sub_minimizer(const IRStore& method_store)
+{
+  // The approximate subproblem model (or a recasting of iteratedModel) is
+  // created internally, so a sub-method pointer cannot be resolved without
+  // ProblemDescDB.  Only on-the-fly instantiation by name is supported.
+  if (!method_store.get<String>("sub_method_pointer").empty())
+    throw std::runtime_error(
+      "SurrBasedLocalMinimizer DI construction does not yet support "
+      "approx_method_pointer; use approx_method_name instead.");
+
+  const String& approx_method_name
+    = method_store.get<String>("sub_method_name");
+  if (!approx_method_name.empty()) {
+    approxSubProbMinimizer
+      = Iterator::get_iterator(approx_method_name, approxSubProbModel);
+    if (constraintTol <= 0.) // not specified in SBLM method spec
+      constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
+    std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
+      (approxSubProbMinimizer);
+    aspm->constraint_tolerance(constraintTol);
+  }
+  else
+    throw std::runtime_error(
+      "SurrBasedLocalMinimizer DI construction requires approx_method_name.");
 }
 
 

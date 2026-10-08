@@ -35,6 +35,10 @@ public:
   /// constructor
   SurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model,
 			  std::shared_ptr<TraitsBase> traits);
+  /// DI constructor using method IR plus study services
+  SurrBasedLocalMinimizer(std::shared_ptr<StudyServices> services,
+                          const IRStore& method_store, std::shared_ptr<Model> model,
+                          std::shared_ptr<TraitsBase> traits);
   /// alternate constructor for instantiations "on the fly"
   SurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn, short accept_logic,
 			  short constr_relax, const RealVector& tr_factors,
@@ -95,6 +99,8 @@ protected:
   void initialize_sub_model();
   /// construct and initialize approxSubProbMinimizer
   void initialize_sub_minimizer();
+  /// construct and initialize approxSubProbMinimizer from IR data
+  void initialize_sub_minimizer(const IRStore& method_store);
   /// initialize lagrangeMult and augLagrangeMult
   void initialize_multipliers();
 

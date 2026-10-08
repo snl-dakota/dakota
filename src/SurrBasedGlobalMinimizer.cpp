@@ -15,8 +15,10 @@
 #include "dakota_system_defs.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaApproximation.hpp"
+#include "IRStore.hpp"
 #include <algorithm>
 #include <iostream>
+#include <stdexcept>
 #include <string>
 
 static const char rcsId[]="@(#) $Id: SurrBasedGlobalMinimizer.cpp 7031 2010-10-22 16:23:52Z mseldre $";
@@ -28,6 +30,67 @@ SurrBasedGlobalMinimizer::
 SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   SurrBasedMinimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
   replacePoints(probDescDB.get<bool>("method.sbg.replace_points"))
+{
+  initialize_model();
+
+  // Instantiate the approximate sub-problem minimizer
+  const String& approx_method_ptr
+    = probDescDB.get<const String>("method.sub_method_pointer");
+  const String& approx_method_name
+    = probDescDB.get<const String>("method.sub_method_name");
+  if (!approx_method_ptr.empty()) {
+    // Approach 1: method spec support for approxSubProbMinimizer
+    const String& model_ptr = probDescDB.get<const String>("method.model_pointer");
+    size_t method_index = probDescDB.get_db_method_node(); // for restoration
+    probDescDB.set_db_method_node(approx_method_ptr); // method only
+    // sub-problem minimizer will use shallow copy of iteratedModel
+    // (from Model::get_model(problem_db)
+    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, parallelLib);//(iteratedModel);
+    // suppress DB ctor default and don't output summary info
+    approxSubProbMinimizer->summary_output(false);
+    // verify approx method's modelPointer is empty or consistent
+    const String& am_model_ptr = probDescDB.get<const String>("method.model_pointer");
+    if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
+      Cerr << "Warning: SBO approx_method_pointer specification includes an\n"
+	   << "         inconsistent model_pointer that will be ignored."
+	   << std::endl;
+    probDescDB.set_db_method_node(method_index); // restore method only
+  }
+  else if (!approx_method_name.empty())
+    // Approach 2: instantiate on-the-fly w/o method spec support
+    approxSubProbMinimizer
+      = Iterator::get_iterator(approx_method_name, iteratedModel);
+}
+
+
+SurrBasedGlobalMinimizer::
+SurrBasedGlobalMinimizer(const IRStore& method_store,
+                         std::shared_ptr<Model> model,
+                         std::shared_ptr<StudyServices> services):
+  SurrBasedMinimizer(std::move(services), method_store, model,
+                     std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
+  replacePoints(method_store.get<bool>("sbg.replace_points"))
+{
+  initialize_model();
+
+  // A sub-method pointer requires ProblemDescDB to resolve the method spec;
+  // only on-the-fly instantiation by name is supported.
+  if (!method_store.get<String>("sub_method_pointer").empty())
+    throw std::runtime_error(
+      "SurrBasedGlobalMinimizer DI construction does not yet support "
+      "approx_method_pointer; use approx_method_name instead.");
+
+  const String& approx_method_name
+    = method_store.get<String>("sub_method_name");
+  if (approx_method_name.empty())
+    throw std::runtime_error(
+      "SurrBasedGlobalMinimizer DI construction requires approx_method_name.");
+  approxSubProbMinimizer
+    = Iterator::get_iterator(approx_method_name, iteratedModel);
+}
+
+
+void SurrBasedGlobalMinimizer::initialize_model()
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
@@ -57,34 +120,6 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(
     iteratedModel->truth_model()->current_variables().copy());
-
-  // Instantiate the approximate sub-problem minimizer
-  const String& approx_method_ptr
-    = probDescDB.get<const String>("method.sub_method_pointer");
-  const String& approx_method_name
-    = probDescDB.get<const String>("method.sub_method_name");
-  if (!approx_method_ptr.empty()) {
-    // Approach 1: method spec support for approxSubProbMinimizer
-    const String& model_ptr = probDescDB.get<const String>("method.model_pointer");
-    size_t method_index = probDescDB.get_db_method_node(); // for restoration
-    probDescDB.set_db_method_node(approx_method_ptr); // method only
-    // sub-problem minimizer will use shallow copy of iteratedModel
-    // (from Model::get_model(problem_db)
-    approxSubProbMinimizer = Iterator::get_iterator(probDescDB, parallelLib);//(iteratedModel);
-    // suppress DB ctor default and don't output summary info
-    approxSubProbMinimizer->summary_output(false);
-    // verify approx method's modelPointer is empty or consistent
-    const String& am_model_ptr = probDescDB.get<const String>("method.model_pointer");
-    if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
-      Cerr << "Warning: SBO approx_method_pointer specification includes an\n"
-	   << "         inconsistent model_pointer that will be ignored."
-	   << std::endl;
-    probDescDB.set_db_method_node(method_index); // restore method only
-  }
-  else if (!approx_method_name.empty())
-    // Approach 2: instantiate on-the-fly w/o method spec support
-    approxSubProbMinimizer
-      = Iterator::get_iterator(approx_method_name, iteratedModel);
 }
 
 

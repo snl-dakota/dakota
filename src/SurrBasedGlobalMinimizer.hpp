@@ -75,6 +75,10 @@ public:
 
   /// constructor
   SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus study services
+  SurrBasedGlobalMinimizer(const IRStore& method_store,
+                           std::shared_ptr<Model> model,
+                           std::shared_ptr<StudyServices> services);
   /// destructor
   ~SurrBasedGlobalMinimizer() override;
 
@@ -97,6 +101,13 @@ protected:
   bool returns_multiple_points() const override;
 
 private:
+
+  //
+  //- Heading: Convenience member functions
+  //
+
+  /// helper for shared ctor code that verifies the iterated model
+  void initialize_model();
 
   //
   //- Heading: Data members

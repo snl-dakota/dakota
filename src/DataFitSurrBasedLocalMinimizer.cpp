@@ -17,6 +17,8 @@
 #include "DakotaGraphics.hpp"
 #include "RecastModel.hpp"
 #include "DiscrepancyCorrection.hpp"
+#include "IRStore.hpp"
+#include "SharedApproxData.hpp"
 
 //#define DEBUG
 
@@ -54,6 +56,37 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
 
 
 DataFitSurrBasedLocalMinimizer::
+DataFitSurrBasedLocalMinimizer(const IRStore& method_store,
+                               std::shared_ptr<Model> model,
+                               std::shared_ptr<StudyServices> services):
+  SurrBasedLocalMinimizer(std::move(services), method_store, model,
+    std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
+  multiLayerBypassFlag(false), useDerivsFlag(false)
+{
+  // derivative usage is a surrogate model specification; recover it from the
+  // build data order of the global approximation constructed by the model
+  const String& approx_type = model->surrogate_type();
+  if (strbegins(approx_type, "global_"))
+    useDerivsFlag = (model->shared_approximation().build_data_order() & 2);
+
+  // See DB constructor for discussion of the surrogate bypass
+  if ( method_store.get<bool>("sbl.truth_surrogate_bypass") == true ) {
+    Model& truth_model = *model->truth_model();
+    if (ModelUtils::is_surrogate_model(truth_model))
+      multiLayerBypassFlag = true;
+    ModelList& ml = truth_model.subordinate_models();
+    for (auto& m : ml)
+	if (ModelUtils::is_surrogate_model(*m))
+	multiLayerBypassFlag = true;
+  }
+
+  // Initialize method/interface dependent settings
+  initialize_trust_region_data(approx_type, model->correction_order(),
+                               &method_store);
+}
+
+
+DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn, short accept_logic,
 			       short constr_relax, Real tr_factor,
 			       size_t max_iter, size_t max_eval, Real conv_tol,
@@ -70,7 +103,8 @@ DataFitSurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn, sho
 
 
 void DataFitSurrBasedLocalMinimizer::
-initialize_trust_region_data(const String& approx_type, short corr_order)
+initialize_trust_region_data(const String& approx_type, short corr_order,
+			     const IRStore* method_store)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel->surrogate_type() == "ensemble") {
@@ -132,7 +166,8 @@ initialize_trust_region_data(const String& approx_type, short corr_order)
 
   // Instantiate the Model and Minimizer for the approximate sub-problem
   initialize_sub_model();
-  initialize_sub_minimizer();
+  if (method_store) initialize_sub_minimizer(*method_store);
+  else              initialize_sub_minimizer();
   // Initialize any Lagrange multiplier arrays
   initialize_multipliers();
 

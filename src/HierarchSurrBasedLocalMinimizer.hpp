@@ -69,6 +69,10 @@ public:
 
   /// constructor
   HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus study services
+  HierarchSurrBasedLocalMinimizer(const IRStore& method_store,
+                                  std::shared_ptr<Model> model,
+                                  std::shared_ptr<StudyServices> services);
   /// destructor
   ~HierarchSurrBasedLocalMinimizer() override;
 
@@ -96,6 +100,9 @@ private:
   //
   //- Heading: Convenience member functions
   //
+
+  /// helper for shared ctor code
+  void initialize_hierarchy(const IRStore* method_store = nullptr);
 
   /// build the hierarchical approximation for a particular level by
   /// computing center truth within the EnsembleSurrModel

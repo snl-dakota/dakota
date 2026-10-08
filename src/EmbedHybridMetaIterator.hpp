@@ -37,6 +37,11 @@ public:
   EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   EmbedHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus injected global/local sub-iterators
+  EmbedHybridMetaIterator(const IRStore& method_store,
+                          std::shared_ptr<Iterator> global_iterator,
+                          std::shared_ptr<Iterator> local_iterator,
+                          std::shared_ptr<StudyServices> services);
   /// destructor
   ~EmbedHybridMetaIterator() override;
     

@@ -50,6 +50,10 @@ public:
   SeqHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   SeqHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus injected sub-iterators
+  SeqHybridMetaIterator(const IRStore& method_store,
+                        std::vector<std::shared_ptr<Iterator>> sub_iterators,
+                        std::shared_ptr<StudyServices> services);
   /// destructor
   ~SeqHybridMetaIterator() override;
 

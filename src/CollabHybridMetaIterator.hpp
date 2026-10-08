@@ -35,6 +35,10 @@ public:
   CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus injected sub-iterators
+  CollabHybridMetaIterator(const IRStore& method_store,
+                           std::vector<std::shared_ptr<Iterator>> sub_iterators,
+                           std::shared_ptr<StudyServices> services);
   /// destructor
   ~CollabHybridMetaIterator() override;
     
