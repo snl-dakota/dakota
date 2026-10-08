@@ -187,6 +187,9 @@ public:
 
   /// standard constructor
   NOWPACOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus study services
+  NOWPACOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                  std::shared_ptr<StudyServices> services);
   /// alternate constructor
   NOWPACOptimizer(std::shared_ptr<Model> model);
   /// destructor
@@ -213,7 +216,7 @@ private:
   //- Heading: Convenience member functions
   //
 
-  void initialize_options();   ///< Shared constructor code
+  void initialize_options(const IRStore* method_store = nullptr);   ///< Shared constructor code
 
   //
   //- Heading: Data
