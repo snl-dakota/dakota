@@ -10,6 +10,8 @@
 #include "dakota_system_defs.hpp"
 #include "NL2SOLLeastSq.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
+#include "IRStore.hpp"
 
 
 // We use statistical notation:  p is the number of parameters being estimated
@@ -44,18 +46,30 @@ NL2SOLLeastSq::NL2SOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& paralle
   // initial TR radius
   lmax0(  probDescDB.get<const Real>("method.nl2sol.initial_trust_radius") )
 {
-  const RealVector&   fd_g_ss = iteratedModel->fd_gradient_step_size();
-  const RealVector& fd_hbg_ss = iteratedModel->fd_hessian_by_grad_step_size();
-  const RealVector& fd_hbf_ss = iteratedModel->fd_hessian_by_fn_step_size();
-  if (  !fd_g_ss.empty()) dltfdj =   fd_g_ss[0];
-  if (!fd_hbg_ss.empty()) delta0 = fd_hbg_ss[0];
-  if (!fd_hbf_ss.empty()) dltfdc = fd_hbf_ss[0];
+  initialize_model_mode_options();
+}
 
-  if (outputLevel == SILENT_OUTPUT)
-    auxprt = outlev = 0;
-  else if (outputLevel == QUIET_OUTPUT) {
-    auxprt = 3; outlev = 0;
-  }
+
+NL2SOLLeastSq::NL2SOLLeastSq(const IRStore& method_store,
+                             std::shared_ptr<Model> model,
+                             std::shared_ptr<StudyServices> services):
+  LeastSq(std::move(services), method_store, model,
+          std::shared_ptr<TraitsBase>(new NL2SOLLeastSqTraits())),
+  auxprt(31), outlev(1),
+  dltfdj(0.), delta0(0.), dltfdc(0.),
+  mxfcal(maxFunctionEvals), mxiter(maxIterations),
+  rfctol( (convergenceTol < -1.0) ? 1.0e-4 : convergenceTol ),
+  afctol(method_store.get<Real>("nl2sol.absolute_conv_tol")),
+  xctol(method_store.get<Real>("x_conv_tol")),
+  sctol(method_store.get<Real>("nl2sol.singular_conv_tol")),
+  lmaxs(method_store.get<Real>("nl2sol.singular_radius")),
+  xftol(method_store.get<Real>("nl2sol.false_conv_tol")),
+  covreq(method_store.get<int>("nl2sol.covariance")),
+  rdreq(method_store.get<bool>("nl2sol.regression_diagnostics")),
+  fprec(method_store.get<Real>("function_precision")),
+  lmax0(method_store.get<Real>("nl2sol.initial_trust_radius"))
+{
+  initialize_model_mode_options();
 }
 
 
@@ -76,6 +90,23 @@ NL2SOLLeastSq::NL2SOLLeastSq(std::shared_ptr<Model> model) :
   fprec(1.e-10),
   // initial TR radius
   lmax0(-1.)
+{
+  const RealVector&   fd_g_ss = iteratedModel->fd_gradient_step_size();
+  const RealVector& fd_hbg_ss = iteratedModel->fd_hessian_by_grad_step_size();
+  const RealVector& fd_hbf_ss = iteratedModel->fd_hessian_by_fn_step_size();
+  if (  !fd_g_ss.empty()) dltfdj =   fd_g_ss[0];
+  if (!fd_hbg_ss.empty()) delta0 = fd_hbg_ss[0];
+  if (!fd_hbf_ss.empty()) dltfdc = fd_hbf_ss[0];
+
+  if (outputLevel == SILENT_OUTPUT)
+    auxprt = outlev = 0;
+  else if (outputLevel == QUIET_OUTPUT) {
+    auxprt = 3; outlev = 0;
+  }
+}
+
+
+void NL2SOLLeastSq::initialize_model_mode_options()
 {
   const RealVector&   fd_g_ss = iteratedModel->fd_gradient_step_size();
   const RealVector& fd_hbg_ss = iteratedModel->fd_hessian_by_grad_step_size();

@@ -227,6 +227,7 @@ RecastModel::RecastModel(std::shared_ptr<Model> sub_model):
 
 void RecastModel::init_basic()
 {
+  sharedStudyServices = subModel->study_services();
   modelType = "recast";
   supportsEstimDerivs = false; // subModel estimates derivatives by default
   modelId = RecastModel::recast_model_id(root_model_id(), "RECAST");

@@ -16,6 +16,7 @@
 #include "DakotaApproximation.hpp"
 #include "DakotaSurrogatesGP.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DakotaGraphics.hpp"
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
@@ -74,18 +75,79 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std
   else sample_reuse = "none";
 
   initialize_sub_problem(approx_type, samples,
-			 probDescDB.get<int>("method.random_seed"),
-			 probDescDB.get<bool>("method.derivative_usage"),
-			 sample_reuse, import_pts_file,
-			 probDescDB.get<unsigned short>("method.import_build_format"),
-			 probDescDB.get<bool>("method.import_build_active_only"),
-			 probDescDB.get<const String>("method.export_approx_points_file"),
-			 probDescDB.get<unsigned short>("method.export_approx_format"));
+		 probDescDB.get<int>("method.random_seed"),
+		 probDescDB.get<bool>("method.derivative_usage"),
+		 sample_reuse, import_pts_file,
+		 probDescDB.get<unsigned short>("method.import_build_format"),
+		 probDescDB.get<bool>("method.import_build_active_only"),
+		 probDescDB.get<const String>("method.export_approx_points_file"),
+		 probDescDB.get<unsigned short>("method.export_approx_format"));
 
   if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
     const String& advanced_options_file
       = problem_db.get<const String>("method.advanced_options_file");
+    if (!advanced_options_file.empty())
+      set_model_gp_options(*fHatModel, advanced_options_file);
+#else
+    Cerr << "\nError: efficient_global does not support global_exp_gauss_proc "
+         << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
+    abort_handler(METHOD_ERROR);
+#endif
+  }
+}
+
+
+EffGlobalMinimizer::
+EffGlobalMinimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                   std::shared_ptr<StudyServices> services):
+  SurrBasedMinimizer(std::move(services), method_store, model,
+                     std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
+  batchSize(method_store.get<int>("batch_size")),
+  batchSizeExploration(method_store.get<int>("batch_size.exploration")),
+  dataOrder(1), batchEvalId(1),
+  batchAsynch(method_store.get<short>("synchronization") ==
+              NONBLOCKING_SYNCHRONIZATION)
+{
+  batchSizeAcquisition = batchSize - batchSizeExploration;
+
+  if (convergenceTol < 0.) convergenceTol = 1.e-12;
+  distanceTol = method_store.get<Real>("x_conv_tol");
+  if (distanceTol < 0.) distanceTol = 1.e-8;
+
+  bestVariablesArray.push_back(iteratedModel->current_variables().copy());
+  initialize_multipliers();
+
+  String approx_type;
+  switch (method_store.get<short>("nond.emulator")) {
+  case GP_EMULATOR:     approx_type = "global_gaussian";        break;
+  case EXPGP_EMULATOR:  approx_type = "global_exp_gauss_proc";  break;
+  default:              approx_type = "global_kriging";         break;
+  }
+
+  int db_samples = method_store.get<int>("samples");
+  int samples = (db_samples > 0) ? db_samples :
+    (numContinuousVars+1)*(numContinuousVars+2)/2;
+  const String& import_pts_file
+    = method_store.get<String>("import_build_points_file");
+  String sample_reuse;
+  if (!import_pts_file.empty())
+    { samples = 0; sample_reuse = "all"; }
+  else sample_reuse = "none";
+
+  initialize_sub_problem(approx_type, samples,
+                         method_store.get<int>("random_seed"),
+                         method_store.get<bool>("derivative_usage"),
+                         sample_reuse, import_pts_file,
+                         method_store.get<unsigned short>("import_build_format"),
+                         method_store.get<bool>("import_build_active_only"),
+                         method_store.get<String>("export_approx_points_file"),
+                         method_store.get<unsigned short>("export_approx_format"));
+
+  if (approx_type == "global_exp_gauss_proc") {
+#if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
+    const String& advanced_options_file
+      = method_store.get<String>("advanced_options_file");
     if (!advanced_options_file.empty())
       set_model_gp_options(*fHatModel, advanced_options_file);
 #else

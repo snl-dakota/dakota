@@ -95,6 +95,76 @@ NonDGPImpSampling::NonDGPImpSampling(ProblemDescDB& problem_db, ParallelLibrary&
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
+    probDescDB can be queried for settings from the method specification. */
+NonDGPImpSampling::
+NonDGPImpSampling(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		  std::shared_ptr<Model> model):
+  NonDSampling(std::move(services), method_store, model)
+{
+  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // Enforce an LHS default for this method.
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
+
+  samplingVarsMode = ACTIVE_UNIFORM;
+  String sample_reuse, approx_type("global_kriging");/*("global_kriging");*/
+  UShortArray approx_order; // not used by GP/kriging
+  short corr_order = -1, data_order = 1, corr_type = NO_CORRECTION;
+  if (method_store.get<bool>("derivative_usage")) {
+    if (iteratedModel->gradient_type() != "none") data_order |= 2;
+    if (iteratedModel->hessian_type()  != "none") data_order |= 4;
+  }
+  unsigned short sample_type = SUBMETHOD_DEFAULT;
+  statsFlag = true; //print computed probability levels at end
+  bool vary_pattern = false; // for consistency across outer loop invocations
+  // get point samples file
+  const String& import_pts_file
+    = method_store.get<String>("import_build_points_file");
+  // BMA: This was previously using numSamples = initial_samples from base class
+  numSamples = method_store.get<int>("build_samples");
+  int samples = numSamples;
+  if (!import_pts_file.empty())
+    { samples = 0; sample_reuse = "all"; }
+
+  gpBuild = std::make_shared<NonDLHSSampling>(iteratedModel,
+    sample_type, samples, randomSeed, rngName, varyPattern, ACTIVE_UNIFORM);
+  //distribution 1 which is the distribution that the initial set of samples
+  //used to build the initial GP are drawn from this should "ALWAYS" be
+  //uniform in the input of the GP (even if the nominal distribution is not
+  //uniform) because it is a set of samples to build a good GP and nothing
+  //else.  Rho 0 is the nonminal distribution of the input variable
+
+  ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
+  gp_set.request_values(1); // no surr deriv evals, but GP may be grad-enhanced
+  const ShortShortPair& gp_view = iteratedModel->current_variables().view();
+  gpModel = std::make_shared<DataFitSurrModel>(gpBuild, iteratedModel,
+    gp_set, gp_view, approx_type, approx_order, corr_type, corr_order,
+    data_order, outputLevel, sample_reuse, import_pts_file,
+    method_store.get<unsigned short>("import_build_format"),
+    method_store.get<bool>("import_build_active_only"),
+    method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  vary_pattern = true; // allow seed to run among multiple approx sample sets
+  // need to add to input spec
+  numEmulEval = method_store.get<int>("nond.samples_on_emulator");
+  if (numEmulEval==0)
+    numEmulEval = 10000;
+  construct_lhs(gpEval, gpModel, sample_type, numEmulEval, randomSeed,
+                rngName, vary_pattern);
+  // assign a method-specific default for maxIterations
+  numPtsAdd = (maxIterations == SZ_MAX) ? 150 : maxIterations;
+
+  //construct sampler to generate one draw from rhoOne distribution, with
+  //seed varying between invocations
+  construct_lhs(sampleRhoOne, iteratedModel, sample_type, 1, randomSeed,
+                rngName, vary_pattern);
+
+  initialize_final_statistics();
+}
+
+
 NonDGPImpSampling::~NonDGPImpSampling()
 { }
 

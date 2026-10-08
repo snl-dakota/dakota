@@ -35,6 +35,9 @@ public:
   /// standard constructor
   NonDMultilevBLUESampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 			   std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDMultilevBLUESampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevBLUESampling() override;
 
@@ -44,6 +47,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void class_initialize(const SizetArray& pilot_samples);
   void  pre_run() override;
   void core_run() override;
   //void post_run(std::ostream& s) override;

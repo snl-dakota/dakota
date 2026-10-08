@@ -59,6 +59,8 @@ public:
 
   /// standard constructor
   NonlinearCGOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus optional runtime services
+  NonlinearCGOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services);
   /// destructor      
   ~NonlinearCGOptimizer() override;
 
@@ -76,8 +78,8 @@ protected:
 
 private:
 
-  /// constructor helper function to parse misc_options from ProblemDescDB
-  void parse_options();
+  /// constructor helper function to parse misc_options
+  void parse_options(const StringArray& options);
 
   /// compute next direction via choice of method
   void compute_direction();

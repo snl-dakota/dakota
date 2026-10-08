@@ -1,0 +1,39 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  approximate_control_variate
+    acv_mf
+    pilot_samples 8
+    seed_sequence 1234
+    max_iterations 1
+    max_function_evaluations 24
+model
+  id_model 'target'
+  ensemble_surrogate
+    ordered_model_fidelities 'low' 'high'
+variables
+  uniform_uncertain 2
+    lower_bounds -1.0 -1.0
+    upper_bounds 1.0 1.0
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+model
+  id_model 'low'
+  simulation
+    interface_pointer 'low_driver'
+    solution_level_cost 0.1
+interface
+  id_interface 'low_driver'
+  analysis_drivers 'python3 response_driver.py low' fork
+model
+  id_model 'high'
+  simulation
+    interface_pointer 'high_driver'
+    solution_level_cost 1.0
+interface
+  id_interface 'high_driver'
+  analysis_drivers 'python3 response_driver.py high' fork

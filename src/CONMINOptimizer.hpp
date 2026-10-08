@@ -88,6 +88,8 @@ public:
 
   /// standard constructor
   CONMINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus optional runtime services
+  CONMINOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services);
   /// alternate constructor; construct without ProblemDescDB
   CONMINOptimizer(const String& method_string, std::shared_ptr<Model> model);
   /// destructor

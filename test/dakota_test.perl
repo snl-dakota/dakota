@@ -30,6 +30,8 @@ my @dakota_config = ();      # CMake/#define configuration of Dakota itself
 my $extract_filename = "";   # default is dakota_*.in_
 my $input_dir = "";          # default test file source is pwd
 my $label_regex = "";        # regular expression to filter based on labels
+my $reduce_output = "";
+my $reduce_destination = "";
 my $mode = "run";            # modes are run, base, extract, test_props
 my $output_dir = "";         # default output is pwd
 my $parallelism = "serial";  # whether DAKOTA runs in parallel
@@ -77,6 +79,18 @@ my $s = "[A-Za-z0-9_-]+";             # alphanumeric (plus _ and -) string
 
 # command line processing may adjust above global variables
 process_command_line();
+
+# Standalone reduction bypasses execution, test selection, and baseline lookup.
+if ($reduce_output) {
+  die "Reduction requires --reduce-destination and a subtest number\n"
+    unless $reduce_destination && defined $test_num;
+  open(TEST_OUT, ">", $reduce_destination)
+    or die "Cannot open $reduce_destination: $!\n";
+  tee_test_out("Test Number $test_num succeeded\n");
+  parse_test_output($reduce_output);
+  close(TEST_OUT) or die "Cannot close $reduce_destination: $!\n";
+  exit 0;
+}
 
 # optionally prepend bin-dir to the PATH
 if ("${bin_dir}" gt "") {
@@ -519,7 +533,9 @@ sub process_command_line {
   my $opt_valgrind = 0;
 
   # Process long options
-  GetOptions('base'           => \$opt_base,
+  GetOptions('reduce-output=s' => \$reduce_output,
+             'reduce-destination=s' => \$reduce_destination,
+             'base'           => \$opt_base,
   	     'baseline-indir=s' => \$baseline_indir,
 	     'baseline-overwrite' => \$baseline_overwrite,
   	     'bin-dir=s'      => \$bin_dir,
@@ -539,6 +555,17 @@ sub process_command_line {
   pod2usage(0) if $opt_help;
   pod2usage(-exitstatus => 0, -verbose => 2) if $opt_man;
   
+  if ($reduce_output || $reduce_destination) {
+    die "Cannot combine reduction with other modes\n"
+      if $opt_base || $baseline_overwrite || $opt_extract || $extract_filename
+         || $test_props_dir || $opt_parallel;
+    die "Reduction requires --reduce-output\n" unless $reduce_output;
+    die "Reduction requires exactly one subtest number\n"
+      unless @ARGV == 1 && $ARGV[0] =~ /^\d+$/;
+    $test_num = shift @ARGV;
+    return;
+  }
+
   # parallel options
   if ($opt_parallel) {
     $parallelism = "parallel";
@@ -1455,6 +1482,23 @@ sub parse_test_output {
     # *** Standard results summary ***
     # ********************************
       
+    # Standalone paired reduction also retains verification and integration
+    # results. Leave existing saved-baseline selection unchanged.
+    while ($reduce_output && /^(Refinement Rate|Refinement Reference Pt|Final Convergence Rates|Extrapolated QOI|Final QOI Error Estimate)\s*=/) {
+      print;
+      tee_test_out();
+      $_ = <OUTPUT>;
+      while (defined($_) && /\S/) {
+        print;
+        tee_test_out();
+        $_ = <OUTPUT>;
+      }
+    }
+    if ($reduce_output && /^Estimated integral of /) {
+      print;
+      tee_test_out();
+    }
+
     # Capture evaluation summaries
     while (/^<<<<< Function evaluation summary/) {
       # DMD (05/01/2006): the following line may be needed if 
@@ -1810,6 +1854,12 @@ directory containing test reference baselines to diff against
 extract test specified by test_number (required) from each
 testfilename to testfilename.in_; cannot be specified with base
 options
+
+=item B<--reduce-output=filename> B<--reduce-destination=filename> subtest_number
+
+Reduce an existing successful Dakota output using the standard result parser.
+Does not execute Dakota or read or compare a baseline. The caller must verify
+execution success and result completeness.
 
 =item B<--file-extract=filename> 
 

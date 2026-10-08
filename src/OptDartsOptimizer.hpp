@@ -52,6 +52,9 @@ namespace Dakota {
        /// Constructor
        OptDartsOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>);
 
+       /// DI constructor using method IR plus optional runtime services
+       OptDartsOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services);
+
        /// alternate constructor for Iterator instantiations by name
        OptDartsOptimizer(std::shared_ptr<Model>);
 	       

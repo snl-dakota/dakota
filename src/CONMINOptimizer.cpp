@@ -40,6 +40,17 @@ CONMINOptimizer::CONMINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& par
   initialize(); // convenience fn for shared ctor code
 }
 
+CONMINOptimizer::CONMINOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new CONMINTraits()))
+{
+  // If speculativeFlag is set with vendor numerical_gradients, output a warning
+  if (speculativeFlag && vendorNumericalGradFlag)
+    Cerr << "\nWarning: speculative method specification is ignored for"
+	 << "\n         vendor numerical gradients.\n\n";
+
+  initialize(); // convenience fn for shared ctor code
+}
+
 
 CONMINOptimizer::CONMINOptimizer(const String& method_string, std::shared_ptr<Model> model):
   Optimizer(method_string_to_enum(method_string), model, std::shared_ptr<TraitsBase>(new CONMINTraits()))

@@ -51,7 +51,7 @@ from dakota.spec.base import (
 )
 from dakota.spec.model import (
     ActiveSubspaceSelection,
-    Ensemble,
+    EnsembleSurrogateConfig,
     NestedConfig,
     RandomFieldSelection,
     SubMethodPointer,
@@ -309,7 +309,7 @@ class TestPointerUnionAllPointerBranches(unittest.TestCase):
 
     def test_ensemble_absent_api_mode_selects_first_branch(self):
         """Ensemble.ensemble absent -> first all-pointer branch injected."""
-        obj = Ensemble()
+        obj = EnsembleSurrogateConfig()
         ens = obj.ensemble
         self.assertIsNotNone(ens, "ensemble field should have been injected")
         type_name = type(ens).__name__
@@ -323,7 +323,7 @@ class TestPointerUnionAllPointerBranches(unittest.TestCase):
         """Ensemble.ensemble absent in input_file_mode -> ValidationError."""
         with input_file_mode():
             with self.assertRaises(ValidationError):
-                Ensemble()
+                EnsembleSurrogateConfig()
 
 
 # ---------------------------------------------------------------------------

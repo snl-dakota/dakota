@@ -31,7 +31,7 @@ method,
 
 model,
 	id_model = 'SURROGATE'
-	surrogate global
+	global_surrogate
 	  responses_pointer = 'SURROGATE_RESP'
 	  dace_method_pointer = 'SAMPLING'
 #	  reuse_samples region

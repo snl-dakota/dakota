@@ -92,6 +92,10 @@ public:
   /// standard constructor
   NPSOLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
+  /// DI constructor
+  NPSOLOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                 std::shared_ptr<StudyServices> services);
+
   /// alternate constructor for Iterator instantiations by name
   NPSOLOptimizer(std::shared_ptr<Model> model);
 
@@ -167,6 +171,9 @@ private:
   void find_optimum_on_model();
   /// called by core_run for setUpType == "user_functions"
   void find_optimum_on_user_functions();
+  /// shared setup for model-based constructors
+  void initialize_model_mode_options(int verify_level, Real fn_precision,
+                                     Real linesearch_tolerance);
 
   //
   //- Heading: Static member functions passed by pointer to NPSOL

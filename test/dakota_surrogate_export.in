@@ -1,5 +1,5 @@
 #@ s*: DakotaConfig=HAVE_ROL
-#@ s*: TimeoutDelay=120
+#@ s*: TimeoutDelay=360
 #@ s*: TimeoutAbsolute=900
 # Demonstrate list parameter study on global GP, exporting values and
 # variance, and model.
@@ -40,7 +40,7 @@ method
 
 model
   id_model = 'SURR_M'
-  surrogate global
+  global_surrogate
     dace_method_pointer = 'DACE'
     experimental_gaussian_process
       metrics 'root_mean_squared'

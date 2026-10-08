@@ -10,6 +10,7 @@
 #include "ExperimentData.hpp"
 #include "DakotaMethodEnums.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DakotaVariables.hpp"
 
 namespace Dakota {
@@ -39,6 +40,25 @@ ExperimentData(const ProblemDescDB& pddb,
 { 
   initialize(pddb.get<const StringArray>("responses.variance_type"), srd);
 }                                
+
+
+ExperimentData::
+ExperimentData(const IRStore& responses_store,
+               const SharedResponseData& srd, short output_level):
+  calibrationDataFlag(responses_store.get<bool>("calibration_data")),
+  numExperiments(responses_store.get<size_t>("num_experiments")),
+  numConfigVars(responses_store.get<size_t>("num_config_vars")),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
+  dataPathPrefix(responses_store.get<String>("data_directory")),
+  scalarDataFilename(responses_store.get<String>("scalar_data_filename")),
+  scalarDataFormat(responses_store.get<unsigned short>("scalar_data_format")),
+  scalarSigmaPerRow(0),
+  readSimFieldCoords(responses_store.get<bool>("read_field_coordinates")),
+  interpolateFlag(responses_store.get<bool>("interpolate")),
+  outputLevel(output_level)
+{
+  initialize(responses_store.get<StringArray>("variance_type"), srd);
+}
 
 
 ExperimentData::

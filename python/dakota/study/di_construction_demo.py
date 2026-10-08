@@ -56,9 +56,9 @@ INTERFACE = {
                 "results_file": "results.out",
                 "file_save": True,
             }
-        },
-        "deactivate": {"restart_file": True},
-    }
+        }
+    },
+    "deactivate": {"restart_file": True},
 }
 
 MODEL = {}
@@ -79,10 +79,10 @@ def main() -> None:
     print(f"Configured output precision: {config.output.precision}")
 
     variables = study.variables(VARIABLES)
-    response = study.responses(RESPONSES, variables)
+    response = study.responses(variables, RESPONSES)
     interface = study.interface(INTERFACE)
-    model = study.model.simulation(MODEL, variables, interface, response)
-    sampling = study.method.sampling(METHOD, model)
+    model = study.model.simulation(variables, interface, response, MODEL)
+    sampling = study.method.sampling(model, METHOD)
 
     print("Running sampling study...")
     study.run(sampling)

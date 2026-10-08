@@ -9,6 +9,7 @@
 
 #include "NonlinearCGOptimizer.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include <boost/math/tools/minima.hpp>
 
 // uncomment to use the Boost Brent's algorithm
@@ -53,7 +54,27 @@ NonlinearCGOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
     abort_handler(-1);
   }
   // some of the defaults may be overridden by user-supplied options
-  parse_options();
+  parse_options(probDescDB.get<const StringArray>("method.coliny.misc_options"));
+
+  stepLength = initialStep;
+}
+
+
+NonlinearCGOptimizer::
+NonlinearCGOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services): 
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new NonlinearCGTraits())),
+  initialStep(0.01), linesearchTolerance(1.0e-2),
+  linesearchType(CG_LS_SIMPLE), maxLinesearchIters(10), relFunctionTol(0.0),
+  relGradientTol(0.0), resetStep(true), restartIter(1000000),
+  updateType(CG_FLETCHER_REEVES)
+{
+  if (numFunctions > 1 || numConstraints > 0 || boundConstraintFlag) {
+    Cerr << "ERROR: NonlinearCG only supports unconstrainted single objective "
+	 << "problems!" << endl;
+    abort_handler(-1);
+  }
+  // some of the defaults may be overridden by user-supplied options
+  parse_options(method_store.get<StringArray>("coliny.misc_options"));
 
   stepLength = initialStep;
 }
@@ -608,7 +629,7 @@ Real NonlinearCGOptimizer::linesearch_eval(const Real& trial_step,
 }
 
 
-void NonlinearCGOptimizer::parse_options()
+void NonlinearCGOptimizer::parse_options(const StringArray& db_opts)
 {
   // Allowed update options
   map<string, int> update_type;
@@ -626,7 +647,6 @@ void NonlinearCGOptimizer::parse_options()
   search_type["ls_wolfe"]   = 3;
 
   map<string,string> opts;
-  const StringArray& db_opts = probDescDB.get<const StringArray>("method.coliny.misc_options");
   StringArray::const_iterator db_it = db_opts.begin();
   StringArray::const_iterator db_end = db_opts.end();
   String::const_iterator delim;

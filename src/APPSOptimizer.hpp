@@ -134,6 +134,10 @@ public:
   /// constructor
   APPSOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
+  /// DI constructor using method IR plus optional runtime services
+  APPSOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+               std::shared_ptr<StudyServices> services);
+
   /// alternate constructor for on-the-fly instantiation without ProblemDescDB
   APPSOptimizer(std::shared_ptr<Model> model);
 
@@ -163,7 +167,7 @@ protected:
   //
 
   /// sets options for specific methods based on user specifications
-  void set_apps_parameters();
+  void set_apps_parameters(const IRStore* method_store = nullptr);
 
   /// sets traits for specific TPL
   void set_apps_traits();

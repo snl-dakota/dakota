@@ -26,7 +26,7 @@ method
 model,
 	id_model = 'SURROGATE'
 	responses_pointer = 'SURROGATE_RESP'
-	surrogate global
+	global_surrogate
 	  dace_method_pointer = 'SAMPLING'
 #	  correction additive       first_order
 	  polynomial quadratic

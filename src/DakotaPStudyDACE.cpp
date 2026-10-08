@@ -46,6 +46,37 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 }
 
 
+PStudyDACE::PStudyDACE(std::shared_ptr<StudyServices> services,
+                       const IRStore& method_store,
+                       std::shared_ptr<Model> model):
+  Analyzer(std::move(services), method_store, model),
+  volQualityFlag(method_store.contains("quality_metrics")
+                   ? method_store.get<bool>("quality_metrics")
+                   : false),
+  vbdViaSamplingMethod(method_store.contains("vbd_via_sampling_method")
+                         ? method_store.get<unsigned short>("vbd_via_sampling_method")
+                         : 0),
+  vbdViaSamplingNumBins(method_store.contains("vbd_via_sampling_num_bins")
+                          ? method_store.get<int>("vbd_via_sampling_num_bins")
+                          : 0)
+{
+  // Check for discrete variable types
+  if ( (numDiscreteIntVars || numDiscreteRealVars) &&
+       methodName > VECTOR_PARAMETER_STUDY)
+    Cerr << "\nWarning: discrete variables are ignored by "
+         << method_enum_to_string(methodName) << std::endl;
+
+  // Check for vendor numerical gradients (manage_asv will not work properly)
+  if (iteratedModel->gradient_type() == "numerical" &&
+      iteratedModel->method_source() == "vendor") {
+    Cerr << "\nError: ParamStudy/DACE do not contain a vendor algorithm for "
+         << "numerical derivatives;\n       please select dakota as the finite "
+         << "difference method_source." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 PStudyDACE::PStudyDACE(unsigned short method_name, std::shared_ptr<Model> model):
   Analyzer(method_name, model), volQualityFlag(false)
 {

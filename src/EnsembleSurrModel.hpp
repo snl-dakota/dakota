@@ -29,6 +29,7 @@ enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
     tolerances, etc.). */
 
 class ParallelLibrary;
+class StudyServices;
 
 class EnsembleSurrModel: public SurrogateModel
 {
@@ -39,6 +40,11 @@ public:
   //
 
   EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  EnsembleSurrModel(const IRStore& model_store,
+                    std::shared_ptr<Model> truth_model,
+                    std::vector<std::shared_ptr<Model>> approximation_models,
+                    const Variables& variables, const Response& response,
+                    std::shared_ptr<StudyServices> services);
 
   //
   //- Heading: Member functions
@@ -350,6 +356,9 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// Initialize injected truth and approximation models for DI construction.
+  void initialize_subordinate_models();
 
   /// synchronize the HF model's solution level control with truthModelKey
   void assign_truth_key();

@@ -11,7 +11,8 @@
 #include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
 #include "NonDLHSSampling.hpp"
-#include "ProblemDescDB.hpp" 
+#include "ProblemDescDB.hpp"
+#include "IRStore.hpp" 
 #include "ParallelLibrary.hpp" 
 #include "pecos_stat_util.hpp"
 
@@ -35,6 +36,26 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, ParallelLibrary& par
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   bool vary_pattern = false; // for consistency across outer loop invocations
+  lhsSampler = std::make_unique<NonDLHSSampling>(iteratedModel,
+    sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE);
+}
+
+
+NonDLHSInterval::NonDLHSInterval(std::shared_ptr<StudyServices> services,
+                                 const IRStore& method_store,
+                                 std::shared_ptr<Model> model):
+  NonDInterval(std::move(services), method_store, model),
+  seedSpec(method_store.get<int>("random_seed")),
+  numSamples(method_store.get<int>("samples")),
+  rngName(method_store.get<String>("random_number_generator"))
+{
+  if (!numSamples)
+    numSamples = 10000;
+
+  maxEvalConcurrency *= numSamples;
+
+  unsigned short sample_type = SUBMETHOD_DEFAULT;
+  bool vary_pattern = false;
   lhsSampler = std::make_unique<NonDLHSSampling>(iteratedModel,
     sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE);
 }

@@ -345,6 +345,7 @@ Response::
 Response(BaseConstructor, const Variables& vars,
          const IRStore& responses_store):
   sharedRespData(responses_store),
+  responsesStore(std::make_shared<IRStore>(responses_store)),
   gradientConfig(build_gradient_config(responses_store)),
   hessianConfig(build_hessian_config(responses_store)),
   primaryRespFnWts(build_primary_response_fn_weights(responses_store,
@@ -663,6 +664,7 @@ Response Response::copy(bool deep_srd) const
 
 void Response::copy_rep(std::shared_ptr<Response> source_resp_rep)
 {
+  responsesStore    = source_resp_rep->responsesStore;
   gradientConfig     = source_resp_rep->gradientConfig;
   hessianConfig      = source_resp_rep->hessianConfig;
   primaryRespFnWts   = source_resp_rep->primaryRespFnWts;

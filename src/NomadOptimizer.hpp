@@ -98,6 +98,10 @@ public:
   */
   NomadOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
+  /// DI constructor using method IR plus optional runtime services
+  NomadOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+               std::shared_ptr<StudyServices> services);
+
   /// alternate constructor for Iterator instantiations without DB
   NomadOptimizer(std::shared_ptr<Model> model);
 	       

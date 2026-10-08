@@ -19,7 +19,7 @@ method,
 
 model,
 	id_model = 'OPTIM_M'
-	surrogate global
+	global_surrogate
 	  variables_pointer = 'OPTIM_V'
 	  responses_pointer = 'OPTIM_R'
 	  polynomial quadratic

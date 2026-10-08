@@ -36,11 +36,12 @@ TKFactoryDIPCLogit tk_factory_dipclogit("dakota_dipc_logit_tk");
 NonDQUESOBayesCalibration* NonDQUESOBayesCalibration::nonDQUESOInstance(NULL);
 
 
-/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDQUESOBayesCalibration::
-NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+			  std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, parallel_lib, model),
   mcmcType(probDescDB.get<const String>("method.nond.mcmc_type")),
   propCovUpdatePeriod(probDescDB.get<int>("method.nond.prop_cov_update_period")),
@@ -48,6 +49,30 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   logitTransform(probDescDB.get<bool>("method.nond.logit_transform")),
   priorPropCovMult(probDescDB.get<const Real>("method.prior_prop_cov_mult")),
   advancedOptionsFile(probDescDB.get<const String>("method.advanced_options_file"))
+{
+  initialize();
+}
+
+
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDQUESOBayesCalibration::
+NonDQUESOBayesCalibration(std::shared_ptr<StudyServices> services,
+			  const IRStore& method_store,
+			  std::shared_ptr<Model> model):
+  NonDBayesCalibration(std::move(services), method_store, model),
+  mcmcType(method_store.get<String>("nond.mcmc_type")),
+  propCovUpdatePeriod(method_store.get<int>("nond.prop_cov_update_period")),
+  precondRequestValue(0),
+  logitTransform(method_store.get<bool>("nond.logit_transform")),
+  priorPropCovMult(method_store.get<Real>("prior_prop_cov_mult")),
+  advancedOptionsFile(method_store.get<String>("advanced_options_file"))
+{
+  initialize();
+}
+
+
+void NonDQUESOBayesCalibration::initialize()
 {
   bool found_error = false;
 
@@ -64,31 +89,31 @@ NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   if (priorPropCovMult < std::numeric_limits<double>::min() ||
       priorPropCovMult >= std::numeric_limits<double>::infinity()) {
     Cerr << "\nError: QUESO proposal covariance multiplier  = "
-	 << priorPropCovMult << " not in [DBL_MIN, Inf).\n";
+         << priorPropCovMult << " not in [DBL_MIN, Inf).\n";
     found_error = true;
   }
 
   if (propCovUpdatePeriod < std::numeric_limits<int>::max() &&
       propCovUpdatePeriod >= chainSamples) {
     Cout << "\nWarning: QUESO proposal covariance update_period >= chain_samples;"
-	 << "\n         no updates will occur." << std::endl;
+         << "\n         no updates will occur." << std::endl;
   }
 
   if (!advancedOptionsFile.empty()) {
     if (std::filesystem::exists(advancedOptionsFile)) {
       if (outputLevel >= NORMAL_OUTPUT)
-	Cout << "Any QUESO options in file '" << advancedOptionsFile
-	     << "' will override Dakota options." << std::endl;
+        Cout << "Any QUESO options in file '" << advancedOptionsFile
+             << "' will override Dakota options." << std::endl;
     } else {
       Cerr << "\nError: QUESO options_file '" << advancedOptionsFile
-	   << "' specified, but file not found.\n";
+           << "' specified, but file not found.\n";
       found_error = true;
     }
   }
 
   // BMA TODO: Want to support these options independently
   if (obsErrorMultiplierMode > 0 && !calibrationData) {
-    Cerr << "\nError: you are attempting to calibrate the measurement error " 
+    Cerr << "\nError: you are attempting to calibrate the measurement error "
          << "but have not provided experimental data information." << std::endl;
     found_error = true;
   }
@@ -475,7 +500,7 @@ void NonDQUESOBayesCalibration::cache_chain()
 	acc_chain_i[j] = qv[j]; // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval
-      if (mcmcModel->model_type() == "surrogate")
+	if (ModelUtils::is_surrogate_model(*mcmcModel))
 	lookup_vars.continuous_variables(u_rv);
       else
 	lookup_vars.continuous_variables(x_rv);

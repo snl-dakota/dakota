@@ -1,7 +1,58 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
+#ifdef DAKOTA_HOPS
+#include "APPSOptimizer.hpp"
+#endif
+#ifdef HAVE_ACRO
+#include "COLINOptimizer.hpp"
+#include "PEBBLMinimizer.hpp"
+#endif
+#ifdef HAVE_CONMIN
+#include "CONMINOptimizer.hpp"
+#endif
+#ifdef HAVE_DOT
 #include "DOTOptimizer.hpp"
+#endif
+#ifdef HAVE_JEGA
+#include "JEGAOptimizer.hpp"
+#endif
+#ifdef HAVE_NCSU
+#include "NCSUOptimizer.hpp"
+#endif
+#ifdef HAVE_NOMAD
+#include "NomadOptimizer.hpp"
+#endif
+#ifdef HAVE_NPSOL
+#include "NPSOLOptimizer.hpp"
+#endif
+#ifdef HAVE_NLPQL
+#include "NLPQLPOptimizer.hpp"
+#endif
+#ifdef HAVE_NL2SOL
+#include "NL2SOLLeastSq.hpp"
+#endif
+#ifdef HAVE_NCSU
+#include "EffGlobalMinimizer.hpp"
+#endif
+#ifdef HAVE_ROL
+#include "DakotaROLOptimizer.hpp"
+#endif
+#include "ParamStudy.hpp"
+#include "NonDGlobalSingleInterval.hpp"
+#include "NonDLHSSingleInterval.hpp"
+#include "NonDLocalSingleInterval.hpp"
+#include "RichExtrapVerification.hpp"
+#include "NonlinearCGOptimizer.hpp"
+#ifdef HAVE_NOWPAC
+#include "NOWPACOptimizer.hpp"
+#endif
+#include "OptDartsOptimizer.hpp"
+#ifdef HAVE_OPTPP
+#include "SNLLOptimizer.hpp"
+#endif
 #include "ConcurrentMetaIterator.hpp"
+#include "DataFitSurrModel.hpp"
+#include "EnsembleSurrModel.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
 #else
@@ -18,6 +69,7 @@
 #include "OutputManager.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
+#include "EnsembleSurrModel.hpp"
 #include "SimulationModel.hpp"
 #include "Study.hpp"
 #include "StudyServices.hpp"
@@ -29,6 +81,7 @@
 #include <memory>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 using json = nlohmann::json;
 
@@ -129,6 +182,24 @@ IRStore make_nested_model_store(const IRStore& base_model_store)
   return nested_model_store;
 }
 
+IRStore make_ensemble_surrogate_model_store(InstructionMaterializer& materializer)
+{
+  const json model_json = {
+    {"ensemble_surrogate", {
+      {"ensemble", {
+        {"truth_model_pointer", {
+          {"pointer", "truth_model"},
+          {"approximation_models", {"approximation_model"}}
+        }}
+      }}
+    }}
+  };
+
+  return materializer.materialize_block(
+    dakota::validate_model_block_json_to_json(model_json),
+    irgen::BlockType::Model);
+}
+
 IRStore make_concurrent_multistart_store(InstructionMaterializer& materializer)
 {
   const json method_json = {
@@ -141,28 +212,12 @@ IRStore make_concurrent_multistart_store(InstructionMaterializer& materializer)
   return materializer.materialize_block(method_json, irgen::BlockType::Method);
 }
 
-IRStore make_dot_method_store(InstructionMaterializer& materializer)
+void materialize_default_opt_blocks(InstructionMaterializer& materializer,
+                                    IRStore& variables_store,
+                                    IRStore& responses_store,
+                                    IRStore& interface_store,
+                                    IRStore& model_store)
 {
-  const json method_json = {
-    {"dot_bfgs", {
-      {"max_iterations", 10},
-      {"convergence_tolerance", 1.e-4},
-      {"constraint_tolerance", 0.0}
-    }}
-  };
-
-  return materializer.materialize_block(method_json, irgen::BlockType::Method);
-}
-
-void materialize_dot_blocks(InstructionMaterializer& materializer,
-                            IRStore& method_store,
-                            IRStore& variables_store,
-                            IRStore& responses_store,
-                            IRStore& interface_store,
-                            IRStore& model_store)
-{
-  method_store = make_dot_method_store(materializer);
-
   const json variables_json = {
     {"continuous_design", {
       {"count", 2},
@@ -177,6 +232,156 @@ void materialize_dot_blocks(InstructionMaterializer& materializer,
     {"response_type", {{"objective_functions", {{"count", 1}}}}},
     {"descriptors", {"f"}},
     {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  const json model_json = json::object();
+
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
+
+void materialize_default_lsq_blocks(InstructionMaterializer& materializer,
+                                    IRStore& variables_store,
+                                    IRStore& responses_store,
+                                    IRStore& interface_store,
+                                    IRStore& model_store)
+{
+  const json variables_json = {
+    {"continuous_design", {
+      {"count", 2},
+      {"descriptors", {"x1", "x2"}},
+      {"initial_point", {0.9, 1.1}},
+      {"lower_bounds", {0.5, 0.5}},
+      {"upper_bounds", {5.8, 2.9}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"calibration_terms", {{"count", 1}}}}},
+    {"descriptors", {"r1"}},
+    {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  const json model_json = json::object();
+
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
+
+void materialize_default_interval_blocks(InstructionMaterializer& materializer,
+                                         IRStore& variables_store,
+                                         IRStore& responses_store,
+                                         IRStore& interface_store,
+                                         IRStore& model_store)
+{
+  const json variables_json = {
+    {"continuous_interval_uncertain", {
+      {"count", 2},
+      {"descriptors", {"x1", "x2"}},
+      {"lower_bounds", {0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0}},
+      {"interval_probabilities", {1.0, 1.0}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"no_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  const json model_json = json::object();
+
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
+
+void materialize_default_local_interval_blocks(InstructionMaterializer& materializer,
+                                               IRStore& variables_store,
+                                               IRStore& responses_store,
+                                               IRStore& interface_store,
+                                               IRStore& model_store)
+{
+  const json variables_json = {
+    {"continuous_interval_uncertain", {
+      {"count", 2},
+      {"descriptors", {"x1", "x2"}},
+      {"lower_bounds", {0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0}},
+      {"interval_probabilities", {1.0, 1.0}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  const json model_json = json::object();
+
+  variables_store = materializer.materialize_block(variables_json, irgen::BlockType::Variables);
+  responses_store = materializer.materialize_block(responses_json, irgen::BlockType::Responses);
+  interface_store = materializer.materialize_block(interface_json, irgen::BlockType::Interface);
+  model_store = materializer.materialize_block(model_json, irgen::BlockType::Model);
+}
+
+void materialize_default_verification_blocks(InstructionMaterializer& materializer,
+                                             IRStore& variables_store,
+                                             IRStore& responses_store,
+                                             IRStore& interface_store,
+                                             IRStore& model_store)
+{
+  const json variables_json = {
+    {"continuous_state", {
+      {"count", 2},
+      {"descriptors", {"h1", "h2"}},
+      {"initial_state", {0.25, 0.125}}
+    }}
+  };
+
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"no_gradients", true}}},
     {"hessian_type", {{"no_hessians", true}}}
   };
 
@@ -304,13 +509,124 @@ TEST(di_construction_tests, study_factories_construct_components_from_json_fragm
   Variables variables = study.variables(variables_json);
   Response response = study.responses(responses_json, variables);
   auto interface = study.interface(interface_json);
-  auto model = study.model().simulation(json::object(), variables, interface, response);
+  auto model = study.model().single(json::object(), variables, interface, response);
   auto sampling = study.method().sampling(method_json, model);
 
   EXPECT_EQ(variables.tv(), 2);
   EXPECT_EQ(response.num_functions(), 1);
   EXPECT_EQ(model->current_response().num_functions(), 1);
   EXPECT_EQ(sampling->sampling_scheme(), SUBMETHOD_LHS);
+}
+
+TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
+{
+  const json variables_json = {
+    {"continuous_design", {
+      {"count", 2}, {"descriptors", {"x1", "x2"}},
+      {"initial_point", {0.0, 0.0}},
+      {"lower_bounds", {-1.0, -1.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }}
+  };
+  const json responses_json = {
+    {"response_type", {{"response_functions", {{"count", 1}}}}},
+    {"descriptors", {"f"}},
+    {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"analytic_hessians", true}}}
+  };
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+
+  Study study;
+  const Variables variables = study.variables(variables_json);
+  const Response response = study.responses(responses_json, variables);
+  auto interface = study.interface(interface_json);
+  auto truth = study.model().single(
+    json::object(), variables, interface, response);
+
+  auto local = study.model().local_surrogate(
+    {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+    truth, variables, response);
+  auto multipoint = study.model().multipoint_surrogate(
+    {{"type", {{"tana", json::object()}}},
+     {"truth_model_pointer", "DI"}},
+    truth, variables, response);
+  auto global = study.model().global_surrogate(
+    {{"type", {{"polynomial", {
+       {"order", {{"quadratic", json::object()}}}
+     }}}},
+     {"build_data", {{"truth_model_pointer", "DI"}}}},
+    variables, response, truth);
+
+  auto dace = study.method().sampling(
+    {{"sample_type", {{"lhs", true}}}, {"samples", 4}, {"seed", 17}},
+    truth);
+  auto dace_global = study.model().global_surrogate(
+    {{"type", {{"polynomial", {
+       {"order", {{"linear", json::object()}}}
+     }}}},
+     {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
+    variables, response, nullptr, dace);
+
+  EXPECT_EQ(local->surrogate_type(), "local_taylor");
+  EXPECT_EQ(multipoint->surrogate_type(), "multipoint_tana");
+  EXPECT_EQ(global->surrogate_type(), "global_polynomial");
+  EXPECT_EQ(dace_global->truth_model(), truth);
+
+  EXPECT_THROW(
+    study.model().local_surrogate(
+      {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+      nullptr, variables, response),
+    std::invalid_argument);
+  EXPECT_THROW(
+    study.model().global_surrogate(
+      {{"type", {{"polynomial", {
+         {"order", {{"linear", json::object()}}}
+       }}}},
+       {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
+      variables, response, truth, dace),
+    std::invalid_argument);
+
+  // TODO(recast-function-train-di): replace this rejection with successful
+  // truth-model and DACE execution coverage after the RecastModel refactor.
+  EXPECT_THROW(
+    study.model().global_surrogate(
+      {{"type", {{"function_train", json::object()}}},
+       {"build_data", {{"truth_model_pointer", "DI"}}}},
+      variables, response, truth),
+    std::runtime_error);
+
+  Study other_study;
+  EXPECT_THROW(
+    other_study.model().local_surrogate(
+      {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
+      truth, variables, response),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, study_irstore_factories_accept_materialized_configuration)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+  Study study;
+  const Variables variables = study.variables(variables_store);
+  const Response response = study.responses(responses_store, variables);
+  EXPECT_EQ(variables.tv(), Variables(variables_store).tv());
+  EXPECT_EQ(response.num_functions(),
+            Response(responses_store, variables).num_functions());
+
+  // Direct C++ JSON callers still receive input validation.
+  const json invalid_variables = {{"uniform_uncertain", {
+    {"count", 2}, {"lower_bounds", {0.0, 0.0}},
+    {"upper_bounds", {1.0, 1.0}}, {"initial_point_user_provided", false}
+  }}};
+  EXPECT_THROW(study.variables(invalid_variables), std::runtime_error);
 }
 
 TEST(di_construction_tests, default_study_constructs_coherent_services)
@@ -399,7 +715,7 @@ TEST(di_construction_tests, study_factories_construct_components_with_shared_ser
   Variables variables(variables_store);
   Response response(responses_store, variables);
   auto interface = study.interface(interface_store);
-  auto model = study.model().simulation(model_store, variables, interface, response);
+  auto model = study.model().single(model_store, variables, interface, response);
   auto sampling = study.method().sampling(method_store, model);
 
   ASSERT_TRUE(model);
@@ -532,31 +848,939 @@ TEST(di_construction_tests, can_construct_concurrent_meta_iterator_from_irstore)
   EXPECT_EQ(concurrent_iterator.iterated_model().get(), simulation_model.get());
 }
 
-
 #ifdef HAVE_DOT
-TEST(di_construction_tests, can_construct_dot_optimizer_from_irstore)
+struct DOTTestTraits {
+  using OptimizerT = DOTOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"dot_bfgs", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4},
+        {"constraint_tolerance", 0.0}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "DOT";
+};
+#endif
+
+#ifdef DAKOTA_HOPS
+struct APPSTestTraits {
+  using OptimizerT = APPSOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"asynch_pattern_search", {
+        {"variable_tolerance", 1.e-10},
+        {"synchronization blocking"}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "APPS";
+};
+#endif
+
+#ifdef HAVE_ACRO
+struct COLINTestTraits {
+  using OptimizerT = COLINOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"coliny_ea", {
+        {"seed", 11011011},
+        {"population_size", 100},
+        {"fitness_type", "merit_function"},
+        {"mutation_type", "offset_normal"},
+        {"mutation_rate", 1.0},
+        {"crossover_type", "two_point"},
+        {"crossover_rate", 0.0}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "COLIN";
+};
+
+struct PebblTestTraits {
+  using OptimizerT = PebbldMinimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"branch_and_bound", {
+        {"sub_method_pointer", "empty"}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "Pebbl";
+};
+#endif
+
+#ifdef HAVE_CONMIN
+struct CONMINTestTraits {
+  using OptimizerT = CONMINOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"conmin_mfd", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "CONMIN";
+};
+#endif
+
+#ifdef HAVE_JEGA
+struct JEGATestTraits {
+  using OptimizerT = JEGAOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"moga", {
+        {"seed", 1234},
+        {"max_function_evaluations", 100}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "JEGA";
+};
+#endif
+
+#ifdef HAVE_NCSU
+struct NCSUTestTraits {
+  using OptimizerT = NCSUOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"ncsu_direct", {} }
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NCSU";
+};
+#endif
+
+#ifdef HAVE_ROL
+struct ROLTestTraits {
+  using OptimizerT = ROLOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"rol", {
+        {"gradient_tolerance",   1.0e-3},
+        {"constraint_tolerance", 1.0e-3},
+        {"variable_tolerance",   1.0e-3},
+        {"max_iterations",       10    }
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "ROL";
+};
+#endif
+
+#ifdef HAVE_NOMAD
+struct NomadTestTraits {
+  using OptimizerT = NomadOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"mesh_adaptive_search", {} }
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "Nomad";
+};
+#endif
+
+#ifdef HAVE_NPSOL
+struct NPSOLTestTraits {
+  using OptimizerT = NPSOLOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"npsol_sqp", {
+        {"verify_level", -1},
+        {"function_precision", 1.e-10},
+        {"linesearch_tolerance", 0.9},
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NPSOL";
+};
+#endif
+
+#ifdef HAVE_NLPQL
+struct NLPQLPTestTraits {
+  using OptimizerT = NLPQLPOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"npsol_sqp", {} }
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NLPQL";
+};
+#endif
+
+struct NonlinearCGTestTraits {
+  using OptimizerT = NonlinearCGOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"nonlinear_cg", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NonlinearCG";
+};
+
+#ifdef HAVE_NOWPAC
+struct NOWPACTestTraits {
+  using OptimizerT = NOWPACOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"need_to_add_minimal_params"}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "NOWPAC";
+};
+#endif
+
+struct OptDartsTestTraits {
+  using OptimizerT = OptDartsOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"genie_opt_darts", {
+        {"seed", 1234}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "OptDarts";
+};
+
+#ifdef HAVE_OPTPP
+struct SNLLTestTraits {
+  using OptimizerT = SNLLOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = {
+      {"optpp_q_newton", {
+        {"max_iterations", 10},
+        {"convergence_tolerance", 1.e-4}
+      }}
+    };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "SNLL";
+};
+#endif
+
+template <class Traits>
+class di_construction_tests_typed : public ::testing::Test {};
+
+using OptimizerTraits =
+        ::testing::Types<
+#ifdef HAVE_DOT
+                DOTTestTraits,
+#endif
+#ifdef DAKOTA_HOPS
+                APPSTestTraits,
+#endif
+#ifdef HAVE_ACRO
+                COLINTestTraits,
+                PebblTestTraits,
+#endif
+#ifdef HAVE_CONMIN
+                CONMINTestTraits,
+#endif
+#ifdef HAVE_JEGA
+                JEGATestTraits,
+#endif
+#ifdef HAVE_NCSU
+                NCSUTestTraits,
+#endif
+#ifdef HAVE_ROL
+                ROLTestTraits,
+#endif
+#ifdef HAVE_NOMAD
+                NomadTestTraits,
+#endif
+#ifdef HAVE_NPSOL
+                NPSOLTestTraits,
+#endif
+#ifdef HAVE_NLPQL
+                NLPQLPTestTraits,
+#endif
+#ifdef HAVE_NOWPAC
+                NOWPACTestTraits,
+#endif
+#ifdef HAVE_OPTPP
+                SNLLTestTraits,
+#endif
+//                NonlinearCGTestTraits, // need to remove bounds from variables
+                                         // or find a setting that supports them
+                OptDartsTestTraits
+              >;
+TYPED_TEST_SUITE(di_construction_tests_typed, OptimizerTraits);
+
+TYPED_TEST(di_construction_tests_typed, can_construct_optimizer_from_irstore)
 {
+  using Traits = TypeParam;
+  using OptimizerT = typename Traits::OptimizerT;
+
   InstructionMaterializer materializer;
   IRStore method_store, variables_store, responses_store, interface_store, model_store;
-  materialize_dot_blocks(materializer, method_store, variables_store,
-                         responses_store, interface_store, model_store);
+
+  method_store = Traits::make_method_store(materializer);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
 
   ExplicitRuntime runtime;
 
   Variables variables(variables_store);
   Response response(responses_store, variables);
-  auto interface = make_test_interface(
-    interface_store, runtime.services);
-  auto simulation_model = std::make_shared<SimulationModel>(
-    model_store, variables, interface, response, runtime.services);
+  auto interface = make_test_interface(interface_store, runtime.services);
 
-  DOTOptimizer optimizer(method_store, simulation_model, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+      model_store, variables, interface, response, runtime.services);
+
+  OptimizerT optimizer(method_store, simulation_model, runtime.services);
 
   EXPECT_EQ(optimizer.parallel_library_ptr(), runtime.parallelLibrary.get());
   EXPECT_EQ(optimizer.output_manager_ptr(), runtime.outputManager.get());
   EXPECT_EQ(optimizer.iterated_model().get(), simulation_model.get());
 }
+
+#ifdef HAVE_NPSOL
+TEST(di_construction_tests, npsol_optimizer_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  method_store = NPSOLTestTraits::make_method_store(materializer);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NPSOLOptimizer(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
 #endif
+
+#ifdef HAVE_NL2SOL
+TEST(di_construction_tests, can_construct_nl2sol_leastsq_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"nl2sol", {
+      {"function_precision", 1.e-10},
+      {"absolute_conv_tol", -1.0},
+      {"x_conv_tol", -1.0},
+      {"singular_conv_tol", -1.0},
+      {"singular_radius", -1.0},
+      {"false_conv_tol", -1.0},
+      {"initial_trust_radius", -1.0},
+      {"covariance", 0},
+      {"max_iterations", 10},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_lsq_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NL2SOLLeastSq solver(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(solver.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(solver.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(solver.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, nl2sol_leastsq_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"nl2sol", {
+      {"function_precision", 1.e-10},
+      {"absolute_conv_tol", -1.0},
+      {"x_conv_tol", -1.0},
+      {"singular_conv_tol", -1.0},
+      {"singular_radius", -1.0},
+      {"false_conv_tol", -1.0},
+      {"initial_trust_radius", -1.0},
+      {"covariance", 0},
+      {"max_iterations", 10},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_lsq_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NL2SOLLeastSq(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+#endif
+
+#if defined(HAVE_NPSOL) || defined(HAVE_OPTPP)
+TEST(di_construction_tests, can_construct_nond_local_single_interval_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+#ifdef HAVE_NPSOL
+  const json method_json = {
+    {"local_interval_est", {
+      {"solution_approach", {{"sqp", true}}},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+#else
+  const json method_json = {
+    {"local_interval_est", {
+      {"solution_approach", {{"nip", true}}},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+#endif
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_local_interval_blocks(materializer, variables_store,
+                                            responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NonDLocalSingleInterval interval(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(interval.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, nond_local_single_interval_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+#ifdef HAVE_NPSOL
+  const json method_json = {
+    {"local_interval_est", {
+      {"solution_approach", {{"sqp", true}}},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+#else
+  const json method_json = {
+    {"local_interval_est", {
+      {"solution_approach", {{"nip", true}}},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+#endif
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_local_interval_blocks(materializer, variables_store,
+                                            responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NonDLocalSingleInterval(runtime_b.services, method_store, simulation_model),
+    std::runtime_error);
+}
+#endif
+
+TEST(di_construction_tests, can_construct_rich_extrap_verification_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"richardson_extrap", {
+      {"mode", {{"estimate_order", true}}},
+      {"refinement_rate", 2.0},
+      {"convergence_tolerance", 1.e-4},
+      {"max_iterations", 4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_verification_blocks(materializer, variables_store,
+                                          responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  RichExtrapVerification verification(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(verification.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(verification.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(verification.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, rich_extrap_verification_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"richardson_extrap", {
+      {"mode", {{"estimate_order", true}}},
+      {"refinement_rate", 2.0},
+      {"convergence_tolerance", 1.e-4},
+      {"max_iterations", 4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_verification_blocks(materializer, variables_store,
+                                          responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    RichExtrapVerification(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, can_construct_nond_lhs_single_interval_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"local_interval_est", {
+      {"samples", 4},
+      {"seed", 1234}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NonDLHSSingleInterval interval(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(interval.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, nond_lhs_single_interval_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"local_interval_est", {
+      {"samples", 4},
+      {"seed", 1234}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NonDLHSSingleInterval(runtime_b.services, method_store, simulation_model),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, can_construct_param_study_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"vector_parameter_study", {
+      {"step_control", {{"final_point", {1.1, 1.3}}}},
+      {"num_steps", 2}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  ParamStudy study(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(study.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(study.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(study.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, param_study_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"vector_parameter_study", {
+      {"step_control", {{"final_point", {1.1, 1.3}}}},
+      {"num_steps", 2}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    ParamStudy(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+
+#ifdef HAVE_NCSU
+TEST(di_construction_tests, can_construct_nond_global_single_interval_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"global_interval_est", {
+      {"solution_approach", {{"ego", {{"gaussian_process", {{"dakota", true}}}}}}},
+      {"samples", 3},
+      {"seed", 1234},
+      {"max_iterations", 5},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NonDGlobalSingleInterval interval(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(interval.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(interval.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(interval.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, nond_global_single_interval_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"global_interval_est", {
+      {"solution_approach", {{"ego", {{"gaussian_process", {{"dakota", true}}}}}}},
+      {"samples", 3},
+      {"seed", 1234},
+      {"max_iterations", 5},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_interval_blocks(materializer, variables_store,
+                                      responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NonDGlobalSingleInterval(runtime_b.services, method_store, simulation_model),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, can_construct_effglobal_minimizer_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"efficient_global", {
+      {"initial_samples", 3},
+      {"seed", 1234},
+      {"batch_size", {{"count", 1}, {"exploration", 0}}},
+      {"convergence_tolerance", 1.e-4},
+      {"x_conv_tol", 1.e-8},
+      {"gaussian_process", {{"dakota", true}}}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  EffGlobalMinimizer minimizer(method_store, simulation_model, runtime.services);
+
+  EXPECT_EQ(minimizer.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(minimizer.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(minimizer.iterated_model().get(), simulation_model.get());
+}
+
+TEST(di_construction_tests, effglobal_minimizer_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"efficient_global", {
+      {"initial_samples", 3},
+      {"seed", 1234},
+      {"batch_size", {{"count", 1}, {"exploration", 0}}},
+      {"convergence_tolerance", 1.e-4},
+      {"x_conv_tol", 1.e-8},
+      {"gaussian_process", {{"dakota", true}}}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    EffGlobalMinimizer(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+#endif
+
+TEST(di_construction_tests, can_construct_ensemble_surrogate_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime.services);
+  auto approximation_interface = make_test_interface(
+    interface_store, runtime.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime.services);
+  auto approximation_model = std::make_shared<SimulationModel>(
+    model_store, variables, approximation_interface, response, runtime.services);
+
+  EnsembleSurrModel ensemble_model(
+    make_ensemble_surrogate_model_store(materializer), truth_model,
+    {approximation_model}, variables, response, runtime.services);
+  Model& ensemble_as_model = ensemble_model;
+
+  EXPECT_EQ(ensemble_model.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(ensemble_as_model.truth_model().get(), truth_model.get());
+  EXPECT_EQ(ensemble_as_model.surrogate_model(0).get(), approximation_model.get());
+}
+
+TEST(di_construction_tests, study_model_factory_constructs_ordered_ensemble_surrogate)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  Study study;
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto approximation_interface = study.interface(interface_store);
+  auto truth_interface = study.interface(interface_store);
+  auto approximation_model = std::make_shared<SimulationModel>(
+    model_store, variables, approximation_interface, response, study.services());
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, study.services());
+
+  const json ensemble_json = {
+    {"ensemble", {
+      {"ordered_model_fidelities", {
+        {"pointers", {"approximation_model", "truth_model"}}
+      }}
+    }}
+  };
+  auto ensemble_model = study.model().ensemble_surrogate(
+    ensemble_json,
+    std::vector<std::shared_ptr<Model>>{approximation_model, truth_model},
+    variables, response);
+  Model& ensemble_as_model = *ensemble_model;
+
+  EXPECT_EQ(ensemble_as_model.truth_model().get(), truth_model.get());
+  EXPECT_EQ(ensemble_as_model.surrogate_model(0).get(), approximation_model.get());
+}
+
+TEST(di_construction_tests,
+     ensemble_surrogate_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime_a.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    EnsembleSurrModel(make_ensemble_surrogate_model_store(materializer),
+                      truth_model, {}, variables, response, runtime_b.services),
+    std::runtime_error);
+}
 
 TEST(di_construction_tests, can_construct_nested_model_from_irstore_without_optional_interface)
 {
@@ -661,6 +1885,81 @@ TEST(di_construction_tests, nested_model_throws_on_inconsistent_runtime_services
     std::runtime_error);
 }
 
+TEST(di_construction_tests, can_construct_ensemble_surr_model_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime.services);
+  auto approx_interface = make_test_interface(interface_store, runtime.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime.services);
+  auto approx_model = std::make_shared<SimulationModel>(
+    model_store, variables, approx_interface, response, runtime.services);
+
+  EnsembleSurrModel ensemble_model(
+    surrogate_store, truth_model, {approx_model}, variables, response,
+    runtime.services);
+  Model& ensemble_as_model = ensemble_model;
+
+  EXPECT_EQ(ensemble_model.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(ensemble_model.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(ensemble_as_model.truth_model().get(), truth_model.get());
+  EXPECT_EQ(ensemble_as_model.surrogate_model(0).get(), approx_model.get());
+}
+
+TEST(di_construction_tests, ensemble_surr_model_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto truth_interface = make_test_interface(interface_store, runtime_a.services);
+  auto approx_interface = make_test_interface(interface_store, runtime_b.services);
+  auto truth_model = std::make_shared<SimulationModel>(
+    model_store, variables, truth_interface, response, runtime_a.services);
+  auto approx_model = std::make_shared<SimulationModel>(
+    model_store, variables, approx_interface, response, runtime_b.services);
+
+  EXPECT_THROW(
+    EnsembleSurrModel(surrogate_store, truth_model, {approx_model}, variables,
+                      response, runtime_a.services),
+    std::runtime_error);
+}
+
+TEST(di_construction_tests, study_model_factory_surrogate_throws_for_unsupported_datafit_type)
+{
+  InstructionMaterializer materializer;
+  IRStore variables_store, responses_store, interface_store, model_store;
+  materialize_default_opt_blocks(materializer, variables_store, responses_store,
+                                 interface_store, model_store);
+  IRStore surrogate_store = make_ensemble_surrogate_model_store(materializer);
+  surrogate_store.set_value("surrogate.type", String("global_gaussian"));
+
+  Study study;
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = study.interface(interface_store);
+  auto truth_model = study.model().single(model_store, variables, interface, response);
+
+  EXPECT_THROW(
+    study.model().ensemble_surrogate(surrogate_store, truth_model, {}, variables, response),
+    std::runtime_error);
+}
 
 TEST(di_construction_tests, json_api_path_does_not_require_pointer_fields)
 {

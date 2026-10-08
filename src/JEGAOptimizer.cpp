@@ -107,6 +107,8 @@ Includes
 // Dakota includes.
 #include <JEGAOptimizer.hpp>
 #include <ProblemDescDB.hpp>
+#include "IRStore.hpp"
+#include <type_traits>
 #include <MarginalsCorrDistribution.hpp>
 #include <model_utils.hpp>
 
@@ -1023,16 +1025,30 @@ JEGAOptimizer::ReCreateTheParameterDatabase(
     this->_theParamDB = new BasicParameterDatabaseImpl();
 }
 
+namespace {
+
+template <typename T>
+const std::remove_const_t<T>& jega_parameter(
+  const ProblemDescDB& database, const IRStore* method_store, const String& key)
+{
+  if (method_store)
+    return method_store->get<std::remove_const_t<T>>(key.substr(String("method.").size()));
+  return database.get<T>(key);
+}
+
+} // namespace
+
 void
 JEGAOptimizer::LoadTheParameterDatabase(
-    )
+    const IRStore* method_store)
 {
     EDDY_FUNC_DEBUGSCOPE
 
     this->ReCreateTheParameterDatabase();
 
     // Duplicate in all the integral parameters.
-    const int& random_seed = probDescDB.get<int>("method.random_seed");
+    const int& random_seed = jega_parameter<int>(probDescDB, method_store,
+        "method.random_seed");
     if (random_seed != 0)
       this->_theParamDB->AddIntegralParam(
 	  "method.random_seed", random_seed
@@ -1043,7 +1059,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
         );
 
     // now all the reals
-    const Real& constraint_penalty = probDescDB.get<const Real>("method.constraint_penalty");
+    const Real& constraint_penalty = jega_parameter<const Real>(probDescDB, method_store,
+        "method.constraint_penalty");
     if (constraint_penalty >= 0.)
       this->_theParamDB->AddDoubleParam(
 	  "method.constraint_penalty", constraint_penalty
@@ -1052,7 +1069,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
        this->_theParamDB->AddDoubleParam(
 	   "method.constraint_penalty", 1.0
         );
-    const Real& crossover_rate = probDescDB.get<const Real>("method.crossover_rate");
+    const Real& crossover_rate = jega_parameter<const Real>(probDescDB, method_store,
+        "method.crossover_rate");
     if (crossover_rate >= 0.)
       this->_theParamDB->AddDoubleParam(
           "method.crossover_rate", crossover_rate
@@ -1061,10 +1079,12 @@ JEGAOptimizer::LoadTheParameterDatabase(
       this->_theParamDB->AddDoubleParam(
           "method.crossover_rate", 0.75
         );
-    if (this->probDescDB.get<const String>("method.mutation_type") != "")
+    if (jega_parameter<const String>(probDescDB, method_store,
+        "method.mutation_type") != "")
       this->_theParamDB->AddDoubleParam(
 	  "method.mutation_rate",
-	  probDescDB.get<const Real>("method.mutation_rate")
+	  jega_parameter<const Real>(probDescDB, method_store,
+        "method.mutation_rate")
 	  );
     else
       this->_theParamDB->AddDoubleParam(
@@ -1072,62 +1092,75 @@ JEGAOptimizer::LoadTheParameterDatabase(
 	  );
     this->_theParamDB->AddDoubleParam(
         "method.mutation_scale",
-        probDescDB.get<const Real>("method.mutation_scale")
+        jega_parameter<const Real>(probDescDB, method_store,
+        "method.mutation_scale")
         );
-    double perc_change = probDescDB.get<const Real>("method.jega.percent_change");
+    double perc_change = jega_parameter<const Real>(probDescDB, method_store,
+        "method.jega.percent_change");
     this->_theParamDB->AddDoubleParam(
         "method.jega.percent_change",
 	(perc_change < 0) ? 1.0e-4 : perc_change
         );
-    double conv_tol = probDescDB.get<const Real>("method.convergence_tolerance");
+    double conv_tol = jega_parameter<const Real>(probDescDB, method_store,
+        "method.convergence_tolerance");
     this->_theParamDB->AddDoubleParam(
         "method.convergence_tolerance",
 	(conv_tol < 0) ? 1.0e-4 : conv_tol 
         );
     this->_theParamDB->AddDoubleParam(
         "method.jega.shrinkage_percentage",
-        probDescDB.get<const Real>("method.jega.shrinkage_percentage")
+        jega_parameter<const Real>(probDescDB, method_store,
+        "method.jega.shrinkage_percentage")
         );
     this->_theParamDB->AddDoubleParam(
         "method.jega.fitness_limit",
-        probDescDB.get<const Real>("method.jega.fitness_limit")
+        jega_parameter<const Real>(probDescDB, method_store,
+        "method.jega.fitness_limit")
         );
 
     // now get all the size_t's
     this->_theParamDB->AddSizeTypeParam(
         "method.jega.num_cross_points",
-        probDescDB.get<size_t>("method.jega.num_cross_points")
+        jega_parameter<size_t>(probDescDB, method_store,
+        "method.jega.num_cross_points")
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.jega.num_parents",
-        probDescDB.get<size_t>("method.jega.num_parents")
+        jega_parameter<size_t>(probDescDB, method_store,
+        "method.jega.num_parents")
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.jega.num_offspring",
-        probDescDB.get<size_t>("method.jega.num_offspring")
+        jega_parameter<size_t>(probDescDB, method_store,
+        "method.jega.num_offspring")
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.jega.num_generations",
-        probDescDB.get<size_t>("method.jega.num_generations")
+        jega_parameter<size_t>(probDescDB, method_store,
+        "method.jega.num_generations")
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.jega.max_designs",
-        probDescDB.get<size_t>("method.jega.num_designs")
+        jega_parameter<size_t>(probDescDB, method_store,
+        "method.jega.num_designs")
         );
     // Note that the population size, max evals, and max gens are in as ints.
     // Do a conversion for each here.
     this->_theParamDB->AddSizeTypeParam(
         "method.population_size",
-        static_cast<size_t>(probDescDB.get<int>("method.population_size"))
+        static_cast<size_t>(jega_parameter<int>(probDescDB, method_store,
+        "method.population_size"))
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.max_iterations",
-        static_cast<size_t>(probDescDB.get<size_t>("method.max_iterations"))
+        static_cast<size_t>(jega_parameter<size_t>(probDescDB, method_store,
+        "method.max_iterations"))
         );
     this->_theParamDB->AddSizeTypeParam(
         "method.max_function_evaluations",
         static_cast<size_t>(
-            probDescDB.get<size_t>("method.max_function_evaluations")
+            jega_parameter<size_t>(probDescDB, method_store,
+        "method.max_function_evaluations")
             )
         );
 
@@ -1143,7 +1176,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
     // Now get all the booleans
     this->_theParamDB->AddBooleanParam(
         "method.print_each_pop",
-        probDescDB.get<bool>("method.print_each_pop")
+        jega_parameter<bool>(probDescDB, method_store,
+        "method.print_each_pop")
         );
 
     // Dakota does not currently expose the flag to instruct the GA whether or
@@ -1167,7 +1201,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
     // the use of the weighted sum only.  We will write a log message
     // about it.
     const string& selector =
-        this->probDescDB.get<const String>("method.replacement_type");
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.replacement_type");
     if (selector != "")
       this->_theParamDB->AddStringParam(
 	  "method.replacement_type", selector);
@@ -1178,7 +1213,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
       this->_theParamDB->AddStringParam(
 	  "method.replacement_type", "below_limit");
     
-    const string& fitness = this->probDescDB.get<const String>("method.fitness_type");
+    const string& fitness = jega_parameter<const String>(probDescDB, method_store,
+        "method.fitness_type");
     if(selector == "favor_feasible")
     {
         JEGALOG_II_G(lquiet(), this,
@@ -1204,7 +1240,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
     }
 
     const string& crossover_operator =
-        this->probDescDB.get<const String>("method.crossover_type");
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.crossover_type");
     if (crossover_operator != "")
       this->_theParamDB->AddStringParam(
 	  "method.crossover_type", crossover_operator);
@@ -1213,7 +1250,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
 	  "method.crossover_type", "shuffle_random");
 
     const string& mutation_operator =
-        this->probDescDB.get<const String>("method.mutation_type");
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.mutation_type");
     if (mutation_operator != "")
       this->_theParamDB->AddStringParam(
 	  "method.mutation_type", mutation_operator);
@@ -1223,15 +1261,18 @@ JEGAOptimizer::LoadTheParameterDatabase(
  
    this->_theParamDB->AddIntegralParam(
         "method.output",
-        this->probDescDB.get<short>("method.output")
+        jega_parameter<short>(probDescDB, method_store,
+        "method.output")
         );
     this->_theParamDB->AddStringParam(
         "method.initialization_type",
-        this->probDescDB.get<const String>("method.initialization_type")
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.initialization_type")
         );
     this->_theParamDB->AddStringParam(
         "method.flat_file",
-        this->probDescDB.get<const String>("method.flat_file")
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.flat_file")
         );
 
     // Dakota does not currently expose the input that allows one to specify
@@ -1256,13 +1297,15 @@ JEGAOptimizer::LoadTheParameterDatabase(
     // The log file gets special attention.  If it is the default global log
     // file name, we will replace it with an empty string b/c we don't want the
     // created GA to think it owns the global log file.
-    string log_file = probDescDB.get<const String>("method.log_file");
+    string log_file = jega_parameter<const String>(probDescDB, method_store,
+        "method.log_file");
     this->_theParamDB->AddStringParam(
         "method.log_file",
         log_file == "JEGAGlobal.log" ? "" : log_file
         );
     const string& convergence_operator =
-        this->probDescDB.get<const String>("method.jega.convergence_type");
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.jega.convergence_type");
 
     if (convergence_operator != "")
       this->_theParamDB->AddStringParam(
@@ -1276,11 +1319,13 @@ JEGAOptimizer::LoadTheParameterDatabase(
 
     this->_theParamDB->AddStringParam(
         "method.jega.niching_type",
-        this->probDescDB.get<const String>("method.jega.niching_type")
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.jega.niching_type")
         );
     this->_theParamDB->AddStringParam(
         "method.jega.postprocessor_type",
-        this->probDescDB.get<const String>("method.jega.postprocessor_type")
+        jega_parameter<const String>(probDescDB, method_store,
+        "method.jega.postprocessor_type")
         );
 
     // Dakota does not expose a flat file delimiter for the case where we
@@ -1290,7 +1335,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
 
     // now get all vector of doubles.
     const RealVector *dak_rv
-        = &this->probDescDB.get<const RealVector>("method.jega.niche_vector");
+        = &jega_parameter<const RealVector>(probDescDB, method_store,
+        "method.jega.niche_vector");
 
     JEGA::DoubleVector niche_vector(
         dak_rv->values(),
@@ -1302,7 +1348,8 @@ JEGAOptimizer::LoadTheParameterDatabase(
         niche_vector
         );
 
-    dak_rv = &this->probDescDB.get<const RealVector>("method.jega.distance_vector");
+    dak_rv = &jega_parameter<const RealVector>(probDescDB, method_store,
+        "method.jega.distance_vector");
     JEGA::DoubleVector distance_vector(
         dak_rv->values(),
         dak_rv->values() + dak_rv->length()
@@ -1943,6 +1990,91 @@ JEGAOptimizer::JEGAOptimizer(
     // that the JEGA population size may grow or shrink during its
     // iterations, so this is only an initial estimate.
     int pop_size = this->probDescDB.get<int>("method.population_size");
+    this->maxEvalConcurrency *= pop_size;
+
+    // Assign iterator-specific default for numFinalSolutions
+    if (methodName == MOGA && !this->numFinalSolutions)
+      this->numFinalSolutions
+	= std::numeric_limits<std::size_t>::max(); // moga returns all Pareto
+
+    // We only ever need one EvaluatorCreator so we can create it now.
+    this->_theEvalCreator = new EvaluatorCreator(*iteratedModel);
+
+    // Increment object counter
+    this->numInstances++;
+}
+
+JEGAOptimizer::JEGAOptimizer(
+    const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services
+    ) :
+        //Optimizer(problem_db, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
+        Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new JEGATraits())),
+        _theParamDB(0x0),
+        _theEvalCreator(0x0)
+{
+    EDDY_FUNC_DEBUGSCOPE
+
+    // JEGAOptimizer now makes use of the JEGA front end core project to run
+    // an algorithm.  In order to do this, it creates and loads a DesignTarget,
+    // a ProblemConfig, and an AlgorithmConfig.
+
+    // The first step is to initialize JEGA via the front end Driver
+    // class.  The data needed is available from the problem description
+    // database.  This should only happen once in any run of Dakota regardless
+    // of how many JEGAOptimizers are used.
+    if(!JEGA::FrontEnd::Driver::IsJEGAInitialized())
+    {
+        // The random seed must be handled separately because the sentry value
+        // for JEGA (0) is not the same as the sentry value for Dakota (-1).
+        int rseed_temp = method_store.get<int>("random_seed");
+
+        // if the rseed is negative, it is the sentry value and we will use the
+        // JEGA sentry value of 0.
+        unsigned int rSeed = (rseed_temp < 0) ? 0 :
+            static_cast<unsigned int>(rseed_temp);
+
+        // For now, we will use the level of the first instance of an optimizer
+        // as the level for the global log.  This is only potentially not ideal
+        // in the case of strategies.  The 4 - below is to account for the fact
+        // that the actual dakota levels count upwards by increasing amount of
+        // output while the dakota_levels must count downwards in order to be
+        // compatable with the logging library code.
+        short dakLev = method_store.get<short>("output");
+        LogLevel jegaLev;
+
+        switch (dakLev)
+        {
+            case SILENT_OUTPUT: jegaLev = lsilent(); break;
+            case NORMAL_OUTPUT: jegaLev = lnormal(); break;
+            case DEBUG_OUTPUT: jegaLev = ldebug(); break;
+            case QUIET_OUTPUT: jegaLev = lquiet(); break;
+            case VERBOSE_OUTPUT: jegaLev = lverbose(); break;
+            default: jegaLev = ldefault();
+        }
+
+	// We use JEGA as a library, so want signals to raise up to
+	// us, lest they get ignored:
+	const bool jega_register_signals = false;
+        JEGA::FrontEnd::Driver::InitializeJEGA(
+	    "JEGAGlobal.log", jegaLev, rSeed, JEGA::Logging::Logger::ABORT,
+	    jega_register_signals
+            );
+    }
+
+    // If we failed to init, we cannot continue.
+    JEGAIFLOG_II_G_F(!JEGA::FrontEnd::Driver::IsJEGAInitialized(), this,
+        text_entry(lfatal(), "JEGAOptimizer Error: Unable to initialize JEGA")
+        );
+
+    // we only need to load up the parameter database at this point.
+    this->LoadTheParameterDatabase(&method_store);
+
+    // population_size is extracted by JEGA in
+    // GeneticAlgorithmInitializer::PollForParameters(), but it is
+    // also needed here to specify the algorithmic concurrency.  Note
+    // that the JEGA population size may grow or shrink during its
+    // iterations, so this is only an initial estimate.
+    int pop_size = method_store.get<int>("population_size");
     this->maxEvalConcurrency *= pop_size;
 
     // Assign iterator-specific default for numFinalSolutions

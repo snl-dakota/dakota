@@ -17,6 +17,7 @@
 #include "RecastModel.hpp"
 #include "DataFitSurrModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
 #endif
@@ -33,7 +34,9 @@ namespace Dakota {
 NonDGlobalInterval* NonDGlobalInterval::nondGIInstance(NULL);
 
 
-NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDGlobalInterval::
+NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		   std::shared_ptr<Model> model):
   NonDInterval(problem_db, parallel_lib, model),
   seedSpec(probDescDB.get<int>("method.random_seed")),
   numSamples(probDescDB.get<int>("method.samples")),
@@ -41,18 +44,60 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
   allResponsesPerIter(false), dataOrder(1), distanceTol(convergenceTol),
   distanceConvergeLimit(1), improvementConvergeLimit(2)
 {
+  class_initialize(probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"),
+                   probDescDB.get<short>("method.nond.emulator"),
+                   probDescDB.get<bool>("method.derivative_usage"),
+                   probDescDB.get<const String>("method.import_build_points_file"),
+                   probDescDB.get<unsigned short>("method.import_build_format"),
+                   probDescDB.get<bool>("method.import_build_active_only"),
+                   probDescDB.get<const String>("method.export_approx_points_file"),
+                   probDescDB.get<unsigned short>("method.export_approx_format"),
+                   problem_db.get<const String>("method.advanced_options_file"));
+}
+
+
+NonDGlobalInterval::
+NonDGlobalInterval(std::shared_ptr<StudyServices> services,
+		   const IRStore& method_store,
+		   std::shared_ptr<Model> model):
+  NonDInterval(std::move(services), method_store, model),
+  seedSpec(method_store.get<int>("random_seed")),
+  numSamples(method_store.get<int>("samples")),
+  rngName(method_store.get<String>("random_number_generator")),
+  allResponsesPerIter(false), dataOrder(1), distanceTol(convergenceTol),
+  distanceConvergeLimit(1), improvementConvergeLimit(2)
+{
+  class_initialize(method_store.get<unsigned short>("nond.opt_subproblem_solver"),
+                   method_store.get<short>("nond.emulator"),
+                   method_store.get<bool>("derivative_usage"),
+                   method_store.get<String>("import_build_points_file"),
+                   method_store.get<unsigned short>("import_build_format"),
+                   method_store.get<bool>("import_build_active_only"),
+                   method_store.get<String>("export_approx_points_file"),
+                   method_store.get<unsigned short>("export_approx_format"),
+                   method_store.get<String>("advanced_options_file"));
+}
+
+
+void NonDGlobalInterval::class_initialize(unsigned short opt_alg,
+					  short emulator_type,
+					  bool deriv_usage,
+					  const String& import_pts_file,
+					  unsigned short import_build_format,
+					  bool import_build_active_only,
+					  const String& export_approx_points_file,
+					  unsigned short export_approx_format,
+					  const String& advanced_options_file)
+{
   bool err_flag = false;
 
-  // Define optimization sub-problem solver
-  unsigned short opt_alg
-    = probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver");
   bool discrete
     = (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars);
   if (opt_alg == SUBMETHOD_EGO) {
     eifFlag = gpModelFlag = true;
     if (discrete) {
       Cerr << "Error: discrete variables are not currently supported for EGO "
-	   << "solver in NonDGlobalInterval.  Please select SBO." << std::endl;
+           << "solver in NonDGlobalInterval.  Please select SBO." << std::endl;
       err_flag = true;
     }
   }
@@ -64,7 +109,7 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
     { gpModelFlag = true; eifFlag = (discrete) ? false : true; }
   else {
     Cerr << "Error: unsupported optimization algorithm selection in "
-	 << "NonDGlobalInterval.  Please select EGO, SBO, or EA." << std::endl;
+         << "NonDGlobalInterval.  Please select EGO, SBO, or EA." << std::endl;
     err_flag = true;
   }
 
@@ -73,8 +118,8 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
       numDiscreteStringVars != 0 /* numDiscSetStringUncVars */            ||
       numDiscreteRealVars   != numDiscSetRealUncVars) {
     Cerr << "\nError: only continuous, discrete int, and discrete real "
-	 << "epistemic variables are currently supported in NonDGlobalInterval."
-	 << std::endl;
+         << "epistemic variables are currently supported in NonDGlobalInterval."
+         << std::endl;
     err_flag = true;
   }
 
@@ -84,34 +129,31 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
     if (!numSamples) // use a default of #terms in a quadratic polynomial
       numSamples = (num_uv+1)*(num_uv+2)/2;
     String approx_type = "global_kriging";
-    if (probDescDB.get<short>("method.nond.emulator") == GP_EMULATOR)
+    if (emulator_type == GP_EMULATOR)
       approx_type = "global_gaussian";
-    else if (probDescDB.get<short>("method.nond.emulator") == EXPGP_EMULATOR)
+    else if (emulator_type == EXPGP_EMULATOR)
       approx_type = "global_exp_gauss_proc";
     unsigned short sample_type = SUBMETHOD_DEFAULT;
     String sample_reuse = "none";
-    if (probDescDB.get<bool>("method.derivative_usage")) {
+    if (deriv_usage) {
       if (approx_type == "global_gaussian") {
-	Cerr << "\nError: efficient_global does not support gaussian_process "
-	     << "when derivatives present; use kriging instead." << std::endl;
-	err_flag = true;
+        Cerr << "\nError: efficient_global does not support gaussian_process "
+             << "when derivatives present; use kriging instead." << std::endl;
+        err_flag = true;
       }
       if (iteratedModel->gradient_type() != "none") dataOrder |= 2;
       if (iteratedModel->hessian_type()  != "none") dataOrder |= 4;
     }
-    // get point samples file
-    const String& import_pts_file
-      = probDescDB.get<const String>("method.import_build_points_file");
     if (!import_pts_file.empty())
       { numSamples = 0; sample_reuse = "all"; }
- 
+
     // instantiate the Gaussian Process Model/Iterator recursions
 
     // The following uses on the fly derived ctor:
     short mode = (eifFlag) ? ACTIVE_UNIFORM : ACTIVE;
     daceIterator = std::make_shared<NonDLHSSampling>
-			    (iteratedModel, sample_type, numSamples, seedSpec,
-			     rngName, false, mode);
+                            (iteratedModel, sample_type, numSamples, seedSpec,
+                             rngName, false, mode);
     // only use derivatives if the user requested and they are available
     daceIterator->active_set_request_values(dataOrder);
 
@@ -130,15 +172,11 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
     fHatModel = std::make_shared<DataFitSurrModel>(daceIterator,
       iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
-      probDescDB.get<unsigned short>("method.import_build_format"),
-      probDescDB.get<bool>("method.import_build_active_only"),
-      probDescDB.get<const String>("method.export_approx_points_file"),
-      probDescDB.get<unsigned short>("method.export_approx_format"));
+      import_build_format, import_build_active_only,
+      export_approx_points_file, export_approx_format);
 
     if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
-      String advanced_options_file
-          = problem_db.get<const String>("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(*fHatModel, advanced_options_file);
 #else
@@ -148,17 +186,6 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
 #endif
     }
 
-    // Following this ctor, IteratorExecutor::init_iterator() initializes the
-    // parallel configuration for NonDGlobalInterval + iteratedModel using
-    // NonDGlobalInterval's maxEvalConcurrency.  During fHatModel construction
-    // above, DataFitSurrModel::derived_init_communicators() initializes the
-    // parallel configuration for daceIterator + iteratedModel using
-    // daceIterator's maxEvalConcurrency.  The only iteratedModel concurrency
-    // currently exercised is that used by daceIterator within the initial GP
-    // construction, but the NonDGlobalInterval maxEvalConcurrency must still be
-    // set so as to avoid parallel config errors resulting from avail_procs
-    // > max_concurrency within IteratorExecutor::init_iterator().  Max of the
-    // local deriv concurrency & the DACE concurrency is used for this purpose.
     maxEvalConcurrency = std::max(maxEvalConcurrency,
       daceIterator->maximum_evaluation_concurrency());
   }
@@ -194,11 +221,11 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
 #ifdef HAVE_NCSU
     // EGO with DIRECT (exploits GP variance)
     intervalOptimizer = std::make_shared<NCSUOptimizer>
-				 (intervalOptModel, max_direct_iter,
-				  max_direct_eval, min_box_size, vol_box_size);
+                                 (intervalOptModel, max_direct_iter,
+                                  max_direct_eval, min_box_size, vol_box_size);
 #else
-    Cerr << "NCSU DIRECT Optimizer is not available to use to find the" 
-	 << " interval bounds from the GP model." << std::endl;
+    Cerr << "NCSU DIRECT Optimizer is not available to use to find the"
+         << " interval bounds from the GP model." << std::endl;
     abort_handler(-1);
 #endif // HAVE_NCSU
   }
@@ -214,15 +241,15 @@ NonDGlobalInterval::NonDGlobalInterval(ProblemDescDB& problem_db, ParallelLibrar
 #ifdef HAVE_ACRO
     // mixed EA (ignores GP variance)
     intervalOptimizer = std::make_shared<COLINOptimizer>
-				 ("coliny_ea", intervalOptModel, seedSpec,
-				  max_ea_iter, max_ea_eval);
+                                 ("coliny_ea", intervalOptModel, seedSpec,
+                                  max_ea_iter, max_ea_eval);
 //#elif HAVE_JEGA
 //    intervalOptimizer->assign_rep(new
 //      JEGAOptimizer(intervalOptModel, max_iter, max_eval, min_box_size,
 //      vol_box_size), false);
 #else
     Cerr << "Error: mixed EA not available for computing interval bounds."
-	 << std::endl;
+         << std::endl;
     abort_handler(-1);
 #endif // HAVE_NCSU
   }

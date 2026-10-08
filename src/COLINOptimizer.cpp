@@ -10,6 +10,8 @@
 #include "COLINApplication.hpp"
 #include "COLINOptimizer.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
+#include <type_traits>
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "model_utils.hpp"
@@ -251,6 +253,18 @@ COLINOptimizer::COLINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
   set_solver_parameters();
 }
 
+COLINOptimizer::COLINOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new COLINTraits()))
+{
+  // (iteratedModel initialized in Optimizer(Model&))
+  // Set solver properties.
+
+  solver_setup(method_store.get<unsigned short>("algorithm"),
+               &method_store.get<String>("coliny.beta_solver_name"));
+  set_rng(method_store.get<int>("random_seed"));
+  set_solver_parameters(&method_store);
+}
+
   /// Alternate constructor for on-the-fly instantiations.
 
 COLINOptimizer::
@@ -488,7 +502,8 @@ bool COLINOptimizer::returns_multiple_points() const
   /// This convenience function is called by the constructors in order to
   /// instantiate the solver.
 
-void COLINOptimizer::solver_setup(unsigned short method_name)
+void COLINOptimizer::solver_setup(unsigned short method_name,
+                                  const String* beta_solver_name)
 {
    // This exception should never be thrown.  Normally, static_casting
    // the registration indicators to void is sufficient to have the
@@ -533,7 +548,8 @@ void COLINOptimizer::solver_setup(unsigned short method_name)
     solverType = SW;     solverstr = "sco:SolisWets";     break;
   case COLINY_BETA:
     solverType = BETA;
-    solverstr = probDescDB.get<const String>("method.coliny.beta_solver_name");
+    solverstr = beta_solver_name ? *beta_solver_name :
+      probDescDB.get<const String>("method.coliny.beta_solver_name");
     break;
   default:
     Cerr << "Error (COLINOptimizer): unknown method "
@@ -583,10 +599,22 @@ void COLINOptimizer::set_rng(int seed)
   }
 }
 
-/// Sets solver properties based on user specifications.  Called at
-/// construction time.
+namespace {
 
-void COLINOptimizer::set_solver_parameters()
+template <typename T>
+const std::remove_const_t<T>& colin_parameter(
+  const ProblemDescDB& database, const IRStore* method_store, const String& key)
+{
+  if (method_store)
+    return method_store->get<std::remove_const_t<T>>(
+      key.substr(String("method.").size()));
+  return database.get<T>(key);
+}
+
+} // namespace
+
+/// Sets solver properties from the database or a materialized method store.
+void COLINOptimizer::set_solver_parameters(const IRStore* method_store)
 {
   // TODO:  Make this more robust.  Really should be doing something
   // like the following:
@@ -606,7 +634,7 @@ void COLINOptimizer::set_solver_parameters()
   String pattern_basis;
   int total_pattern_size;
 
-  if (probDescDB.is_null()) { 
+  if (!method_store && probDescDB.is_null()) {
     // Instantiate on-the-fly.  Rely on internal COLINY defaults for
     // the most part, but set any default overrides (including
     // enforcement of DAKOTA defaults).
@@ -620,12 +648,14 @@ void COLINOptimizer::set_solver_parameters()
     // Previous COBYLA, Pattern Search, and Solis-Wets parameters.
 
     const Real& init_delta 
-      = probDescDB.get<const Real>("method.coliny.initial_delta");
+      = colin_parameter<const Real>(probDescDB, method_store,
+        "method.coliny.initial_delta");
     if (init_delta >= 0.0 && colinSolver->has_property("initial_step"))
       colinSolver->property("initial_step") = init_delta;
 
     const Real& thresh_delta
-      = probDescDB.get<const Real>("method.coliny.variable_tolerance");
+      = colin_parameter<const Real>(probDescDB, method_store,
+        "method.coliny.variable_tolerance");
     if (thresh_delta >= 0.0 && colinSolver->has_property("step_tolerance"))
       colinSolver->property("step_tolerance") = thresh_delta;
 
@@ -634,7 +664,8 @@ void COLINOptimizer::set_solver_parameters()
     // (default).
 
     const String& division_type
-      = probDescDB.get<const String>("method.coliny.division");
+      = colin_parameter<const String>(probDescDB, method_store,
+        "method.coliny.division");
     if (colinSolver->has_property("division")) {
       if (division_type == "major_dimension")
 	colinSolver->property("division") = string("single");
@@ -653,45 +684,53 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     const Real& global_bal_param
-      = probDescDB.get<const Real>("method.coliny.global_balance_parameter");
+      = colin_parameter<const Real>(probDescDB, method_store,
+        "method.coliny.global_balance_parameter");
     if (global_bal_param >= 0. && colinSolver->has_property("min_improvement"))
       colinSolver->property("min_improvement") = global_bal_param;
 
     const Real& local_bal_param
-      = probDescDB.get<const Real>("method.coliny.local_balance_parameter");
+      = colin_parameter<const Real>(probDescDB, method_store,
+        "method.coliny.local_balance_parameter");
     if (local_bal_param >= 0. && colinSolver->has_property("max_boxsize_ratio"))
       colinSolver->property("max_boxsize_ratio") = local_bal_param;
 
     const Real& max_box
-      = probDescDB.get<const Real>("method.coliny.max_boxsize_limit");
+      = colin_parameter<const Real>(probDescDB, method_store,
+        "method.coliny.max_boxsize_limit");
     if (max_box >= 0. && colinSolver->has_property("max_boxsize_limit"))
       colinSolver->property("max_boxsize_limit") = max_box;
 
-    const Real& min_box = probDescDB.get<const Real>("method.min_boxsize_limit");
+    const Real& min_box = colin_parameter<const Real>(probDescDB, method_store,
+        "method.min_boxsize_limit");
     if (min_box >= 0. && colinSolver->has_property("min_boxsize_limit"))
       colinSolver->property("min_boxsize_limit") = min_box;
 
     // Previous EA parameters.
 
-    pop_size = probDescDB.get<int>("method.population_size");
+    pop_size = colin_parameter<int>(probDescDB, method_store,
+        "method.population_size");
     if (!pop_size)
       pop_size = 100;
 
     const String& pop_init_type =
-      probDescDB.get<const String>("method.initialization_type");
+      colin_parameter<const String>(probDescDB, method_store,
+        "method.initialization_type");
     if (colinSolver->has_property("population_unique")) {
       if (pop_init_type == "simple_random") 
 	colinSolver->property("population_unique") = false;
       else if (pop_init_type == "unique_random")
 	colinSolver->property("population_unique") = true;
       else if (pop_init_type == "flat_file") {
-	const String& flat_file = probDescDB.get<const String>("method.flat_file");
+	const String& flat_file = colin_parameter<const String>(probDescDB, method_store,
+        "method.flat_file");
 	colinSolver->property("init_filename") = flat_file.c_str();
       }
     }
 
     const String& selection_type =
-      probDescDB.get<const String>("method.fitness_type");
+      colin_parameter<const String>(probDescDB, method_store,
+        "method.fitness_type");
     if (colinSolver->has_property("selection_type")) {
       if (selection_type == "proportional")
 	colinSolver->property("selection_type") = string("proportional");
@@ -700,7 +739,8 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     const String& replacement_type =
-      probDescDB.get<const String>("method.replacement_type");
+      colin_parameter<const String>(probDescDB, method_store,
+        "method.replacement_type");
     if (colinSolver->has_property("replacement_method")) {
       if (replacement_type != "")
 	colinSolver->property("replacement_method") = replacement_type.c_str();
@@ -708,7 +748,8 @@ void COLINOptimizer::set_solver_parameters()
 	colinSolver->property("replacement_method") = string("elitist");
     }
 
-    int keep_num = probDescDB.get<int>("method.coliny.number_retained");
+    int keep_num = colin_parameter<int>(probDescDB, method_store,
+        "method.coliny.number_retained");
     if (colinSolver->has_property("keep_num")) {
       if (keep_num >= 0)
 	colinSolver->property("keep_num") = keep_num;
@@ -717,12 +758,14 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     int new_solutions = 
-      probDescDB.get<int>("method.coliny.new_solutions_generated");
+      colin_parameter<int>(probDescDB, method_store,
+        "method.coliny.new_solutions_generated");
     if (new_solutions >= 0 && colinSolver->has_property("num_trial_points")) {
       colinSolver->property("num_trial_points") = new_solutions;
     }
 
-    double crossover_rate  = probDescDB.get<const Real>("method.crossover_rate");
+    double crossover_rate  = colin_parameter<const Real>(probDescDB, method_store,
+        "method.crossover_rate");
     if (colinSolver->has_property("xover_rate")) {
       if (crossover_rate >= 0.)
 	colinSolver->property("xover_rate") = crossover_rate;
@@ -731,7 +774,8 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     const String& crossover_type =
-      probDescDB.get<const String>("method.crossover_type");
+      colin_parameter<const String>(probDescDB, method_store,
+        "method.crossover_type");
     if (colinSolver->has_property("realarray_xover_type") &&
 	colinSolver->has_property("intarray_xover_type")) {
       if (crossover_type == "blend") {
@@ -749,7 +793,8 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     double mutation_rate  = 
-      probDescDB.get<const Real>("method.mutation_rate");
+      colin_parameter<const Real>(probDescDB, method_store,
+        "method.mutation_rate");
     if (mutation_rate >= 0.0 && mutation_rate <= 1.0) {
       if (colinSolver->has_property("mutation_rate"))
 	colinSolver->property("mutation_rate") = mutation_rate;
@@ -760,7 +805,8 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     const String& mutation_type = 
-      probDescDB.get<const String>("method.mutation_type");
+      colin_parameter<const String>(probDescDB, method_store,
+        "method.mutation_type");
     if (colinSolver->has_property("realarray_mutation_type")) {
       if (mutation_type == "replace_uniform" ||
 	  mutation_type == "offset_normal" || mutation_type == "offset_cauchy")
@@ -772,17 +818,20 @@ void COLINOptimizer::set_solver_parameters()
     if (colinSolver->has_property("intarray_mutation_type"))
       colinSolver->property("intarray_mutation_type") = string("uniform");
 
-    double mutation_scale = probDescDB.get<const Real>("method.mutation_scale");
+    double mutation_scale = colin_parameter<const Real>(probDescDB, method_store,
+        "method.mutation_scale");
     if (colinSolver->has_property("realarray_mutation_scale"))
       colinSolver->property("realarray_mutation_scale") = mutation_scale;
 
-    int mutation_range = probDescDB.get<int>("method.coliny.mutation_range");
+    int mutation_range = colin_parameter<int>(probDescDB, method_store,
+        "method.coliny.mutation_range");
     if (mutation_range >= 0 && colinSolver->has_property("intarray_mutation_range")) {
       colinSolver->property("intarray_mutation_range") = mutation_range;
     }
 
     const bool& mutation_adaptive = 
-      probDescDB.get<bool>("method.mutation_adaptive");
+      colin_parameter<bool>(probDescDB, method_store,
+        "method.mutation_adaptive");
     if (colinSolver->has_property("realarray_mutation_selfadaptation")) {
       if (mutation_adaptive)
 	colinSolver->property("realarray_mutation_selfadaptation") = true;
@@ -796,24 +845,29 @@ void COLINOptimizer::set_solver_parameters()
     // specification.
 
     // default is blocking (most solvers) unless explicit override for PS
-    blockingSynch = (probDescDB.get<short>("method.synchronization") !=
+    blockingSynch = (colin_parameter<short>(probDescDB, method_store,
+        "method.synchronization") !=
 		     NONBLOCKING_SYNCHRONIZATION);
 
     const Real& contraction_factor
-      = probDescDB.get<const Real>("method.coliny.contraction_factor");
+      = colin_parameter<const Real>(probDescDB, method_store,
+        "method.coliny.contraction_factor");
     if (colinSolver->has_property("contraction_factor"))
       colinSolver->property("contraction_factor") = contraction_factor;
 
     const int& contract_after_failure
-      = probDescDB.get<int>("method.coliny.contract_after_failure");
+      = colin_parameter<int>(probDescDB, method_store,
+        "method.coliny.contract_after_failure");
     if (contract_after_failure>=0 && colinSolver->has_property("max_failure"))
       colinSolver->property("max_failure") = contract_after_failure;
 
     const bool& expansion_flag
-      = probDescDB.get<bool>("method.coliny.expansion");
+      = colin_parameter<bool>(probDescDB, method_store,
+        "method.coliny.expansion");
     if (expansion_flag) {
       const int& expand_after_success
-	= probDescDB.get<int>("method.coliny.expand_after_success");
+	= colin_parameter<int>(probDescDB, method_store,
+        "method.coliny.expand_after_success");
       if (expand_after_success>0 && colinSolver->has_property("max_success"))
 	colinSolver->property("max_success") = expand_after_success;
       if (colinSolver->has_property("expansion_factor"))
@@ -825,12 +879,14 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     const String& exploratory_moves
-      = probDescDB.get<const String>("method.coliny.exploratory_moves");
+      = colin_parameter<const String>(probDescDB, method_store,
+        "method.coliny.exploratory_moves");
     if (!exploratory_moves.empty() && colinSolver->has_property("exploratory_move"))
       colinSolver->property("exploratory_move") = exploratory_moves.c_str();
 
     const bool& coliny_randomize
-      = probDescDB.get<bool>("method.coliny.randomize");
+      = colin_parameter<bool>(probDescDB, method_store,
+        "method.coliny.randomize");
     if (colinSolver->has_property("step_selection")) {
       if (coliny_randomize)
 	colinSolver->property("step_selection") = string("random");
@@ -838,9 +894,11 @@ void COLINOptimizer::set_solver_parameters()
 	colinSolver->property("step_selection") = string("fixed");
     }
 
-    pattern_basis = probDescDB.get<const String>("method.coliny.pattern_basis");
+    pattern_basis = colin_parameter<const String>(probDescDB, method_store,
+        "method.coliny.pattern_basis");
     total_pattern_size
-      = probDescDB.get<int>("method.coliny.total_pattern_size");
+      = colin_parameter<int>(probDescDB, method_store,
+        "method.coliny.total_pattern_size");
     // 'coordinate' is current COLINY default:
     int basic_pattern_size = (pattern_basis == "simplex")
       ? numContinuousVars + 1 : 2*numContinuousVars;
@@ -854,7 +912,8 @@ void COLINOptimizer::set_solver_parameters()
     // Parameters relevant to all methods.
 
     const Real& solution_accuracy
-      = probDescDB.get<const Real>("method.solution_target");
+      = colin_parameter<const Real>(probDescDB, method_store,
+        "method.solution_target");
     if (solution_accuracy > -DBL_MAX && colinSolver->has_property("sufficient_objective_value"))
       colinSolver->property("sufficient_objective_value") = solution_accuracy;
 
@@ -863,11 +922,14 @@ void COLINOptimizer::set_solver_parameters()
     // reformulated application.  Unfortunately, the probDescDB is
     // locked by the time we hit core_run().
 
-    constraint_penalty = probDescDB.get<const Real>("method.constraint_penalty");
-    constant_penalty = probDescDB.get<bool>("method.coliny.constant_penalty");
+    constraint_penalty = colin_parameter<const Real>(probDescDB, method_store,
+        "method.constraint_penalty");
+    constant_penalty = colin_parameter<bool>(probDescDB, method_store,
+        "method.coliny.constant_penalty");
 
     const bool& show_misc_options
-      = probDescDB.get<bool>("method.coliny.show_misc_options");
+      = colin_parameter<bool>(probDescDB, method_store,
+        "method.coliny.show_misc_options");
     if (show_misc_options){
       Cout << "---------------------------SOLVER OPTIONS"
 	   << "---------------------------\n";
@@ -880,7 +942,8 @@ void COLINOptimizer::set_solver_parameters()
     }
 
     const StringArray& misc_options
-      = probDescDB.get<const StringArray>("method.coliny.misc_options");
+      = colin_parameter<const StringArray>(probDescDB, method_store,
+        "method.coliny.misc_options");
     size_t num_mo = misc_options.size();
     for (size_t i=0; i<num_mo; i++) {
       string thisOption(misc_options[i]);

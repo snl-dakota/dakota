@@ -25,6 +25,13 @@ NonDGlobalEvidence::NonDGlobalEvidence(ProblemDescDB& problem_db, ParallelLibrar
 }
 
 
+NonDGlobalEvidence::
+NonDGlobalEvidence(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+                        std::shared_ptr<Model> model):
+  NonDGlobalInterval(std::move(services), method_store, model)
+{ }
+
+
 NonDGlobalEvidence::~NonDGlobalEvidence()
 { }
 

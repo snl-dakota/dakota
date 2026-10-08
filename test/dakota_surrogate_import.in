@@ -25,7 +25,7 @@ method,
                  
 model,                                         
         id_model = 'SURR'                        
-        surrogate global,                        
+        global_surrogate,                        
         import_build_points_file = 'dakota_surrogate_import.dat' annotated       #s0,#s2,#s9
 #        import_build_points_file = 'dakota_surrogate_import.ff.dat' freeform     #s1,#s3,#s10,#s12
 #        import_build_points_file = 'dakota_surrogate_import.design_fixedothers.dat' annotated  #s4

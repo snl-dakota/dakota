@@ -31,7 +31,11 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
 {
   // Verify that iteratedModel is a surrogate model so that
   // approximation-related functions are defined.
-  if (iteratedModel->model_type() != "surrogate") {
+  const String& model_type = iteratedModel->model_type();
+  if (model_type != "global_surrogate" &&
+      model_type != "multipoint_surrogate" &&
+      model_type != "local_surrogate" &&
+      model_type != "ensemble_surrogate") {
     Cerr << "Error: SurrBasedGlobalMinimizer::iteratedModel must be a "
 	 << "surrogate model." << std::endl;
     abort_handler(-1);

@@ -31,6 +31,21 @@ Verification::Verification(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 }
 
 
+Verification::Verification(std::shared_ptr<StudyServices> services,
+                           const IRStore& method_store,
+                           std::shared_ptr<Model> model):
+  Analyzer(std::move(services), method_store, model)
+{
+  if (iteratedModel->gradient_type() == "numerical" &&
+      iteratedModel->method_source() == "vendor") {
+    Cerr << "\nError: Verification does not contain a vendor algorithm for "
+         << "numerical derivatives;\n       please select dakota as the finite "
+         << "difference method_source." << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 Verification::Verification(unsigned short method_name, std::shared_ptr<Model> model):
   Analyzer(method_name, model)
 {

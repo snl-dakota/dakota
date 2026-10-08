@@ -1,0 +1,27 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  branch_and_bound
+    method_name 'optpp_q_newton'
+model
+  id_model 'target'
+  simulation
+variables
+  relaxed
+  continuous_design 2
+    initial_point 0.9 1.1
+    descriptors 'x1' 'x2'
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+  discrete_design_range 1
+    initial_point 1
+    lower_bounds 0
+    upper_bounds 2
+responses
+  objective_functions 1
+  analytic_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py optimization' fork

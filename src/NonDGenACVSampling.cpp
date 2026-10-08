@@ -23,12 +23,9 @@ static const char rcsId[]="@(#) $Id: NonDGenACVSampling.cpp 7035 2010-10-22 21:4
 namespace Dakota {
 
 
-/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
-    probDescDB can be queried for settings from the method specification. */
 NonDGenACVSampling::
 NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
-		   std::shared_ptr<Model> model):
+                   std::shared_ptr<Model> model):
   NonDACVSampling(problem_db, parallel_lib, model),
   dagRecursionType(
     problem_db.get<short>("method.nond.search_model_graphs.recursion")),
@@ -36,6 +33,32 @@ NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   modelSelectType(
     problem_db.get<short>("method.nond.search_model_graphs.selection")),
   meritFnStar(DBL_MAX)
+{
+  class_initialize(problem_db.get<short>("method.nond.allocation_target"),
+                   problem_db.get<short>("method.nond.qoi_aggregation"),
+                   problem_db.get<short>("method.nond.convergence_tolerance_target"));
+}
+
+
+NonDGenACVSampling::
+NonDGenACVSampling(std::shared_ptr<StudyServices> services,
+		   const IRStore& method_store,
+		   std::shared_ptr<Model> model):
+  NonDACVSampling(std::move(services), method_store, model),
+  dagRecursionType(method_store.get<short>("nond.search_model_graphs.recursion")),
+  dagDepthLimit(method_store.get<unsigned short>("nond.graph_depth_limit")),
+  modelSelectType(method_store.get<short>("nond.search_model_graphs.selection")),
+  meritFnStar(DBL_MAX)
+{
+  class_initialize(method_store.get<short>("nond.allocation_target"),
+                   method_store.get<short>("nond.qoi_aggregation"),
+                   method_store.get<short>("nond.convergence_tolerance_target"));
+}
+
+
+void NonDGenACVSampling::class_initialize(short allocation_target,
+					  short qoi_aggregation,
+					  short conv_tol_target)
 {
   // Support constrained DAG ensembles for method promotions (hierarchical
   // for MFMC/MLMC, peer for ACV); recursion + model selection are optional
@@ -50,23 +73,21 @@ NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
     mlmfSubMethod = SUBMETHOD_ACV_RD;
     // check for unsupported allocation targets from MLMC spec
     bool err_flag = false;
-    if (problem_db.get<short>("method.nond.allocation_target") != TARGET_MEAN) {
+    if (allocation_target != TARGET_MEAN) {
       Cerr << "Error: unsupported allocation target specification.\n";
       err_flag = true;
     }
-    if (problem_db.get<short>("method.nond.qoi_aggregation") !=
-	QOI_AGGREGATION_SUM) {
+    if (qoi_aggregation != QOI_AGGREGATION_SUM) {
       Cerr << "Error: unsupported qoi aggregation specification.\n";
       err_flag = true;
     }
-    if (problem_db.get<short>("method.nond.convergence_tolerance_target") !=
-	VARIANCE_CONSTRAINT_TARGET) {
+    if (conv_tol_target != VARIANCE_CONSTRAINT_TARGET) {
       Cerr << "Error: unsupported convergence tol target specification.\n";
       err_flag = true;
     }
     if (err_flag) {
       Cerr << "Some controls not available when promoting weighted MLMC to "
-	   << "GenACV." << std::endl;
+           << "GenACV." << std::endl;
       abort_handler(METHOD_ERROR);
     }
     break;
@@ -86,9 +107,9 @@ NonDGenACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
     case NO_GRAPH_RECURSION:
       switch (mlmfSubMethod) {
       case SUBMETHOD_ACV_RD: // default hierarch DAG for ACV_RD
-	dagWidthLimit = 1;  dagDepthLimit = numApprox;  break;
+        dagWidthLimit = 1;  dagDepthLimit = numApprox;  break;
       default:               // default peer DAG for ACV_MF,ACV_IS
-	dagDepthLimit = 1;  dagWidthLimit = numApprox;  break;
+        dagDepthLimit = 1;  dagWidthLimit = numApprox;  break;
       }
       break;
     case KL_GRAPH_RECURSION:

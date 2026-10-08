@@ -138,6 +138,115 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 }
 
 
+NonDMultilevelSampling::
+NonDMultilevelSampling(std::shared_ptr<StudyServices> services,
+		       const IRStore& method_store,
+		       std::shared_ptr<Model> model):
+  NonDEnsembleSampling(std::move(services), method_store, model),
+  allocationTarget(method_store.get<short>("nond.allocation_target")),
+  useTargetVarianceOptimizationFlag(
+    method_store.get<bool>("nond.allocation_target.optimization")),
+  qoiAggregation(method_store.get<short>("nond.qoi_aggregation")),
+  convergenceTolTarget(
+    method_store.get<short>("nond.convergence_tolerance_target"))
+{
+  bool err_flag = false;
+  /*
+  // ensure iteratedModel is an ensemble surrogate model and set initial
+  // response mode (for set_communicators() which precedes core_run()).
+  // Note: even though hierarchical sampling might involve a single model form,
+  // we require an ensemble model to manage aggregations, reductions, etc.
+  // (i.e. a SimulationModel with resolution hyper-parameters is insufficient).
+  if (iteratedModel.surrogate_type() == "ensemble")
+    iteratedModel.surrogate_response_mode(AGGREGATED_MODEL_PAIR);
+  else {
+    Cerr << "Error: Hierarchical sampling requires an ensemble surrogate "
+         << "model specification." << std::endl;
+    err_flag = true;
+  }
+  */
+
+  pilotSamples = method_store.get<SizetArray>("nond.pilot_samples");
+  if ( !std::all_of( std::begin(pilotSamples), std::end(pilotSamples),
+                     [](int i){ return i > 0; }) ) {
+    Cerr << "\nError: Some levels have pilot samples of size 0 in "
+       << method_enum_to_string(methodName) << '.' << std::endl;
+    err_flag = true;
+  }
+  switch (pilotSamples.size()) {
+    case 0:  maxEvalConcurrency *= 100;  break;
+    default: {
+      size_t max_ps = find_max(pilotSamples);
+      if (max_ps) maxEvalConcurrency *= max_ps;
+      break;
+    }
+  }
+
+  // For testing multilevel_mc_Qsum():
+  //subIteratorFlag = true;
+  storeEvals = false;
+  switch (allocationTarget) {
+  case TARGET_MEAN: {
+    scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
+    scalarizationCoeffs = 0;
+    size_t i, vec_ctr = 0;
+    for(i = 0; i < numFunctions; ++i)
+      scalarizationCoeffs(i, 2*i) = 1.;
+    break;
+  }
+  case TARGET_VARIANCE: case TARGET_SIGMA: {
+    scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
+    scalarizationCoeffs = 0;
+    size_t i, vec_ctr = 0;
+    for(i = 0; i < numFunctions; ++i)
+      scalarizationCoeffs(i, 2*i+1) = 1.;
+    break;
+  }
+  case TARGET_SCALARIZATION: {
+    cov_approximation_type = COV_CORRLIFT;
+    bootstrapSeed = 0;
+    storeEvals = true;
+    if (finalMomentsType != Pecos::STANDARD_MOMENTS){
+      Cerr << "\nError: Scalarization not available with setting final_moments"
+           << "=central. Use final_moments=standard instead." << std::endl;
+      err_flag = true;
+    }
+    if (qoiAggregation == QOI_AGGREGATION_SUM) {
+      Cerr << "\nError: Scalarization not available with setting qoi_"
+           << "aggregation=sum. Use qoi_aggregation=max instead." << std::endl;
+      err_flag = true;
+    }
+    // Retrieve the variable mapping inputs
+    const RealVector& scalarization_resp_vector
+      = method_store.get<RealVector>("nond.scalarization_response_mapping");
+    if (scalarization_resp_vector.empty() ||
+        scalarization_resp_vector.length() != numFunctions*(2*numFunctions) )
+      Cerr << "\n Warning: no or incomplete mappings provided for scalarization"
+           << " mapping in multilevel sampling initialization. Checking for "
+           << "nested model." << std::endl;
+    else {
+      scalarizationCoeffs.reshape(numFunctions, 2*numFunctions);
+      size_t i, j, vec_ctr = 0;
+      for(i = 0; i < numFunctions; ++i){
+        for(j = 0; j < numFunctions; ++j){
+          scalarizationCoeffs(i, 2*j)   = scalarization_resp_vector[vec_ctr++];
+          scalarizationCoeffs(i, 2*j+1) = scalarization_resp_vector[vec_ctr++];
+        }
+      }
+    }
+    break;
+  }
+  }
+
+  if (err_flag)
+    abort_handler(METHOD_ERROR);
+
+  // Want to define this at construct time for use in EnsembleSurrModel::
+  // create_tabular_datastream()
+  iteratedModel->ensemble_precedence(MULTILEVEL_PRECEDENCE); // prefer ML over MF
+}
+
+
 void NonDMultilevelSampling::core_run()
 {
   if (allocationTarget == TARGET_SCALARIZATION && scalarizationCoeffs.empty()) {

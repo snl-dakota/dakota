@@ -35,6 +35,9 @@ public:
   /// standard constructor
   NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDACVSampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDACVSampling() override;
 

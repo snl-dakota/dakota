@@ -20,6 +20,7 @@ namespace Dakota {
 
 class ProblemDescDB;
 class ParallelLibrary;
+class StudyServices;
 
 /// Base class for surrogate models (DataFitSurrModel and EnsembleSurrModel).
 
@@ -38,6 +39,10 @@ protected:
 
   /// constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  /// DI constructor
+  SurrogateModel(const IRStore& model_store, const Variables& variables,
+                 const Response& response,
+                 std::shared_ptr<StudyServices> services);
   /// alternate constructor
   SurrogateModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		 const ShortShortPair& surr_view,

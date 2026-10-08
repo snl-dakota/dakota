@@ -35,6 +35,11 @@ public:
     
   /// primary constructor for building a standard DACE iterator
   PSUADEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+
+  /// DI constructor
+  PSUADEDesignCompExp(std::shared_ptr<StudyServices> services,
+      const IRStore& method_store, std::shared_ptr<Model> model);
+
   /// destructor
   ~PSUADEDesignCompExp() override;
 

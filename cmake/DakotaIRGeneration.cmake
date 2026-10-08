@@ -55,6 +55,6 @@ add_custom_command(
   )
 
 add_custom_target(dakota_ir_generated_tables DEPENDS ${dakota_ir_generated_files})
-if(DAKOTA_GENERATE_JSON_SCHEMA)
+if(TARGET dakota_json_schema)
   add_dependencies(dakota_ir_generated_tables dakota_json_schema)
 endif()

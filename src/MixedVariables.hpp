@@ -35,6 +35,8 @@ public:
   MixedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view);
   /// lightweight constructor
   MixedVariables(const SharedVariablesData& svd);
+  /// Construct and populate initial values from the materialized variables.
+  MixedVariables(const IRStore& variables_store, const SharedVariablesData& svd);
   /// destructor
   ~MixedVariables() override;
 
@@ -84,6 +86,8 @@ private:
   //
   //- Heading: Private member functions
   //
+  template <typename Database>
+  void initialize_initial_values(const Database& database);
 };
 
 

@@ -8,8 +8,15 @@
     _______________________________________________________________________ */
 
 #include "EnsembleSurrModel.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+#include "StudyServices.hpp"
+
+#include <stdexcept>
+#include <utility>
+
+#include <stdexcept>
 
 static const char rcsId[]=
   "@(#) $Id: EnsembleSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
@@ -86,6 +93,63 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
   ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
   // initialize centralHess even though it's irrelevant for pass through
   centralHess = problem_db.get<bool>("responses.central_hess");
+}
+
+
+EnsembleSurrModel::EnsembleSurrModel(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approximation_models,
+  const Variables& variables, const Response& response,
+  std::shared_ptr<StudyServices> services):
+  SurrogateModel(model_store, variables, response, std::move(services)),
+  truthModel(std::move(truth_model)), approxModels(std::move(approximation_models)),
+  sameModelInstance(false), sameInterfaceInstance(false),
+  ensemblePrecedence(DEFAULT_PRECEDENCE), modeKeyBufferSize(0),
+  correctionMode(SINGLE_CORRECTION)
+{
+  if (surrogateType != "ensemble")
+    throw std::runtime_error(
+      "EnsembleSurrModel DI construction requires surrogate.type 'ensemble', "
+      "not '" + surrogateType + "'.");
+
+  initialize_subordinate_models();
+}
+
+
+void EnsembleSurrModel::initialize_subordinate_models()
+{
+  detail::validate_services(
+    "EnsembleSurrModel", study_services(),
+    {detail::runtime_dependency("truth model", truthModel)});
+
+  if (!truthModel)
+    throw std::runtime_error(
+      "EnsembleSurrModel requires a non-null truth model in DI construction.");
+
+  for (const auto& approximation_model: approxModels) {
+    detail::validate_services(
+      "EnsembleSurrModel", study_services(),
+      {detail::runtime_dependency("approximation model", approximation_model)});
+    if (!approximation_model)
+      throw std::runtime_error(
+        "EnsembleSurrModel requires non-null approximation models in DI construction.");
+    check_submodel_compatibility(*approximation_model);
+    approximation_model->serialize_threshold(0);
+  }
+
+  check_submodel_compatibility(*truthModel);
+  truthModel->serialize_threshold(0);
+
+  responseMode = AGGREGATED_MODELS;
+  assign_default_keys(responseMode);
+  if (parallelLib.mpirun_flag())
+    modeKeyBufferSize = server_buffer_size(responseMode, activeKey);
+
+  initialize_correction();
+  supportsEstimDerivs = false;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess = (currentResponse.hessian_config().interval_type ==
+                 Response::IntervalType::Central);
 }
 
 
@@ -182,14 +246,16 @@ estimate_partition_bounds(int max_eval_concurrency)
   // responseMode is a run-time setting, so we are conservative on usage of
   // max_eval_concurrency as in derived_init_communicators()
 
-  probDescDB.set_db_model_nodes(truthModel->model_id());
+  if (!study_services())
+    probDescDB.set_db_model_nodes(truthModel->model_id());
   IntIntPair min_max_i,
     min_max = truthModel->estimate_partition_bounds(max_eval_concurrency);
 
   size_t i, num_approx = approxModels.size();
   for (i=0; i<num_approx; ++i) {
     Model& model_i = *approxModels[i];
-    probDescDB.set_db_model_nodes(model_i.model_id());
+    if (!study_services())
+      probDescDB.set_db_model_nodes(model_i.model_id());
     min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
     if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
     if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
@@ -213,6 +279,15 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // and free and a more aggressive approach with set.
 
   if (recurse_flag) {
+    if (study_services()) {
+      for (const auto& model : approxModels) {
+        model->init_communicators(pl_iter, max_eval_concurrency);
+        model->init_communicators(pl_iter, model->derivative_concurrency());
+      }
+      truthModel->init_communicators(pl_iter, max_eval_concurrency);
+      truthModel->init_communicators(pl_iter, truthModel->derivative_concurrency());
+      return;
+    }
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
               num_models  = approxModels.size();
     if (truthModel) ++num_models;

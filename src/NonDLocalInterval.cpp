@@ -12,6 +12,7 @@
 #include "NonDLocalInterval.hpp"
 #include "RecastModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
 #endif // HAVE_NPSOL
@@ -28,20 +29,40 @@ namespace Dakota {
 NonDLocalInterval* NonDLocalInterval::nondLIInstance(NULL);
 
 
-NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDLocalInterval::
+NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		  std::shared_ptr<Model> model):
   NonDInterval(problem_db, parallel_lib, model), npsolFlag(false)
+{
+  class_initialize(probDescDB.get<unsigned short>(
+    "method.nond.opt_subproblem_solver"));
+}
+
+
+NonDLocalInterval::
+NonDLocalInterval(std::shared_ptr<StudyServices> services,
+		  const IRStore& method_store,
+		  std::shared_ptr<Model> model):
+  NonDInterval(std::move(services), method_store, model), npsolFlag(false)
+{
+  class_initialize(method_store.get<unsigned short>(
+    "nond.opt_subproblem_solver"));
+}
+
+
+void NonDLocalInterval::class_initialize(unsigned short opt_subproblem_solver)
 {
   bool err_flag = false;
 
   // Check for suitable active var types (discrete epistemic not supported)
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete variables are not currently supported in "
-	 << "NonDLocalInterval." << std::endl;
+         << "NonDLocalInterval." << std::endl;
     err_flag = true;
   }
   if (numContinuousVars != numContIntervalVars) {
     Cerr << "\nError: only continuous interval distributions are currently "
-	 << "supported in NonDLocalInterval." << std::endl;
+         << "supported in NonDLocalInterval." << std::endl;
     err_flag = true;
   }
 
@@ -53,18 +74,17 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary&
   short recast_resp_order = 3; // gradient-based quasi-Newton optimizers
   const ShortShortPair& recast_view = iteratedModel->current_variables().view();
   minMaxModel = std::make_shared<RecastModel>
-			 (iteratedModel, recast_vars_comps_total,
-			  all_relax_di, all_relax_dr, recast_view, 1, 0, 0,
-			  recast_resp_order);
+                         (iteratedModel, recast_vars_comps_total,
+                          all_relax_di, all_relax_dr, recast_view, 1, 0, 0,
+                          recast_resp_order);
 
   // instantiate the optimizer used to compute the output interval bounds
-  switch (sub_optimizer_select(
-	  probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"))) {
+  switch (sub_optimizer_select(opt_subproblem_solver)) {
   case SUBMETHOD_NPSOL: {
 #ifdef HAVE_NPSOL
     int deriv_level = 3;
     minMaxOptimizer = std::make_unique<NPSOLOptimizer>
-			       (minMaxModel, deriv_level, convergenceTol);
+                               (minMaxModel, deriv_level, convergenceTol);
     npsolFlag = true;
 //#elif // handled within NonD::sub_optimizer_select()
 #endif // HAVE_NPSOL
@@ -73,7 +93,7 @@ NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary&
   case SUBMETHOD_OPTPP:
 #ifdef HAVE_OPTPP
     minMaxOptimizer = std::make_unique<SNLLOptimizer>
-			       ("optpp_q_newton", minMaxModel);
+                               ("optpp_q_newton", minMaxModel);
 //#elif // handled within NonD::sub_optimizer_select()
 #endif // HAVE_OPTPP
     break;

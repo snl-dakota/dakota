@@ -36,6 +36,8 @@ public:
   //
 
   NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  NonDLocalInterval(std::shared_ptr<StudyServices> services,
+                    const IRStore& method_store, std::shared_ptr<Model> model); ///< DI constructor
   ~NonDLocalInterval() override;                                       ///< destructor
 
   //
@@ -61,6 +63,8 @@ protected:
   //- Heading: New virtual functions
   //
 
+  /// common constructor initialization
+  void class_initialize(unsigned short opt_subproblem_solver);
   /// perform any required initialization
   virtual void initialize();
   /// set the optimization variable bounds for each cell

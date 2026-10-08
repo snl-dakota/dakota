@@ -38,6 +38,8 @@ public:
   RelaxedVariables(const ProblemDescDB& problem_db, const ShortShortPair& view);
   /// lightweight constructor
   RelaxedVariables(const SharedVariablesData& svd);
+  /// Construct and populate initial values from the materialized variables.
+  RelaxedVariables(const IRStore& variables_store, const SharedVariablesData& svd);
   /// destructor
   ~RelaxedVariables() override;
 
@@ -89,6 +91,8 @@ private:
   //- Heading: Private data members
   //
 
+  template <typename Database>
+  void initialize_initial_values(const Database& database);
 };
 
 

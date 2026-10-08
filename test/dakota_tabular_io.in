@@ -77,7 +77,7 @@ method,					#s0,#s2,#s3,#s4,#s5,#s7,#s8,#s9
 #								#s4,#s9
 #model,								#s4,#s9
 #	id_model = 'UQ_M'					#s4,#s9
-#	surrogate global					#s4,#s9
+#	global_surrogate					#s4,#s9
 #	  dace_method_pointer = 'DACE'				#s4,#s9
 # 	  gaussian_process surfpack				  #s4,#s9
 #	  import_build_points_file = 'dakota_tabular_io.3.dat'	#s4

@@ -46,6 +46,9 @@ public:
   SharedC3ApproxData(const String& approx_type,
                      const UShortArray& approx_order, size_t num_vars,
                      short data_order, short output_level);
+  SharedC3ApproxData(const IRStore& model_store,
+                     const UShortArray& approx_order, size_t num_vars,
+                     short data_order, short output_level);
   /// destructor
   ~SharedC3ApproxData();
 

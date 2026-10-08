@@ -16,6 +16,7 @@
 #include "ProbabilityTransformModel.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "dakota_data_io.hpp"
 #include "dakota_tabular_io.hpp"
 #include "pecos_math_util.hpp"
@@ -118,6 +119,89 @@ NonDC3FunctionTrain(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the IRStore. */
+NonDC3FunctionTrain::
+NonDC3FunctionTrain(std::shared_ptr<StudyServices> services,
+		    const IRStore& method_store,
+		    std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model),
+  importBuildPointsFile(method_store.get<String>("import_build_points_file")),
+  startRankSpec(method_store.get<size_t>("nond.c3function_train.start_rank")),
+  maxRankSpec(method_store.get<size_t>("nond.c3function_train.max_rank")),
+  startOrderSpec(method_store.get<unsigned short>("nond.c3function_train.start_order")),
+  maxOrderSpec(method_store.get<unsigned short>("nond.c3function_train.max_order")),
+  collocPtsSpec(method_store.get<size_t>("nond.collocation_points")),
+  methodStore(std::make_shared<IRStore>(method_store))
+{
+  // ----------------
+  // Resolve settings
+  // ----------------
+  check_surrogate();    // check for global surrogate function_train model
+  resolve_refinement(); // set c3AdvancementType
+  short data_order;
+  // See SharedC3ApproxData::construct_basis().  C3 won't support STD_{BETA,
+  // GAMMA,EXPONENTIAL} so use PARTIAL_ASKEY_U to map to STD_{NORMAL,UNIFORM}.
+  short u_space_type = PARTIAL_ASKEY_U;//probDescDB.get<short>("method.nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bnds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  // configure u-space sampler and model
+  std::shared_ptr<Iterator> u_space_sampler; // evaluates truth model
+  if (!config_regression(collocPtsSpec, regression_size(), randomSeed,
+                         u_space_sampler, g_u_model)) {
+    Cerr << "Error: incomplete configuration in NonDC3FunctionTrain "
+         << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
+  UShortArray start_orders;
+  configure_expansion_orders(startOrderSpec, dimPrefSpec, start_orders);
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  String pt_reuse = method_store.get<String>("nond.point_reuse");
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+  String approx_type = "global_function_train";
+  ActiveSet ft_set = g_u_model->current_response().active_set(); // copy
+  ft_set.request_values(3); // stand-alone mode: surrogate grad evals at most
+  const ShortShortPair& ft_view = g_u_model->current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, ft_set, ft_view, approx_type, start_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    method_store.get<unsigned short>("import_build_format"),
+    method_store.get<bool>("import_build_active_only"),
+    method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  initialize_u_space_model();
+
+  // -------------------------------
+  // Construct expSampler, if needed
+  // -------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+}
+
+
 /** This constructor is called by derived class constructors. */
 NonDC3FunctionTrain::
 NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
@@ -140,9 +224,38 @@ NonDC3FunctionTrain(unsigned short method_name, ProblemDescDB& problem_db,
 }
 
 
+/** This constructor is called by derived class constructors. */
+NonDC3FunctionTrain::
+NonDC3FunctionTrain(unsigned short method_name, std::shared_ptr<StudyServices> services,
+		    const IRStore& method_store, std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model),
+  importBuildPointsFile(method_store.get<String>("import_build_points_file")),
+  startRankSpec(method_store.get<size_t>("nond.c3function_train.start_rank")),
+  maxRankSpec(method_store.get<size_t>("nond.c3function_train.max_rank")),
+  startOrderSpec(method_store.get<unsigned short>("nond.c3function_train.start_order")),
+  maxOrderSpec(method_store.get<unsigned short>("nond.c3function_train.max_order")),
+  collocPtsSpec(0), // in lieu of sequence specification
+  methodStore(std::make_shared<IRStore>(method_store))
+{
+  check_surrogate();    // check for global surrogate function_train model
+  resolve_refinement(); // set c3AdvancementType
+
+  // Rest is in derived class...
+}
+
+
 NonDC3FunctionTrain::~NonDC3FunctionTrain()
 { }
 
+
+template <typename T>
+const std::remove_const_t<T>&
+NonDC3FunctionTrain::method_parameter(const String& key) const
+{
+  if (methodStore)
+    return methodStore->get<std::remove_const_t<T>>(key.substr(String("method.").size()));
+  return probDescDB.get<T>(key);
+}
 
 size_t NonDC3FunctionTrain::regression_size()
 {
@@ -170,7 +283,7 @@ size_t NonDC3FunctionTrain::regression_size()
 
 void NonDC3FunctionTrain::check_surrogate()
 {
-  if (iteratedModel->model_type()     == "surrogate" &&
+  if (iteratedModel->model_type()     == "global_surrogate" &&
       iteratedModel->surrogate_type() == "global_function_train") {
     Cerr << "Error: use 'surrogate_based_uq' for UQ using a Model-based "
 	 << "function train specification." << std::endl;
@@ -212,13 +325,13 @@ void NonDC3FunctionTrain::resolve_refinement()
   //   (uSpaceModel->shared_data() not yet available)
 
   bool refine_err = false, rm_adapt_err = false, add_adapt_err = false,
-    adapt_r = probDescDB.get<bool>("method.nond.c3function_train.adapt_rank"),
-    adapt_o = probDescDB.get<bool>("method.nond.c3function_train.adapt_order");
+    adapt_r = method_parameter<bool>("method.nond.c3function_train.adapt_rank"),
+    adapt_o = method_parameter<bool>("method.nond.c3function_train.adapt_order");
   switch (refineType) {
   case Pecos::P_REFINEMENT:
     switch (refineControl) {
     case Pecos::UNIFORM_CONTROL: // only uniform p-refine supported at this time
-      c3AdvancementType = probDescDB.get<short>("method.nond.c3function_train.advancement_type");
+      c3AdvancementType = method_parameter<short>("method.nond.c3function_train.advancement_type");
       switch (c3AdvancementType) {
       case START_ORDER_ADVANCEMENT: // use with adapt_order is a poor choice
 	if (adapt_o)               rm_adapt_err = true;
@@ -307,10 +420,10 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
     return false;
 
   // given numSamplesOnModel, configure u_space_sampler
-  if (probDescDB.get<bool>("method.nond.tensor_grid")) {
+  if (method_parameter<bool>("method.nond.tensor_grid")) {
     // structured grid: uniform sub-sampling of TPQ
     UShortArray dim_quad_order
-      = probDescDB.get<const UShortArray>("method.nond.tensor_grid_order"); // copy
+      = method_parameter<const UShortArray>("method.nond.tensor_grid_order"); // copy
     Pecos::inflate_scalar(dim_quad_order, numContinuousVars);
     // convert aniso vector to scalar + dim_pref.  If iso, dim_pref is
     // empty; if aniso, it differs from exp_order aniso due to offset.
@@ -342,9 +455,9 @@ config_regression(size_t colloc_pts, size_t regress_size, int seed,
     // unlike expansion_sampler, we use an ACTIVE sampler mode for
     // forming the PCE over all active variables.
     construct_lhs(u_space_sampler, g_u_model,
-		  probDescDB.get<unsigned short>("method.sample_type"),
+		  method_parameter<unsigned short>("method.sample_type"),
 		  numSamplesOnModel, seed,
-		  probDescDB.get<const String>("method.random_number_generator"),
+		  method_parameter<const String>("method.random_number_generator"),
 		  !fixedSeed, ACTIVE);
   }
 
@@ -410,28 +523,28 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
     uSpaceModel->shared_approximation().data_rep());
 
   shared_data_rep->set_parameter("kick_order",
-    probDescDB.get<unsigned short>("method.nond.c3function_train.kick_order"));
+    method_parameter<unsigned short>("method.nond.c3function_train.kick_order"));
   shared_data_rep->set_parameter("adapt_order",
-    probDescDB.get<bool>("method.nond.c3function_train.adapt_order"));
+    method_parameter<bool>("method.nond.c3function_train.adapt_order"));
   shared_data_rep->set_parameter("kick_rank",
-    probDescDB.get<size_t>("method.nond.c3function_train.kick_rank"));
+    method_parameter<size_t>("method.nond.c3function_train.kick_rank"));
   shared_data_rep->set_parameter("adapt_rank",
-    probDescDB.get<bool>("method.nond.c3function_train.adapt_rank"));
+    method_parameter<bool>("method.nond.c3function_train.adapt_rank"));
 
   shared_data_rep->set_parameter("regress_type",
-    probDescDB.get<short>("method.nond.regression_type"));
+    method_parameter<short>("method.nond.regression_type"));
   shared_data_rep->set_parameter("regularization_parameter",
-    probDescDB.get<const Real>("method.nond.regression_penalty"));
+    method_parameter<const Real>("method.nond.regression_penalty"));
   shared_data_rep->set_parameter("solver_tol",
-    probDescDB.get<const Real>("method.nond.c3function_train.solver_tolerance"));
-  shared_data_rep->set_parameter("solver_rounding_tol", probDescDB.get<const Real>("method.nond.c3function_train.solver_rounding_tolerance"));
-  shared_data_rep->set_parameter("stats_rounding_tol", probDescDB.get<const Real>("method.nond.c3function_train.stats_rounding_tolerance"));
+    method_parameter<const Real>("method.nond.c3function_train.solver_tolerance"));
+  shared_data_rep->set_parameter("solver_rounding_tol", method_parameter<const Real>("method.nond.c3function_train.solver_rounding_tolerance"));
+  shared_data_rep->set_parameter("stats_rounding_tol", method_parameter<const Real>("method.nond.c3function_train.stats_rounding_tolerance"));
   shared_data_rep->set_parameter("max_cross_iterations",
-    probDescDB.get<int>("method.nond.c3function_train.max_cross_iterations"));
+    method_parameter<int>("method.nond.c3function_train.max_cross_iterations"));
   shared_data_rep->set_parameter("max_solver_iterations",
-    probDescDB.get<size_t>("method.nond.max_solver_iterations"));
+    method_parameter<size_t>("method.nond.max_solver_iterations"));
   shared_data_rep->set_parameter("response_scaling",
-    probDescDB.get<bool>("method.nond.response_scaling"));
+    method_parameter<bool>("method.nond.response_scaling"));
 
   short comb_type = Pecos::ADD_COMBINE;// for now; pass short (enum = ambiguous)
   shared_data_rep->set_parameter("combine_type",     comb_type);
@@ -443,8 +556,8 @@ void NonDC3FunctionTrain::initialize_c3_db_options()
   shared_data_rep->set_parameter("alloc_control",    multilevAllocControl);
   shared_data_rep->set_parameter("advancement_type", c3AdvancementType);
 
-  shared_data_rep->set_parameter("max_cv_rank",  probDescDB.get<size_t>("method.nond.cross_validation.max_rank_candidates"));
-  shared_data_rep->set_parameter("max_cv_order", probDescDB.get<unsigned short>("method.nond.cross_validation.max_order_candidates"));
+  shared_data_rep->set_parameter("max_cv_rank",  method_parameter<size_t>("method.nond.cross_validation.max_rank_candidates"));
+  shared_data_rep->set_parameter("max_cv_order", method_parameter<unsigned short>("method.nond.cross_validation.max_order_candidates"));
   //shared_data_rep->infer_max_cross_validation_ranges();
 }
 

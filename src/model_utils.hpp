@@ -18,6 +18,12 @@ namespace Dakota {
     class ParallelLibrary;
 
     namespace ModelUtils {
+        /// return whether model is a surrogate model
+        bool is_surrogate_model(const Model& model);
+
+        /// return whether model is a data-fit surrogate model
+        bool is_datafit_surrogate_model(const Model& model);
+
         /// define and return discreteIntSets using active view from currentVariables
         BitArray discrete_int_sets(const Model &model);
 

@@ -63,6 +63,16 @@ SurrBasedMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std
 
 
 SurrBasedMinimizer::
+SurrBasedMinimizer(std::shared_ptr<StudyServices> services,
+                   const IRStore& method_store, std::shared_ptr<Model> model,
+                   std::shared_ptr<TraitsBase> traits):
+  Minimizer(std::move(services), method_store, model, traits), globalIterCount(0),
+  penaltyParameter(5.), eta(1.), alphaEta(0.1), betaEta(0.9),
+  etaSequence(eta*std::pow(2.*penaltyParameter, -alphaEta))
+{ initialize_from_model(*iteratedModel); }
+
+
+SurrBasedMinimizer::
 SurrBasedMinimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		   Real conv_tol, std::shared_ptr<TraitsBase> traits):
   Minimizer(model, max_iter, max_eval, conv_tol, traits), globalIterCount(0),
@@ -122,6 +132,11 @@ void SurrBasedMinimizer::derived_init_communicators(ParLevLIter pl_iter)
   // For DataFitSurrModel, concurrency is from daceIterator evals (global) or
   // numerical derivs (local/multipt) on actualModel.  For EnsembleSurrModel,
   // concurrency is from approxSubProbMinimizer on an active approxModel.
+  if (study_services()) {
+    approxSubProbMinimizer->init_communicators(pl_iter);
+    return;
+  }
+
   // As for constructors, we recursively set and restore DB list nodes
   // (initiated from the restored starting point following construction).
   size_t method_index = probDescDB.get_db_method_node(),

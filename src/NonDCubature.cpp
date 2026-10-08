@@ -24,9 +24,29 @@ namespace Dakota {
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not yet a
     separate nond_cubature method specification. */
-NonDCubature::NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDCubature::
+NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+	     std::shared_ptr<Model> model):
   NonDIntegration(problem_db, parallel_lib, model),
   cubIntOrderRef(probDescDB.get<unsigned short>("method.nond.cubature_integrand"))
+{
+  initialize(model);
+}
+
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the IRStore. */
+NonDCubature::
+NonDCubature(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	     std::shared_ptr<Model> model):
+  NonDIntegration(std::move(services), method_store, model),
+  cubIntOrderRef(method_store.get<unsigned short>("nond.cubature_integrand"))
+{
+  initialize(model);
+}
+
+
+void NonDCubature::initialize(std::shared_ptr<Model> model)
 {
   // initialize the numerical integration driver
   numIntDriver =  Pecos::IntegrationDriver(Pecos::CUBATURE);

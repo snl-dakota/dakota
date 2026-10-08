@@ -36,8 +36,7 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_base_test)
     "  output silent \n"
     "model \n"
     "  id_model 'SurrogateModel' \n"
-    "  surrogate \n"
-    "    global \n"
+    "  global_surrogate \n"
     "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        trend none \n"
@@ -113,8 +112,7 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read)
     "  output silent \n"
     "model \n"
     "  id_model 'SurrogateModel' \n"
-    "  surrogate \n"
-    "    global \n"
+    "  global_surrogate \n"
     "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        options_file 'gauss_proc_test_files/GP_test_parameterlist_1.yaml' \n"
@@ -194,8 +192,7 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_yaml_read_alternate_parameters)
     "  output silent \n"
     "model \n"
     "  id_model 'SurrogateModel' \n"
-    "  surrogate \n"
-    "    global \n"
+    "  global_surrogate \n"
     "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        options_file 'gauss_proc_test_files/GP_test_parameterlist_2.yaml' \n"
@@ -269,8 +266,7 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_reduced_quadratic)
     "  output silent \n"
     "model \n"
     "  id_model 'SurrogateModel' \n"
-    "  surrogate \n"
-    "    global \n"
+    "  global_surrogate \n"
     "      truth_model_pointer 'SimulationModel' \n"
     "      experimental_gaussian_process \n"
     "        trend reduced_quadratic \n"
@@ -322,6 +318,42 @@ TEST(gauss_proc_test_tests, test_surrogates_gp_reduced_quadratic)
       EXPECT_LT(std::fabs(1. - tabular_data[i][j] / gold_values[i][j]), 1.e-4/100. );
     }
   }
+}
+
+// Regression test: EGO's "dakota" gaussian_process backend crashed when combined with results_output.
+TEST(gauss_proc_test_tests, test_efficient_global_dakota_gp_results_output)
+{
+  // Dakota input string:
+  static const char dakota_input[] =
+    "environment \n"
+    "  results_output \n"
+    "  tabular_data \n"
+    "    tabular_data_file 'dak_ego_gp_results_output.dat' \n"
+    "method \n"
+    "  efficient_global \n"
+    "    gaussian_process dakota \n"
+    "    seed = 123456 \n"
+    "    max_iterations = 3 \n"
+    "variables \n"
+    "  continuous_design = 2 \n"
+    "    initial_point    0.35  0.35 \n"
+    "    upper_bounds     1.5   1.5 \n"
+    "    lower_bounds     0.35  0.35 \n"
+    "    descriptors      'x1'  'x2' \n"
+    "interface \n"
+    "  direct \n"
+    "    analysis_driver = 'rosenbrock' \n"
+    "responses \n"
+    "  objective_functions = 1 \n"
+    "  no_gradients \n"
+    "  no_hessians \n";
+
+  std::shared_ptr<Dakota::LibraryEnvironment> p_env(Opt_TPL_Test::create_env(dakota_input));
+  Dakota::LibraryEnvironment & env = *p_env;
+
+  env.execute();
+
+  data_pairs.clear();
 }
 }
 

@@ -72,6 +72,10 @@ public:
                ParallelLibrary& parallel_lib,
                std::shared_ptr<Model> model);
 
+  /// DI constructor
+  ROLOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                 std::shared_ptr<StudyServices> services);
+
   /// Alternate constructor for Iterator instantiations by name
   ROLOptimizer(const String& method_name,
                std::shared_ptr<Model> model);
@@ -114,7 +118,7 @@ protected:
 
   /// Convenience function to map Dakota input and power-user
   /// parameters to ROL
-  void set_rol_parameters();
+  void set_rol_parameters(const IRStore* p = nullptr);
 
 private:
 

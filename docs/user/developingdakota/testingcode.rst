@@ -359,6 +359,174 @@ The test has the label ``FastTest`` and will only be run when
 Dakota is built with the optional QUESO component.
 
 
+.. _testingcode-python-regression:
+
+Paired Python Regression Tests
+--------------------------------
+
+Paired Python regressions compare a study run by the Dakota executable with
+an independently constructed study run through the Python bindings. They
+exercise method and model factories using small evaluation budgets. The
+Python scripts construct bound objects and execute them with ``Study.run()``;
+they do not parse or generate Dakota input. No saved baseline is read or
+updated. The scripts, inputs, helpers, and manifest are in
+:file:`test/python_parity/` in the source tree.
+
+Each case has its own Python script and constructs one ``Study`` in a fresh
+process. Its models and sub-iterators belong to that study. Shared helpers
+construct components without creating global ``Study`` instances. The
+executable also runs in a fresh process, with a separate working directory.
+This isolates cases from persistent process state and allows different cases
+to run concurrently.
+
+Running the Paired Tests
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Configure with ``BUILD_TESTING``, ``DAKOTA_ENABLE_TESTS``, and
+``DAKOTA_PYTHON_STUDY`` enabled, then build Dakota, its Python extension, and
+``text_book``. Here, ``<source>`` is the Dakota source directory and
+``<build>`` is the configured build directory:
+
+.. code-block:: sh
+
+   cmake -S <source> -B <build>
+   cmake --build <build> -j 3
+   ctest --test-dir <build> -L PythonParity --output-on-failure -j 3
+
+Each case registers as ``python_parity_<case-id>`` with the labels
+``PythonParity`` and ``SerialTest``. For example, to run only the POF
+DARTS pair:
+
+.. code-block:: sh
+
+   ctest --test-dir <build> -R '^python_parity_method_pof_darts$' --output-on-failure
+
+The manifest contains 70 cases covering parameter studies, sampling,
+optimization, reliability, interval estimation and evidence, expansions,
+multifidelity and multilevel methods, and Bayesian calibration. Model cases
+exercise simulation, global/local/multipoint surrogates, ensembles, and
+nested models. Optional cases register only when their required build
+features are available; four function-train and surrogate-based UQ cases
+require ``HAVE_C3``. Successful runs print the elapsed time.
+
+Output Comparison and Failure Diagnosis
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The harness extracts the selected serial subtest from its freeform input
+using ``dakota_test.perl`` at execution time. The standard Perl reducer
+selects testable output from both runs, and ``dakota_diff.perl`` compares
+numerical values using the existing regression tolerances. The harness also
+checks that the reduced files are nonempty and have identical labels and row
+layout. It has no case-specific expectations for evaluation counts or
+result sections.
+
+Standalone reduction additionally retains Richardson convergence and
+quantity-of-interest tables and RKD integral estimates. Paired comparisons
+set ``DAKDIFF_ALL_NUMERIC`` so numerical tokens in otherwise unrecognized
+reduced sections also use the comparator's tolerances. These additions do
+not change regular saved-baseline selection or comparison.
+
+Artifacts remain in
+``<build>/test/python_parity/<case-id>/``. Its ``freeform/`` and
+``python/`` directories contain the extracted input where applicable,
+native output and error files, captured process stdout and stderr, and
+reduced ``results.tst`` files. Comparison diagnostics and a per-case
+``dakota_diffs.out`` are retained in the case directory. Failures report
+the artifact directory for investigation.
+
+The diff report contains the standard comparator's PASS/DIFF output and
+numerical differences, with executable results marked ``base<`` and Python
+results marked ``test>``. Structural mismatches also include a unified diff
+of the reduced files. A pair that fails before comparison retains a generic
+FAIL entry.
+
+A nonzero subprocess return code or timeout immediately fails the pair.
+Each subprocess has a 110-second timeout; CTest imposes a 120-second timeout
+on the entire pair. Python's ``subprocess.run`` terminates and waits for its
+timed-out process. Captured files remain available, and the generic FAIL
+report is written before execution so it also remains if CTest interrupts
+the harness.
+
+After CTest finishes, collect the per-case reports alongside the regular
+freeform regression reports:
+
+.. code-block:: sh
+
+   cmake --build <build> --target dakota-diffs
+
+Per-case ``dakota_diffs.out`` files are written under
+``<build>/test/python_parity/<case-id>/``. These are kept separate from the
+regular freeform regression ``<build>/test/dakota_diffs.out`` collected by the
+``dakota-diffs`` target; the ``python_parity_results.log`` in the build root
+summarises the PythonParity PASS/FAIL/DIFF counts independently. Paired
+reruns reset their per-case reports, comparison logs, and both working
+directories. Different cases can run concurrently; concurrent invocations of
+the same case in one build directory are unsupported.
+
+Adding a Paired Test
+^^^^^^^^^^^^^^^^^^^^^^
+
+#. Write an independent freeform study or select a serial subtest from an
+   existing regression input. Dedicated paired fixtures live in
+   :file:`test/python_parity/inputs/` and register only as paired tests.
+
+#. Write a separate Python script that constructs one ``Study`` and executes
+   the bound method/model objects with ``Study.run()``. Configure native
+   output as ``dakota.out`` and ``dakota.err``. Prefer short runs with fixed
+   seeds and small iteration or evaluation budgets.
+
+#. Add an entry to :file:`test/python_parity/cases.json` with the case
+   ``id``, ``input`` path, serial ``subtest`` number, ``script``,
+   ``required_files``, covered ``factories`` and ``classes``, and any
+   ``requires_features``. Input and required-file paths are relative to
+   :file:`test/`; script paths are relative to :file:`test/python_parity/`.
+   Required files are copied into each working directory using their
+   basenames. The special ``text_book`` entry resolves to the configured
+   build target. Manifest edits trigger reconfiguration on the next build.
+
+#. Build and run the pair, inspect its output and diff report, and measure
+   the runtime in a compatible native build.
+
+For example, ``python_parity_method_pof_darts`` maps to
+:file:`test/python_parity/method_pof_darts.py` and
+:file:`test/python_parity/inputs/pof_darts.in`. The manifest records this
+mapping for every case. Many UQ cases share
+:file:`test/python_parity/response_driver.py`, a smooth numerical fixture
+with analytic derivatives, residuals, fidelity differences, and resolution
+error. The driver is shared between the executable and Python runs, while
+the two study configurations remain independent.
+
+Coverage and Harness Checks
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+:file:`test/python_parity/COVERAGE.md` maps method/model factory
+entry points to paired cases. All 71 declared entry points have authored
+execution pairs, including the ``single`` alias for ``simulation``. This
+inventory records factory execution coverage, not verified passes in every
+build or coverage of every configuration or solver backend. Factory
+construction alone does not count as execution. Proposed additional cases
+are recorded in :file:`test/python_parity/TODO.md`.
+
+Regenerate the inventory with:
+
+.. code-block:: sh
+
+   python3 <source>/test/python_parity/coverage.py --output <source>/test/python_parity/COVERAGE.md
+
+Use ``coverage.py --native`` with the built extension on ``PYTHONPATH`` to
+filter the inventory to factories available in that build.
+
+The harness and numerical fixture unit tests can run without the native
+extension:
+
+.. code-block:: sh
+
+   python3 -m unittest discover -s <source>/test/python_parity -p 'test_*.py' -v
+
+Native parity and runtime verification require an executable and Python
+extension compatible with the test environment.
+
+
 =============================
 Unit Test-driven System Tests
 =============================

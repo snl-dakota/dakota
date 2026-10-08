@@ -82,18 +82,44 @@ extern PRPCache data_pairs; // global container
 //initialization of statics
 NonDDREAMBayesCalibration* NonDDREAMBayesCalibration::nonDDREAMInstance(NULL);
 
-/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
+// ---- Updated constructors that call initialize() ----
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDDREAMBayesCalibration::
-NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+			  std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, parallel_lib, model),
   numChains(probDescDB.get<int>("method.dream.num_chains")),
   numCR(probDescDB.get<int>("method.dream.num_cr")),
   crossoverChainPairs(probDescDB.get<int>("method.dream.crossover_chain_pairs")),
   grThreshold(probDescDB.get<const Real>("method.dream.gr_threshold")),
   jumpStep(probDescDB.get<int>("method.dream.jump_step"))
-{ 
+{
+  initialize();
+}
+
+
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDDREAMBayesCalibration::
+NonDDREAMBayesCalibration(std::shared_ptr<StudyServices> services,
+			  const IRStore& method_store,
+			  std::shared_ptr<Model> model):
+  NonDBayesCalibration(std::move(services), method_store, model),
+  numChains(method_store.get<int>("dream.num_chains")),
+  numCR(method_store.get<int>("dream.num_cr")),
+  crossoverChainPairs(method_store.get<int>("dream.crossover_chain_pairs")),
+  grThreshold(method_store.get<Real>("dream.gr_threshold")),
+  jumpStep(method_store.get<int>("dream.jump_step"))
+{
+  initialize();
+}
+
+
+void NonDDREAMBayesCalibration::initialize()
+{
   // don't use max_function_evaluations, since we have num_samples
   // consider max_iterations = generations, and adjust as needed?
 
@@ -103,22 +129,22 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   if (numChains < 3) {
     numChains = 3;
     Cout << "WARN (DREAM): Increasing requested chains to minimum (3)"
-	 << std::endl;
+         << std::endl;
   }
 
   numGenerations = std::floor((Real)chainSamples/numChains);
   if (numGenerations < 2) {
     numGenerations = 2;
     chainSamples = numGenerations * numChains;
-    Cout << "WARN (DREAM): generations = samples / chains = " << numGenerations 
-	 << " is less than 2.\n             setting generations = 2, for "
-	 << chainSamples << " total samples." << std::endl;
+    Cout << "WARN (DREAM): generations = samples / chains = " << numGenerations
+         << " is less than 2.\n             setting generations = 2, for "
+         << chainSamples << " total samples." << std::endl;
   }
   else {
     chainSamples = numGenerations * numChains;
     Cout << "INFO (DREAM): will use " << numChains << " chains with "
-	 << numGenerations << " generations,\nfor " << chainSamples 
-	 << " total samples." << std::endl;
+         << numGenerations << " generations,\nfor " << chainSamples
+         << " total samples." << std::endl;
   }
 
   if (numCR < 1) {
@@ -129,19 +155,19 @@ NonDDREAMBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   if (crossoverChainPairs < 0) {
     numCR = 3;
     Cout << "WARN (DREAM): crossover_chain_pairs < 0, resetting to 3 (default)."
-	 << std::endl;
+         << std::endl;
   }
 
   if (grThreshold < 0.0) {
     grThreshold = 1.2;
-    Cout << "WARN (DREAM): gr_threshold < 0.0, resetting to 1.2 (default)." 
-	 << std::endl;
+    Cout << "WARN (DREAM): gr_threshold < 0.0, resetting to 1.2 (default)."
+         << std::endl;
   }
 
   if (jumpStep < 1) {
     jumpStep = 5;
-    Cout << "WARN (DREAM): jump_step < 1, resetting to 5 (default)." 
-	 << std::endl;
+    Cout << "WARN (DREAM): jump_step < 1, resetting to 5 (default)."
+         << std::endl;
   }
 }
 
@@ -482,7 +508,7 @@ void NonDDREAMBayesCalibration::archive_acceptance_chain()
       // trailing hyperparams are not transformed
 
       // surrogate needs u-space variables for eval
-      if (mcmcModel->model_type() == "surrogate")
+      if (ModelUtils::is_surrogate_model(*mcmcModel))
 	lookup_vars.continuous_variables(u_rv);
       else
 	lookup_vars.continuous_variables(x_rv);

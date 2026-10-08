@@ -31,6 +31,9 @@ public:
   //
 
   SysCallApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  /// DI constructor from a materialized interface IR store
+  SysCallApplicInterface(const IRStore& interface_store,
+                        std::shared_ptr<StudyServices> services);
   ~SysCallApplicInterface() override;                               ///< destructor
 
 protected:

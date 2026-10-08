@@ -596,10 +596,15 @@ max_procs_per_level(int max_procs_per_server, int pps_spec, int num_serv_spec,
 
 inline bool ProblemDescDB::model_has_interface(const IRStore& model_store) const
 {
+  // The following Models pull from the interface specification:
+  //   SimulationModel (userDefinedInterface)
+  //   NestedModel (optionalInterface)
+  //   DataFitSurrModel (approxInterface)
   const String& model_type = model_store.get<String>("type");
-  const String& surrogate_type = model_store.get<String>("surrogate.type");
   return (model_type == "simulation" || model_type == "nested" ||
-          (model_type == "surrogate" && surrogate_type != "ensemble"));
+          model_type == "global_surrogate" ||
+          model_type == "multipoint_surrogate" ||
+          model_type == "local_surrogate");
 }
 
 /// A minimal letter (Rep) class to preserve the existing LO setup
