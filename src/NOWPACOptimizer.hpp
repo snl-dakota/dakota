@@ -23,7 +23,7 @@ class NOWPACBlackBoxEvaluator: public BlackBoxBaseClass
 public:
 
   /// constructor
-  NOWPACBlackBoxEvaluator(Model& model);
+  NOWPACBlackBoxEvaluator(std::shared_ptr<Model> model);
 
   void evaluate(std::vector<double> const &x, // incoming params in user space
 		std::vector<double> &vals, // 1 obj + len-1 nln ineq constr <= 0
@@ -56,8 +56,8 @@ public:
 
 private:
 
-  /// cache a local copy of the Model
-  Model iteratedModel;
+  /// shared handle to the Model iterated by NOWPACOptimizer
+  std::shared_ptr<Model> iteratedModel;
 
   /// cache the active continuous lower bounds for scaling to [0,1]
   RealVector lowerBounds;
@@ -89,7 +89,8 @@ private:
 };
 
 
-inline NOWPACBlackBoxEvaluator::NOWPACBlackBoxEvaluator(Model& model):
+inline NOWPACBlackBoxEvaluator::
+NOWPACBlackBoxEvaluator(std::shared_ptr<Model> model):
   iteratedModel(model)
 { }
 
