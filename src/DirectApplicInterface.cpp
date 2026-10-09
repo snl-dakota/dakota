@@ -10,8 +10,10 @@
 #include "DirectApplicInterface.hpp"
 #include "ParamResponsePair.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "ParallelLibrary.hpp"
 #include <algorithm>
+#include <utility>
 
 namespace Dakota {
 
@@ -24,6 +26,26 @@ DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel
   analysisDrivers(
     problem_db.get<const StringArray>("interface.application.analysis_drivers")),
   prevVarsId("NO_MATCH_DUMMY_ID"), prevRespId("NO_MATCH_DUMMY_ID")
+{ initialize_driver_defaults(); }
+
+
+DirectApplicInterface::
+DirectApplicInterface(const IRStore& interface_store,
+                      std::shared_ptr<StudyServices> services):
+  ApplicationInterface(interface_store, std::move(services)),
+  iFilterName(interface_store.contains("application.input_filter") ?
+    interface_store.get<String>("application.input_filter") : ""),
+  oFilterName(interface_store.contains("application.output_filter") ?
+    interface_store.get<String>("application.output_filter") : ""),
+  gradFlag(false), hessFlag(false), numFns(0), numVars(0), numDerivVars(0),
+  analysisDrivers(interface_store.contains("application.analysis_drivers") ?
+    interface_store.get<StringArray>("application.analysis_drivers") :
+    StringArray()),
+  prevVarsId("NO_MATCH_DUMMY_ID"), prevRespId("NO_MATCH_DUMMY_ID")
+{ initialize_driver_defaults(); }
+
+
+void DirectApplicInterface::initialize_driver_defaults()
 {
   // "interface direct" always instantiates a TestDriverInterface, but
   // eventually support "interface plugin", which would

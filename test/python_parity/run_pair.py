@@ -39,29 +39,58 @@ def result_structure(path):
 
 
 def compare_outputs(command, paths, work, case_id, subtest):
+    """Compare reduced results numerically (dakota_diff) and structurally.
+
+    The report has two clearly labeled sections so that a numerical DIFF from
+    dakota_diff.perl is not confused with a label/layout mismatch:
+      1. dakota_diff.perl verdict (base = freeform executable, test = Python)
+      2. structural check of labels and row layout, with a unified diff only
+         when the structure differs
+    """
     report = work / "dakota_diffs.out"
     structure_matches = result_structure(paths[0]) == result_structure(paths[1])
+    numeric_error = None
     try:
         execute(command, work, "comparison", {**os.environ, "DAKDIFF_ALL_NUMERIC": "1"})
+    except subprocess.CalledProcessError as exc:
+        numeric_error = exc
     finally:
-        diagnostics = f"python_parity_{case_id}: executable vs Python\n"
+        rule = "=" * 72 + "\n"
+        diagnostics = f"python_parity_{case_id} (subtest {subtest}): freeform executable vs Python\n"
+        diagnostics += f"  base: {paths[0]}\n  test: {paths[1]}\n"
+        diagnostics += rule
+        diagnostics += "[1] Numerical comparison (dakota_diff.perl; base< freeform, test> Python)\n"
+        diagnostics += rule
         for name in ("comparison.stdout", "comparison.stderr"):
             path = work / name
             if path.exists():
                 diagnostics += path.read_text(errors="replace")
-        if not structure_matches:
-            diagnostics += f"DIFF test {subtest}\n"
+        diagnostics += rule
+        diagnostics += "[2] Structural comparison (labels and row layout, numbers masked)\n"
+        diagnostics += rule
+        if structure_matches:
+            diagnostics += "Structure matches\n"
+        else:
+            diagnostics += "Structure differs; full unified diff of results.tst:\n"
             diagnostics += "".join(
                 difflib.unified_diff(
                     paths[0].read_text().splitlines(keepends=True),
                     paths[1].read_text().splitlines(keepends=True),
-                    fromfile="executable/results.tst",
+                    fromfile="freeform/results.tst",
                     tofile="python/results.tst",
                 )
             )
+        diagnostics += rule
+        verdict = "PASS" if (numeric_error is None and structure_matches) else "FAIL"
+        reasons = []
+        if numeric_error is not None:
+            reasons.append(f"numerical DIFF (dakota_diff exit {numeric_error.returncode})")
+        if not structure_matches:
+            reasons.append("structure mismatch")
+        diagnostics += f"{verdict} test {subtest}" + (f": {', '.join(reasons)}" if reasons else "") + "\n"
         report.write_text(diagnostics)
-    if not structure_matches:
-        raise ValueError("Output comparison failed")
+    if numeric_error is not None or not structure_matches:
+        raise ValueError("Output comparison failed: " + ", ".join(reasons))
 
 
 def main():
@@ -165,5 +194,6 @@ if __name__ == "__main__":
         main()
     except (OSError, ValueError, StopIteration, subprocess.SubprocessError) as exc:
         work = sys.argv[sys.argv.index("--work") + 1] if "--work" in sys.argv else "."
-        print(f"Python regression failed; artifacts: {work}", file=sys.stderr)
+        print(f"Python regression failed ({type(exc).__name__}: {exc}); "
+              f"artifacts: {work}", file=sys.stderr)
         sys.exit(1)

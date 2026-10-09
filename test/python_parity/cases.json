@@ -481,6 +481,52 @@
     ]
   },
   {
+    "id": "method_nowpac",
+    "input": "python_parity/inputs/nowpac.in",
+    "subtest": 0,
+    "script": "method_nowpac.py",
+    "required_files": [],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.nowpac"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NOWPACOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_NOWPAC"
+    ]
+  },
+  {
+    "id": "method_snowpac",
+    "input": "python_parity/inputs/snowpac.in",
+    "subtest": 0,
+    "script": "method_snowpac.py",
+    "required_files": [],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling",
+      "ModelFactory.nested",
+      "MethodFactory.snowpac"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSSampling",
+      "NestedModel",
+      "NOWPACOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_NOWPAC"
+    ]
+  },
+  {
     "id": "method_genie_direct",
     "input": "python_parity/inputs/genie_direct.in",
     "subtest": 0,

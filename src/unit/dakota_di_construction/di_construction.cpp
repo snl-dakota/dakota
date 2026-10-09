@@ -1078,14 +1078,24 @@ struct NOWPACTestTraits {
   using OptimizerT = NOWPACOptimizer;
 
   static IRStore make_method_store(InstructionMaterializer& materializer) {
-    const json method_json = {
-      {"need_to_add_minimal_params"}
-    };
+    const json method_json = { {"nowpac", json::object()} };
 
     return materializer.materialize_block(method_json, irgen::BlockType::Method);
   }
 
   static constexpr const char* name = "NOWPAC";
+};
+
+struct SNOWPACTestTraits {
+  using OptimizerT = NOWPACOptimizer;
+
+  static IRStore make_method_store(InstructionMaterializer& materializer) {
+    const json method_json = { {"snowpac", {{"seed", 1234}}} };
+
+    return materializer.materialize_block(method_json, irgen::BlockType::Method);
+  }
+
+  static constexpr const char* name = "SNOWPAC";
 };
 #endif
 
@@ -1162,6 +1172,7 @@ using OptimizerTraits =
 #endif
 #ifdef HAVE_NOWPAC
                 NOWPACTestTraits,
+                SNOWPACTestTraits,
 #endif
 #ifdef HAVE_OPTPP
                 SNLLTestTraits,
@@ -1221,6 +1232,31 @@ TEST(di_construction_tests, npsol_optimizer_throws_on_inconsistent_runtime_servi
 
   EXPECT_THROW(
     NPSOLOptimizer(method_store, simulation_model, runtime_b.services),
+    std::runtime_error);
+}
+#endif
+
+#ifdef HAVE_NOWPAC
+TEST(di_construction_tests, nowpac_optimizer_throws_on_inconsistent_runtime_services)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  method_store = NOWPACTestTraits::make_method_store(materializer);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime_a;
+  ExplicitRuntime runtime_b;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime_a.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime_a.services);
+
+  EXPECT_THROW(
+    NOWPACOptimizer(method_store, simulation_model, runtime_b.services),
     std::runtime_error);
 }
 #endif

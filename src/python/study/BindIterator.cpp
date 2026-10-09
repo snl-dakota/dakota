@@ -89,6 +89,10 @@
 #include "CONMINOptimizer.hpp"
 #endif
 
+#ifdef HAVE_NOWPAC
+#include "NOWPACOptimizer.hpp"
+#endif
+
 #ifdef HAVE_OPTPP
 #include "SNLLOptimizer.hpp"
 #endif
@@ -273,6 +277,9 @@ void bind_iterators(py::module_& m)
 #endif
 #ifdef HAVE_CONMIN
   register_iterator<CONMINOptimizer>(m, "CONMINOptimizer");
+#endif
+#ifdef HAVE_NOWPAC
+  register_iterator<NOWPACOptimizer>(m, "NOWPACOptimizer");
 #endif
 #ifdef HAVE_OPTPP
   register_iterator<SNLLOptimizer>(m, "SNLLOptimizer");
@@ -497,6 +504,12 @@ See :ref:`multi-start options <method-multi_start>`.)doc");
 #endif
 #ifdef HAVE_CONMIN
   bind_method(factory, "conmin_mfd", &construct<CONMINOptimizer>);
+#endif
+#ifdef HAVE_NOWPAC
+  bind_method(factory, "nowpac", &construct<NOWPACOptimizer>);
+#endif
+#ifdef HAVE_NOWPAC
+  bind_method(factory, "snowpac", &construct<NOWPACOptimizer>);
 #endif
 #ifdef HAVE_OPTPP
   bind_method(factory, "optpp_q_newton", &construct<SNLLOptimizer>);

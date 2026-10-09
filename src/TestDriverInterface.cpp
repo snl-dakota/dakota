@@ -20,6 +20,7 @@
 // Using Boost dist for cross-platform stability
 #include <boost/random/normal_distribution.hpp>
 #include <boost/assign.hpp>
+#include <utility>
 #include <vector>
 #include "Teuchos_SerialDenseHelpers.hpp"
 #include "NonDLHSSampling.hpp"
@@ -44,6 +45,17 @@ int salinas_main(int argc, char *argv[], MPI_Comm* comm);
 
 TestDriverInterface::TestDriverInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
   : DirectApplicInterface(problem_db, parallel_lib)
+{ initialize_test_drivers(); }
+
+
+TestDriverInterface::
+TestDriverInterface(const IRStore& interface_store,
+                    std::shared_ptr<StudyServices> services)
+  : DirectApplicInterface(interface_store, std::move(services))
+{ initialize_test_drivers(); }
+
+
+void TestDriverInterface::initialize_test_drivers()
 {
   // register this class' analysis driver types with the string to enum map
   // at the base class

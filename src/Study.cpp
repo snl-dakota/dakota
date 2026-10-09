@@ -21,6 +21,7 @@
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
 #include "SysCallApplicInterface.hpp"
+#include "TestDriverInterface.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
 #else
@@ -269,8 +270,13 @@ std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) cons
 #endif
   }
 
+  if (interface_type == TEST_INTERFACE)
+    return std::make_shared<TestDriverInterface>(
+      interface_store, studyServices);
+
   throw std::runtime_error(
-    "Study::interface currently supports only system and fork interfaces.");
+    "Study::interface currently supports only system, fork, and direct "
+    "interfaces.");
 }
 
 std::shared_ptr<Interface> Study::interface(const nlohmann::json& interface_json) const

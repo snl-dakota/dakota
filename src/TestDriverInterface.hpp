@@ -28,6 +28,9 @@ public:
   //
 
   TestDriverInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  /// DI constructor from a materialized interface IR store
+  TestDriverInterface(const IRStore& interface_store,
+                      std::shared_ptr<StudyServices> services);
   ~TestDriverInterface() override;                               ///< destructor
 
 protected:
@@ -40,6 +43,10 @@ protected:
   int derived_map_ac(const Dakota::String& ac_name) override;
 
 private:
+
+  /// shared constructor logic: register test drivers and resolve
+  /// driver/filter types and variable maps
+  void initialize_test_drivers();
 
   //
   //- Heading: Simulators and test functions

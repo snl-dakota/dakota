@@ -78,6 +78,9 @@ public:
   //
 
   DirectApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  /// DI constructor from a materialized interface IR store
+  DirectApplicInterface(const IRStore& interface_store,
+                        std::shared_ptr<StudyServices> services);
   ~DirectApplicInterface() override;                               ///< destructor
 
   //
@@ -134,6 +137,10 @@ protected:
   /// convenience function for local test simulators which overlays
   /// response contributions from multiple analyses using MPI_Reduce
   void overlay_response(Response& response);
+
+  /// shared constructor logic: register empty driver and initialize
+  /// driver types / local data view defaults
+  void initialize_driver_defaults();
 
   //
   //- Heading: Data

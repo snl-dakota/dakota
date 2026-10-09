@@ -444,5 +444,76 @@ class FactoryTests(unittest.TestCase):
             self.assertAlmostEqual(value, results[0], places=12)
 
 
+    def test_nowpac_and_snowpac_construction(self):
+        if not hasattr(self.study.method, "nowpac"):
+            self.skipTest("Dakota was built without NOWPAC")
+
+        from copy import deepcopy
+        from dakota.spec.method.nowpac import NowpacConfig
+        from dakota.spec.method.snowpac import SnowpacConfig
+
+        # NOWPACOptimizer is registered and is a subclass of Iterator.
+        self.assertTrue(hasattr(ds, "NOWPACOptimizer"))
+        self.assertTrue(issubclass(ds.NOWPACOptimizer, ds.Iterator))
+
+        # Build a bounded continuous-design optimizer model (no gradients/hessians).
+        s = self.study
+        v = s.variables(continuous_design={"count": 2, "initial_point": [0.5, 0.5],
+                                           "lower_bounds": [0.0, 0.0],
+                                           "upper_bounds": [1.0, 1.0]})
+        r = s.responses(v, response_type={"objective_functions": {"count": 1}},
+                        gradient_type={"no_gradients": True},
+                        hessian_type={"no_hessians": True})
+        model = s.model.simulation(v, self.interface, r)
+
+        # --- nowpac ---
+        nowpac_data = {"max_iterations": 5}
+        for style in ("dict", "pydantic", "kwargs"):
+            with self.subTest(method="nowpac", style=style):
+                before = deepcopy(nowpac_data)
+                if style == "dict":
+                    result = s.method.nowpac(model, config=nowpac_data)
+                elif style == "pydantic":
+                    result = s.method.nowpac(model,
+                        config=NowpacConfig.model_validate(deepcopy(nowpac_data)))
+                else:
+                    result = s.method.nowpac(model, **nowpac_data)
+                self.assertIsInstance(result, ds.NOWPACOptimizer)
+                self.assertEqual(nowpac_data, before)
+
+        # --- snowpac ---
+        snowpac_data = {"max_iterations": 5, "seed": 1234}
+        for style in ("dict", "pydantic", "kwargs"):
+            with self.subTest(method="snowpac", style=style):
+                before = deepcopy(snowpac_data)
+                if style == "dict":
+                    result = s.method.snowpac(model, config=snowpac_data)
+                elif style == "pydantic":
+                    result = s.method.snowpac(model,
+                        config=SnowpacConfig.model_validate(deepcopy(snowpac_data)))
+                else:
+                    result = s.method.snowpac(model, **snowpac_data)
+                self.assertIsInstance(result, ds.NOWPACOptimizer)
+                self.assertEqual(snowpac_data, before)
+
+        # Schema validation: seed must be > 0 for snowpac.
+        with self.assertRaises((ValueError, RuntimeError)):
+            s.method.snowpac(model, seed=0)
+
+        # Unknown field for nowpac raises.
+        with self.assertRaises((ValueError, RuntimeError)):
+            s.method.nowpac(model, seed=1)
+
+        # Execution smoke test.
+        driver = os.environ.get("DAKOTA_TEXT_BOOK") or shutil.which("text_book")
+        if driver:
+            interface = s.interface(analysis_drivers={
+                "drivers": [str(Path(driver).resolve())],
+                "interface_type": {"fork": {}}})
+            run_model = s.model.simulation(v, interface, r)
+            method = s.method.nowpac(run_model, max_function_evaluations=5)
+            s.run(method)
+
+
 if __name__ == "__main__":
     unittest.main()
