@@ -6,10 +6,12 @@
 //   Suite 2 - JsonRequiredFieldsPerBlock   (api_mode=true, pointer fields relaxed)
 //   Suite 3 - JsonRequiredFieldsRegression (existing JSON test files still pass)
 //   Suite 4 - JsonPointerGroupUnion        (pointer-group and pointer-union API-mode relaxation)
+//   Suite 5 - JsonStructure                (item types, union consts, one alternative)
 
 #include <gtest/gtest.h>
 #include <dakota_input_reader.hpp>
 #include <nlohmann/json.hpp>
+#include <cmath>
 #include <string>
 #include <vector>
 
@@ -423,4 +425,105 @@ TEST(JsonPointerGroupUnion, PointerUnionEnforcedInWholeFileMode)
     EXPECT_TRUE(any_error_contains(errors, "sub_method"))
         << "Expected 'sub_method' in whole-file mode errors; errors: "
         << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// ============================================================================
+// Suite 5: JsonStructure
+// Schema structure that the validator enforces: array element types, const
+// values of union members, and one alternative per union / method entry.
+// ============================================================================
+
+// 5.1  Array elements must have the schema's item type.
+TEST(JsonStructure, ArrayItemTypeChecked)
+{
+    auto doc = base_doc();
+    doc["interface"][0]["analysis_drivers"]["drivers"] = json::array({42});
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_json_input_to_json(doc, output, errors);
+
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(any_error_contains(errors, "'drivers' must contain only string values"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 5.2  Integer arrays accept whole-number floats (coerced to integers).
+TEST(JsonStructure, IntegerArrayAcceptsWholeNumberFloats)
+{
+    auto doc = base_doc();
+    doc["variables"][0]["histogram_bin_uncertain"]["pairs_per_variable"] =
+        json::array({3.0, 4.0});
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_json_input_to_json(doc, output, errors);
+
+    EXPECT_TRUE(ok) << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 5.3  A boolean union member must have its const value.
+TEST(JsonStructure, UnionMemberConstChecked)
+{
+    auto doc = base_doc();
+    doc["responses"][0]["gradient_type"]["no_gradients"] = false;
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_json_input_to_json(doc, output, errors);
+
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(any_error_contains(errors, "'no_gradients'"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 5.4  Two alternatives of one union may not be combined.
+TEST(JsonStructure, UnionAlternativesExclusive)
+{
+    auto doc = base_doc();
+    doc["responses"][0]["gradient_type"]["analytic_gradients"] = true;
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_json_input_to_json(doc, output, errors);
+
+    EXPECT_FALSE(ok);
+    EXPECT_TRUE(any_error_contains(errors, "are alternatives"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 5.5  A method entry names exactly one method, whole-file and per-block.
+TEST(JsonStructure, MethodEntryNamesOneType)
+{
+    auto doc = base_doc();
+    doc["method"][0]["optpp_q_newton"] = json::object();
+
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_FALSE(dakota::validate_json_input_to_json(doc, output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "multiple types provided"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    errors.clear();
+    EXPECT_FALSE(dakota::validate_method_block_json_to_json(doc["method"][0], output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "multiple types provided"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 5.6  Non-finite strings in a union member's float array are accepted and
+//      coerced, as the parser's own JSON output writes them.
+TEST(JsonStructure, UnionMemberNonFiniteFloatsAccepted)
+{
+    auto doc = base_doc();
+    doc["interface"][0]["failure_capture"] = {{"recover", json::array({"nan", "inf"})}};
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::validate_json_input_to_json(doc, output, errors);
+
+    ASSERT_TRUE(ok) << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+    const auto& recover = output["interface"][0]["failure_capture"]["recover"];
+    ASSERT_EQ(recover.size(), 2u);
+    EXPECT_TRUE(recover[0].is_number_float() && std::isnan(recover[0].get<double>()));
+    EXPECT_TRUE(recover[1].is_number_float() && std::isinf(recover[1].get<double>()));
 }

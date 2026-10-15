@@ -51,6 +51,7 @@ class ValidationMetadataGenerator:
         self.float_fields: Dict[str, Dict[str, bool]] = {}
         self.schema_walk_map: Dict[str, Dict[str, str]] = {}
         self.synthetic_allowed: Dict[str, Set[str]] = {}
+        self.synthetic_variant_groups: Dict[str, List[List[str]]] = {}
         self.block_definitions: Dict[str, Tuple[str, bool, bool]] = {}
         self.union_block_variants: Dict[str, List[str]] = {}
         self.required_blocks: Set[str] = set(self.schema.get('required', []))
@@ -133,33 +134,44 @@ class ValidationMetadataGenerator:
         if computed:
             self.computed_fields[def_name] = computed
 
+    @staticmethod
+    def _field_type_variants(field_schema: dict) -> List[dict]:
+        """Type/const specs accepted for one property (one per anyOf branch)."""
+        variants: List[dict] = []
+        candidates = field_schema.get('anyOf', [field_schema])
+        for opt in candidates:
+            spec: Dict[str, Any] = {}
+            if '$ref' in opt:
+                spec['type'] = 'object'
+            elif 'type' in opt:
+                spec['type'] = opt['type']
+            elif 'const' in opt:
+                const_val = opt['const']
+                if const_val is None:
+                    spec['type'] = 'null'
+                elif isinstance(const_val, bool):
+                    spec['type'] = 'boolean'
+                elif isinstance(const_val, int) and not isinstance(const_val, bool):
+                    spec['type'] = 'integer'
+                elif isinstance(const_val, float):
+                    spec['type'] = 'number'
+                elif isinstance(const_val, str):
+                    spec['type'] = 'string'
+            if 'const' in opt:
+                spec['const'] = opt['const']
+            # Element type of a scalar array (the schema has no arrays of objects).
+            if spec.get('type') == 'array' and isinstance(opt.get('items'), dict):
+                item_type = opt['items'].get('type')
+                if isinstance(item_type, str):
+                    spec['items'] = item_type
+            if spec:
+                variants.append(spec)
+        return variants
+
     def _extract_property_type_specs(self, def_name: str, defn: dict):
         specs: Dict[str, List[dict]] = {}
         for field_name, field_schema in defn.get('properties', {}).items():
-            variants: List[dict] = []
-            candidates = field_schema.get('anyOf', [field_schema])
-            for opt in candidates:
-                spec: Dict[str, Any] = {}
-                if '$ref' in opt:
-                    spec['type'] = 'object'
-                elif 'type' in opt:
-                    spec['type'] = opt['type']
-                elif 'const' in opt:
-                    const_val = opt['const']
-                    if const_val is None:
-                        spec['type'] = 'null'
-                    elif isinstance(const_val, bool):
-                        spec['type'] = 'boolean'
-                    elif isinstance(const_val, int) and not isinstance(const_val, bool):
-                        spec['type'] = 'integer'
-                    elif isinstance(const_val, float):
-                        spec['type'] = 'number'
-                    elif isinstance(const_val, str):
-                        spec['type'] = 'string'
-                if 'const' in opt:
-                    spec['const'] = opt['const']
-                if spec:
-                    variants.append(spec)
+            variants = self._field_type_variants(field_schema)
             if variants:
                 specs[field_name] = variants
         if specs:
@@ -213,14 +225,32 @@ class ValidationMetadataGenerator:
 
         synthetic_children = {}
         synthetic_allowed = set()
-        for _, vprop_name, vprop_schema in su.iter_variant_children(self.defs, prop_schema):
+        synthetic_specs: Dict[str, List[dict]] = {}
+        synthetic_floats: Dict[str, bool] = {}
+        variant_groups: Dict[str, Set[str]] = {}
+        for vref, vprop_name, vprop_schema in su.iter_variant_children(self.defs, prop_schema):
             synthetic_allowed.add(vprop_name)
+            variant_groups.setdefault(vref, set()).add(vprop_name)
+            field_kind = self._get_float_field_kind(vprop_schema)
+            if field_kind is not None:
+                synthetic_floats.setdefault(vprop_name, field_kind == 'array')
+            for spec in self._field_type_variants(vprop_schema):
+                if spec not in synthetic_specs.setdefault(vprop_name, []):
+                    synthetic_specs[vprop_name].append(spec)
             nested_def = self._register_synthetic_schema(synthetic_def_key, vprop_name, vprop_schema)
             if nested_def:
                 synthetic_children[vprop_name] = nested_def
 
         if synthetic_allowed:
             self.synthetic_allowed[synthetic_def_key] = synthetic_allowed
+        if synthetic_specs:
+            self.property_type_specs[synthetic_def_key] = synthetic_specs
+        if synthetic_floats:
+            self.float_fields[synthetic_def_key] = synthetic_floats
+        # Alternatives: the keys present must all come from one variant.
+        if len(variant_groups) > 1:
+            self.synthetic_variant_groups[synthetic_def_key] = [
+                sorted(variant_groups[v]) for v in sorted(variant_groups)]
         if synthetic_children:
             self.schema_walk_map[synthetic_def_key] = synthetic_children
         return synthetic_def_key if synthetic_allowed else ""
@@ -279,6 +309,7 @@ class ValidationMetadataGenerator:
         lines.append(self._generate_computed_fields_function())
         lines.append(self._generate_property_type_specs_function())
         lines.append(self._generate_allowed_properties_function())
+        lines.append(self._generate_variant_groups_function())
         lines.append(self._generate_top_level_blocks_function())
         lines.append(self._generate_schema_walk_map_function())
         lines.append(self._generate_block_definitions_function())
@@ -308,6 +339,29 @@ class ValidationMetadataGenerator:
         lines.append("        return m;")
         lines.append("    }();")
         lines.append("    static const json empty = json::object();")
+        lines.append("    auto it = data.find(def_name);")
+        lines.append("    return it != data.end() ? it->second : empty;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
+    def _generate_variant_groups_function(self) -> str:
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Alternatives of synthetic union/anchor definitions")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("// One key set per alternative; keys present in an instance must all come")
+        lines.append("// from a single alternative.  Empty for definitions without alternatives.")
+        lines.append("inline const std::vector<std::set<std::string>>& get_variant_groups(const std::string& def_name) {")
+        lines.append("    static const std::map<std::string, std::vector<std::set<std::string>>> data = {")
+        for def_name in sorted(self.synthetic_variant_groups.keys()):
+            groups = ', '.join(
+                '{' + ', '.join(f'"{k}"' for k in group) + '}'
+                for group in self.synthetic_variant_groups[def_name])
+            lines.append(f'        {{"{def_name}", {{{groups}}}}},')
+        lines.append("    };")
+        lines.append("    static const std::vector<std::set<std::string>> empty;")
         lines.append("    auto it = data.find(def_name);")
         lines.append("    return it != data.end() ? it->second : empty;")
         lines.append("}")
@@ -865,6 +919,17 @@ inline bool value_matches_type_name(const json& value, const std::string& type_n
     return true;
 }
 
+// Array element check.  An integer element may be a whole-number double: the
+// free-form reader stores "0." as 0.0, and validate_definition coerces such
+// values to integers after this check.
+inline bool value_matches_item_type(const json& item, const std::string& type_name) {
+    if (type_name == "integer" && item.is_number_float()) {
+        const double v = item.get<double>();
+        return std::isfinite(v) && v == std::floor(v);
+    }
+    return value_matches_type_name(item, type_name);
+}
+
 inline bool value_matches_variant_spec(const json& value, const json& spec) {
     if (spec.contains("type")) {
         const auto& type_name = spec["type"].get_ref<const std::string&>();
@@ -874,6 +939,12 @@ inline bool value_matches_variant_spec(const json& value, const json& spec) {
     }
     if (spec.contains("const") && value != spec["const"]) {
         return false;
+    }
+    if (spec.contains("items") && value.is_array()) {
+        const auto& item_type = spec["items"].get_ref<const std::string&>();
+        for (const auto& item : value) {
+            if (!value_matches_item_type(item, item_type)) return false;
+        }
     }
     return true;
 }
@@ -886,17 +957,57 @@ inline void check_property_type_specs(const json& instance, const std::string& d
         if (!instance.contains(field_name)) continue;
         const auto& value = instance[field_name];
         bool matched = false;
+        std::string item_type;
         for (const auto& spec : variants) {
             if (value_matches_variant_spec(value, spec)) {
                 matched = true;
                 break;
             }
+            if (value.is_array() && spec.contains("items"))
+                item_type = spec["items"].get<std::string>();
         }
         if (!matched) {
+            if (!item_type.empty()) {
+                throw validation::ValidationError(
+                    "Field '" + field_name + "' must contain only " + item_type +
+                    " values (in " + def_name + ")");
+            }
             throw validation::ValidationError(
                 "Field '" + field_name + "' does not match schema type/const requirements (in " + def_name + ")");
         }
     }
+}
+
+// A method/model block entry names exactly one type.  Returns an error
+// message, or an empty string when the entry has at most one key.
+inline std::string union_selector_error(const json& instance) {
+    if (!instance.is_object() || instance.size() <= 1) return "";
+    std::string keys;
+    for (const auto& [key, _] : instance.items()) {
+        if (!keys.empty()) keys += ", ";
+        keys += "'" + key + "'";
+    }
+    return "multiple types provided: " + keys + ". Must specify exactly one type";
+}
+
+// Keys from different alternatives of a union may not be combined.
+inline void check_single_variant(const json& instance, const std::string& def_name) {
+    const auto& groups = get_variant_groups(def_name);
+    if (groups.empty() || !instance.is_object()) return;
+    for (const auto& group : groups) {
+        bool all_in = true;
+        for (const auto& [key, _] : instance.items()) {
+            if (!group.count(key)) { all_in = false; break; }
+        }
+        if (all_in) return;
+    }
+    std::string keys;
+    for (const auto& [key, _] : instance.items()) {
+        if (!keys.empty()) keys += ", ";
+        keys += "'" + key + "'";
+    }
+    throw validation::ValidationError(
+        "Fields " + keys + " are alternatives; specify only one (in " + def_name + ")");
 }
 
 inline void check_numeric_constraints(
@@ -1063,8 +1174,10 @@ inline json validate_definition(const std::string& def_name, json instance,
     // 1. Coerce string representations of non-finite values for float fields.
     coerce_nonfinite_float_fields(instance, def_name);
 
-    // 2. Enforce basic schema type/const requirements for direct properties.
+    // 2. Enforce basic schema type/const requirements for direct properties,
+    //    and at most one alternative of a union.
     check_property_type_specs(instance, def_name);
+    check_single_variant(instance, def_name);
 
     // 3. Check field-level numeric constraints
     check_numeric_constraints(instance, def_name);
@@ -1332,6 +1445,12 @@ inline int validate_json_document(json& doc, std::vector<std::string>& errors,
                 auto sel_map_it = union_selector_map.find(block_name);
                 if (sel_map_it == union_selector_map.end()) return;
                 const auto& selector_children = sel_map_it->second;
+
+                std::string multiple = union_selector_error(instance);
+                if (!multiple.empty()) {
+                    errors.push_back(path + ": " + multiple);
+                    return;
+                }
 
                 for (auto& [prop_name, prop_val] : instance.items()) {
                     auto child_it = selector_children.find(prop_name);

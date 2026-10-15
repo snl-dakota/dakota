@@ -463,6 +463,12 @@ bool validate_json_block_input_to_json(const json& input,
             }
 
             const auto& selector_children = sel_map_it->second;
+            const std::string multiple =
+                validation_metadata::union_selector_error(instance);
+            if (!multiple.empty()) {
+                errors.push_back(path + ": " + multiple);
+                return;
+            }
             for (auto& [prop_name, prop_val] : instance.items()) {
                 const auto child_it = selector_children.find(prop_name);
                 if (child_it == selector_children.end()) {
