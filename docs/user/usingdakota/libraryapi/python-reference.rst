@@ -3,9 +3,7 @@
 Python API Reference
 ====================
 
-This reference is generated from the ``dakota.study`` module in the
-documentation build.  Factories controlled by optional Dakota capabilities
-appear only when those capabilities are enabled.
+This reference is generated from the ``dakota.study`` package.
 
 How to use this reference
 -------------------------

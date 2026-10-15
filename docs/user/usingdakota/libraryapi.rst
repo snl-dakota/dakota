@@ -4,9 +4,10 @@ Library APIs
 ============
 
 Dakota's Python and C++ APIs are an alternative way to construct and run
-studies without writing a complete Dakota input file. They use the same
+studies without running Dakota from the command line. They use the same
 configuration grammar as JSON input, but replace pointer-based relationships
-between Dakota blocks with references to constructed objects.
+(such as `interface_pointer` -> `id_interface`) between Dakota blocks with 
+references to constructed objects.
 
 Motivation
 ----------
@@ -40,7 +41,8 @@ subprocesses or reading output files.  This lowers the friction of using
 Dakota as a component in optimisation frameworks, uncertainty-quantification
 pipelines, or digital-twin platforms.
 
-**Agentic AI and automated studies.** Alongside :ref:`JSON input files <jsoninput>`, the Python API is particularly well-suited to agentic AI
+**Agentic AI and automated studies.** Alongside :ref:`JSON input files <jsoninput>`,
+the Python API is particularly well-suited to agentic AI
 workflows.  A language model or autonomous agent can construct a syntactically
 correct Dakota study by calling well-typed Python constructors rather than
 generating free-form text input, making it straightforward to validate studies

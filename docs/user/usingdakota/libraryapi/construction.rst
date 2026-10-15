@@ -4,8 +4,8 @@ Constructing a Study
 ====================
 
 Users familiar with Dakota input files can think of the library APIs as
-constructing the same study graph from the leaves inward.  A typical study is
-assembled in this order:
+constructing the same study graph (method->model->variables, interface, responses)
+from the leaves inward.  A typical study is assembled in this order:
 
 #. Create a :py:class:`~dakota.study.Study`, which owns the runtime services
    used by every component in the study.
@@ -18,19 +18,19 @@ The ``Study`` must remain alive while its components are being constructed or
 used.  Components from unrelated studies should not be combined because their
 runtime services may be incompatible.
 
-Configuration fragments
------------------------
+Configuration
+-------------
 
-Each construction call accepts the contents of one Dakota block or selected
-keyword, not a complete input specification.  For example, the Python call
+Each construction call accepts the configuration of one Dakota block, not a 
+complete input file.  For example, the Python call
 
 .. code-block:: python
 
    sampling = study.method.sampling(model, samples=10, seed=1234)
 
-supplies the children of :dakkw:`method-sampling`.  It does not include a
-``method`` array or a surrounding ``sampling`` object.  The equivalent C++
-factory accepts this JSON fragment:
+constructs a sampling method from an existing model instance and two
+pieces of configuration information: the number of samples and the seed.
+The equivalent C++ factory accepts this JSON fragment:
 
 .. code-block:: cpp
 
@@ -42,7 +42,7 @@ factory accepts this JSON fragment:
 
 The :ref:`Keyword Reference <keyword-reference-area>` remains the authoritative
 description of available options, required children, and exclusive groups.
-Build a fragment by starting at the keyword represented by the factory and
+Build a configuration by starting at the keyword represented by the factory and
 following its child-keyword hierarchy.
 
 Differences from freeform input
@@ -71,13 +71,16 @@ following calls are equivalent:
 
    from dakota.spec.method import SamplingConfig
 
-   study.method.sampling(model, samples=10, seed=1234)
-   study.method.sampling(model, {"samples": 10, "seed": 1234})
-   study.method.sampling(model, SamplingConfig(samples=10, seed=1234))
+   study.method.sampling(model, samples=10, seed=1234)                 # keyword arguments
+   study.method.sampling(model, {"samples": 10, "seed": 1234})         # a dict
+   study.method.sampling(model, SamplingConfig(samples=10, seed=1234)) # Pydantic model
 
-Do not combine ``config`` with configuration keyword arguments.  Dependency
-arguments such as ``model``, ``variables``, and ``response`` are separate from
-the configuration fragment.
+A design principle of the factory interfaces is for components such as 
+``model`` to come before configuration information. When a factory has optional
+components that are not provided as arguments, the ``config`` keyword
+argument can be used to provide configuration information. Do not combine 
+``config`` with configuration keyword arguments.
+
 
 Object relationships and recursion
 ----------------------------------
