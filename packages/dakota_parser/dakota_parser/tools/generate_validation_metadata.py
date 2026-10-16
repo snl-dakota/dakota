@@ -319,6 +319,7 @@ class ValidationMetadataGenerator:
         lines.append(self._generate_integer_field_coercion_function())
         lines.append(self._generate_required_fields_function())
         lines.append(self._generate_validate_definition_function())
+        lines.append(self._generate_check_json_structure_function())
         lines.append(self._generate_validate_json_document_function())
         return '\n'.join(lines)
 
@@ -1393,6 +1394,115 @@ inline void walk_and_validate(
             walk_and_validate(child, child_def, child_path, errors, api_mode);
         }
     }
+}
+"""
+
+    def _generate_check_json_structure_function(self) -> str:
+        return """\
+// ============================================================================
+// Structure check for raw JSON input
+// ============================================================================
+
+// Checks JSON input before it is converted to the parser AST: allowed blocks
+// and properties, property types and consts, and one alternative per union.
+// Required fields, defaults and cross-field rules are not checked here; they
+// run after default expansion (validate_json_document).  The conversion to
+// the AST loses some of what is checked here (e.g. a scalar given where the
+// schema wants an array), so this must run first.  Coerces "inf"/"nan"
+// strings in float fields, as validate_definition does.
+inline void walk_structure(json& instance, const std::string& def_name,
+                           const std::string& path, std::vector<std::string>& errors) {
+    if (!instance.is_object()) return;
+
+    const auto& allowed_props = get_allowed_properties(def_name);
+    for (const auto& [prop_name, _] : instance.items()) {
+        if (!allowed_props.empty() && !allowed_props.count(prop_name)) {
+            errors.push_back(path + ": unexpected property '" + prop_name + "'");
+        }
+    }
+
+    try {
+        coerce_nonfinite_float_fields(instance, def_name);
+        check_property_type_specs(instance, def_name);
+        check_single_variant(instance, def_name);
+    } catch (const validation::ValidationError& e) {
+        errors.push_back(path + ": " + e.what());
+        return;
+    }
+
+    const auto& walk_map = get_schema_walk_map();
+    auto it = walk_map.find(def_name);
+    if (it == walk_map.end()) return;
+    for (const auto& [prop_name, child_def] : it->second) {
+        if (!instance.contains(prop_name)) continue;
+        auto& child = instance[prop_name];
+        if (child.is_object()) {
+            walk_structure(child, child_def, path + "." + prop_name, errors);
+        }
+    }
+}
+
+inline int check_json_structure(json& doc, std::vector<std::string>& errors) {
+    const int initial_errors = static_cast<int>(errors.size());
+    if (!doc.is_object()) {
+        errors.push_back("JSON input must be an object of blocks");
+        return 1;
+    }
+
+    const auto& allowed_blocks = get_allowed_top_level_blocks();
+    for (const auto& [block_name, _] : doc.items()) {
+        if (!allowed_blocks.count(block_name)) {
+            errors.push_back("Unexpected top-level block: " + block_name);
+        }
+    }
+
+    const auto& union_selector_map = get_union_block_selector_map();
+    for (const auto& [block_name, block_def] : get_block_definitions()) {
+        if (!doc.contains(block_name) || doc[block_name].is_null()) continue;
+        auto& block_json = doc[block_name];
+
+        auto check_instance = [&](json& instance, const std::string& path) {
+            if (!instance.is_object()) {
+                errors.push_back(path + ": expected an object");
+                return;
+            }
+            if (!block_def.is_union) {
+                walk_structure(instance, block_def.config_type, path, errors);
+                return;
+            }
+            const std::string multiple = union_selector_error(instance);
+            if (!multiple.empty()) {
+                errors.push_back(path + ": " + multiple);
+                return;
+            }
+            auto sel_map_it = union_selector_map.find(block_name);
+            if (sel_map_it == union_selector_map.end()) return;
+            for (auto& [prop_name, prop_val] : instance.items()) {
+                auto child_it = sel_map_it->second.find(prop_name);
+                if (child_it == sel_map_it->second.end()) {
+                    errors.push_back(path + ": unexpected property '" + prop_name + "'");
+                } else if (!prop_val.is_object()) {
+                    errors.push_back(path + "." + prop_name + ": expected an object");
+                } else {
+                    walk_structure(prop_val, child_it->second, path + "." + prop_name, errors);
+                }
+            }
+        };
+
+        if (block_def.is_array) {
+            if (!block_json.is_array()) {
+                errors.push_back(block_name + ": expected an array of blocks");
+                continue;
+            }
+            for (size_t i = 0; i < block_json.size(); ++i) {
+                check_instance(block_json[i], block_name + "[" + std::to_string(i) + "]");
+            }
+        } else {
+            check_instance(block_json, block_name);
+        }
+    }
+
+    return static_cast<int>(errors.size()) - initial_errors;
 }
 """
 

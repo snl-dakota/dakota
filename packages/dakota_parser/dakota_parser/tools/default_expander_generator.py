@@ -612,13 +612,15 @@ def generate_default_metadata_header(block_name: str, fields: Dict[str, FieldInf
     lines.append("")
 
     # Generate helper for required pointer fields (used for API-mode relaxation)
-    lines.append("// Get paths of required fields that are block pointers")
+    lines.append("// Get paths of required fields that are block pointers, pointer groups or")
+    lines.append("// pointer unions")
     lines.append("// In API mode the freeform default expander skips these required-ness checks.")
     lines.append("inline const std::set<std::string>& get_required_pointer_fields() {")
     lines.append("    static const std::set<std::string> fields = {")
 
     for path, info in sorted(fields.items()):
-        if info.is_required and info.is_pointer:
+        if info.is_required and (info.is_pointer or info.is_pointer_group
+                                 or info.is_pointer_union):
             ast_path = strip_anchor_segments(path)
             lines.append(f'        "{ast_path}",')
 

@@ -4,6 +4,7 @@
 #include "dakota_default_expander.hpp"
 #include "dakota_input_reader.hpp"
 #include "dakota_json_input.hpp"
+#include "json_to_ast.hpp"
 #include "dakota_semantic_analyzer.hpp"
 #include "dakota_validation_metadata.hpp"
 #include "dakota_validator.hpp"
@@ -107,14 +108,14 @@ void print_usage(const char* prog)
     std::cout << "Input mode (auto-detected from .json extension by default):\n";
     std::cout << "  --json-input         Force JSON input mode (e.g. file lacks .json extension)\n";
     std::cout << "  --dsl-input          Force DSL input mode (overrides .json extension)\n";
-    std::cout << "  --schema <path>      Deprecated; JSON input uses embedded schema metadata\n";
+    std::cout << "  --schema <path>      Deprecated; ignored\n";
     std::cout << "\nDSL-mode options:\n";
     std::cout << "  --trace              Enable grammar tracing\n";
     std::cout << "  --analyze            Analyze grammar for issues\n";
-    std::cout << "  --no-semantic        Skip semantic analysis\n";
-    std::cout << "  --json               Output in JSON format\n";
+    std::cout << "  --json               Output in JSON format (always on for JSON input)\n";
     std::cout << "\nCommon options (both modes):\n";
     std::cout << "  --no-validate        Skip constraint/cross-field validation\n";
+    std::cout << "  --no-semantic        Skip semantic analysis\n";
     std::cout << "  --no-expand          Skip default expansion\n";
     std::cout << "  --debug              Enable debug output\n";
     std::cout << "  -h, --help           Show this help message\n";
@@ -209,90 +210,51 @@ int main(int argc, char* argv[])
         json_input_mode = (ext == ".json");
     }
 
+    dakota::Document doc;
     if (json_input_mode) {
+        // JSON input is converted to the AST and then follows the DSL path
+        // below; its output is always JSON.
         if (dakota::g_enable_debug) {
             std::cout << "Input mode: JSON\n";
-            std::cout << "Schema:     embedded\n";
             std::cout << "File:       " << filename << "\n";
         }
 
-        dakota::json doc;
-        {
-            std::vector<std::string> load_errors;
-            if (!dakota::load_json_file(filename, doc, load_errors)) {
-                for (const auto& e : load_errors) {
-                    std::cerr << "Error: " << e << "\n";
-                }
-                return 1;
+        dakota::json input;
+        std::vector<std::string> errors;
+        if (!dakota::load_json_file(filename, input, errors) ||
+            dakota::validation_metadata::check_json_structure(input, errors) > 0 ||
+            !dakota::json_to_ast(input, doc, errors)) {
+            for (const auto& e : errors) {
+                std::cerr << "Error: " << e << "\n";
             }
-        }
-        if (dakota::g_enable_debug) {
-            std::cout << "\u2713 JSON parse successful\n";
-        }
-
-        if (do_expand) {
-            if (dakota::g_enable_debug) {
-                std::cout << "\nExpanding JSON defaults...\n";
-            }
-            std::vector<std::string> exp_errors;
-            if (!dakota::expand_json_defaults(doc, exp_errors, dakota::g_enable_debug)) {
-                for (const auto& e : exp_errors) {
-                    std::cerr << "Error: " << e << "\n";
-                }
-                return 1;
-            }
-            if (dakota::g_enable_debug) {
-                std::cout << "\u2713 Default expansion successful\n";
-            }
-        }
-
-        if (do_validate) {
-            if (dakota::g_enable_debug) {
-                std::cout << "\nValidating JSON document...\n";
-            }
-            dakota::validation_metadata::g_validation_debug = dakota::g_enable_debug;
-            std::vector<std::string> val_errors;
-            const int n = dakota::validation_metadata::validate_json_document(doc, val_errors);
-            if (n > 0) {
-                for (const auto& e : val_errors) {
-                    std::cerr << "Error: " << e << "\n";
-                }
-                return 1;
-            }
-            if (dakota::g_enable_debug) {
-                std::cout << "\u2713 Validation successful\n";
-            }
-        }
-
-        if (dakota::g_enable_debug) {
-            std::cout << "\n\u2713 All checks passed!\n\n";
-        }
-
-        std::cout << dakota::json_to_string(doc, 2) << "\n";
-        return 0;
-    }
-
-    if (do_analyze) {
-        std::cout << "\n=== Grammar Analysis ===\n";
-        const size_t issues = dakota::analyze_all_grammars();
-        std::cout << "\nTotal issues: " << issues << "\n\n";
-        if (issues > 0) {
             return 1;
         }
-    }
+        if (dakota::g_enable_debug) {
+            std::cout << "\u2713 JSON conversion successful\n";
+        }
+        output_json = true;
+    } else {
+        if (do_analyze) {
+            std::cout << "\n=== Grammar Analysis ===\n";
+            const size_t issues = dakota::analyze_all_grammars();
+            std::cout << "\nTotal issues: " << issues << "\n\n";
+            if (issues > 0) {
+                return 1;
+            }
+        }
 
-    if (dakota::g_enable_debug) {
-        std::cout << "Input mode: DSL\n";
-        std::cout << "Parsing: " << filename << "\n";
-    }
+        if (dakota::g_enable_debug) {
+            std::cout << "Input mode: DSL\n";
+            std::cout << "Parsing: " << filename << "\n";
+        }
 
-    dakota::Document doc;
-    if (!dakota::parse_dakota_file(filename, doc, enable_trace)) {
-        return 1;
-    }
+        if (!dakota::parse_dakota_file(filename, doc, enable_trace)) {
+            return 1;
+        }
 
-    if (dakota::g_enable_debug) {
-        std::cout << "\u2713 Parse successful\n";
+        if (dakota::g_enable_debug) {
+            std::cout << "\u2713 Parse successful\n";
+        }
     }
 
     if (do_validate) {

@@ -217,6 +217,19 @@ if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
     )
     add_test(NAME test_value_expansion COMMAND test_value_expansion)
     set_tests_properties(test_value_expansion PROPERTIES LABELS Unit)
+
+    # C++ unit tests for JSON input through the parser AST
+    add_executable(test_json_to_ast
+        test/test_json_to_ast.cpp
+    )
+    target_link_libraries(test_json_to_ast PRIVATE
+        dakota_parser_lib
+        GTest::gtest_main
+    )
+    target_compile_definitions(test_json_to_ast PRIVATE
+        DAKOTA_TEST_INPUT_DIR="${Dakota_SOURCE_DIR}/test")
+    add_test(NAME test_json_to_ast COMMAND test_json_to_ast)
+    set_tests_properties(test_json_to_ast PROPERTIES LABELS Unit)
     
     file(GLOB SOURCE_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.in")
     list(APPEND DAKOTA_TEST_INPUT_FILES ${SOURCE_TEST_FILES})

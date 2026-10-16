@@ -12,6 +12,7 @@
 #include "dakota_semantic_analyzer.hpp"
 #include "dakota_default_expander.hpp"
 #include "ast_to_json.hpp"
+#include "json_to_ast.hpp"
 #include "dakota_validation_metadata.hpp"
 #include <tao/pegtl.hpp>
 #ifndef _MSC_VER
@@ -192,7 +193,7 @@ bool parse_dakota_string(const std::string& input_text, const std::string& sourc
 // =============================================================================
 
 // Validate Dakota document against constraints
-bool validate_document(const Document& doc) {
+bool validate_document(const Document& doc, std::vector<std::string>& messages) {
     std::vector<ValidationError> all_errors;
     
     // Validate each block with its corresponding constraints
@@ -235,21 +236,27 @@ bool validate_document(const Document& doc) {
         }
     }
     
-    // Report validation errors
-    if (!all_errors.empty()) {
+    for (const auto& error : all_errors) {
+        messages.push_back(error.to_string());
+    }
+    return all_errors.empty();
+}
+
+bool validate_document(const Document& doc) {
+    std::vector<std::string> errors;
+    if (!validate_document(doc, errors)) {
         std::cerr << "\n=== Validation Errors ===\n";
-        for (const auto& error : all_errors) {
-            std::cerr << "  " << error.to_string() << "\n";
+        for (const auto& error : errors) {
+            std::cerr << "  " << error << "\n";
         }
-        std::cerr << "\nTotal validation errors: " << all_errors.size() << "\n";
+        std::cerr << "\nTotal validation errors: " << errors.size() << "\n";
         return false;
     }
-    
     return true;
 }
 
 // Perform semantic analysis on Dakota document (resolve aliases)
-bool analyze_semantics(Document& doc) {
+bool analyze_semantics(Document& doc, std::vector<std::string>& messages) {
     int total_resolved = 0;
     std::vector<SemanticError> all_errors;
     
@@ -299,13 +306,10 @@ bool analyze_semantics(Document& doc) {
         }
     }
     
-    // Report semantic errors
     if (!all_errors.empty()) {
-        std::cerr << "\n=== Semantic Errors ===\n";
         for (const auto& error : all_errors) {
-            std::cerr << "  " << error.to_string() << "\n";
+            messages.push_back(error.to_string());
         }
-        std::cerr << "\nTotal semantic errors: " << all_errors.size() << "\n";
         return false;
     }
     
@@ -316,16 +320,33 @@ bool analyze_semantics(Document& doc) {
     return true;
 }
 
+bool analyze_semantics(Document& doc) {
+    std::vector<std::string> errors;
+    if (!analyze_semantics(doc, errors)) {
+        std::cerr << "\n=== Semantic Errors ===\n";
+        for (const auto& error : errors) {
+            std::cerr << "  " << error << "\n";
+        }
+        std::cerr << "\nTotal semantic errors: " << errors.size() << "\n";
+        return false;
+    }
+    return true;
+}
+
 // =============================================================================
 // Default Expansion
 // =============================================================================
 
 // Expand defaults in Dakota document.
 // api_mode=true relaxes required-ness checks for block-pointer fields.
+bool expand_defaults(Document& doc, std::vector<std::string>& errors, bool api_mode) {
+    return DefaultExpander::expand_document(doc, errors, api_mode);
+}
+
 bool expand_defaults(Document& doc, bool api_mode) {
     std::vector<std::string> errors;
     
-    if (!DefaultExpander::expand_document(doc, errors, api_mode)) {
+    if (!expand_defaults(doc, errors, api_mode)) {
         std::cerr << "\n=== Default Expansion Errors ===\n";
         for (const auto& error : errors) {
             std::cerr << "  " << error << "\n";
@@ -391,6 +412,25 @@ bool parse_freeform_document_to_json(Document& doc, json& output,
     return validate_json_document_in_place(output, errors, debug);
 }
 
+// JSON input joins the freeform pipeline at the AST: check its structure,
+// convert it, then validate, resolve aliases and expand defaults as for
+// freeform input.  On success `doc` holds the expanded JSON, not yet checked
+// by validate_json_document.
+bool expand_json_input(json& doc, std::vector<std::string>& errors, bool api_mode) {
+    if (validation_metadata::check_json_structure(doc, errors) > 0) {
+        return false;
+    }
+    Document ast;
+    if (!json_to_ast(doc, ast, errors) ||
+        !validate_document(ast, errors) ||
+        !analyze_semantics(ast, errors) ||
+        !expand_defaults(ast, errors, api_mode)) {
+        return false;
+    }
+    doc = ast_to_json(ast);
+    return true;
+}
+
 json throw_for_reader_errors(const std::string& context,
                              const std::vector<std::string>& errors) {
     std::string message = context;
@@ -426,7 +466,7 @@ bool validate_json_block_input_to_json(const json& input,
         wrapped_input[spec.top_level_key] = input;
     }
 
-    if (!expand_json_defaults(wrapped_input, errors, debug)) {
+    if (!expand_json_input(wrapped_input, errors, api_mode)) {
         return false;
     }
 
@@ -617,7 +657,7 @@ bool validate_json_input_to_json(const json& input,
     g_enable_debug = debug;
 
     output = input;
-    if (!expand_json_defaults(output, errors, debug)) {
+    if (!expand_json_input(output, errors, false)) {
         return false;
     }
     return validate_json_document_in_place(output, errors, debug);

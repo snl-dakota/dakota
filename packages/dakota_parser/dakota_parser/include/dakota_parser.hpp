@@ -5,6 +5,7 @@
 
 #include <cstddef>
 #include <string>
+#include <vector>
 
 namespace dakota {
 
@@ -19,10 +20,16 @@ bool parse_dakota_string(const std::string& input_text,
                          Document& doc,
                          bool enable_trace = false);
 
+// These print their errors to stderr; the overloads taking `errors` append
+// them there instead.
 bool validate_document(const Document& doc);
+bool validate_document(const Document& doc, std::vector<std::string>& errors);
 bool analyze_semantics(Document& doc);
+bool analyze_semantics(Document& doc, std::vector<std::string>& errors);
 // api_mode=true relaxes required-ness checks for block-pointer fields.
 bool expand_defaults(Document& doc, bool api_mode = false);
+bool expand_defaults(Document& doc, std::vector<std::string>& errors,
+                     bool api_mode = false);
 
 } // namespace dakota
 

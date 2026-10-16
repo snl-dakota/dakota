@@ -412,9 +412,10 @@ TEST(JsonPointerGroupUnion, PointerUnionEnforcedInWholeFileMode)
     auto doc = base_doc();
     // Insert a surrogate_based_local method block without sub_method.
     // In whole-file mode all required fields are enforced, so sub_method
-    // (pointer_union) must be present.
+    // (pointer_union) must be present.  model_pointer, also required, is
+    // given so that the missing sub_method is the only error.
     doc["method"] = json::array({
-        {{"surrogate_based_local", json::object()}}
+        {{"surrogate_based_local", {{"model_pointer", "M"}}}}
     });
 
     json output;
