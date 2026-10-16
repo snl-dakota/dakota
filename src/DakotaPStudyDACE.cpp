@@ -49,7 +49,8 @@ PStudyDACE::PStudyDACE(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 PStudyDACE::PStudyDACE(std::shared_ptr<StudyServices> services,
                        const IRStore& method_store,
                        std::shared_ptr<Model> model):
-  Analyzer(std::move(services), method_store, model),
+  Analyzer(std::move(services), method_store, model,
+           ViewRequest(ViewRequest::ALL)),
   volQualityFlag(method_store.contains("quality_metrics")
                    ? method_store.get<bool>("quality_metrics")
                    : false),

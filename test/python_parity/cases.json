@@ -1600,5 +1600,119 @@
       "SimulationModel",
       "NonDWASABIBayesCalibration"
     ]
+  },
+  {
+    "id": "nested_inferred_view",
+    "input": "python_parity/inputs/nested_inferred_view.in",
+    "subtest": 0,
+    "script": "nested_inferred_view.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.nested",
+      "MethodFactory.vector_parameter_study",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling"
+    ],
+    "classes": [
+      "NestedModel",
+      "ParamStudy",
+      "SimulationModel",
+      "NonDLHSSampling"
+    ]
+  },
+  {
+    "id": "dace_sampling_aleatory_truth",
+    "input": "python_parity/inputs/dace_sampling_aleatory_truth.in",
+    "subtest": 0,
+    "script": "dace_sampling_aleatory_truth.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling",
+      "ModelFactory.global_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSSampling",
+      "DataFitSurrModel"
+    ]
+  },
+  {
+    "id": "local_surrogate_mixed_vars",
+    "input": "python_parity/inputs/local_surrogate_mixed_vars.in",
+    "subtest": 0,
+    "script": "local_surrogate_mixed_vars.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "ModelFactory.local_surrogate",
+      "MethodFactory.optpp_pds"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DataFitSurrModel",
+      "OPTPPOptimizer"
+    ]
+  },
+  {
+    "id": "ensemble_inferred_view",
+    "input": "python_parity/inputs/ensemble_inferred_view.in",
+    "subtest": 0,
+    "script": "ensemble_inferred_view.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "ModelFactory.ensemble_surrogate",
+      "MethodFactory.multilevel_sampling"
+    ],
+    "classes": [
+      "SimulationModel",
+      "EnsembleSurrModel",
+      "NonDMultilevelSampling"
+    ]
+  },
+  {
+    "id": "dace_pstudy_under_optimizer",
+    "input": "python_parity/inputs/dace_pstudy_under_optimizer.in",
+    "subtest": 0,
+    "script": "dace_pstudy_under_optimizer.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.sampling",
+      "MethodFactory.optpp_pds"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DataFitSurrModel",
+      "NonDLHSSampling",
+      "OPTPPOptimizer"
+    ]
   }
 ]

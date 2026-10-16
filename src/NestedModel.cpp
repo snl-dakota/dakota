@@ -2950,4 +2950,37 @@ ActiveSet NestedModel::default_interface_active_set()
   return set;
 }
 
+
+void NestedModel::assign_inferred_view(short view, const String& method_label)
+{
+  // Do NOT recurse into subModel; the sub-iterator sets its own view.
+
+  // Verify that the variable count under the proposed view would not
+  // invalidate the mapping arrays already sized in initialize_variable_mappings.
+  // The mapping arrays have size = (cv + div + dsv + drv) at construction time.
+  size_t mapped_size = active1ACVarMapIndices.size();
+  if (mapped_size > 0) {
+    // Count the active variables the proposed view would expose by applying
+    // it to a temporary copy.  The copy must deep-copy SharedVariablesData;
+    // the default shallow copy would change the view on this model as well.
+    Variables tmp_vars = currentVariables.copy(true);
+    tmp_vars.active_view(view);
+    size_t new_total = tmp_vars.cv() + tmp_vars.div() +
+                       tmp_vars.dsv() + tmp_vars.drv();
+    if (new_total != mapped_size) {
+      Cerr << "\nError: inferred active view for NestedModel '" << model_id()
+           << "' would change the active variable count from " << mapped_size
+           << " to " << new_total << ".\n"
+           << "  The variable mappings were already sized at construction.\n"
+           << "  Fix: set active= explicitly on the outer Variables "
+           << "specification.\n";
+      throw std::runtime_error(
+        "NestedModel active view conflict: see error message above");
+    }
+  }
+
+  // Call base (handles explicit-user-view precedence and activeViewAssigned).
+  Model::assign_inferred_view(view, method_label);
+}
+
 } // namespace Dakota

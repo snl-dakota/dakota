@@ -623,6 +623,11 @@ public:
   /// return DI-backed variables configuration when available
   const std::shared_ptr<IRStore>& variables_store_ptr() const;
 
+  /// Map a view spec (ALL_VIEW, DESIGN_VIEW, ...) and domain flag (relaxed)
+  /// to a concrete MIXED_* / RELAXED_* view code.  Used by both the legacy
+  /// ProblemDescDB path and the DI Iterator::assign_requested_view path.
+  static short method_map(short view_spec, bool relaxed);
+
 protected:
 
   //
@@ -708,8 +713,6 @@ private:
   /// and by copy() to instantiate a new letter class
   std::shared_ptr<Variables> get_variables(const SharedVariablesData& svd) const;
 
-  /// infer domain from method selection
-  short method_map(short view_spec, bool relaxed) const;
   /// infer domain from method selection
   short method_domain(const ProblemDescDB& problem_db) const;
   /// infer view from method selection

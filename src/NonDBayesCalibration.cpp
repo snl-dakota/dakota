@@ -562,7 +562,10 @@ void NonDBayesCalibration::construct_mcmc_model()
 NonDBayesCalibration::
 NonDBayesCalibration(std::shared_ptr<StudyServices> services, const IRStore& method_store,
 		     std::shared_ptr<Model> model):
-  NonDCalibration(std::move(services), method_store, model),
+  // responseRule=false: calibration terms must NOT be forced to DESIGN for
+  // Bayesian calibration — the user's intent is to calibrate uncertain params.
+  NonDCalibration(std::move(services), method_store, model,
+                  ViewRequest(ViewRequest::ALEATORY_UNCERTAIN, /*responseRule=*/false)),
   emulatorType(method_store.get<short>("nond.emulator")),
   mcmcModelHasSurrogate(false),
   mapOptAlgOverride(method_store.get<unsigned short>("nond.opt_subproblem_solver")),

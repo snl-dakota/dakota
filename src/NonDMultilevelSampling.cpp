@@ -141,8 +141,9 @@ NonDMultilevelSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 NonDMultilevelSampling::
 NonDMultilevelSampling(std::shared_ptr<StudyServices> services,
 		       const IRStore& method_store,
-		       std::shared_ptr<Model> model):
-  NonDEnsembleSampling(std::move(services), method_store, model),
+		       std::shared_ptr<Model> model,
+		       const ViewRequest& view_req):
+  NonDEnsembleSampling(std::move(services), method_store, model, view_req),
   allocationTarget(method_store.get<short>("nond.allocation_target")),
   useTargetVarianceOptimizationFlag(
     method_store.get<bool>("nond.allocation_target.optimization")),

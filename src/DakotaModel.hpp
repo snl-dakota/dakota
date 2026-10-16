@@ -219,6 +219,28 @@ public:
   /// update the Model's inactive view based on a higher level context
   virtual void inactive_view(short view, bool recurse_flag = true);
 
+  /// Return whether the active view has been pinned by inference or user spec
+  bool active_view_assigned() const;
+
+  /** Assign an inferred active view to this model (and its children, for
+   *  composite models that override this virtual function).
+   *
+   *  If the view has already been assigned and the new view differs, throws
+   *  std::runtime_error with a message naming the method, the model id, both
+   *  views, and how to resolve the conflict.
+   *
+   *  When the user's explicit view (stored in variables_store_ptr) is not
+   *  DEFAULT_VIEW it takes precedence, so the function just marks the model
+   *  as assigned without changing the view.
+   *
+   *  method_label is the human-readable method name (for error messages). */
+  virtual void assign_inferred_view(short view, const String& method_label);
+
+  /** Mark this model's active view as already assigned (non-recursive).
+   *  Call this when the user provided an explicit active= setting so a later
+   *  inferred view from a second iterator does not overwrite it. */
+  void mark_active_view_assigned();
+
   /// return the interface identifier
   virtual const String& interface_id() const;
   /// Return the value of the evaluation id counter for the Model
@@ -1181,6 +1203,11 @@ protected:
 
   /// whether to perform hierarchical evalID tagging of params/results
   bool hierarchicalTagging;
+
+  /** True once assign_inferred_view() or mark_active_view_assigned() has been
+   *  called on this model.  Prevents a second iterator from silently
+   *  overwriting the active view already established by the first. */
+  bool activeViewAssigned = false;
 
   /// user-provided scaling data from the problem DB, possibly
   /// modified by Recasting

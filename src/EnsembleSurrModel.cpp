@@ -2492,4 +2492,26 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
   }
 }
 
+
+void EnsembleSurrModel::
+assign_inferred_view(short view, const String& method_label)
+{
+  // Apply to children first (approxModels, then truthModel), then self.
+  // This mirrors how inactive_view recurses into sub-models.
+  size_t num_approx = approxModels.size();
+  for (size_t i = 0; i < num_approx; ++i)
+    approxModels[i]->assign_inferred_view(view, method_label);
+  truthModel->assign_inferred_view(view, method_label);
+
+  // Now assign to self (base Model implementation handles precedence / conflicts).
+  Model::assign_inferred_view(view, method_label);
+
+  // Re-check compatibility and refresh correction sizing if counts may have
+  // changed.
+  for (size_t i = 0; i < num_approx; ++i)
+    check_submodel_compatibility(*approxModels[i]);
+  check_submodel_compatibility(*truthModel);
+  initialize_correction();
+}
+
 } // namespace Dakota

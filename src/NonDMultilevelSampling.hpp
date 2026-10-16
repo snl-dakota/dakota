@@ -41,7 +41,9 @@ public:
 			 std::shared_ptr<Model> model);
   /// DI constructor
   NonDMultilevelSampling(std::shared_ptr<StudyServices> services,
-             const IRStore& method_store, std::shared_ptr<Model> model);
+             const IRStore& method_store, std::shared_ptr<Model> model,
+             const ViewRequest& view_req =
+               ViewRequest(ViewRequest::UNCERTAIN_BY_COUNTS));
   /// destructor
   ~NonDMultilevelSampling() override;
 

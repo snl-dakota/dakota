@@ -115,7 +115,8 @@ NonDLHSSampling::NonDLHSSampling(ProblemDescDB& problem_db, ParallelLibrary& par
 NonDLHSSampling::NonDLHSSampling(const IRStore& method_store,
 			 std::shared_ptr<Model> model,
 			 std::shared_ptr<StudyServices> services):
-  NonDSampling(std::move(services), method_store, model),
+  NonDSampling(std::move(services), method_store, model,
+               ViewRequest(ViewRequest::UNCERTAIN_BY_COUNTS)),
   numResponseFunctions(0),
   refineSamples(method_store.get<IntVector>("nond.refinement_samples")),
   dOptimal(method_store.get<bool>("nond.d_optimal")),

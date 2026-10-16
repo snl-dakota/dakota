@@ -2038,6 +2038,269 @@ TEST(di_construction_tests, freeform_expand_defaults_api_mode_skips_pointer_requ
   EXPECT_TRUE(ok);
 }
 
+
+// ============================================================================
+// Active variable view inference tests (plan step 6, C++ unit tests)
+// ============================================================================
+
+/// Helper: build a minimal simulation model for view-inference tests.
+/// variables_json should be the fragment child of {"continuous_design": ...}
+/// or similar; it is wrapped as a variables block.
+/// responses_json: the fragment child of the response_type selector.
+static std::shared_ptr<SimulationModel> make_sim_model_for_view_test(
+    const json& variables_json,
+    const json& responses_json,
+    std::shared_ptr<StudyServices> services)
+{
+  InstructionMaterializer materializer;
+  // Run through the validator so that defaults (e.g. [-inf,inf] for
+  // continuous_design bounds) are applied before materialisation.
+  const json validated_vars_json =
+    dakota::validate_variables_block_json_to_json(variables_json);
+  const IRStore vars_store = materializer.materialize_block(
+    validated_vars_json, irgen::BlockType::Variables);
+  const IRStore resp_store = materializer.materialize_block(
+    responses_json, irgen::BlockType::Responses);
+
+  const json interface_json = {
+    {"analysis_drivers", {
+      {"drivers", {"text_book"}},
+      {"interface_type", {{"fork", json::object()}}}
+    }}
+  };
+  const IRStore iface_store = materializer.materialize_block(
+    interface_json, irgen::BlockType::Interface);
+  const IRStore model_store = materializer.materialize_block(
+    json::object(), irgen::BlockType::Model);
+
+  Variables variables(vars_store);
+  Response response(resp_store, variables);
+  auto iface = make_test_interface(iface_store, services);
+  return std::make_shared<SimulationModel>(
+    model_store, variables, iface, response, services);
+}
+
+/// LHS method store; method blocks must be wrapped in their algorithm keyword.
+static IRStore make_lhs_store(int seed)
+{
+  InstructionMaterializer materializer;
+  const json method_json = {
+    {"sampling", {
+      {"sample_type", {{"lhs", true}}},
+      {"samples", 4},
+      {"seed", seed}
+    }}
+  };
+  return materializer.materialize_block(method_json, irgen::BlockType::Method);
+}
+
+/// Vector parameter study store with the given final point.
+static IRStore make_vector_pstudy_store(const std::vector<double>& final_point)
+{
+  InstructionMaterializer materializer;
+  const json method_json = {
+    {"vector_parameter_study", {
+      {"step_control", {{"final_point", final_point}}},
+      {"num_steps", 2}
+    }}
+  };
+  return materializer.materialize_block(method_json, irgen::BlockType::Method);
+}
+
+static const json kGenericResponses = {
+  {"response_type", {{"response_functions", {{"count", 1}}}}},
+  {"gradient_type", {{"no_gradients", true}}},
+  {"hessian_type", {{"no_hessians", true}}}
+};
+
+static const json kDesignAndUniform = {
+  {"continuous_design", {
+    {"count", 2},
+    {"initial_point", {0.5, 0.5}},
+    {"lower_bounds", {0.0, 0.0}},
+    {"upper_bounds", {1.0, 1.0}}
+  }},
+  {"uniform_uncertain", {
+    {"count", 2},
+    {"lower_bounds", {0.0, 0.0}},
+    {"upper_bounds", {1.0, 1.0}}
+  }}
+};
+
+// LHS on design + aleatory uncertain with generic responses
+// → inferred view MIXED_ALEATORY_UNCERTAIN, cv == 3 (uncertain only)
+TEST(di_construction_tests, lhs_infers_aleatory_view_with_design_and_uncertain_vars)
+{
+  ExplicitRuntime runtime;
+
+  const json variables_json = {
+    {"continuous_design", {{"count", 2}, {"descriptors", {"d1", "d2"}}}},
+    {"uniform_uncertain", {
+      {"count", 3},
+      {"descriptors", {"u1", "u2", "u3"}},
+      {"lower_bounds", {0.0, 0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0, 1.0}}
+    }}
+  };
+  auto model = make_sim_model_for_view_test(
+    variables_json, kGenericResponses, runtime.services);
+
+  NonDLHSSampling sampler(make_lhs_store(17), model, runtime.services);
+
+  EXPECT_EQ(model->current_variables().view().first, MIXED_ALEATORY_UNCERTAIN);
+  EXPECT_EQ(model->current_variables().cv(), 3u); // only the uniform uncertain
+  EXPECT_TRUE(model->active_view_assigned());
+}
+
+// LHS on aleatory + epistemic → MIXED_UNCERTAIN
+TEST(di_construction_tests, lhs_infers_uncertain_view_with_aleatory_and_epistemic_vars)
+{
+  ExplicitRuntime runtime;
+
+  const json variables_json = {
+    {"uniform_uncertain", {
+      {"count", 2},
+      {"lower_bounds", {0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }},
+    {"continuous_interval_uncertain", {
+      {"count", 1},
+      {"num_intervals", {1}},
+      {"interval_probabilities", {1.0}},
+      {"lower_bounds", {-1.0}},
+      {"upper_bounds", {1.0}}
+    }}
+  };
+  auto model = make_sim_model_for_view_test(
+    variables_json, kGenericResponses, runtime.services);
+
+  NonDLHSSampling sampler(make_lhs_store(42), model, runtime.services);
+
+  EXPECT_EQ(model->current_variables().view().first, MIXED_UNCERTAIN);
+}
+
+// Optimizer (nonlinear_cg) with objective responses on design + uncertain vars
+// → inferred view MIXED_DESIGN.  NonlinearCG rejects bound constraints, so the
+// design variables are left unbounded.
+TEST(di_construction_tests, optimizer_with_objectives_infers_design_view)
+{
+  ExplicitRuntime runtime;
+
+  const json variables_json = {
+    {"continuous_design", {{"count", 2}, {"initial_point", {0.5, 0.5}}}},
+    {"uniform_uncertain", {
+      {"count", 2},
+      {"lower_bounds", {0.0, 0.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }}
+  };
+  const json responses_json = {
+    {"response_type", {{"objective_functions", {{"count", 1}}}}},
+    {"gradient_type", {{"analytic_gradients", true}}},
+    {"hessian_type", {{"no_hessians", true}}}
+  };
+
+  auto model = make_sim_model_for_view_test(
+    variables_json, responses_json, runtime.services);
+
+  const json method_json = {
+    {"nonlinear_cg", {
+      {"max_iterations", 5},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  InstructionMaterializer materializer;
+  const IRStore method_store = materializer.materialize_block(
+    method_json, irgen::BlockType::Method);
+  NonlinearCGOptimizer optimizer(method_store, model, runtime.services);
+
+  EXPECT_EQ(model->current_variables().view().first, MIXED_DESIGN);
+  EXPECT_EQ(model->current_variables().cv(), 2u); // design vars only
+}
+
+// Vector parameter study → inferred view MIXED_ALL (all 4 variables active)
+TEST(di_construction_tests, vector_param_study_infers_all_view)
+{
+  ExplicitRuntime runtime;
+  auto model = make_sim_model_for_view_test(
+    kDesignAndUniform, kGenericResponses, runtime.services);
+
+  ParamStudy pstudy(make_vector_pstudy_store({0.1, 0.2, 0.3, 0.4}),
+                    model, runtime.services);
+
+  EXPECT_EQ(model->current_variables().view().first, MIXED_ALL);
+  EXPECT_EQ(model->current_variables().cv(), 4u);
+}
+
+// Explicit active view beats inference: LHS with active=design keeps DESIGN
+TEST(di_construction_tests, explicit_active_view_overrides_inference)
+{
+  ExplicitRuntime runtime;
+
+  json variables_json = kDesignAndUniform;
+  variables_json["active"] = {{"design", true}};
+  auto model = make_sim_model_for_view_test(
+    variables_json, kGenericResponses, runtime.services);
+
+  NonDLHSSampling sampler(make_lhs_store(99), model, runtime.services);
+
+  EXPECT_EQ(model->current_variables().view().first, MIXED_DESIGN);
+  EXPECT_TRUE(model->active_view_assigned());
+}
+
+// One model given to two samplers that infer the same view → OK.
+TEST(di_construction_tests, two_samplers_on_same_model_share_inferred_view)
+{
+  ExplicitRuntime runtime;
+  auto model = make_sim_model_for_view_test(
+    kDesignAndUniform, kGenericResponses, runtime.services);
+
+  NonDLHSSampling s1(make_lhs_store(7), model, runtime.services);
+  EXPECT_NO_THROW(
+    NonDLHSSampling s2(make_lhs_store(8), model, runtime.services));
+  EXPECT_EQ(model->current_variables().view().first, MIXED_ALEATORY_UNCERTAIN);
+}
+
+// LHS (ALEATORY) then a parameter study (ALL) on the same model → the second
+// constructor throws, and the first assignment is left intact.
+TEST(di_construction_tests, conflicting_inferred_views_on_same_model_throw)
+{
+  ExplicitRuntime runtime;
+  auto model = make_sim_model_for_view_test(
+    kDesignAndUniform, kGenericResponses, runtime.services);
+
+  NonDLHSSampling sampler(make_lhs_store(7), model, runtime.services);
+  ASSERT_EQ(model->current_variables().view().first, MIXED_ALEATORY_UNCERTAIN);
+
+  EXPECT_THROW(
+    ParamStudy(make_vector_pstudy_store({0.1, 0.2}), model, runtime.services),
+    std::runtime_error);
+  EXPECT_EQ(model->current_variables().view().first, MIXED_ALEATORY_UNCERTAIN);
+}
+
+// LHS on design-only variables: no uncertain vars → keeps current view (ALL),
+// no abort.  This covers the study_factory_constructs_data_fit_surrogates
+// DACE-on-design case (documented divergence from legacy).
+TEST(di_construction_tests, lhs_on_design_only_keeps_all_view)
+{
+  ExplicitRuntime runtime;
+
+  const json variables_json = {
+    {"continuous_design", {
+      {"count", 2}, {"descriptors", {"x1", "x2"}},
+      {"initial_point", {0.0, 0.0}},
+      {"lower_bounds", {-1.0, -1.0}},
+      {"upper_bounds", {1.0, 1.0}}
+    }}
+  };
+  auto model = make_sim_model_for_view_test(
+    variables_json, kGenericResponses, runtime.services);
+
+  EXPECT_NO_THROW(
+    NonDLHSSampling sampler(make_lhs_store(11), model, runtime.services));
+  EXPECT_EQ(model->current_variables().view().first, MIXED_ALL);
+}
+
 } // namespace
 } // namespace Dakota
 

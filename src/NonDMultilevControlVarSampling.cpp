@@ -46,7 +46,11 @@ NonDMultilevControlVarSampling::
 NonDMultilevControlVarSampling(std::shared_ptr<StudyServices> services,
 			       const IRStore& method_store,
 			       std::shared_ptr<Model> model):
-  NonDMultilevelSampling(std::move(services), method_store, model),
+  // MULTILEVEL_SAMPLING uses UNCERTAIN_BY_COUNTS (from NonDMultilevelSampling
+  // default), but MULTILEVEL_MULTIFIDELITY_SAMPLING does not support epistemic
+  // variables — force ALEATORY to preserve input-file parity.
+  NonDMultilevelSampling(std::move(services), method_store, model,
+                         ViewRequest(ViewRequest::ALEATORY_UNCERTAIN)),
   //NonDMultifidelitySampling(problem_db, model),
   delegateMethod(MULTILEVEL_MULTIFIDELITY_SAMPLING)
 {
