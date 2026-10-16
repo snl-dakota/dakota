@@ -19,105 +19,6 @@ namespace dakota {
 using json = nlohmann::json;
 
 // =============================================================================
-// Schema Metadata for Conversion (runtime schema loading - optional)
-// =============================================================================
-
-struct SchemaMetadata {
-    json schema;
-    std::map<std::string, json> defs;
-    
-    SchemaMetadata() = default;
-    
-    explicit SchemaMetadata(const std::string& schema_path) {
-        std::ifstream f(schema_path);
-        if (f.is_open()) {
-            f >> schema;
-            if (schema.contains("$defs")) {
-                for (auto& [name, def] : schema["$defs"].items()) {
-                    defs[name] = def;
-                }
-            }
-        }
-    }
-    
-    json get_properties(const std::string& def_name) const {
-        auto it = defs.find(def_name);
-        if (it != defs.end()) {
-            const json& def = it->second;
-            if (def.contains("properties")) {
-                return def["properties"];
-            }
-        }
-        return json::object();
-    }
-    
-    // Get the referenced definition type from a field
-    std::string get_ref_type(const std::string& def_name, const std::string& field_name) const {
-        json props = get_properties(def_name);
-        if (!props.contains(field_name)) return "";
-        
-        const json& field = props[field_name];
-        
-        if (field.contains("$ref")) {
-            std::string ref = field["$ref"];
-            if (ref.rfind("#/$defs/", 0) == 0) {
-                return ref.substr(8);
-            }
-        }
-        if (field.contains("anyOf")) {
-            for (const auto& opt : field["anyOf"]) {
-                if (opt.contains("$ref")) {
-                    std::string ref = opt["$ref"];
-                    if (ref.rfind("#/$defs/", 0) == 0) {
-                        return ref.substr(8);
-                    }
-                }
-            }
-        }
-        return "";
-    }
-    
-    // Find anchor field that contains a given keyword
-    std::string find_anchor_for_keyword(const std::string& parent_def, const std::string& kw_name) const {
-        json props = get_properties(parent_def);
-        
-        for (auto& [field_name, field_schema] : props.items()) {
-            // Check if this is an anchor field
-            if (!field_schema.contains("anchor") || field_schema["anchor"] != true) continue;
-            
-            // Check anyOf options for this anchor
-            if (field_schema.contains("anyOf")) {
-                for (const auto& opt : field_schema["anyOf"]) {
-                    if (opt.contains("$ref")) {
-                        std::string ref = opt["$ref"];
-                        if (ref.rfind("#/$defs/", 0) == 0) {
-                            std::string ref_type = ref.substr(8);
-                            json ref_props = get_properties(ref_type);
-                            if (ref_props.contains(kw_name)) {
-                                return field_name;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return "";
-    }
-};
-
-// Global schema metadata (optional runtime loading)
-inline SchemaMetadata g_schema_metadata;
-inline bool g_schema_loaded = false;
-
-inline void load_schema_metadata(const std::string& schema_path) {
-    g_schema_metadata = SchemaMetadata(schema_path);
-    g_schema_loaded = !g_schema_metadata.defs.empty();
-    if (g_schema_loaded) {
-        std::cerr << "[DEBUG] Loaded schema with " << g_schema_metadata.defs.size() << " definitions\n";
-    }
-}
-
-// =============================================================================
 // Block Type Classification (only top-level blocks are hardcoded)
 // =============================================================================
 
@@ -268,13 +169,6 @@ inline json convert_keyword(const KeywordNode& kw, const std::string& parent_def
         is_array = false;
     }
     
-    // Optional: Try runtime schema if available and generated metadata didn't find it
-    if (g_schema_loaded) {
-        if (child_def.empty()) {
-            child_def = g_schema_metadata.get_ref_type(parent_def, kw_name);
-        }
-    }
-    
     json result;
     
     // Case 1: Simple flag (no values, no children)
@@ -388,11 +282,6 @@ inline json convert_keyword(const KeywordNode& kw, const std::string& parent_def
             auto anchor_result = lookup_with_fallback(
                 ast_metadata::get_anchor_for_child, context_def, parent_def, child_effective);
             std::string anchor = anchor_result.value;
-            
-            // Optional: Try runtime schema if generated metadata didn't find anchor
-            if (anchor.empty() && g_schema_loaded) {
-                anchor = g_schema_metadata.find_anchor_for_keyword(context_def, child_effective);
-            }
             
             if (!anchor.empty()) {
                 if (!anchor_contents.count(anchor)) {
