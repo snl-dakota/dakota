@@ -74,7 +74,8 @@ Minimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_
 Minimizer::
 Minimizer(std::shared_ptr<StudyServices> services,
           const IRStore& method_store, std::shared_ptr<Model> model,
-          std::shared_ptr<TraitsBase> traits):
+          std::shared_ptr<TraitsBase> traits,
+          const ViewRequest& view_req):
   Iterator(std::move(services), method_store, traits),
   constraintTol(method_store.get<Real>("constraint_tolerance")),
   bigRealBoundSize(BIG_REAL_BOUND), bigIntBoundSize(1000000000),
@@ -90,6 +91,7 @@ Minimizer(std::shared_ptr<StudyServices> services,
     "Minimizer", study_services(),
     {detail::runtime_dependency("Model", model)});
 
+  assign_requested_view(*model, view_req);
   iteratedModel = model;
   update_from_model(*iteratedModel);
 

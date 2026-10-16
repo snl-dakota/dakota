@@ -70,8 +70,9 @@ NonD::NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared
 
 
 NonD::NonD(std::shared_ptr<StudyServices> services,
-	   const IRStore& method_store, std::shared_ptr<Model> model):
-  Analyzer(std::move(services), method_store, model),
+	   const IRStore& method_store, std::shared_ptr<Model> model,
+	   const ViewRequest& view_req):
+  Analyzer(std::move(services), method_store, model, view_req),
   respLevelTarget(method_store.get<short>("nond.response_level_target")),
   respLevelTargetReduce(
     method_store.get<short>("nond.response_level_target_reduce")),

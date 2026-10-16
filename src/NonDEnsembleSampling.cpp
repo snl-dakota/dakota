@@ -169,8 +169,8 @@ NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
 
 NonDEnsembleSampling::
 NonDEnsembleSampling(std::shared_ptr<StudyServices> services, const IRStore& method_store,
-		     std::shared_ptr<Model> model):
-  NonDSampling(std::move(services), method_store, model),
+		     std::shared_ptr<Model> model, const ViewRequest& view_req):
+  NonDSampling(std::move(services), method_store, model, view_req),
   //pilotSamples(problem_db.get<const SizetArray>("method.nond.pilot_samples")),
   pilotMgmtMode(method_store.get<short>("nond.ensemble_pilot_solution_mode")),
   optSubProblemForm(NO_OPTIMAL_ALLOCATION), optSubProblemSolver(SUBMETHOD_NONE),

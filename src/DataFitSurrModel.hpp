@@ -326,6 +326,11 @@ public:
   /// and optionally recurse into actualModel
   void inactive_view(short view, bool recurse_flag = true) override;
 
+  /// Assign an inferred active view; recurse into actualModel only when there
+  /// is no DACE iterator (following the same rule as legacy surrogate model
+  /// construction).
+  void assign_inferred_view(short view, const String& method_label) override;
+
   /// return the approxInterface identifier
   const String& interface_id() const override;
   /// if recurse_flag, return the actualModel evaluation cache usage

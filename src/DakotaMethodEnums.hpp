@@ -48,7 +48,8 @@ enum { DEFAULT_METHOD=0,
        GEN_APPROX_CONTROL_VARIATE, MULTILEVEL_BLUE,
        LIST_SAMPLING, RANDOM_SAMPLING,
        IMPORT_POINTS, // TNP TODO: Maybe move this depending on where it goes in the class hierarchy
-       // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
+       // Ordering used by iterator view inference: epistemic if method_name > RANDOM_SAMPLING
+       // (legacy path: Variables::method_view(); DI path: ViewRequest::EPISTEMIC_UNCERTAIN in NonDInterval)
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
        //BRANCH_AND_BOUND=(MINIMIZER_BIT | PARALLEL_BIT),

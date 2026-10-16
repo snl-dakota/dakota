@@ -10,11 +10,9 @@ from components import study_context
 study = study_context()
 
 # Inner UQ study: MC sampling over the cantilever direct driver.
-# Freeform infers the aleatory view from the sampling method; the DI path
-# defaults to the ALL view, so the active view must be stated explicitly or
-# the sampler will also sample (and overwrite) the design variables w, t.
+# The DI iterator constructor now infers the aleatory view from the sampling
+# method automatically (matching the legacy freeform-input behaviour).
 uq_variables = study.variables(
-    active={"aleatory": True},
     continuous_design={"count": 2},
     normal_uncertain={
         "count": 4,

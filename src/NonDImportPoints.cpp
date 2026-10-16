@@ -41,7 +41,8 @@ NonDImportPoints::NonDImportPoints(ProblemDescDB& problem_db, ParallelLibrary& p
 NonDImportPoints::
 NonDImportPoints(std::shared_ptr<StudyServices> services, const IRStore& method_store,
 		 std::shared_ptr<Model> model):
-  NonDSampling(std::move(services), method_store, model), numResponseFunctions(0),
+  NonDSampling(std::move(services), method_store, model,
+               ViewRequest(ViewRequest::UNCERTAIN_BY_COUNTS)), numResponseFunctions(0),
   vbdViaSamplingMethod(VBD_BINNED),
   vbdViaSamplingNumBins(method_store.get<int>("vbd_via_sampling_num_bins")),
   importPointsFile(method_store.get<String>("import_points_file")),
