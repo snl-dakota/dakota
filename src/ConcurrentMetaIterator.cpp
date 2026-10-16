@@ -261,13 +261,15 @@ void ConcurrentMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void ConcurrentMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  iterSched.set_child_iterator(*selectedIterator, methodPCIter, pl_iter);
+  if (selectedIterator)
+    iterSched.set_child_iterator(*selectedIterator, methodPCIter, pl_iter);
 }
 
 
 void ConcurrentMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  iterSched.free_child_iterator(*selectedIterator, methodPCIter, pl_iter);
+  if (selectedIterator)
+    iterSched.free_child_iterator(*selectedIterator, methodPCIter, pl_iter);
 }
 
 
@@ -438,6 +440,15 @@ void ConcurrentMetaIterator::pre_run()
 
 void ConcurrentMetaIterator::core_run()
 {
+  // selectedIterator is only initialized on active_server() processes.
+  // Idle-partition processes have a null selectedIterator and must not
+  // dereference it.  schedule_iterators() dispatches idle processes into
+  // serve_iterators(), but the dereference *selectedIterator at the call
+  // site would crash first.  Idle processes just need to receive the
+  // termination message from stop_iterator_servers(); they never run jobs.
+  if (!selectedIterator)
+    return;
+
   // For graphics data, limit to iterator server comm leaders; this is further
   // segregated within initialize_graphics(): all iterator schedulers stream
   // tabular data, but only iterator server 1 generates a graphics window.

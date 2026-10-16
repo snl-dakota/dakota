@@ -13,6 +13,7 @@
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaMethodEnums.hpp"
+#include "IteratorViewRequest.hpp"
 #include "ResultsManager.hpp"
 #include "DakotaTraitsBase.hpp"
 #include <memory>
@@ -490,6 +491,24 @@ protected:
 
   /// export final surrogates generated, e.g., GP in EGO and friends
   void export_final_surrogates(Model& data_fit_surr_model);
+
+  /** Resolve a ViewRequest and assign the resulting active variable view to
+   *  \a model before update_from_model() is called.  Called from the DI
+   *  constructors of Analyzer and Minimizer with the request provided by the
+   *  concrete iterator subclass.
+   *
+   *  Guards (in order):
+   *  1. No variables store on the model → return (legacy-built model).
+   *  2. methodName == 0 → return (no algorithm configured yet).
+   *  3. User set active= explicitly → mark_active_view_assigned() + return.
+   *  4. Resolve spec from responseRule + request.spec + uncertain counts.
+   *  5. KEEP spec → return without change.
+   *  6. Compute domain (relaxed vs. mixed) from current view.
+   *  7. Call model.assign_inferred_view(Variables::method_map(spec, relaxed), label).
+   *
+   *  Divergence from legacy: UNCERTAIN_BY_COUNTS with no uncertain variables
+   *  keeps the current view (ALL) without error.  See DI_CLEANUP_TODO.md. */
+  void assign_requested_view(Model& model, const ViewRequest& request);
 
   //
   //- Heading: Data

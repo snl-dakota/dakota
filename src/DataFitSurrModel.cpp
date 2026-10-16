@@ -2585,4 +2585,21 @@ ActiveSet DataFitSurrModel::default_interface_active_set()
   return set;
 }
 
+
+void DataFitSurrModel::
+assign_inferred_view(short view, const String& method_label)
+{
+  // Recurse into actualModel only when there is no DACE iterator (the DACE
+  // iterator will set its own truth-model view through its own constructor).
+  if (!daceIterator && actualModel)
+    actualModel->assign_inferred_view(view, method_label);
+
+  // Assign to self (handles user-explicit-view precedence and conflict checks).
+  Model::assign_inferred_view(view, method_label);
+
+  // Re-check surrogate/truth compatibility after the view may have changed.
+  if (actualModel)
+    check_submodel_compatibility(*actualModel);
+}
+
 } // namespace Dakota

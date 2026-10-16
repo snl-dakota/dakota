@@ -10,7 +10,6 @@ variables = study.variables(
         "lower_bounds": [-1.0, -1.0],
         "upper_bounds": [1.0, 1.0],
     },
-    active={"aleatory": True},
     discrete_state_set={
         "integer": {
             "count": 1,

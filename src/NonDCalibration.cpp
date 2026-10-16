@@ -42,8 +42,9 @@ NonDCalibration::NonDCalibration(ProblemDescDB& problem_db, ParallelLibrary& par
 /** This is the IRStore based constructor */
 NonDCalibration::NonDCalibration(std::shared_ptr<StudyServices> services,
                   const IRStore& method_store,
-                  std::shared_ptr<Model> model):
-  NonD(std::move(services), method_store, model),
+                  std::shared_ptr<Model> model,
+                  const ViewRequest& view_req):
+  NonD(std::move(services), method_store, model, view_req),
   calibrationData(model->current_response().responses_store_ptr()->get<bool>("calibration_data") ||
                   !model->current_response().responses_store_ptr()->get<String>("scalar_data_filename").empty()),
   expData(*model->current_response().responses_store_ptr(),

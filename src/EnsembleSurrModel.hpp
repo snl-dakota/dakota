@@ -210,6 +210,10 @@ protected:
   /// context and optionally recurse into
   void inactive_view(short view, bool recurse_flag = true) override;
 
+  /// Assign an inferred active view; recurse into approxModels and truthModel
+  /// following the same rule as inactive_view.
+  void assign_inferred_view(short view, const String& method_label) override;
+
   /// if recurse_flag, return true if evaluation cache usage in
   /// subordinate models {approxModels,truthModel}
   bool evaluation_cache(bool recurse_flag = true) const override;

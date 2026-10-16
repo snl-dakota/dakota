@@ -11,6 +11,7 @@
 #define DAKOTA_MINIMIZER_H
 
 #include "DakotaIterator.hpp"
+#include "IteratorViewRequest.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaTPLDataTransfer.hpp"
 #include "ExperimentData.hpp"
@@ -106,7 +107,8 @@ protected:
   Minimizer(std::shared_ptr<StudyServices> services,
       const IRStore& method_store, std::shared_ptr<Model> model,
       std::shared_ptr<TraitsBase> traits =
-      std::shared_ptr<TraitsBase>(new TraitsBase()));
+      std::shared_ptr<TraitsBase>(new TraitsBase()),
+      const ViewRequest& view_req = ViewRequest(ViewRequest::DESIGN));
 
   /// alternate constructor for "on the fly" instantiations
   Minimizer(unsigned short method_name, std::shared_ptr<Model> model, 

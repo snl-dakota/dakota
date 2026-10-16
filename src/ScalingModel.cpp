@@ -91,10 +91,13 @@ ScalingModel(std::shared_ptr<Model> sub_model):
     ModelUtils::cv(*sub_model) + ModelUtils::div(*sub_model) + ModelUtils::dsv(*sub_model) + ModelUtils::drv(*sub_model);
   Sizet2DArray vars_map_indices(total_active_vars);
   bool nonlinear_vars_mapping = false;
+  size_t num_cv_sub = ModelUtils::cv(*sub_model);
   for (size_t i=0; i<total_active_vars; ++i) {
     vars_map_indices[i].resize(1);
     vars_map_indices[i][0] = i;
-    if (varsScaleFlag && cvScaleTypes[i] & SCALE_LOG)
+    // cvScaleTypes covers only continuous vars (size == num_cv); discrete vars
+    // are not scaled, so skip the SCALE_LOG check for non-continuous indices.
+    if (varsScaleFlag && i < num_cv_sub && cvScaleTypes[i] & SCALE_LOG)
       nonlinear_vars_mapping = true;
   }
 

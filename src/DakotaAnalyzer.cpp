@@ -65,7 +65,8 @@ Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_p
 
 Analyzer::
 Analyzer(std::shared_ptr<StudyServices> services,
-         const IRStore& method_store, std::shared_ptr<Model> model):
+         const IRStore& method_store, std::shared_ptr<Model> model,
+         const ViewRequest& view_req):
   Iterator(std::move(services), method_store),
   compactMode(true),
   numObjFns(0), numLSqTerms(0),
@@ -76,6 +77,7 @@ Analyzer(std::shared_ptr<StudyServices> services,
     "Analyzer", study_services(),
     {detail::runtime_dependency("Model", model)});
 
+  assign_requested_view(*model, view_req);
   iteratedModel = model;
   update_from_model(*iteratedModel);
 

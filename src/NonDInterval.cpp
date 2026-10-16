@@ -38,7 +38,8 @@ NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 NonDInterval::
 NonDInterval(std::shared_ptr<StudyServices> services, const IRStore& method_store,
 	     std::shared_ptr<Model> model):
-  NonD(std::move(services), method_store, model),
+  NonD(std::move(services), method_store, model,
+       ViewRequest(ViewRequest::EPISTEMIC_UNCERTAIN)),
   singleIntervalFlag(methodName ==  LOCAL_INTERVAL_EST ||
                      methodName == GLOBAL_INTERVAL_EST)
 {

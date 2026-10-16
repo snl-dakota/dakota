@@ -515,5 +515,57 @@ class FactoryTests(unittest.TestCase):
             s.run(method)
 
 
+    def test_active_view_conflict_raises(self):
+        """Constructing a sampler then an optimizer on the same Model raises RuntimeError.
+
+        The sampling iterator infers ALEATORY for the model.  A subsequent
+        nonlinear_cg optimizer infers DESIGN for the same model.  These views
+        conflict, so Model.assign_inferred_view must throw std::runtime_error,
+        which pybind11 maps to RuntimeError.
+
+        Two LHS samplers on the same model must NOT raise, because they both
+        infer the same ALEATORY view.
+        """
+        s = self.study
+
+        # Build a model with design + uncertain variables (needed so that both
+        # ALEATORY inference and DESIGN inference are meaningful choices).
+        v = s.variables(
+            continuous_design={
+                "count": 2,
+                "initial_point": [1.0, 1.0],
+                "lower_bounds": [0.5, 0.5],
+                "upper_bounds": [1.5, 1.5],
+                "descriptors": ["x1", "x2"],
+            },
+            uniform_uncertain={
+                "count": 1,
+                "lower_bounds": [0.5],
+                "upper_bounds": [1.5],
+            },
+        )
+        # Response type is response_functions so that the sampler infers ALEATORY
+        # (not DESIGN which would happen with objective_functions).
+        r_fn = s.responses(
+            v,
+            response_type={"response_functions": {"count": 1}},
+            gradient_type={"no_gradients": True},
+            hessian_type={"no_hessians": True},
+        )
+        model = s.model.simulation(v, self.interface, r_fn)
+
+        # First: LHS sampler infers ALEATORY — succeeds.
+        s.method.sampling(model, samples=5, seed=1234, sample_type={"lhs": True})
+
+        # Second LHS sampler on the same model also infers ALEATORY — must NOT raise.
+        s.method.sampling(model, samples=5, seed=5678, sample_type={"lhs": True})
+
+        # Use the same model object (same IRStore → same activeViewAssigned state).
+        # The optimizer infers DESIGN via method_view (minimizer methods → DESIGN),
+        # which conflicts with the already-assigned ALEATORY view.
+        with self.assertRaises(RuntimeError):
+            s.method.nonlinear_cg(model, config={"max_iterations": 1})
+
+
 if __name__ == "__main__":
     unittest.main()

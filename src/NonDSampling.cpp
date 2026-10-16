@@ -135,8 +135,9 @@ NonDSampling::NonDSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
 
 NonDSampling::NonDSampling(std::shared_ptr<StudyServices> services,
-                           const IRStore& method_store, std::shared_ptr<Model> model):
-  NonD(std::move(services), method_store, model),
+                           const IRStore& method_store, std::shared_ptr<Model> model,
+                           const ViewRequest& view_req):
+  NonD(std::move(services), method_store, model, view_req),
   seedSpec(method_store.get<int>("random_seed")),
   randomSeed(seedSpec), samplesSpec(method_store.get<int>("samples")),
   samplesRef(samplesSpec), numSamples(samplesSpec),

@@ -159,6 +159,13 @@ protected:
   /// set the warm start flag, including actualModel
   void warm_start_flag(const bool flag) override;
 
+  /** Assign an inferred active view to this NestedModel (no recursion into
+   *  subModel -- the subModel belongs to the inner iterator which will set
+   *  its own view).  If the active counts under the new view differ from
+   *  those used in initialize_variable_mappings, throw with a message asking
+   *  the user to set active= explicitly. */
+  void assign_inferred_view(short view, const String& method_label) override;
+
   //
   //- Heading: Member functions
   //

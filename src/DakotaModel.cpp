@@ -5650,6 +5650,56 @@ void Model::inactive_view(short view, bool recurse_flag)
 }
 
 
+bool Model::active_view_assigned() const
+{ return activeViewAssigned; }
+
+
+void Model::mark_active_view_assigned()
+{ activeViewAssigned = true; }
+
+
+void Model::assign_inferred_view(short view, const String& method_label)
+{
+  short cur_view = currentVariables.view().first;
+
+  // Precedence level 1: user's explicit view wins, just mark and return.
+  const std::shared_ptr<IRStore>& vs = currentVariables.variables_store_ptr();
+  if (vs) {
+    short user_view = vs->get<short>("view");
+    if (user_view != DEFAULT_VIEW) {
+      activeViewAssigned = true;
+      return; // explicit user view takes precedence
+    }
+  }
+  else {
+    // No variables store: model was built by legacy code. Do nothing.
+    return;
+  }
+
+  if (activeViewAssigned) {
+    // View already pinned.  Conflict only if the new view differs.
+    if (cur_view != view) {
+      Cerr << "\nError: active view conflict for model '" << model_id()
+           << "'.  Method '" << method_label << "' inferred view " << view
+           << " but the model's view is already " << cur_view << ".\n"
+           << "  Options: build a separate Model for each iterator, or set "
+           << "active= explicitly on the Variables specification.\n";
+      throw std::runtime_error(
+        "active view conflict: see error message above");
+    }
+    return;
+  }
+
+  if (cur_view != view) {
+    // Refresh mvDist active mask when we change the view.
+    active_view(view, false); // base Model: updates vars, constraints, numDerivVars
+    if (mvDist.multivar_dist_rep())
+      initialize_active_types(mvDist);
+  }
+  activeViewAssigned = true;
+}
+
+
 
 /*
 const BitArray& Model::discrete_string_sets()
