@@ -30,6 +30,15 @@ endif()
 
 # Generator script
 set(GENERATOR_SCRIPT "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_parser_from_json.py")
+# Modules the generator imports; editing any of them must regenerate the code.
+set(GENERATOR_MODULES
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/default_expander_generator.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_ast_metadata.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_constraint_tests.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/generate_validation_metadata.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/generator_common.py"
+    "${CMAKE_CURRENT_SOURCE_DIR}/tools/schema_utils.py"
+)
 
 # Generated files directory (in build dir)
 set(GENERATED_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated")
@@ -79,7 +88,7 @@ add_custom_command(
             ${DAKOTA_SCHEMA_PATH}
             --output-dir ${CMAKE_CURRENT_BINARY_DIR}
             --force
-    DEPENDS ${DAKOTA_SCHEMA_PATH}
+    DEPENDS ${DAKOTA_SCHEMA_PATH} ${GENERATOR_SCRIPT} ${GENERATOR_MODULES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Generating parser sources from JSON schema"
     VERBATIM
