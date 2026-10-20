@@ -34,7 +34,8 @@ Verification::Verification(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 Verification::Verification(std::shared_ptr<StudyServices> services,
                            const IRStore& method_store,
                            std::shared_ptr<Model> model):
-  Analyzer(std::move(services), method_store, model)
+  Analyzer(std::move(services), method_store, model,
+           ViewRequest(ViewRequest::STATE))
 {
   if (iteratedModel->gradient_type() == "numerical" &&
       iteratedModel->method_source() == "vendor") {

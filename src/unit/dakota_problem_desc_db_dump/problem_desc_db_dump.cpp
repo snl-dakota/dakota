@@ -21,75 +21,39 @@ namespace {
 
 using json = nlohmann::json;
 
-TEST(problem_desc_db_dump_tests, legacy_problem_desc_db_dump_uses_indexed_legacy_keys)
+json selection_study(const char* top_method = "method_b")
 {
-  ProblemDescDB db(1, 0);
-
-  DataEnvironment env;
-  env.data_rep()->topMethodPointer = "method_b";
-  db.insert_node(env);
-
-  DataMethod method_a;
-  method_a.data_rep()->idMethod = "method_a";
-  method_a.data_rep()->modelPointer = "model_a";
-  db.insert_node(method_a);
-
-  DataMethod method_b;
-  method_b.data_rep()->idMethod = "method_b";
-  method_b.data_rep()->modelPointer = "model_b";
-  db.insert_node(method_b);
-
-  DataModel model_a;
-  model_a.data_rep()->idModel = "model_a";
-  model_a.data_rep()->variablesPointer = "vars_a";
-  db.insert_node(model_a);
-
-  DataModel model_b;
-  model_b.data_rep()->idModel = "model_b";
-  model_b.data_rep()->variablesPointer = "vars_b";
-  db.insert_node(model_b);
-
-  DataVariables vars_a;
-  vars_a.data_rep()->idVariables = "vars_a";
-  vars_a.data_rep()->numContinuousDesVars = 2;
-  db.insert_node(vars_a);
-
-  DataVariables vars_b;
-  vars_b.data_rep()->idVariables = "vars_b";
-  vars_b.data_rep()->numContinuousDesVars = 4;
-  db.insert_node(vars_b);
-
-  DataInterface iface;
-  iface.data_rep()->idInterface = "iface";
-  iface.data_rep()->analysisDrivers = {"driver_a"};
-  db.insert_node(iface);
-
-  DataResponses responses;
-  responses.data_rep()->idResponses = "resp";
-  responses.data_rep()->responseLabels = {"f"};
-  db.insert_node(responses);
-
-  const auto out_path =
-    std::filesystem::temp_directory_path() / "dakota_problem_desc_db_dump_legacy.json";
-  db.write_json_dump(out_path.string());
-
-  std::ifstream in(out_path);
-  ASSERT_TRUE(in.good());
-  json dumped = json::parse(in);
-
-  ASSERT_EQ(dumped["_meta"]["implementation"], "legacy_data_class");
-  ASSERT_EQ(dumped["_meta"]["omitted_keys"], json::array({"method.dl_solver.dlLib"}));
-
-  const json& values = dumped["values"];
-  EXPECT_EQ(values["environment.top_method_pointer"], "method_b");
-  EXPECT_EQ(values["method[0].id"], "method_a");
-  EXPECT_EQ(values["method[1].id"], "method_b");
-  EXPECT_EQ(values["method[0].model_pointer"], "model_a");
-  EXPECT_EQ(values["model[1].id"], "model_b");
-  EXPECT_EQ(values["variables[0].id"], "vars_a");
-  EXPECT_EQ(values["variables[1].continuous_design"], 4);
-  EXPECT_EQ(values["interface[0].id"], "iface");
-  EXPECT_EQ(values["responses[0].labels"], json::array({"f"}));
+  return {
+    {"environment", {{"top_method_pointer", top_method}}},
+    {"method", {
+      {{"sampling", {{"id_method", "method_a"},
+                      {"model_pointer", "model_a"}}}},
+      {{"sampling", {{"id_method", "method_b"},
+                      {"model_pointer", "model_b"}}}}
+    }},
+    {"model", {
+      {{"single", {{"id_model", "model_a"},
+                    {"variables_pointer", "variables_a"},
+                    {"interface_pointer", "interface_a"},
+                    {"responses_pointer", "responses_a"}}}},
+      {{"single", {{"id_model", "model_b"},
+                    {"variables_pointer", "variables_b"},
+                    {"interface_pointer", "interface_b"},
+                    {"responses_pointer", "responses_b"}}}}
+    }},
+    {"variables", {
+      {{"id_variables", "variables_a"}},
+      {{"id_variables", "variables_b"}}
+    }},
+    {"interface", {
+      {{"id_interface", "interface_a"}},
+      {{"id_interface", "interface_b"}}
+    }},
+    {"responses", {
+      {{"id_responses", "responses_a"}},
+      {{"id_responses", "responses_b"}}
+    }}
+  };
 }
 
 TEST(problem_desc_db_dump_tests, ir_state_dump_preserves_native_ir_keys)
@@ -152,7 +116,72 @@ TEST(problem_desc_db_dump_tests, problem_desc_db_dump_prefers_ir_state_when_pres
   EXPECT_TRUE(dumped["values"].is_object());
 }
 
-TEST(problem_desc_db_dump_tests, ir_backed_queries_still_respect_legacy_block_locks)
+TEST(problem_desc_db_dump_tests, ir_selection_follows_ids_and_model_pointers)
+{
+  ProblemDescDB db(1, 0);
+  db.enable_json_input(selection_study());
+  db.resolve_top_method();
+
+  EXPECT_EQ(db.method_id(), "method_b");
+  EXPECT_EQ(db.model_id(), "model_b");
+  EXPECT_EQ(db.interface_id(), "interface_b");
+  EXPECT_EQ(db.get_active_method_index(), 1);
+  EXPECT_EQ(db.get_active_model_index(), 1);
+  EXPECT_EQ(db.get_active_variables_index(), 1);
+  EXPECT_EQ(db.get_active_interface_index(), 1);
+  EXPECT_EQ(db.get_active_responses_index(), 1);
+}
+
+TEST(problem_desc_db_dump_tests, ir_selection_preserves_index_lock_semantics)
+{
+  ProblemDescDB db(1, 0);
+  db.enable_json_input(selection_study());
+  db.resolve_top_method();
+
+  const size_t selected = db.get_db_method_node();
+  ASSERT_EQ(selected, 1);
+  db.set_db_method_node(2);
+  EXPECT_EQ(db.get_db_method_node(), _NPOS);
+  db.set_db_method_node(selected);
+  EXPECT_EQ(db.get_db_method_node(), selected);
+  EXPECT_EQ(db.method_id(), "method_b");
+}
+
+TEST(problem_desc_db_dump_tests, ir_selection_rejects_unknown_ids)
+{
+  ProblemDescDB db(1, 0);
+  db.enable_json_input(selection_study());
+  EXPECT_ANY_THROW(db.set_db_method_node("missing_method"));
+}
+
+TEST(problem_desc_db_dump_tests, ir_selection_uses_first_empty_id)
+{
+  json study = selection_study();
+  study["environment"].erase("top_method_pointer");
+  study["method"][0]["sampling"].erase("id_method");
+
+  ProblemDescDB db(1, 0);
+  db.enable_json_input(study);
+  db.set_db_method_node("");
+
+  EXPECT_EQ(db.get_db_method_node(), 0);
+  EXPECT_TRUE(db.method_id().empty());
+}
+
+TEST(problem_desc_db_dump_tests, replacing_ir_study_replaces_active_blocks)
+{
+  ProblemDescDB db(1, 0);
+  db.enable_json_input(selection_study());
+  db.resolve_top_method();
+  ASSERT_EQ(db.method_id(), "method_b");
+
+  db.enable_json_input(selection_study("method_a"));
+  db.resolve_top_method();
+  EXPECT_EQ(db.method_id(), "method_a");
+  EXPECT_EQ(db.model_id(), "model_a");
+}
+
+TEST(problem_desc_db_dump_tests, ir_backed_queries_respect_block_locks)
 {
   ProblemDescDB db(1, 0);
   const auto input_path =

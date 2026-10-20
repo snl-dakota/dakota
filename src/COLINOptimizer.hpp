@@ -127,14 +127,14 @@ protected:
   
   /// convenience function for setting up the particular COLIN solver
   /// and appropriate Application
-  void solver_setup(unsigned short method_name);
+  void solver_setup(unsigned short method_name, const String* beta_solver_name = nullptr);
 
   /// sets up the random number generator for stochastic methods
   void set_rng(int seed);
 
   /// sets construct-time options for specific methods based on user
   /// specifications, including calling method-specific set functions
-  void set_solver_parameters();
+  void set_solver_parameters(const IRStore* method_store = nullptr);
 
   //
   //- Heading: runtime convenience member functions

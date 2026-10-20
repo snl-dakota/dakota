@@ -13,10 +13,25 @@
 #include "PostProcessModels.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include "IRStore.hpp"
+#include <type_traits>
 
 static const char rcsId[]="@(#) $Id: NOWPACOptimizer.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
 namespace Dakota {
+
+namespace {
+
+template <typename T>
+std::remove_const_t<T> nowpac_parameter(
+  const ProblemDescDB& database, const IRStore* method_store, const String& key)
+{
+  if (method_store)
+    return method_store->get<std::remove_const_t<T>>(key.substr(String("method.").size()));
+  return database.get<T>(key);
+}
+
+} // namespace
 
 
 NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
@@ -28,6 +43,21 @@ NOWPACOptimizer::NOWPACOptimizer(ProblemDescDB& problem_db, ParallelLibrary& par
   nowpacSolver.set_blackbox(nowpacEvaluator,
 			    nowpacEvaluator.num_ineq_constraints());
   initialize_options();
+}
+
+
+NOWPACOptimizer::NOWPACOptimizer(const IRStore& method_store,
+                                 std::shared_ptr<Model> model,
+                                 std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model,
+            std::shared_ptr<TraitsBase>(new NOWPACTraits())),
+  nowpacSolver(numContinuousVars, "nowpac_diagnostics.dat"),
+  nowpacEvaluator(iteratedModel)
+{
+  nowpacEvaluator.allocate_constraints();
+  nowpacSolver.set_blackbox(nowpacEvaluator,
+			    nowpacEvaluator.num_ineq_constraints());
+  initialize_options(&method_store);
 }
 
 
@@ -47,25 +77,25 @@ NOWPACOptimizer::~NOWPACOptimizer()
 { }
 
 
-void NOWPACOptimizer::initialize_options()
+void NOWPACOptimizer::initialize_options(const IRStore* method_store)
 {
   // Refer to bit bucket docs: https://bitbucket.org/fmaugust/nowpac
 
   // Optional: note that we are overridding NOWPAC defaults with Dakota defaults
   // May want to leave NOWPAC defaults in place if there is no user spec.
-  nowpacSolver.set_option("eta_1",
-    probDescDB.get<const Real>("method.trust_region.contract_threshold") );
-  nowpacSolver.set_option("eta_2",
-    probDescDB.get<const Real>("method.trust_region.expand_threshold") );
+  nowpacSolver.set_option("eta_1", nowpac_parameter<const Real>(probDescDB,
+    method_store, "method.trust_region.contract_threshold") );
+  nowpacSolver.set_option("eta_2", nowpac_parameter<const Real>(probDescDB,
+    method_store, "method.trust_region.expand_threshold") );
   // Criticality measures:
   //nowpacSolver.set_option("eps_c"                         , 1e-6 );
   //nowpacSolver.set_option("mu"                            , 1e1  );
   // Upper bound on poisedness constant augmented with distance penalty:
   //nowpacSolver.set_option("geometry_threshold"            , 5e2  );
-  nowpacSolver.set_option("gamma_inc",
-    probDescDB.get<const Real>("method.trust_region.expansion_factor") );
-  nowpacSolver.set_option("gamma",
-    probDescDB.get<const Real>("method.trust_region.contraction_factor") );
+  nowpacSolver.set_option("gamma_inc", nowpac_parameter<const Real>(probDescDB,
+    method_store, "method.trust_region.expansion_factor") );
+  nowpacSolver.set_option("gamma", nowpac_parameter<const Real>(probDescDB,
+    method_store, "method.trust_region.contraction_factor") );
   // Reduction factors:
   //nowpacSolver.set_option("omega"                         , 0.8  );
   //nowpacSolver.set_option("theta"                         , 0.8  );
@@ -88,7 +118,8 @@ void NOWPACOptimizer::initialize_options()
   if (stochastic) {
     // SNOWPAC picks random points in the trust region to improve the
     // distribution of the Gaussian Process regression
-    int random_seed = probDescDB.get<int>("method.random_seed");
+    int random_seed = nowpac_parameter<int>(probDescDB, method_store,
+					    "method.random_seed");
     if (random_seed) // default for no user spec is zero
       nowpacSolver.set_option("seed",                random_seed);
     //else SNOWPAC uses a machine generated seed and is non-repeatable
@@ -123,10 +154,11 @@ void NOWPACOptimizer::initialize_options()
   // they are absolute values for a hyper-sphere of constant dimensional radius.
   // Therefore, we present a scaled problem to NOWPAC as consistent with these 
   // trust region controls (see use of {un,}scale() within this file).
-  const RealVector& tr_init
-    = probDescDB.get<const RealVector>("method.trust_region.initial_size");
+  const RealVector tr_init = nowpac_parameter<const RealVector>(probDescDB,
+    method_store, "method.trust_region.initial_size");
   size_t num_factors = tr_init.length();
-  Real   min_factor  = probDescDB.get<const Real>("method.trust_region.minimum_size"),
+  Real   min_factor  = nowpac_parameter<const Real>(probDescDB, method_store,
+			 "method.trust_region.minimum_size"),
           tr_factor  = (num_factors) ? tr_init[0] : 0.5;
   if (num_factors > 1)
     Cerr << "\nWarning: ignoring trailing trust_region initial_size content "

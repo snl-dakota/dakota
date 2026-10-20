@@ -65,6 +65,46 @@ NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 }
 
 
+NonDACVSampling::
+NonDACVSampling(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		std::shared_ptr<Model> model):
+  NonDNumericAllocSampling(std::move(services), method_store, model)
+  //, multiStartACV(true)
+{
+  mlmfSubMethod = method_store.get<unsigned short>("sub_method");
+  //analyticEstVarDerivs = false; // for gradient verification in ACV,GenACV
+
+  if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
+    optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
+  else {                          //   budget constraint (maxFunctionEvals)
+    // truthFixedByPilot is a user-specified option for fixing the number of
+    // HF samples (to those in the pilot).  In this case, equivHF budget is
+    // allocated by optimizing r* for fixed N.
+    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
+                    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
+    optSubProblemForm = (truthFixedByPilot && !offline) ?
+      R_ONLY_LINEAR_CONSTRAINT : N_MODEL_LINEAR_CONSTRAINT;
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "ACV sub-method selection = " << mlmfSubMethod
+         << " sub-method formulation = "  << optSubProblemForm
+         << " sub-problem solver = "      << optSubProblemSolver << std::endl;
+
+  // approximation set for ACV includes all approximations
+  // defining fullApproxSet allows reuse of functions across ACV and GenACV
+  fullApproxSet.resize(numApprox);
+  for (size_t i=0; i<numApprox; ++i)
+    fullApproxSet[i] = i;
+
+  load_pilot_sample(method_store.get<SizetArray>("nond.pilot_samples"),
+                    numGroups, pilotSamples);
+
+  size_t max_ps = find_max(pilotSamples);
+  if (max_ps) maxEvalConcurrency *= max_ps;
+}
+
+
 NonDACVSampling::~NonDACVSampling()
 { }
 

@@ -11,7 +11,7 @@
 #define NOND_MULTILEVEL_SAMPLING_H
 
 #include "NonDEnsembleSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 #ifdef HAVE_NPSOL
 #include "NPSOLOptimizer.hpp"
@@ -39,6 +39,11 @@ public:
   NonDMultilevelSampling(ProblemDescDB& problem_db,
 			 ParallelLibrary& parallel_lib,
 			 std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDMultilevelSampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model,
+             const ViewRequest& view_req =
+               ViewRequest(ViewRequest::UNCERTAIN_BY_COUNTS));
   /// destructor
   ~NonDMultilevelSampling() override;
 

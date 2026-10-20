@@ -35,6 +35,9 @@ public:
 
   /// standard constructor
   NonDStochCollocation(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDStochCollocation(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor
   NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
 		       unsigned short num_int, const RealVector& dim_pref,
@@ -62,6 +65,9 @@ protected:
   /// allowing the derived ML SC class to bypass the standard SC ctor)
   NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
             ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
+  /// DI short-cut ctor
+  NonDStochCollocation(unsigned short method_name, std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// short-cut ctor allowing derived class to replace logic in base class ctor
   NonDStochCollocation(unsigned short method_name, std::shared_ptr<Model> model,
 		       short exp_coeffs_approach, const RealVector& dim_pref,

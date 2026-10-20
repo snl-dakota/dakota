@@ -47,6 +47,21 @@ size_t hash_value(const SerialDenseVector<OrdinalType, ScalarType>& sdv)
 namespace Dakota {
 
 
+/// (Re)bind vec as a Teuchos::View of [ptr, ptr+len).  Plain assignment from a
+/// temporary view is not sufficient: Teuchos::SerialDenseMatrix::operator=
+/// short-circuits when source and target are both views of the same pointer,
+/// leaving the target's length unchanged (e.g., an ALL->DESIGN view change
+/// where the active start offset remains 0).
+template <typename OrdinalType, typename ScalarType>
+inline void rebind_view(Teuchos::SerialDenseVector<OrdinalType, ScalarType>& vec,
+			ScalarType* ptr, OrdinalType len)
+{
+  Teuchos::SerialDenseVector<OrdinalType, ScalarType>
+    tmp(Teuchos::View, ptr, len);
+  vec.swap(tmp);
+}
+
+
 // --------------------------------------------
 // Equality operator definitions for data types
 // --------------------------------------------

@@ -233,6 +233,21 @@ if(DAKOTA_PYTHON_STUDY)
     set_property(TEST dakota_python_study PROPERTY
       ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
   endif()
+
+  add_test(NAME dakota_python_study_factories
+    COMMAND ${Python3_EXECUTABLE} -B -m unittest discover
+            -s "${CMAKE_CURRENT_SOURCE_DIR}" -p "test_study_*.py" -v
+  )
+  set_property(TEST dakota_python_study_factories PROPERTY LABELS Unit Python)
+  if(WIN32)
+    set_property(TEST dakota_python_study_factories PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_study_factories PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+  set_property(TEST dakota_python_study_factories APPEND PROPERTY
+    ENVIRONMENT "DAKOTA_REQUIRE_STUDY=1")
 endif()
 
 if(DAKOTA_PYTHON_STUDY)

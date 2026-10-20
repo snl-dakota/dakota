@@ -56,9 +56,14 @@ protected:
 
   NonDCubature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
 
+  /// DI constructor
+  NonDCubature(std::shared_ptr<StudyServices> services, const IRStore& method_store, std::shared_ptr<Model> model);
+
   //
   //- Heading: Virtual function redefinitions
   //
+
+  void initialize(std::shared_ptr<Model> model);
 
   void initialize_grid(const std::vector<Pecos::BasisPolynomial>& poly_basis) override;
 

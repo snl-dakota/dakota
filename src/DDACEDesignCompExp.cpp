@@ -66,6 +66,45 @@ DDACEDesignCompExp::DDACEDesignCompExp(ProblemDescDB& problem_db, ParallelLibrar
 }
 
 
+/** This constructor is called for a standard iterator built with data from
+    the IRStore. */
+DDACEDesignCompExp::
+DDACEDesignCompExp(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		   std::shared_ptr<Model> model):
+  PStudyDACE(std::move(services), method_store, model),
+  daceMethod(method_store.get<unsigned short>("sub_method")),
+  samplesSpec(method_store.get<int>("samples")), numSamples(samplesSpec),
+  symbolsSpec(method_store.get<int>("symbols")), numSymbols(symbolsSpec),
+  seedSpec(method_store.get<int>("random_seed")), randomSeed(seedSpec),
+  allDataFlag(false), numDACERuns(0),
+  varyPattern(!method_store.get<bool>("fixed_seed")),
+  mainEffectsFlag(method_store.get<bool>("main_effects"))
+{
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 ||
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: dace methods do not support discrete variables.\n";
+    abort_handler(-1);
+  }
+
+  if (daceMethod == SUBMETHOD_BOX_BEHNKEN)
+    maxEvalConcurrency *= 1 + 4*numContinuousVars*(numContinuousVars-1)/2;
+  else if (daceMethod == SUBMETHOD_CENTRAL_COMPOSITE)
+    maxEvalConcurrency *= 1 + 2*numContinuousVars
+                       +  (int)std::pow(2.,(double)numContinuousVars);
+  else if (numSamples) // samples input is optional (default = 0)
+    maxEvalConcurrency *= numSamples;
+
+  if (mainEffectsFlag && (daceMethod == SUBMETHOD_RANDOM ||
+                          daceMethod == SUBMETHOD_BOX_BEHNKEN ||
+                          daceMethod == SUBMETHOD_CENTRAL_COMPOSITE ) ) {
+    Cerr << "\nError: The Box-Behnken, central composite and random sampling"
+         << "\n       methods do not support calculation of main effects."
+         << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
 /** This alternate constructor is used for instantiations on-the-fly,
     using only the incoming data.  No problem description database
     queries are used. */

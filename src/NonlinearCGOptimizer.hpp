@@ -78,8 +78,8 @@ protected:
 
 private:
 
-  /// constructor helper function to parse misc_options from ProblemDescDB
-  void parse_options();
+  /// constructor helper function to parse misc_options
+  void parse_options(const StringArray& options);
 
   /// compute next direction via choice of method
   void compute_direction();

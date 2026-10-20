@@ -1,0 +1,33 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  surrogate_based_uq
+    samples_on_emulator 16
+    seed 1234
+model
+  id_model 'target'
+  global_surrogate function_train
+    start_order 3
+    start_rank 2
+    truth_model_pointer 'truth'
+    dace_method_pointer 'dace'
+method
+  id_method 'dace'
+  model_pointer 'truth'
+  sampling
+    samples 12 seed 1234 sample_type lhs
+model
+  id_model 'truth'
+  simulation
+variables
+  uniform_uncertain 2
+    lower_bounds -1.0 -1.0
+    upper_bounds 1.0 1.0
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py high' fork

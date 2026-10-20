@@ -148,6 +148,123 @@ NonDPolynomialChaos(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, st
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the IRStore. */
+NonDPolynomialChaos::
+NonDPolynomialChaos(std::shared_ptr<StudyServices> services,
+		    const IRStore& method_store,
+		    std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model),
+  crossValidation(method_store.get<bool>("nond.cross_validation")),
+  crossValidNoiseOnly(method_store.get<bool>("nond.cross_validation.noise_only")),
+  maxCVOrderCandidates(
+    method_store.get<unsigned short>("nond.cross_validation.max_order_candidates")),
+  respScaling(method_store.get<bool>("nond.response_scaling")),
+  noiseTols(method_store.get<RealVector>("nond.regression_noise_tolerance")),
+  l2Penalty(method_store.get<Real>("nond.regression_penalty")),
+  //initSGLevel(method_store.get<unsigned short>("nond.adapted_basis.initial_level")),
+  numAdvance(method_store.get<unsigned short>("nond.adapted_basis.advancements")),
+  expOrderSpec(method_store.get<unsigned short>("nond.expansion_order")),
+  collocPtsSpec(method_store.get<size_t>("nond.collocation_points")),
+  expSamplesSpec(method_store.get<size_t>("nond.expansion_samples")),
+  normalizedCoeffOutput(method_store.get<bool>("nond.normalized")),
+  uSpaceType(method_store.get<short>("nond.expansion_type")),
+  quadOrderSpec(method_store.get<unsigned short>("nond.quadrature_order")),
+  ssgLevelSpec(method_store.get<unsigned short>("nond.sparse_grid_level")),
+  cubIntSpec(method_store.get<unsigned short>("nond.cubature_integrand")),
+  importBuildPointsFile(method_store.get<String>("import_build_points_file")),
+  expansionImportFile(method_store.get<String>("nond.import_expansion_file")),
+  expansionExportFile(method_store.get<String>("nond.export_expansion_file"))
+  //resizedFlag(false), callResize(false)
+{
+  // ----------------
+  // Resolve settings
+  // ----------------
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+
+  // --------------------
+  // Data import settings
+  // --------------------
+  String pt_reuse = method_store.get<String>("nond.point_reuse");
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  std::shared_ptr<Iterator> u_space_sampler;
+  String approx_type;
+  unsigned short sample_type = method_store.get<unsigned short>("sample_type");
+  const String& rng = method_store.get<String>("random_number_generator");
+
+  UShortArray exp_orders; // defined for expansion_samples/regression
+  configure_expansion_orders(expOrderSpec, dimPrefSpec, exp_orders);
+
+  if (!expansionImportFile.empty()) // PCE import: no regression/projection
+    approx_type = //(piecewiseBasis) ? "piecewise_orthogonal_polynomial" :
+      "global_orthogonal_polynomial";
+  else if (!config_integration(quadOrderSpec, ssgLevelSpec, cubIntSpec,
+             u_space_sampler, g_u_model, approx_type) &&
+           !config_expectation(expSamplesSpec, sample_type, randomSeed, rng,
+             u_space_sampler, g_u_model, approx_type) &&
+           !config_regression(exp_orders, collocPtsSpec,
+             method_store.get<Real>("nond.collocation_ratio_terms_order"),
+             method_store.get<short>("nond.regression_type"),
+             method_store.get<short>("nond.least_squares_regression_type"),
+             method_store.get<UShortArray>("nond.tensor_grid_order"), sample_type,
+             randomSeed, rng, pt_reuse, u_space_sampler, g_u_model,
+             approx_type)) {
+    Cerr << "Error: incomplete configuration in NonDPolynomialChaos "
+         << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  ShortArray pce_asv(g_u_model->qoi(), 3); // for stand alone mode
+  ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    method_store.get<unsigned short>("import_build_format"),
+    method_store.get<bool>("import_build_active_only"),
+    method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  initialize_u_space_model();
+
+  // -------------------------------------
+  // Construct expansionSampler, if needed
+  // -------------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+
+  if (parallelLib.command_line_check())
+    Cout << "\nPolynomial_chaos construction completed: initial grid size of "
+         << numSamplesOnModel << " evaluations to be performed." << std::endl;
+}
+
+
 /** This constructor is used for helper iterator instantiation on the fly
     that employ numerical integration (quadrature, sparse grid, cubature). */
 NonDPolynomialChaos::
@@ -387,6 +504,33 @@ NonDPolynomialChaos(unsigned short method_name, ProblemDescDB& problem_db,
     problem_db.get<const String>("method.nond.import_expansion_file")),
   expansionExportFile(
     problem_db.get<const String>("method.nond.export_expansion_file"))
+  //resizedFlag(false), callResize(false)
+{
+  // Rest is in derived class...
+}
+
+
+/** This constructor is called by derived class constructors that
+    customize the object construction. */
+NonDPolynomialChaos::
+NonDPolynomialChaos(unsigned short method_name, std::shared_ptr<StudyServices> services,
+		    const IRStore& method_store, std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model),
+  crossValidation(method_store.get<bool>("nond.cross_validation")),
+  crossValidNoiseOnly(method_store.get<bool>("nond.cross_validation.noise_only")),
+  maxCVOrderCandidates(
+    method_store.get<unsigned short>("nond.cross_validation.max_order_candidates")),
+  respScaling(method_store.get<bool>("nond.response_scaling")),
+  noiseTols(method_store.get<RealVector>("nond.regression_noise_tolerance")),
+  l2Penalty(method_store.get<Real>("nond.regression_penalty")),
+  //initSGLevel(method_store.get<unsigned short>("nond.adapted_basis.initial_level")),
+  numAdvance(method_store.get<unsigned short>("nond.adapted_basis.advancements")),
+  normalizedCoeffOutput(method_store.get<bool>("nond.normalized")),
+  uSpaceType(method_store.get<short>("nond.expansion_type")),
+  cubIntSpec(method_store.get<unsigned short>("nond.cubature_integrand")),
+  importBuildPointsFile(method_store.get<String>("import_build_points_file")),
+  expansionImportFile(method_store.get<String>("nond.import_expansion_file")),
+  expansionExportFile(method_store.get<String>("nond.export_expansion_file"))
   //resizedFlag(false), callResize(false)
 {
   // Rest is in derived class...

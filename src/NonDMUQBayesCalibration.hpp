@@ -64,6 +64,9 @@ public:
 
   /// standard constructor
   NonDMUQBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDMUQBayesCalibration(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMUQBayesCalibration();
 
@@ -73,8 +76,9 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void calibrate();
+  void initialize();
 
+  void calibrate();
 
   void map_pre_solve() override;
 

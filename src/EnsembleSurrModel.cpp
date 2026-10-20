@@ -16,6 +16,8 @@
 #include <stdexcept>
 #include <utility>
 
+#include <stdexcept>
+
 static const char rcsId[]=
   "@(#) $Id: EnsembleSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
 
@@ -105,6 +107,11 @@ EnsembleSurrModel::EnsembleSurrModel(
   ensemblePrecedence(DEFAULT_PRECEDENCE), modeKeyBufferSize(0),
   correctionMode(SINGLE_CORRECTION)
 {
+  if (surrogateType != "ensemble")
+    throw std::runtime_error(
+      "EnsembleSurrModel DI construction requires surrogate.type 'ensemble', "
+      "not '" + surrogateType + "'.");
+
   initialize_subordinate_models();
 }
 
@@ -239,14 +246,16 @@ estimate_partition_bounds(int max_eval_concurrency)
   // responseMode is a run-time setting, so we are conservative on usage of
   // max_eval_concurrency as in derived_init_communicators()
 
-  probDescDB.set_db_model_nodes(truthModel->model_id());
+  if (!study_services())
+    probDescDB.set_db_model_nodes(truthModel->model_id());
   IntIntPair min_max_i,
     min_max = truthModel->estimate_partition_bounds(max_eval_concurrency);
 
   size_t i, num_approx = approxModels.size();
   for (i=0; i<num_approx; ++i) {
     Model& model_i = *approxModels[i];
-    probDescDB.set_db_model_nodes(model_i.model_id());
+    if (!study_services())
+      probDescDB.set_db_model_nodes(model_i.model_id());
     min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
     if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
     if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
@@ -270,6 +279,15 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // and free and a more aggressive approach with set.
 
   if (recurse_flag) {
+    if (study_services()) {
+      for (const auto& model : approxModels) {
+        model->init_communicators(pl_iter, max_eval_concurrency);
+        model->init_communicators(pl_iter, model->derivative_concurrency());
+      }
+      truthModel->init_communicators(pl_iter, max_eval_concurrency);
+      truthModel->init_communicators(pl_iter, truthModel->derivative_concurrency());
+      return;
+    }
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
               num_models  = approxModels.size();
     if (truthModel) ++num_models;
@@ -2472,6 +2490,28 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
   //    single_apply(vars, resp, corrSequence[i]);
   //  break;
   }
+}
+
+
+void EnsembleSurrModel::
+assign_inferred_view(short view, const String& method_label)
+{
+  // Apply to children first (approxModels, then truthModel), then self.
+  // This mirrors how inactive_view recurses into sub-models.
+  size_t num_approx = approxModels.size();
+  for (size_t i = 0; i < num_approx; ++i)
+    approxModels[i]->assign_inferred_view(view, method_label);
+  truthModel->assign_inferred_view(view, method_label);
+
+  // Now assign to self (base Model implementation handles precedence / conflicts).
+  Model::assign_inferred_view(view, method_label);
+
+  // Re-check compatibility and refresh correction sizing if counts may have
+  // changed.
+  for (size_t i = 0; i < num_approx; ++i)
+    check_submodel_compatibility(*approxModels[i]);
+  check_submodel_compatibility(*truthModel);
+  initialize_correction();
 }
 
 } // namespace Dakota

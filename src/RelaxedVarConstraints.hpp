@@ -11,7 +11,7 @@
 #define RELAXED_VAR_CONSTRAINTS_H
 
 #include "DakotaConstraints.hpp"
-#include "DataVariables.hpp"
+#include "DakotaVariablesEnums.hpp"
 
 
 namespace Dakota {

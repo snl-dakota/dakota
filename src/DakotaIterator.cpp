@@ -132,6 +132,7 @@ Iterator::Iterator(std::shared_ptr<StudyServices> services,
 Iterator::
 Iterator(unsigned short method_name, std::shared_ptr<Model> model,
 	 std::shared_ptr<TraitsBase> traits):
+  sharedStudyServices(model->study_services()),
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
   runOptions(*model->run_options_ptr()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
@@ -174,6 +175,7 @@ Iterator::Iterator(unsigned short method_name,
 Iterator::
 Iterator(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 	 Real conv_tol, std::shared_ptr<TraitsBase> traits):
+  sharedStudyServices(model->study_services()),
   probDescDB(dummy_db), parallelLib(model->parallel_library()),
   runOptions(*model->run_options_ptr()),
   methodPCIter(parallelLib.parallel_configuration_iterator()),
@@ -310,7 +312,6 @@ static UShortStrBimap method_map =
   (BRANCH_AND_BOUND,                "branch_and_bound")
   (MOGA,                            "moga")
   (SOGA,                            "soga")
-  (DL_SOLVER,                       "dl_solver")
   (MESH_ADAPTIVE_SEARCH,            "mesh_adaptive_search")
   (MIT_NOWPAC,                      "nowpac")
   (MIT_SNOWPAC,                     "snowpac")
@@ -1153,7 +1154,7 @@ IntIntPair Iterator::estimate_partition_bounds()
 
 void Iterator::sub_iterator_flag(bool si_flag)
 {
-  // Implementation in .cpp due to need for DataMethod.hpp
+  // Implementation in .cpp to keep the enum mapping out of the header
   // If outputLevel were to change after call to this function, would
   // need to recheck/set status of summaryOyutputFlag
   subIteratorFlag = si_flag;
@@ -1328,6 +1329,86 @@ std::shared_ptr<StudyServices> Iterator::study_services() const
 StudyRuntime Iterator::study_runtime() const
 {
   return StudyRuntime(parallelLib, output_manager_ptr());
+}
+
+
+void Iterator::assign_requested_view(Model& model, const ViewRequest& request)
+{
+  // Guard 1: only the DI path has a variables store.
+  const Variables& vars = model.current_variables();
+  const std::shared_ptr<IRStore>& vs = vars.variables_store_ptr();
+  if (!vs) return; // legacy-built model — do nothing
+
+  // Guard 2: no algorithm configured yet (e.g. meta-iterators before their
+  // sub-iterator is set); methodName == 0 means DEFAULT_METHOD.
+  if (!methodName) return;
+
+  // Guard 3: explicit user-supplied active= view takes precedence.
+  short user_view = vs->get<short>("view");
+  if (user_view != DEFAULT_VIEW) {
+    model.mark_active_view_assigned();
+    return;
+  }
+
+  // Resolve the spec.
+  short spec = DEFAULT_VIEW; // sentinel meaning "no change"
+
+  // responseRule: objectives or non-Bayes calibration terms → DESIGN.
+  if (request.responseRule) {
+    short fn_type = model.primary_fn_type();
+    if (fn_type == OBJECTIVE_FNS ||
+        (fn_type == CALIB_TERMS && methodName != BAYES_CALIBRATION)) {
+      spec = DESIGN_VIEW;
+    }
+  }
+
+  if (spec == DEFAULT_VIEW) {
+    // No response override; interpret the spec directly.
+    switch (request.spec) {
+    case ViewRequest::KEEP:
+      return; // leave the model's view alone
+
+    case ViewRequest::ALL:
+      spec = ALL_VIEW; break;
+    case ViewRequest::DESIGN:
+      spec = DESIGN_VIEW; break;
+    case ViewRequest::UNCERTAIN:
+      spec = UNCERTAIN_VIEW; break;
+    case ViewRequest::ALEATORY_UNCERTAIN:
+      spec = ALEATORY_UNCERTAIN_VIEW; break;
+    case ViewRequest::EPISTEMIC_UNCERTAIN:
+      spec = EPISTEMIC_UNCERTAIN_VIEW; break;
+    case ViewRequest::STATE:
+      spec = STATE_VIEW; break;
+
+    case ViewRequest::UNCERTAIN_BY_COUNTS: {
+      // Pick view from uncertain variable counts; keep current view if none.
+      const SharedVariablesData& svd = vars.shared_data();
+      size_t num_cauv = 0, num_dauiv = 0, num_dausv = 0, num_daurv = 0;
+      size_t num_ceuv = 0, num_deuiv = 0, num_deusv = 0, num_deurv = 0;
+      svd.aleatory_uncertain_counts(num_cauv, num_dauiv, num_dausv, num_daurv);
+      svd.epistemic_uncertain_counts(num_ceuv, num_deuiv, num_deusv, num_deurv);
+      size_t num_auv = num_cauv + num_dauiv + num_dausv + num_daurv;
+      size_t num_euv = num_ceuv + num_deuiv + num_deusv + num_deurv;
+      if      (num_auv && num_euv) spec = UNCERTAIN_VIEW;
+      else if (num_euv)            spec = EPISTEMIC_UNCERTAIN_VIEW;
+      else if (num_auv)            spec = ALEATORY_UNCERTAIN_VIEW;
+      else return; // no uncertain vars: keep current view (DI divergence; see DI_CLEANUP_TODO.md)
+      break;
+    }
+    }
+  }
+
+  // Determine whether the current domain is relaxed.
+  short cur_view = vars.view().first;
+  bool relaxed = (cur_view == RELAXED_ALL ||
+                  (cur_view >= RELAXED_DESIGN && cur_view <= RELAXED_STATE));
+
+  // Build a human-readable label for conflict error messages.
+  String label = method_id();
+  if (label.empty()) label = method_enum_to_string(methodName);
+
+  model.assign_inferred_view(Variables::method_map(spec, relaxed), label);
 }
 
 } // namespace Dakota

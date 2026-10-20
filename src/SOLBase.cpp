@@ -10,7 +10,7 @@
 #include "SOLBase.hpp"
 #include "DakotaResponse.hpp"
 #include "DakotaMinimizer.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include <sstream>
 #include <algorithm>
 
@@ -193,7 +193,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
 
   // Each of NPSOL's settings is an optional parameter in dakota.input.nspec, 
   // but always assigning them is OK since they are always defined, either from
-  // dakota.in or from the default specified in the DataMethod constructor.
+  // dakota.in or from the generated method default.
   // However, this approach may not use the NPSOL default:
 
   // If speculative_flag is set and numerical_gradients are used, then check 
@@ -269,7 +269,7 @@ void SOLBase::set_options(bool speculative_flag, bool vendor_num_grad_flag,
   }
 
   // conv_tol is an optional parameter in dakota.input.nspec, but
-  // defining our own default (in the DataMethod constructor) and
+  // defining our own default (in the generated method defaults) and
   // always assigning it applies some consistency across methods.
   // Therefore, the NPSOL default is not used.
   std::ostringstream ctol_stream;

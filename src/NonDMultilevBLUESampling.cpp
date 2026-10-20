@@ -25,24 +25,44 @@ static const char rcsId[]="@(#) $Id: NonDMultilevBLUESampling.cpp 7035 2010-10-2
 namespace Dakota {
 
 
-/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
-    probDescDB can be queried for settings from the method specification. */
 NonDMultilevBLUESampling::
 NonDMultilevBLUESampling(ProblemDescDB& problem_db,
-			 ParallelLibrary& parallel_lib,
-			 std::shared_ptr<Model> model):
+                         ParallelLibrary& parallel_lib,
+                         std::shared_ptr<Model> model):
   NonDNumericAllocSampling(problem_db, parallel_lib, model),
-  pilotGroupSampling(problem_db.get<short>("method.nond.pilot_samples.mode")),
-  groupThrottleType(problem_db.get<short>("method.nond.group_throttle_type")),
-  groupSizeThrottle(problem_db.get<unsigned short>("method.nond.group_size_throttle")),
-  rCondBestThrottle(problem_db.get<size_t>("method.nond.rcond_best_throttle")),
-  rCondTolThrottle(problem_db.get<const Real>("method.nond.rcond_tol_throttle"))
+  pilotGroupSampling(probDescDB.get<short>("method.nond.pilot_samples.mode")),
+  groupThrottleType(probDescDB.get<short>("method.nond.group_throttle_type")),
+  groupSizeThrottle(probDescDB.get<unsigned short>("method.nond.group_size_throttle")),
+  rCondBestThrottle(probDescDB.get<size_t>("method.nond.rcond_best_throttle")),
+  rCondTolThrottle(probDescDB.get<const Real>("method.nond.rcond_tol_throttle"))
+{
+  mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
+
+  class_initialize(problem_db.get<const SizetArray>("method.nond.pilot_samples"));
+}
+
+
+NonDMultilevBLUESampling::
+NonDMultilevBLUESampling(std::shared_ptr<StudyServices> services,
+			 const IRStore& method_store,
+			 std::shared_ptr<Model> model):
+  NonDNumericAllocSampling(std::move(services), method_store, model),
+  pilotGroupSampling(method_store.get<short>("nond.pilot_samples.mode")),
+  groupThrottleType(method_store.get<short>("nond.group_throttle_type")),
+  groupSizeThrottle(method_store.get<unsigned short>("nond.group_size_throttle")),
+  rCondBestThrottle(method_store.get<size_t>("nond.rcond_best_throttle")),
+  rCondTolThrottle(method_store.get<Real>("nond.rcond_tol_throttle"))
+{
+  mlmfSubMethod = method_store.get<unsigned short>("sub_method");
+
+  class_initialize(method_store.get<SizetArray>("nond.pilot_samples"));
+}
+
+
+void NonDMultilevBLUESampling::class_initialize(const SizetArray& pilot_samples)
 {
   //analyticEstVarDerivs = true; // now adopted for all numerical estimators
   //hardenNumericSoln    = true; // now adopted for all numerical estimators
-
-  mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
 
   // SDP versus conventional NLP handled by optSubProblemSolver
   //optSubProblemSolver = sub_optimizer_select(
@@ -55,8 +75,8 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
 
   if (outputLevel >= DEBUG_OUTPUT)
     Cout << "ML BLUE sub-method selection = " << mlmfSubMethod
-	 << " sub-method formulation = " << optSubProblemForm
-	 << " sub-problem solver = "     << optSubProblemSolver << std::endl;
+         << " sub-method formulation = " << optSubProblemForm
+         << " sub-problem solver = "     << optSubProblemSolver << std::endl;
 
   // groupThrottleType is inferred for scalar spec so XML can be flattened
   if (!groupThrottleType) {
@@ -97,7 +117,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
       unique_groups.insert(group);
     }
     singleton_model_group(numApprox, group); // not the last CVMC group
-    unique_groups.insert(group);    
+    unique_groups.insert(group);
     size_t unique_len = unique_groups.size();  UShortArraySet::iterator it;
     numGroups = unique_len + 1;
     modelGroups.resize(numGroups);
@@ -122,10 +142,10 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
       const UShortArray& tp_g = tp[g];
       g_size = std::count(tp_g.begin(), tp_g.end(), 1);
       if (g_size <= groupSizeThrottle) {
-	group_g.resize(g_size);
-	for (m=0, g_index=0; m<num_models; ++m)
-	  if (tp_g[m]) { group_g[g_index] = m; ++g_index; }
-	modelGroups.push_back(group_g);
+        group_g.resize(g_size);
+        for (m=0, g_index=0; m<num_models; ++m)
+          if (tp_g[m]) { group_g[g_index] = m; ++g_index; }
+        modelGroups.push_back(group_g);
       }
     }
     // augment with all-group where needed:
@@ -137,11 +157,11 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
     // > Note 2: size throttle < numApprox means some avg_eval_ratios from an
     //   analytic MFMC initial_guess will be dropped.  Pairwise CVMC is Ok.
     if ( groupSizeThrottle < num_models ) {
-	 // && ( pilotGroupSampling == SHARED_PILOT ||
-	 // varianceMinimizers.size() == 1) ) {// local w/ MFMC/CVMC pre-solve
+         // && ( pilotGroupSampling == SHARED_PILOT ||
+         // varianceMinimizers.size() == 1) ) {// local w/ MFMC/CVMC pre-solve
       group_g.resize(num_models);
       for (m=0; m<num_models; ++m)
-	group_g[m] = m;
+        group_g[m] = m;
       modelGroups.push_back(group_g);
     }
     numGroups = modelGroups.size();
@@ -163,7 +183,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
       const UShortArray& tp_g = tp[g];
       UShortArray&    group_g = modelGroups[g];
       for (m=0; m<=numApprox; ++m)
-	if (tp_g[m]) group_g.push_back(m);
+        if (tp_g[m]) group_g.push_back(m);
     }
     break;
   }
@@ -179,8 +199,7 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
       groupThrottleType != RCOND_BEST_COUNT_THROTTLE)
     update_search_algorithm();
 
-  load_pilot_sample(problem_db.get<const SizetArray>("method.nond.pilot_samples"),
-		    numGroups, pilotSamples);
+  load_pilot_sample(pilot_samples, numGroups, pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;

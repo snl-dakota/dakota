@@ -49,6 +49,32 @@ NonDWASABIBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 }
 
 
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDWASABIBayesCalibration::
+NonDWASABIBayesCalibration(std::shared_ptr<StudyServices> services,
+			   const IRStore& method_store,
+			   std::shared_ptr<Model> model):
+  NonDBayesCalibration(std::move(services), method_store, model),
+  numPushforwardSamples(method_store.get<int>("nond.pushforward_samples")),
+  dataDistMeans(method_store.get<RealVector>("nond.data_dist_means")),
+  dataDistCovariance(method_store.get<RealVector>("nond.data_dist_covariance")),
+  dataDistFilename(method_store.get<String>("nond.data_dist_filename")),
+  dataDistCovType(method_store.get<String>("nond.data_dist_cov_type")),
+  posteriorSamplesImportFile(method_store.get<String>("nond.posterior_samples_import_file")),
+  posteriorSamplesImportFormat(0), // not used
+  exportPosteriorDensityFile(method_store.get<String>("nond.posterior_density_export_file")),
+  exportPosteriorSamplesFile(method_store.get<String>("nond.posterior_samples_export_file")),
+  exportFileFormat(0), // not used
+  generateRandomPosteriorSamples(method_store.get<bool>("nond.generate_posterior_samples")),
+  evaluatePosteriorDensity(method_store.get<bool>("nond.evaluate_posterior_density"))
+{
+  // don't use max_function_evaluations, since we have num_samples
+  // consider max_iterations = generations, and adjust as needed?
+
+}
+
+
 NonDWASABIBayesCalibration::~NonDWASABIBayesCalibration()
 { }
 

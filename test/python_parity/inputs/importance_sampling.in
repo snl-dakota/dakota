@@ -1,0 +1,24 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  importance_sampling
+    importance
+    samples 16
+    seed 1234
+    max_iterations 1
+    response_levels 0.5
+model
+  id_model 'target'
+  simulation
+variables
+  normal_uncertain 2
+    means 0.0 0.0
+    std_deviations 1.0 1.0
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py high' fork

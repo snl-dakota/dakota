@@ -11,8 +11,8 @@
 #include "dakota_data_util.hpp"
 #include "DakotaTraitsBase.hpp"
 #include "DakotaIterator.hpp"
-#include "DataMethod.hpp"
-#include "DataModel.hpp"
+#include "DakotaMethodEnums.hpp"
+#include "DakotaModelEnums.hpp"
 
 #ifdef DAKOTA_HOPS
 #include "APPSOptimizer.hpp"

@@ -13,7 +13,7 @@
 #include "DakotaModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DiscrepancyCorrection.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 
 namespace Dakota {

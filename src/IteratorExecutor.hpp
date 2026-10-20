@@ -11,7 +11,7 @@
 #define ITERATOR_EXECUTOR_H
 
 //#include "Scheduler.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "ParallelLibrary.hpp"
 
 namespace Dakota {

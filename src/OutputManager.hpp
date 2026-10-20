@@ -383,7 +383,7 @@ public:
   bool tabularDataFlag;   ///< whether user requested tabular data file
   bool resultsOutputFlag; ///< whether user requested results data output
 
-   // For items from the environment spec, can use DataEnvironment defaults
+   // For items from the environment spec, can use environment IR defaults
    //  tabular_filename       = outputManager.tabularDataFile;
    //  results_filename       = outputManager.resultsOutputFile;
 

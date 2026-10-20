@@ -81,6 +81,66 @@ NonDQuadrature::NonDQuadrature(ProblemDescDB& problem_db, ParallelLibrary& paral
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called
+    and probDescDB can be queried for settings from the method
+    specification.  It is not currently used, as there is not yet a
+    separate nond_quadrature method specification. */
+NonDQuadrature::
+NonDQuadrature(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	       std::shared_ptr<Model> model):
+  NonDIntegration(std::move(services), method_store, model),
+  quadOrderSpec(method_store.get<unsigned short>("nond.quadrature_order")),
+  numSamples(0), quadMode(FULL_TENSOR)
+{
+  // initialize the numerical integration driver
+  numIntDriver = Pecos::IntegrationDriver(Pecos::QUADRATURE);
+  tpqDriver = std::static_pointer_cast<Pecos::TensorProductDriver>
+    (numIntDriver.driver_rep());
+
+  //check_variables(x_dist.random_variables());
+  // TO DO: create a ProbabilityTransformModel, if needed
+  const Pecos::MultivariateDistribution& u_dist
+    = model->multivariate_distribution();
+
+  short refine_type
+    = method_store.get<short>("nond.expansion_refinement_type");
+  short refine_control
+    = method_store.get<short>("nond.expansion_refinement_control");
+  short refine_metric = (refine_control) ?
+    Pecos::COVARIANCE_METRIC : Pecos::DEFAULT_METRIC;
+  short refine_stats  = (refine_control) ?
+    Pecos::ACTIVE_EXPANSION_STATS : Pecos::NO_EXPANSION_STATS;
+  short nest_override = method_store.get<short>("nond.nesting_override");
+  nestedRules = ( nest_override == Pecos::NESTED ||
+                  ( refine_type && nest_override != Pecos::NON_NESTED ) );
+  Pecos::ExpansionConfigOptions ec_options(Pecos::QUADRATURE,
+    method_store.get<short>("nond.expansion_basis_type"),
+    iteratedModel->correction_type(),
+    method_store.get<short>("nond.multilevel_discrepancy_emulation"),
+    outputLevel, method_store.get<bool>("variance_based_decomp"),
+    method_store.get<unsigned short>("nond.vbd_interaction_order"),
+    refine_control, refine_metric, refine_stats,
+    method_store.get<size_t>("nond.max_refinement_iterations"),
+    method_store.get<size_t>("nond.max_solver_iterations"), convergenceTol,
+    method_store.get<unsigned short>("soft_convergence_limit"));
+
+  bool piecewise_basis = (method_store.get<bool>("nond.piecewise_basis") ||
+                          refine_type == Pecos::H_REFINEMENT);
+  bool use_derivs = method_store.get<bool>("derivative_usage");
+  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
+  Pecos::BasisConfigOptions bc_options(nestedRules, piecewise_basis,
+                                       equidist_rules, use_derivs);
+
+  tpqDriver->initialize_grid(u_dist, ec_options, bc_options);
+  tpqDriver->initialize_grid_parameters(u_dist);
+
+  reset(); // init_dim_quad_order() uses integrationRules from initialize_grid()
+
+  maxEvalConcurrency *= tpqDriver->grid_size();
+}
+
+
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical quadrature points. */
 NonDQuadrature::

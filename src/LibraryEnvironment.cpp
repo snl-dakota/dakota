@@ -99,22 +99,6 @@ LibraryEnvironment::~LibraryEnvironment()
 { }
 
 
-void LibraryEnvironment::
-insert_nodes(Dakota::DataMethod&   dme, Dakota::DataModel&    dmo,
-	     Dakota::DataVariables& dv, Dakota::DataInterface& di,
-	     Dakota::DataResponses& dr)
-{
-  if (parallelLib.world_rank() == 0) {
-    // Push instances into the DB
-    probDescDB.insert_node(dme);
-    probDescDB.insert_node(dmo);
-    probDescDB.insert_node(dv);
-    probDescDB.insert_node(di);
-    probDescDB.insert_node(dr);
-  }
-}
-
-
 void LibraryEnvironment::done_modifying_db()
 {
   // always check and broadcast before construction

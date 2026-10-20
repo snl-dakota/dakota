@@ -291,7 +291,7 @@ SNLLOptimizer::SNLLOptimizer(const IRStore& method_store, std::shared_ptr<Model>
     nlfObjective = nlf0;
     optpds = new OPTPP::OptPDS(nlf0);
     int search_scheme_size
-      = probDescDB.get<int>("method.optpp.search_scheme_size");
+      = method_store.get<int>("optpp.search_scheme_size");
     maxEvalConcurrency *= search_scheme_size;
     optpds->setSSS(search_scheme_size); 
     theOptimizer = optpds;

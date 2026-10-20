@@ -37,7 +37,7 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   initLHS(true), useModelBounds(false), invertProb(false),
   trackExtremeValues(pdfOutput) // used for defining PDF bounds
 {
-  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // sampleType IR default is SUBMETHOD_DEFAULT (0).
   // Enforce an LHS default for this method.
   if (!sampleType)
     sampleType = SUBMETHOD_LHS;
@@ -49,6 +49,44 @@ NonDAdaptImpSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
   // size of refinement batches is separate from initial LHS size (numSamples)
   const IntVector& db_refine_samples = 
     probDescDB.get<const IntVector>("method.nond.refinement_samples");
+  // if separate refinement batch size not provided, reuse initial LHS size
+  refineSamples = numSamples; // default
+  if (db_refine_samples.length() == 1)
+    refineSamples = db_refine_samples[0];
+  else if (db_refine_samples.length() > 1) {
+    Cerr << "\nError (NonDAdaptImpSampling): refinement_samples must be length "
+         << "1 if specified." << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
+
+  statsFlag = true;
+  uSpaceModel = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, STD_NORMAL_U, useModelBounds);
+
+  // maxEvalConcurrency defined from initial LHS size (numSamples)
+}
+
+
+NonDAdaptImpSampling::
+NonDAdaptImpSampling(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		     std::shared_ptr<Model> model):
+  NonDSampling(std::move(services), method_store, model),
+  importanceSamplingType(method_store.get<unsigned short>("nond.integration_refinement")),
+  initLHS(true), useModelBounds(false), invertProb(false),
+  trackExtremeValues(pdfOutput) // used for defining PDF bounds
+{
+  // sampleType default in DataMethod.cpp is SUBMETHOD_DEFAULT (0).
+  // Enforce an LHS default for this method.
+  if (!sampleType)
+    sampleType = SUBMETHOD_LHS;
+
+  finalMomentsType = Pecos::NO_MOMENTS;
+
+  initialize_final_statistics();
+
+  // size of refinement batches is separate from initial LHS size (numSamples)
+  const IntVector& db_refine_samples =
+    method_store.get<IntVector>("nond.refinement_samples");
   // if separate refinement batch size not provided, reuse initial LHS size
   refineSamples = numSamples; // default
   if (db_refine_samples.length() == 1)

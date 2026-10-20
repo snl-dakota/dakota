@@ -24,13 +24,75 @@ static const char rcsId[]="@(#) $Id: NonDSparseGrid.cpp,v 1.57 2004/06/21 19:57:
 namespace Dakota {
 
 
+void NonDSparseGrid::initialize_ssg_driver(const Pecos::MultivariateDistribution& u_dist,
+					   const Pecos::ExpansionConfigOptions& ec_options,
+					   Pecos::BasisConfigOptions& bc_options,
+					   short refine_control,
+					   bool piecewise_basis)
+{
+  // initialize ssgDriver
+  short growth_rate;
+  short growth_override = probDescDB.get<short>("method.nond.growth_override");
+  // moderate growth is helpful for iso and aniso sparse grids, but not
+  // necessary for generalized grids
+  if (growth_override == Pecos::UNRESTRICTED ||
+      refine_control  == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
+    // unstructured index set evolution: no motivation to restrict
+    growth_rate = Pecos::UNRESTRICTED_GROWTH;
+  /* piecewise bases can be MODERATE now that we distinguish INTERPOLATION_MODE
+  else if (piecewise_basis)
+    // no reason to match Gaussian precision, but restriction still useful:
+    // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
+    // and is more consistent with UNRESTRICTED generalized sparse grids.
+    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
+  */
+  else
+    // INTEGRATION_MODE:   standardize on precision: i = 2m-1 = 2(2l+1)-1 = 4l+1
+    // INTERPOLATION_MODE: standardize on number of interp pts: m = 2l+1
+    growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
+
+  switch (ssgDriverType) {
+  case Pecos::COMBINED_SPARSE_GRID: {
+    bool track_colloc = false, track_uniq_prod_wts = false; // defaults
+    std::static_pointer_cast<Pecos::CombinedSparseGridDriver>(ssgDriver)->
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+                      growth_rate, track_colloc, track_uniq_prod_wts);
+    break;
+  }
+  case Pecos::INCREMENTAL_SPARSE_GRID: {
+    bool track_uniq_prod_wts = false; // default
+    std::static_pointer_cast<Pecos::IncrementalSparseGridDriver>(ssgDriver)->
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+                      growth_rate, track_uniq_prod_wts);
+    break;
+  }
+  case Pecos::HIERARCHICAL_SPARSE_GRID: {
+    bool track_colloc = false; // non-default
+    std::static_pointer_cast<Pecos::HierarchSparseGridDriver>(ssgDriver)->
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+                      growth_rate, track_colloc);
+    break;
+  }
+  default: // SparseGridDriver
+    ssgDriver->
+      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
+                      growth_rate);
+    break;
+  }
+  ssgDriver->initialize_grid_parameters(u_dist);
+  maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
+}
+
+
 /** This constructor is called for a standard letter-envelope iterator
     instantiation.  In this case, set_db_list_nodes has been called
     and probDescDB can be queried for settings from the method
     specification.  It is not currently used, as there is not a
     separate sparse_grid method specification. */
-NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonDIntegration(problem_db, parallel_lib, model),  
+NonDSparseGrid::
+NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+	       std::shared_ptr<Model> model):
+  NonDIntegration(problem_db, parallel_lib, model),
   ssgLevelSpec(probDescDB.get<unsigned short>("method.nond.sparse_grid_level"))
 {
   short exp_basis_type
@@ -68,69 +130,80 @@ NonDSparseGrid::NonDSparseGrid(ProblemDescDB& problem_db, ParallelLibrary& paral
     refine_control, refine_metric, refine_stats,
     probDescDB.get<size_t>("method.nond.max_refinement_iterations"),
     probDescDB.get<size_t>("method.nond.max_solver_iterations"), convergenceTol,
-    probDescDB.get<unsigned short>("method.sofmake NonDSt_convergence_limit"));
+    probDescDB.get<unsigned short>("method.soft_convergence_limit"));
 
   // define BasisConfigOptions
   bool nested_rules = (probDescDB.get<short>("method.nond.nesting_override")
-		       != Pecos::NON_NESTED);
+                       != Pecos::NON_NESTED);
   bool piecewise_basis = (probDescDB.get<bool>("method.nond.piecewise_basis") ||
-			  refine_type == Pecos::H_REFINEMENT);
+                          refine_type == Pecos::H_REFINEMENT);
   bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
   Pecos::BasisConfigOptions
     bc_options(nested_rules, piecewise_basis, equidist_rules,
-	       probDescDB.get<bool>("method.derivative_usage"));
+               probDescDB.get<bool>("method.derivative_usage"));
 
-  // initialize ssgDriver
-  short growth_rate;
-  short growth_override = probDescDB.get<short>("method.nond.growth_override");
-  // moderate growth is helpful for iso and aniso sparse grids, but not
-  // necessary for generalized grids
-  if (growth_override == Pecos::UNRESTRICTED ||
-      refine_control  == Pecos::DIMENSION_ADAPTIVE_CONTROL_GENERALIZED)
-    // unstructured index set evolution: no motivation to restrict
-    growth_rate = Pecos::UNRESTRICTED_GROWTH;
-  /* piecewise bases can be MODERATE now that we distinguish INTERPOLATION_MODE
-  else if (piecewise_basis)
-    // no reason to match Gaussian precision, but restriction still useful:
-    // use SLOW i=2l+1 since it is more natural for NEWTON_COTES,CLENSHAW_CURTIS
-    // and is more consistent with UNRESTRICTED generalized sparse grids.
-    growth_rate = Pecos::SLOW_RESTRICTED_GROWTH;
-  */
+  initialize_ssg_driver(u_dist, ec_options, bc_options, refine_control,
+			piecewise_basis);
+}
+
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the IRStore. */
+NonDSparseGrid::
+NonDSparseGrid(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	       std::shared_ptr<Model> model):
+  NonDIntegration(std::move(services), method_store, model),
+  ssgLevelSpec(method_store.get<unsigned short>("nond.sparse_grid_level"))
+{
+  short exp_basis_type
+    = method_store.get<short>("nond.expansion_basis_type");
+  short refine_type
+    = method_store.get<short>("nond.expansion_refinement_type");
+  short refine_control
+    = method_store.get<short>("nond.expansion_refinement_control");
+  if (exp_basis_type == Pecos::HIERARCHICAL_INTERPOLANT)
+    ssgDriverType = Pecos::HIERARCHICAL_SPARSE_GRID;
   else
-    // INTEGRATION_MODE:   standardize on precision: i = 2m-1 = 2(2l+1)-1 = 4l+1
-    // INTERPOLATION_MODE: standardize on number of interp pts: m = 2l+1
-    growth_rate = Pecos::MODERATE_RESTRICTED_GROWTH;
+    ssgDriverType = (refine_control) ? Pecos::INCREMENTAL_SPARSE_GRID
+                                     : Pecos::COMBINED_SPARSE_GRID;
 
-  switch (ssgDriverType) {
-  case Pecos::COMBINED_SPARSE_GRID: {
-    bool track_colloc = false, track_uniq_prod_wts = false; // defaults
-    std::static_pointer_cast<Pecos::CombinedSparseGridDriver>(ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
-		      growth_rate, track_colloc, track_uniq_prod_wts);
-    break;
-  }
-  case Pecos::INCREMENTAL_SPARSE_GRID: {
-    bool track_uniq_prod_wts = false; // default
-    std::static_pointer_cast<Pecos::IncrementalSparseGridDriver>(ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
-		      growth_rate, track_uniq_prod_wts);
-    break;
-  }
-  case Pecos::HIERARCHICAL_SPARSE_GRID: {
-    bool track_colloc = false; // non-default
-    std::static_pointer_cast<Pecos::HierarchSparseGridDriver>(ssgDriver)->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
-		      growth_rate, track_colloc);
-    break;
-  }
-  default: // SparseGridDriver
-    ssgDriver->
-      initialize_grid(ssgLevelSpec, dimPrefSpec, u_dist, ec_options, bc_options,
-		      growth_rate);
-    break;
-  }
-  ssgDriver->initialize_grid_parameters(u_dist);
-  maxEvalConcurrency *= ssgDriver->grid_size(); // requires grid parameters
+  // initialize the numerical integration driver
+  numIntDriver = Pecos::IntegrationDriver(ssgDriverType);
+  ssgDriver = std::static_pointer_cast<Pecos::SparseGridDriver>
+    (numIntDriver.driver_rep());
+
+  //check_variables(x_dist.random_variables());
+  // TO DO: create a ProbabilityTransformModel, if needed
+  const Pecos::MultivariateDistribution& u_dist
+    = model->multivariate_distribution();
+
+  // define ExpansionConfigOptions
+  short refine_metric = (refine_control) ?
+    Pecos::COVARIANCE_METRIC : Pecos::DEFAULT_METRIC;
+  short refine_stats  = (refine_control) ?
+    Pecos::ACTIVE_EXPANSION_STATS : Pecos::NO_EXPANSION_STATS;
+  Pecos::ExpansionConfigOptions ec_options(ssgDriverType, exp_basis_type,
+    model->correction_type(),
+    method_store.get<short>("nond.multilevel_discrepancy_emulation"),
+    outputLevel, method_store.get<bool>("variance_based_decomp"),
+    method_store.get<unsigned short>("nond.vbd_interaction_order"), //refine_type,
+    refine_control, refine_metric, refine_stats,
+    method_store.get<size_t>("nond.max_refinement_iterations"),
+    method_store.get<size_t>("nond.max_solver_iterations"), convergenceTol,
+    method_store.get<unsigned short>("soft_convergence_limit"));
+
+  // define BasisConfigOptions
+  bool nested_rules = (method_store.get<short>("nond.nesting_override")
+                       != Pecos::NON_NESTED);
+  bool piecewise_basis = (method_store.get<bool>("nond.piecewise_basis") ||
+                          refine_type == Pecos::H_REFINEMENT);
+  bool equidist_rules = true; // NEWTON_COTES pts for piecewise interpolants
+  Pecos::BasisConfigOptions
+    bc_options(nested_rules, piecewise_basis, equidist_rules,
+               method_store.get<bool>("derivative_usage"));
+
+  initialize_ssg_driver(u_dist, ec_options, bc_options, refine_control,
+			piecewise_basis);
 }
 
 

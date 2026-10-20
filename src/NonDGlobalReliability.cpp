@@ -60,42 +60,103 @@ NonDGlobalReliability* NonDGlobalReliability::nondGlobRelInstance(NULL);
 
 
 NonDGlobalReliability::
-NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model): 
+NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		      std::shared_ptr<Model> model):
   NonDReliability(problem_db, parallel_lib, model),
   meritFunctionType(AUGMENTED_LAGRANGIAN_MERIT), dataOrder(1)
 {
+  initialize(probDescDB.get<short>("method.nond.emulator"),
+                    probDescDB.get<bool>("method.derivative_usage"),
+                    !probDescDB.get<const RealVectorArray>(
+                      "method.nond.reliability_levels").empty(),
+                    !probDescDB.get<const RealVectorArray>(
+                      "method.nond.probability_levels").empty(),
+                    !probDescDB.get<const RealVectorArray>(
+                      "method.nond.gen_reliability_levels").empty(),
+                    probDescDB.get<int>("method.samples"),
+                    probDescDB.get<int>("method.random_seed"),
+                    probDescDB.get<const String>("method.random_number_generator"),
+                    probDescDB.get<const String>("method.import_build_points_file"),
+                    probDescDB.get<unsigned short>("method.import_build_format"),
+                    probDescDB.get<bool>("method.import_build_active_only"),
+                    probDescDB.get<const String>("method.export_approx_points_file"),
+                    probDescDB.get<unsigned short>("method.export_approx_format"),
+                    problem_db.get<const String>("method.advanced_options_file"));
+}
+
+
+NonDGlobalReliability::
+NonDGlobalReliability(std::shared_ptr<StudyServices> services,
+		      const IRStore& method_store,
+		      std::shared_ptr<Model> model):
+  NonDReliability(std::move(services), method_store, model),
+  meritFunctionType(AUGMENTED_LAGRANGIAN_MERIT), dataOrder(1)
+{
+  initialize(method_store.get<short>("nond.emulator"),
+                    method_store.get<bool>("derivative_usage"),
+                    !method_store.get<RealVectorArray>(
+                      "nond.reliability_levels").empty(),
+                    !method_store.get<RealVectorArray>(
+                      "nond.probability_levels").empty(),
+                    !method_store.get<RealVectorArray>(
+                      "nond.gen_reliability_levels").empty(),
+                    method_store.get<int>("samples"),
+                    method_store.get<int>("random_seed"),
+                    method_store.get<String>("random_number_generator"),
+                    method_store.get<String>("import_build_points_file"),
+                    method_store.get<unsigned short>("import_build_format"),
+                    method_store.get<bool>("import_build_active_only"),
+                    method_store.get<String>("export_approx_points_file"),
+                    method_store.get<unsigned short>("export_approx_format"),
+                    method_store.get<String>("advanced_options_file"));
+}
+
+
+void NonDGlobalReliability::initialize(short emulator_type,
+                                       bool deriv_usage,
+                                       bool rel_levels_nonempty,
+                                       bool prob_levels_nonempty,
+                                       bool gen_rel_levels_nonempty,
+                                       int db_samples,
+                                       int lhs_seed,
+                                       const String& rng,
+                                       const String& import_pts_file,
+                                       unsigned short import_build_format,
+                                       bool import_build_active_only,
+                                       const String& export_approx_points_file,
+                                       unsigned short export_approx_format,
+                                       const String& advanced_options_file)
+{
   if (mppSearchType != SUBMETHOD_EGRA_X && mppSearchType != SUBMETHOD_EGRA_U) {
     Cerr << "Error: only x-space and u-space EGRA are currently supported in "
-	 << "global_reliability."<< std::endl;
-    abort_handler(-1); 
+         << "global_reliability."<< std::endl;
+    abort_handler(-1);
   }
 
   // standard reliability indices are not defined and should be precluded
   // via the input spec.  requestedRelLevels is default sized in NonD and
   // cannot be used for the empty() test below.
-  if (!probDescDB.get<const RealVectorArray>("method.nond.reliability_levels").empty() ||
-      respLevelTarget == RELIABILITIES) {
+  if (rel_levels_nonempty || respLevelTarget == RELIABILITIES) {
     Cerr << "Error: reliability indices are not defined for global reliability "
-	 << "methods.  Use generalized reliability instead." << std::endl;
-    abort_handler(-1); 
+         << "methods.  Use generalized reliability instead." << std::endl;
+    abort_handler(-1);
   }
 
   // requestedProbLevels & requestedGenRelLevels are not yet supported
   // since PMA EGRA requires additional R&D.  Note: requestedProbLevels and
   // requestedGenRelLevels are default sized in NonD and cannot be used for
   // the empty() tests below.
-  if (!probDescDB.get<const RealVectorArray>("method.nond.probability_levels").empty() ||
-      !probDescDB.get<const RealVectorArray>("method.nond.gen_reliability_levels").empty()) {
+  if (prob_levels_nonempty || gen_rel_levels_nonempty) {
     Cerr << "Error: Inverse reliability mappings not currently supported in "
-	 << "global_reliability."<< std::endl;
-    abort_handler(-1); 
+         << "global_reliability."<< std::endl;
+    abort_handler(-1);
   }
 
 #ifndef DAKOTA_F90
   if (meritFunctionType == LAGRANGIAN_MERIT) {
     Cerr << "Error: F90 required for standard Lagrangian merit function in "
-	 << "global_reliability."<< std::endl;
-    abort_handler(-1); 
+         << "global_reliability."<< std::endl;
+    abort_handler(-1);
   }
 #endif // DAKOTA_F90
 
@@ -108,31 +169,31 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
   // ignored since probabilities are estimated directly from MMAIS.
   size_t i;
   for (i=0; i<numFunctions; i++) {
-    size_t num_levels = requestedRespLevels[i].length() + 
+    size_t num_levels = requestedRespLevels[i].length() +
       requestedProbLevels[i].length() + requestedGenRelLevels[i].length();
     computedRespLevels[i].resize(num_levels);
     computedProbLevels[i].resize(num_levels);
     computedGenRelLevels[i].resize(num_levels);
   }
 
-  // The Gaussian process model of the limit state in u-space [G-hat(u)] is 
+  // The Gaussian process model of the limit state in u-space [G-hat(u)] is
   // constructed here one time.
-  
+
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type = "global_kriging";
-  if (probDescDB.get<short>("method.nond.emulator") == GP_EMULATOR)
+  if (emulator_type == GP_EMULATOR)
     approx_type = "global_gaussian";
-  else if (probDescDB.get<short>("method.nond.emulator") == EXPGP_EMULATOR)
+  else if (emulator_type == EXPGP_EMULATOR)
     approx_type = "global_exp_gauss_proc";
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   UShortArray approx_order; // not used for GP/kriging
   short corr_order = -1, corr_type = NO_CORRECTION,
     active_view = iteratedModel->current_variables().view().first;
-  if (probDescDB.get<bool>("method.derivative_usage")) {
+  if (deriv_usage) {
     if (approx_type == "global_gaussian") {
       Cerr << "\nError: efficient_global does not support gaussian_process "
-	   << "when derivatives present; use kriging instead." << std::endl;
+           << "when derivatives present; use kriging instead." << std::endl;
       abort_handler(-1);
     }
     if (iteratedModel->gradient_type() != "none") dataOrder |= 2;
@@ -141,16 +202,11 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
   String sample_reuse
     = (active_view == RELAXED_ALL || active_view == MIXED_ALL) ? "all" : "none";
 
-  int db_samples = probDescDB.get<int>("method.samples");  
-  int samples = (db_samples > 0) ? db_samples : 
+  int samples = (db_samples > 0) ? db_samples :
     (numContinuousVars+1)*(numContinuousVars+2)/2;
 
-  int lhs_seed = probDescDB.get<int>("method.random_seed");
-  const String& rng = probDescDB.get<const String>("method.random_number_generator");
   bool vary_pattern = false; // for consistency across outer loop invocations
   // get point samples file
-  const String& import_pts_file
-    = probDescDB.get<const String>("method.import_build_points_file");
   if (!import_pts_file.empty())
     { samples = 0; sample_reuse = "all"; }
 
@@ -163,12 +219,6 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     dace_iterator = std::make_shared<NonDLHSSampling>
       (iteratedModel, sample_type, samples,
        lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
-    //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
-    //lhs_sampler_rep = new DDACEDesignCompExp(iteratedModel, samples, symbols,
-    //                                         lhs_seed, dace_method);
-    //unsigned short dace_method = FSU_HAMMERSLEY;
-    //lhs_sampler_rep = new FSUDesignCompExp(iteratedModel, samples, lhs_seed,
-    //                                       dace_method);
 
     // Construct g-hat(x) using a GP approximation over the active/uncertain
     // vars (same view as iteratedModel: not the typical All view for DACE).
@@ -179,7 +229,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
-    	{ set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
+        { set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
     dace_iterator->active_set(set);
     //const Variables& curr_vars = iteratedModel.current_variables();
     ActiveSet gp_set = iteratedModel->current_response().active_set(); // copy
@@ -188,16 +238,12 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     g_hat_x_model = std::make_shared<DataFitSurrModel>(dace_iterator,
       iteratedModel, gp_set, gp_view, approx_type, approx_order, corr_type,
       corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
-       probDescDB.get<unsigned short>("method.import_build_format"),
-       probDescDB.get<bool>("method.import_build_active_only"),
-       probDescDB.get<const String>("method.export_approx_points_file"),
-       probDescDB.get<unsigned short>("method.export_approx_format"));
+       import_build_format, import_build_active_only,
+       export_approx_points_file, export_approx_format);
     g_hat_x_model->surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
-      String advanced_options_file
-          = problem_db.get<const String>("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(*g_hat_x_model, advanced_options_file);
 #else
@@ -218,18 +264,9 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     g_u_model = std::make_shared<ProbabilityTransformModel>(
       iteratedModel, STD_NORMAL_U, true, 5.);
 
-    // For additional generality, could develop on the fly envelope ctor:
-    //Iterator dace_iterator(g_u_model, dace_method, ...);
-
     // The following use on-the-fly derived ctors:
     dace_iterator = std::make_shared<NonDLHSSampling>(g_u_model,
       sample_type, samples, lhs_seed, rng, vary_pattern, ACTIVE_UNIFORM);
-    //unsigned short dace_method = SUBMETHOD_LHS; // submethod enum
-    //lhs_sampler_rep = new DDACEDesignCompExp(g_u_model, samples, symbols,
-    //                                         lhs_seed, dace_method);
-    //unsigned short dace_method = FSU_HAMMERSLEY;
-    //lhs_sampler_rep = new FSUDesignCompExp(g_u_model, samples, lhs_seed,
-    //                                       dace_method);
 
     // Construct G-hat(u) using a GP approximation over the active/uncertain
     // variables (using the same view as iteratedModel/g_u_model: not the
@@ -240,7 +277,7 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     set.request_values(0);
     for (i=0; i<numFunctions; ++i)
       if (!computedRespLevels[i].empty()) // sized to total req levels above
-    	{ set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
+        { set.request_value(dataOrder, i); surr_fn_indices.insert(i); }
     dace_iterator->active_set(set);
 
     //const Variables& g_u_vars = g_u_model.current_variables();
@@ -250,16 +287,12 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     uSpaceModel = std::make_shared<DataFitSurrModel>(dace_iterator,
        g_u_model, gp_set, gp_view, approx_type, approx_order, corr_type,
        corr_order, dataOrder, outputLevel, sample_reuse, import_pts_file,
-       probDescDB.get<unsigned short>("method.import_build_format"),
-       probDescDB.get<bool>("method.import_build_active_only"),
-       probDescDB.get<const String>("method.export_approx_points_file"),
-       probDescDB.get<unsigned short>("method.export_approx_format"));
+       import_build_format, import_build_active_only,
+       export_approx_points_file, export_approx_format);
     uSpaceModel->surrogate_function_indices(surr_fn_indices);
 
     if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
-      String advanced_options_file
-          = problem_db.get<const String>("method.advanced_options_file");
       if (!advanced_options_file.empty())
         set_model_gp_options(*uSpaceModel, advanced_options_file);
 #else
@@ -270,54 +303,25 @@ NonDGlobalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
     }
   }
 
-  // Following this ctor, IteratorExecutor::init_iterator() initializes the
-  // parallel configuration for NonDGlobalReliability + iteratedModel using
-  // NonDGlobalReliability's maxEvalConcurrency. During uSpaceModel construction
-  // above, DataFitSurrModel::derived_init_communicators() initializes the
-  // parallel configuration for dace_iterator + iteratedModel using
-  // dace_iterator's maxEvalConcurrency.  The only iteratedModel concurrency
-  // currently exercised is that used by dace_iterator within the initial GP
-  // construction, but the NonDGlobalReliability maxEvalConcurrency must still
-  // be set so as to avoid parallel configuration errors resulting from
-  // avail_procs > max_concurrency within IteratorExecutor::init_iterator().
-  // A max of the local derivative concurrency and the DACE concurrency is used
-  // for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
-				dace_iterator->maximum_evaluation_concurrency());
+                                dace_iterator->maximum_evaluation_concurrency());
 
-  // Configure a RecastModel with one objective and no constraints using the
-  // alternate minimalist constructor.  The RIA/PMA expected improvement/
-  // expected feasibility formulations may vary with the level requests, so
-  // the recast fn pointers are reset for each level within the run fn.
   SizetArray recast_vars_comps_total;  // default: empty; no change in size
   BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
   short recast_resp_order = 1; // nongradient-based optimizers
   const ShortShortPair& mpp_view = iteratedModel->current_variables().view();
   mppModel = std::make_shared<RecastModel>
-		      (uSpaceModel, recast_vars_comps_total, all_relax_di,
-		       all_relax_dr, mpp_view, 1, 0, 0, recast_resp_order);
-
-  // For formulations with one objective and one equality constraint,
-  // use the following instead:
-  //mppModel->assign_rep(new RecastModel(uSpaceModel, ..., 1, 1, 0, ...), false);
-  //RealVector nln_eq_targets(1, 0.);
-  //ModelUtils::nonlinear_eq_constraint_targets(mppModel, nln_eq_targets);
+                      (uSpaceModel, recast_vars_comps_total, all_relax_di,
+                       all_relax_dr, mpp_view, 1, 0, 0, recast_resp_order);
 
   // must use alternate NoDB ctor chain
   size_t max_iter = 1000, max_eval = 10000;
   double min_box_size = 1.e-15, vol_box_size = 1.e-15;
-#ifdef HAVE_NCSU  
+#ifdef HAVE_NCSU
   mppOptimizer = std::make_shared<NCSUOptimizer>
     (mppModel, max_iter, max_eval, min_box_size, vol_box_size);
-  //#ifdef HAVE_ACRO
-  //int coliny_seed = 0; // system-generated, for now
-  //mppOptimizer.assign_rep(new
-  //  COLINOptimizer<coliny::DIRECT>(mppModel, coliny_seed), false);
-  //mppOptimizer.assign_rep(new
-  //  COLINOptimizer<coliny::EAminlp>(mppModel, coliny_seed), false);
-  //#endif
 #else
-  Cerr << "NCSU DIRECT Optimizer is not available to use in the MPP search " 
+  Cerr << "NCSU DIRECT Optimizer is not available to use in the MPP search "
        << "in global reliability optimization:  aborting process." << std::endl;
         abort_handler(-1);
 #endif //HAVE_NCSU

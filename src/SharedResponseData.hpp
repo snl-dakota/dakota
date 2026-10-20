@@ -13,7 +13,7 @@
 #include "dakota_data_io.hpp"
 #include "dakota_data_types.hpp"
 #include "dakota_global_defs.hpp"
-#include "DataResponses.hpp"
+#include "DakotaResponseEnums.hpp"
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/tracking.hpp>
 

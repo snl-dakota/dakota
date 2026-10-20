@@ -131,7 +131,7 @@ namespace Dakota {
             return std::make_shared<ApplicationInterface>(problem_db, parallel_lib);
           }
 
-          // If the interface type is empty (e.g., from default DataInterface creation
+          // If the interface type is empty (e.g., from default interface materialization
           // in ProblemDescDB::check_input()), then ApplicationInterface used
           else if (interface_type == DEFAULT_INTERFACE) {
             Cerr << "Warning: empty interface type in Interface::get_interface()."

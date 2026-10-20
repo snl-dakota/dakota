@@ -22,6 +22,11 @@ NonDLocalEvidence::NonDLocalEvidence(ProblemDescDB& problem_db, ParallelLibrary&
   NonDLocalInterval(problem_db, parallel_lib, model)
 { }
 
+NonDLocalEvidence::
+NonDLocalEvidence(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		  std::shared_ptr<Model> model):
+  NonDLocalInterval(std::move(services), method_store, model)
+{ }
 
 NonDLocalEvidence::~NonDLocalEvidence()
 { }

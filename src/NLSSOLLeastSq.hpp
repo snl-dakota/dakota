@@ -84,6 +84,9 @@ public:
  
   /// standard constructor
   NLSSOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NLSSOLLeastSq(std::shared_ptr<StudyServices> services,
+      const IRStore& method_store, std::shared_ptr<Model> model);
   /// alternate constructor
   NLSSOLLeastSq(std::shared_ptr<Model> model);
   /// destructor

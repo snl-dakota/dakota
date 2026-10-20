@@ -10,13 +10,19 @@ from typing import Optional, Tuple, Type
 import pathlib
 import re
 
+from study_signature import normalize_study_signature
+
 # References
 # https://doughellmann.com/posts/defining-custom-roles-in-sphinx/
 # https://protips.readthedocs.io/link-roles.html
 # https://stackoverflow.com/questions/50937109/custom-sphinx-role-for-references
 
 def setup(app):
+    # This extension registers an autodoc event handler. Explicit setup keeps
+    # it safe to load independently or before autodoc in another Sphinx config.
+    app.setup_extension('sphinx.ext.autodoc')
     app.add_role('dakkw', dakota_keyword_role)
+    app.connect('autodoc-process-signature', normalize_study_signature)
     # app.add_role('dakkw2', KwRefRole())
     # TODO: app.add_role('dakex', dakota_example_role)
 

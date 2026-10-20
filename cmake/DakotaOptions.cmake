@@ -177,6 +177,10 @@ if(ENABLE_DAKOTA_DOCS AND NOT DAKOTA_PYTHON)
   message(FATAL_ERROR
     "Dakota documentation build only available with DAKOTA_PYTHON=ON")
 endif()
+if(ENABLE_DAKOTA_DOCS AND NOT DAKOTA_PYTHON_STUDY)
+  message(FATAL_ERROR
+    "Dakota documentation build requires DAKOTA_PYTHON_STUDY=ON so Sphinx can document the dakota.study API")
+endif()
 
 option(DAKOTA_GCOV "GNU gcov for Dakota core" OFF)
 

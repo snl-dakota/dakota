@@ -30,7 +30,6 @@ from .conmin_frcg import ConminFrcgSelection, ConminFrcgConfig
 from .conmin_mfd import ConminMfdSelection, ConminMfdConfig
 from .dace import DaceSelection, DaceConfig
 from .demo_tpl import DemoTplSelection, DemoTplConfig
-from .dl_solver import DlSolverSelection, DlSolverConfig
 from .dot_bfgs import DotBfgsSelection, DotBfgsConfig
 from .dot_frcg import DotFrcgSelection, DotFrcgConfig
 from .dot_mmfd import DotMmfdSelection, DotMmfdConfig
@@ -160,8 +159,6 @@ __all__ = [
     "DaceSelection",
     "DemoTplConfig",
     "DemoTplSelection",
-    "DlSolverConfig",
-    "DlSolverSelection",
     "DotBfgsConfig",
     "DotBfgsSelection",
     "DotFrcgConfig",

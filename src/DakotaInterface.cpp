@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "dakota_data_types.hpp"
+#include "DakotaInterfaceEnums.hpp"
 #include "dakota_data_util.hpp"
 #include "interface_utils.hpp"
 #include "DakotaInterface.hpp"

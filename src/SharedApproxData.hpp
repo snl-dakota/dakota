@@ -23,6 +23,7 @@ class RegressionConfigOptions;
 namespace Dakota {
 
 class ProblemDescDB;
+class IRStore;
 
 
 /// Base class for the shared approximation data class hierarchy.
@@ -72,6 +73,10 @@ public:
   SharedApproxData();
   /// standard constructor for envelope
   SharedApproxData(ProblemDescDB& problem_db, size_t num_vars);
+  /// IRStore-driven constructor for envelope
+  SharedApproxData(const IRStore& model_store,
+                   const UShortArray& approx_order, size_t num_vars,
+                   short data_order, short output_level);
    /// alternate constructor for envelope
   SharedApproxData(const String& approx_type, const UShortArray& approx_order,
 		   size_t num_vars, short data_order, short output_level);
@@ -217,6 +222,10 @@ protected:
   SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 		   size_t num_vars, short data_order, short output_level);
 
+  /// constructor initializes the base part of IRStore-driven letter classes
+  SharedApproxData(NoDBBaseConstructor, const IRStore& model_store,
+                   size_t num_vars, short data_order, short output_level);
+
   //
   //- Heading: Data
   //
@@ -291,6 +300,10 @@ private:
   std::shared_ptr<SharedApproxData>
   get_shared_data(const String& approx_type, const UShortArray& approx_order,
 		  size_t num_vars, short data_order, short output_level);
+  /// Used by the IRStore-driven envelope constructor to select its letter.
+  std::shared_ptr<SharedApproxData>
+  get_shared_data(const IRStore& model_store, const UShortArray& approx_order,
+                  size_t num_vars, short data_order, short output_level);
 
   //
   //- Heading: Data

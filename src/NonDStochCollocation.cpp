@@ -96,6 +96,80 @@ NonDStochCollocation(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, s
 }
 
 
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDStochCollocation::
+NonDStochCollocation(std::shared_ptr<StudyServices> services,
+		     const IRStore& method_store,
+		     std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model)
+{
+  // ----------------
+  // Resolve settings
+  // ----------------
+  short data_order,
+    u_space_type = method_store.get<short>("nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
+  // generated using active sampling view:
+  std::shared_ptr<Iterator> u_space_sampler;
+  config_integration(method_store.get<unsigned short>("nond.quadrature_order"),
+                     method_store.get<unsigned short>("nond.sparse_grid_level"),
+                     method_store.get<RealVector>("nond.dimension_preference"),
+                     u_space_type, u_space_sampler, g_u_model);
+  String pt_reuse, approx_type;
+  config_approximation_type(approx_type);
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  UShortArray approx_order; // empty
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  // DFSModel: consume any QoI aggregation; support surrogate grad evals at most
+  ShortArray sc_asv(g_u_model->qoi(), 3); // for stand alone mode
+  ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
+  String empty_str; // build data import not supported for structured grids
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
+    false, method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  initialize_u_space_model();
+
+  // -------------------------------
+  // Construct expSampler, if needed
+  // -------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+
+  if (parallelLib.command_line_check())
+    Cout << "\nStochastic collocation construction completed: initial grid "
+         << "size of " << numSamplesOnModel << " evaluations to be performed."
+         << std::endl;
+}
+
+
 /** This constructor is used for helper iterator instantiation on the fly. */
 NonDStochCollocation::
 NonDStochCollocation(std::shared_ptr<Model> model, short exp_coeffs_approach,
@@ -163,6 +237,18 @@ NonDStochCollocation::
 NonDStochCollocation(unsigned short method_name, ProblemDescDB& problem_db,
 		     ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDExpansion(problem_db, parallel_lib, model)
+{
+  // Logic delegated to derived class constructor...
+}
+
+
+/** This constructor is called from derived class constructors that
+    customize the object construction. */
+NonDStochCollocation::
+NonDStochCollocation(unsigned short method_name,
+                     std::shared_ptr<StudyServices> services,
+		     const IRStore& method_store, std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model)
 {
   // Logic delegated to derived class constructor...
 }

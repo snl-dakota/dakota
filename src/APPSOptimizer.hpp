@@ -167,7 +167,7 @@ protected:
   //
 
   /// sets options for specific methods based on user specifications
-  void set_apps_parameters();
+  void set_apps_parameters(const IRStore* method_store = nullptr);
 
   /// sets traits for specific TPL
   void set_apps_traits();

@@ -105,6 +105,54 @@ NonDSurrogateExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation using the IRStore. */
+NonDSurrogateExpansion::
+NonDSurrogateExpansion(std::shared_ptr<StudyServices> services,
+		       const IRStore& method_store,
+		       std::shared_ptr<Model> model):
+  NonDExpansion(std::move(services), method_store, model)
+{
+  // ----------------
+  // Resolve settings
+  // ----------------
+  //short data_order,
+  //  u_space_type = probDescDB.get<short>("method.nond.expansion_type");
+  //resolve_inputs(u_space_type, data_order);
+
+  if (iteratedModel->model_type() != "surrogate") {
+    Cerr << "Error: NonDSurrogateExpansion requires a surrogate model "
+         << "specification." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  const String& surr_type = iteratedModel->surrogate_type();
+  if (surr_type == "global_function_train") {
+    uSpaceModel = std::static_pointer_cast<DataFitSurrModel>(iteratedModel);
+  }
+  else {
+    Cerr << "Error: surrogate model specification of type '" << surr_type
+         << "' not supported in NonDSurrogateExpansion." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // -------------------------------
+  // Construct expSampler, if needed
+  // -------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+
+  // update concurrency
+  //if (numSamples) // samples is optional (default = 0)
+  //  maxEvalConcurrency *= numSamples;
+}
+
+
 NonDSurrogateExpansion::~NonDSurrogateExpansion()
 { }
 

@@ -15,11 +15,19 @@ namespace Dakota::python {
 
 void bind_response(py::module_& m)
 {
-  py::class_<Response>(m, "Response", py::module_local())
+  py::class_<Response>(
+    m, "Response", py::module_local(),
+    "Response definition or evaluated response returned by the Study API.")
     .def("function_value",
          static_cast<const Real& (Response::*)(size_t) const>(
            &Response::function_value),
-         py::arg("i"));
+         py::arg("i"),
+         R"doc(Return one function value from an evaluated response.
+
+:param i: Zero-based function index.
+:type i: int
+:returns: The selected function value.
+:rtype: float)doc");
 }
 
 } // namespace Dakota::python

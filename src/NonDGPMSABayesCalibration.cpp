@@ -106,11 +106,13 @@ namespace Dakota {
 // initialization of statics
 NonDGPMSABayesCalibration* NonDGPMSABayesCalibration::nonDGPMSAInstance(NULL);
 
-/** This constructor is called for a standard letter-envelope iterator 
-    instantiation.  In this case, set_db_list_nodes has been called and 
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDGPMSABayesCalibration::
-NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+			  std::shared_ptr<Model> model):
   NonDQUESOBayesCalibration(problem_db, parallel_lib, model),
   buildSamples(probDescDB.get<int>("method.build_samples")),
   approxImportFile(probDescDB.get<const String>("method.import_build_points_file")),
@@ -120,7 +122,46 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   userConfigVars(expData.num_config_vars()),
   gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
   gpmsaNormalize(probDescDB.get<bool>("method.nond.gpmsa_normalize"))
-{   
+{
+  initialize(model);
+
+  // BMA TODO: should we always instantiate this or not?  Allow augmentation?
+  int samples = approxImportFile.empty() ? buildSamples : 0;
+  const String& rng = probDescDB.get<const String>("method.random_number_generator");
+  unsigned short sample_type = SUBMETHOD_DEFAULT;
+  lhsIter = std::make_unique<NonDLHSSampling>
+                     (mcmcModel, sample_type, samples, randomSeed, rng);
+}
+
+
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDGPMSABayesCalibration::
+NonDGPMSABayesCalibration(std::shared_ptr<StudyServices> services,
+			  const IRStore& method_store,
+			  std::shared_ptr<Model> model):
+  NonDQUESOBayesCalibration(std::move(services), method_store, model),
+  buildSamples(method_store.get<int>("build_samples")),
+  approxImportFile(method_store.get<String>("import_build_points_file")),
+  approxImportFormat(method_store.get<unsigned short>("import_build_format")),
+  approxImportActiveOnly(method_store.get<bool>("import_build_active_only")),
+  userConfigVars(expData.num_config_vars()),
+  gpmsaConfigVars(std::max(userConfigVars, (unsigned int) 1)),
+  gpmsaNormalize(method_store.get<bool>("nond.gpmsa_normalize"))
+{
+  initialize(model);
+
+  // BMA TODO: should we always instantiate this or not?  Allow augmentation?
+  int samples = approxImportFile.empty() ? buildSamples : 0;
+  const String& rng = method_store.get<String>("random_number_generator");
+  unsigned short sample_type = SUBMETHOD_DEFAULT;
+  lhsIter = std::make_unique<NonDLHSSampling>
+                     (mcmcModel, sample_type, samples, randomSeed, rng);
+}
+
+
+void NonDGPMSABayesCalibration::initialize(std::shared_ptr<Model> model)
+{
   bool found_error = false;
 
   // Input spec should prevent this, but be sure.  It's possible
@@ -136,8 +177,8 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   const SharedResponseData& srd = model->current_response().shared_data();
   if (srd.num_field_response_groups() > 0 && outputLevel >= NORMAL_OUTPUT)
     Cout << "\nWarning: GPMSA does not yet treat field_responses; they will be "
-	 << "treated as a\n         single multivariate response set."
-	 << std::endl;
+         << "treated as a\n         single multivariate response set."
+         << std::endl;
 
   // REQUIRE experiment data
   if (expData.num_experiments() < 1) {
@@ -160,13 +201,6 @@ NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
   // if (approxImportFile.empty())
   //   buildSamples = probDescDB.get<int>("method.build_samples");
   // else buildSamples will get set after reading the file at run-time
-
-  // BMA TODO: should we always instantiate this or not?  Allow augmentation?
-  int samples = approxImportFile.empty() ? buildSamples : 0;
-  const String& rng = probDescDB.get<const String>("method.random_number_generator");
-  unsigned short sample_type = SUBMETHOD_DEFAULT;
-  lhsIter = std::make_unique<NonDLHSSampling>
-		     (mcmcModel, sample_type, samples, randomSeed, rng);
 }
 
 

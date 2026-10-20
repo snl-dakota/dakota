@@ -13,13 +13,24 @@ construction for Dakota components.
    the implementation still interprets raw retained IR rather than a richer
    variables-owned runtime representation.
 
-2. `Variables(const IRStore&)` now builds directly from materialized IR, but
+2. ~~`Variables(const IRStore&)` now builds directly from materialized IR, but
    its component-local `DEFAULT_VIEW` fallback resolves to `ALL_VIEW` because
    the old method/response-driven view inference is intentionally absent from
-   the standalone variables constructor.
-   Reason: the DI path now avoids the temporary `ProblemDescDB` shim entirely,
-   but component-local variables construction still needs a deliberate story
-   for any view behavior that used to depend on broader study context.
+   the standalone variables constructor.~~
+   **Resolved (see `IteratorViewRequest.hpp`, `Model::assign_inferred_view`,
+   and `Iterator::assign_requested_view`).**
+   Each DI iterator class declares the view it wants via a `ViewRequest` passed
+   through the constructor chain.  `Iterator::assign_requested_view` resolves it
+   against the model before `update_from_model` is called.  Method-to-view
+   mapping knowledge now lives in the iterator hierarchy, not in `Variables`.
+   The legacy `Variables::method_view` / `Variables::response_view` functions
+   remain for the ProblemDescDB path and will be removed with those constructors.
+   The following divergence from legacy behaviour is intentional and documented:
+   when a **sampling** method is used on a model whose Variables have **no
+   uncertain variables**, legacy aborts with an error; the DI path silently keeps
+   the current view (`ALL`) so that DACE-on-design-only uses continue to work.
+   See also `di_construction.cpp` (`study_factory_constructs_data_fit_surrogates`)
+   for the relevant test.
 
 3. DI `Model` and `Iterator` no longer synthesize IR-backed `ProblemDescDB`
    objects for the pilot path, but the base abstractions still store a
@@ -44,3 +55,13 @@ construction for Dakota components.
    branches on string comparisons. A later cleanup should convert that
    consuming `Model` code to use enums directly and remove the
    `to_legacy_string()` bridge.
+
+6. **TODO(recast-function-train-di):** enable
+   `Study::ModelFactory::global_surrogate` for
+   `global_function_train` after the RecastModel refactor lands.
+   The follow-up must establish ownership of the probability transformation,
+   ensure an injected DACE iterator samples the transformed model, initialize
+   the transformed distribution and basis, and pass function-train
+   configuration through the IR-backed approximation path. Remove the
+   constructor guard and replace its rejection regression test with successful
+   truth-model and DACE construction/execution tests.

@@ -130,12 +130,30 @@ Variables::Variables(const ProblemDescDB& problem_db):
 
 
 Variables::Variables(const IRStore& variables_store):
-  Variables(SharedVariablesData(variables_store, get_view(variables_store)))
+  variablesRep(get_variables(variables_store))
 {
   if (variablesRep)
     variablesRep->variablesStore = std::make_shared<IRStore>(variables_store);
   else
     variablesStore = std::make_shared<IRStore>(variables_store);
+}
+
+
+/** Instantiate a fully populated variables representation from IR data. */
+std::shared_ptr<Variables>
+Variables::get_variables(const IRStore& variables_store)
+{
+  SharedVariablesData svd(variables_store, get_view(variables_store));
+  switch (svd.view().first) {
+  case MIXED_ALL: case MIXED_DESIGN: case MIXED_ALEATORY_UNCERTAIN:
+  case MIXED_EPISTEMIC_UNCERTAIN: case MIXED_UNCERTAIN: case MIXED_STATE:
+    return std::make_shared<MixedVariables>(variables_store, svd);
+  case RELAXED_ALL: case RELAXED_DESIGN: case RELAXED_ALEATORY_UNCERTAIN:
+  case RELAXED_EPISTEMIC_UNCERTAIN: case RELAXED_UNCERTAIN: case RELAXED_STATE:
+    return std::make_shared<RelaxedVariables>(variables_store, svd);
+  default:
+    throw std::runtime_error("Unsupported DI variables view");
+  }
 }
 
 
@@ -198,6 +216,9 @@ Variables::get_variables(const SharedVariablesData& svd) const
 }
 
 
+/** Legacy ProblemDescDB path only.  DI iterators request views via
+ *  ViewRequest (IteratorViewRequest.hpp) through Iterator::assign_requested_view().
+ *  Remove with ProblemDescDB constructors. */
 ShortShortPair Variables::get_view(const ProblemDescDB& problem_db) const
 {
   // Manage variable views (all, design, uncertain, aleatory, epistemic,
@@ -339,7 +360,7 @@ void Variables::inactive_view(short view2)
 
 
 /** Aggregate view and domain settings. */
-short Variables::method_map(short view_spec, bool relaxed) const
+short Variables::method_map(short view_spec, bool relaxed)
 {
   switch (view_spec) {
   case ALL_VIEW: // precedence level 1 view selection
@@ -366,6 +387,7 @@ short Variables::method_map(short view_spec, bool relaxed) const
 }
 
 
+/** Legacy ProblemDescDB path only.  Remove with ProblemDescDB constructors. */
 short Variables::method_domain(const ProblemDescDB& problem_db) const
 {
   // B&B employs relaxation, all other employ mixed continuous-discrete
@@ -374,6 +396,7 @@ short Variables::method_domain(const ProblemDescDB& problem_db) const
 }
 
 
+/** Legacy ProblemDescDB path only.  Remove with ProblemDescDB constructors. */
 short Variables::method_view(const ProblemDescDB& problem_db) const
 {
   // last resort: active view if no user spec and no responses inference
@@ -404,6 +427,7 @@ short Variables::method_view(const ProblemDescDB& problem_db) const
 }
 
 
+/** Legacy ProblemDescDB path only.  Remove with ProblemDescDB constructors. */
 short Variables::response_view(const ProblemDescDB& problem_db) const
 {
   // if optimization or calibration response set, infer an active design view
@@ -495,24 +519,28 @@ void Variables::build_active_views()
 
   size_t num_cv  = sharedVarsData.cv(),    num_div = sharedVarsData.div(),
        /*num_dsv = sharedVarsData.dsv(),*/ num_drv = sharedVarsData.drv();
-  continuousVars = (num_cv) ?
-    RealVector(Teuchos::View, &allContinuousVars[sharedVarsData.cv_start()],
-	       num_cv) :
-    RealVector(); // return to default empty initialization
-  discreteIntVars = (num_div) ?
-    IntVector(Teuchos::View, &allDiscreteIntVars[sharedVarsData.div_start()],
-	      num_div) :
-    IntVector(); // return to default empty initialization
+  // rebind_view (not operator=): see dakota_data_util.hpp
+  if (num_cv)
+    rebind_view(continuousVars, &allContinuousVars[sharedVarsData.cv_start()],
+		(int)num_cv);
+  else
+    continuousVars = RealVector(); // return to default empty initialization
+  if (num_div)
+    rebind_view(discreteIntVars,
+		&allDiscreteIntVars[sharedVarsData.div_start()], (int)num_div);
+  else
+    discreteIntVars = IntVector(); // return to default empty initialization
   // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_dsv) {
   //  size_t dsv_start = sharedVarsData.dsv_start();
   //  discreteStringVars = allDiscreteStringVars[boost::indices[
   //    idx_range(dsv_start, dsv_start+num_dsv)]];
   //}
-  discreteRealVars = (num_drv) ?
-    RealVector(Teuchos::View, &allDiscreteRealVars[sharedVarsData.drv_start()],
-	       num_drv) :
-    RealVector(); // return to default empty initialization
+  if (num_drv)
+    rebind_view(discreteRealVars,
+		&allDiscreteRealVars[sharedVarsData.drv_start()], (int)num_drv);
+  else
+    discreteRealVars = RealVector(); // return to default empty initialization
 }
 
 
@@ -532,24 +560,27 @@ void Variables::build_inactive_views()
 
   size_t num_icv  = sharedVarsData.icv(),    num_idiv = sharedVarsData.idiv(),
        /*num_idsv = sharedVarsData.idsv(),*/ num_idrv = sharedVarsData.idrv();
-  inactiveContinuousVars = (num_icv) ?
-    RealVector(Teuchos::View, &allContinuousVars[sharedVarsData.icv_start()],
-	       num_icv) :
-    RealVector(); // return to default empty initialization
-  inactiveDiscreteIntVars = (num_idiv) ?
-    IntVector(Teuchos::View, &allDiscreteIntVars[sharedVarsData.idiv_start()],
-	      num_idiv) :
-    IntVector(); // return to default empty initialization
+  if (num_icv)
+    rebind_view(inactiveContinuousVars,
+		&allContinuousVars[sharedVarsData.icv_start()], (int)num_icv);
+  else
+    inactiveContinuousVars = RealVector(); // default empty initialization
+  if (num_idiv)
+    rebind_view(inactiveDiscreteIntVars,
+		&allDiscreteIntVars[sharedVarsData.idiv_start()], (int)num_idiv);
+  else
+    inactiveDiscreteIntVars = IntVector(); // default empty initialization
   // as for label arrays, generate StringMultiArrayViews on the fly
   //if (num_idsv) {
   //  size_t idsv_start = sharedVarsData.idsv_start();
   //  inactiveDiscreteStringVars = allDiscreteStringVars[boost::indices[
   //    idx_range(idsv_start, idsv_start+num_idsv)]];
   //}
-  inactiveDiscreteRealVars = (num_idrv) ?
-    RealVector(Teuchos::View, &allDiscreteRealVars[sharedVarsData.idrv_start()],
-	       num_idrv) :
-    RealVector(); // return to default empty initialization
+  if (num_idrv)
+    rebind_view(inactiveDiscreteRealVars,
+		&allDiscreteRealVars[sharedVarsData.idrv_start()], (int)num_idrv);
+  else
+    inactiveDiscreteRealVars = RealVector(); // default empty initialization
 }
 
 

@@ -148,10 +148,6 @@
   #include "DakotaIterator.hpp"
   #include "OutputManager.hpp"
   #include "ProgramOptions.hpp"
-  #include "DataMethod.hpp"
-  #include "DataInterface.hpp"
-  #include "DataVariables.hpp"
-  #include "DataResponses.hpp"
   #include "ProblemDescDB.hpp"
   #include "DakotaVariables.hpp"
   #include "DakotaResponse.hpp"
@@ -173,12 +169,8 @@
 %include "DakotaResponse.hpp"
 %include "ProblemDescDB.hpp"
 %include "ProgramOptions.hpp"
-%include "DataVariables.hpp"
-%include "DataResponses.hpp"
 %include "DakotaEnvironment.hpp"
 %include "LibraryEnvironment.hpp"
-%include "DataMethod.hpp"
-%include "DataInterface.hpp"
 #undef String
 #undef StringArray
 #undef Real

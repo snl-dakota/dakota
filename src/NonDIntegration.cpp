@@ -42,6 +42,30 @@ NonDIntegration::NonDIntegration(ProblemDescDB& problem_db, ParallelLibrary& par
 }
 
 
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called
+    and IRStore can be queried for settings from the method
+    specification.  It is not currently used, as there are not yet
+    separate nond_quadrature/nond_sparse_grid method specifications. */
+NonDIntegration::
+NonDIntegration(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model), numIntegrations(0),
+  dimPrefSpec(method_store.get<RealVector>("nond.dimension_preference"))
+  //standAloneMode(true)
+{
+  /*
+  // Check for suitable distribution types.
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+    Cerr << "\nError: discrete random variables are not currently supported in "
+         << "NonDIntegration." << std::endl;
+    abort_handler(-1);
+  }
+  */
+
+  initialize_final_statistics(); // default statistics set
+}
+
 /** This alternate constructor is used for on-the-fly generation and
     evaluation of numerical integration points. */
 NonDIntegration::NonDIntegration(unsigned short method_name, std::shared_ptr<Model> model): 

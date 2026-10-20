@@ -109,6 +109,10 @@ class ExtPythonMethod : public Iterator
     /// Standard constructor
     ExtPythonMethod(ProblemDescDB &, ParallelLibrary &, std::shared_ptr<Dakota::Model>);
 
+    /// DI constructor
+    ExtPythonMethod(std::shared_ptr<StudyServices> services,
+        const IRStore& method_store, std::shared_ptr<Model> model);
+
     /// Dummy constructor
     ExtPythonMethod();
 

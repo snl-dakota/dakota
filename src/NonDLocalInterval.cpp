@@ -29,71 +29,32 @@ namespace Dakota {
 NonDLocalInterval* NonDLocalInterval::nondLIInstance(NULL);
 
 
-NonDLocalInterval::NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDLocalInterval::
+NonDLocalInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+		  std::shared_ptr<Model> model):
   NonDInterval(problem_db, parallel_lib, model), npsolFlag(false)
+{
+  class_initialize(probDescDB.get<unsigned short>(
+    "method.nond.opt_subproblem_solver"));
+}
+
+
+NonDLocalInterval::
+NonDLocalInterval(std::shared_ptr<StudyServices> services,
+		  const IRStore& method_store,
+		  std::shared_ptr<Model> model):
+  NonDInterval(std::move(services), method_store, model), npsolFlag(false)
+{
+  class_initialize(method_store.get<unsigned short>(
+    "nond.opt_subproblem_solver"));
+}
+
+
+void NonDLocalInterval::class_initialize(unsigned short opt_subproblem_solver)
 {
   bool err_flag = false;
 
   // Check for suitable active var types (discrete epistemic not supported)
-  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
-    Cerr << "\nError: discrete variables are not currently supported in "
-	 << "NonDLocalInterval." << std::endl;
-    err_flag = true;
-  }
-  if (numContinuousVars != numContIntervalVars) {
-    Cerr << "\nError: only continuous interval distributions are currently "
-	 << "supported in NonDLocalInterval." << std::endl;
-    err_flag = true;
-  }
-
-  // Configure a RecastModel with one objective and no constraints using the
-  // alternate minimalist constructor: the recast fn pointers are reset for
-  // each level within the run fn.
-  SizetArray recast_vars_comps_total;  // default: empty; no change in size
-  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
-  short recast_resp_order = 3; // gradient-based quasi-Newton optimizers
-  const ShortShortPair& recast_view = iteratedModel->current_variables().view();
-  minMaxModel = std::make_shared<RecastModel>
-			 (iteratedModel, recast_vars_comps_total,
-			  all_relax_di, all_relax_dr, recast_view, 1, 0, 0,
-			  recast_resp_order);
-
-  // instantiate the optimizer used to compute the output interval bounds
-  switch (sub_optimizer_select(
-	  probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"))) {
-  case SUBMETHOD_NPSOL: {
-#ifdef HAVE_NPSOL
-    int deriv_level = 3;
-    minMaxOptimizer = std::make_unique<NPSOLOptimizer>
-			       (minMaxModel, deriv_level, convergenceTol);
-    npsolFlag = true;
-//#elif // handled within NonD::sub_optimizer_select()
-#endif // HAVE_NPSOL
-    break;
-  }
-  case SUBMETHOD_OPTPP:
-#ifdef HAVE_OPTPP
-    minMaxOptimizer = std::make_unique<SNLLOptimizer>
-			       ("optpp_q_newton", minMaxModel);
-//#elif // handled within NonD::sub_optimizer_select()
-#endif // HAVE_OPTPP
-    break;
-  default:
-    err_flag = true;  break;
-  }
-
-  if (err_flag)
-    abort_handler(METHOD_ERROR);
-}
-
-
-NonDLocalInterval::NonDLocalInterval(std::shared_ptr<StudyServices> services,
-                                     const IRStore& method_store,
-                                     std::shared_ptr<Model> model):
-  NonDInterval(std::move(services), method_store, model), npsolFlag(false)
-{
-  bool err_flag = false;
-
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "\nError: discrete variables are not currently supported in "
          << "NonDLocalInterval." << std::endl;
@@ -105,30 +66,36 @@ NonDLocalInterval::NonDLocalInterval(std::shared_ptr<StudyServices> services,
     err_flag = true;
   }
 
-  SizetArray recast_vars_comps_total;
-  BitArray all_relax_di, all_relax_dr;
-  short recast_resp_order = 3;
+  // Configure a RecastModel with one objective and no constraints using the
+  // alternate minimalist constructor: the recast fn pointers are reset for
+  // each level within the run fn.
+  SizetArray recast_vars_comps_total;  // default: empty; no change in size
+  BitArray all_relax_di, all_relax_dr; // default: empty; no discrete relaxation
+  short recast_resp_order = 3; // gradient-based quasi-Newton optimizers
   const ShortShortPair& recast_view = iteratedModel->current_variables().view();
-  minMaxModel = std::make_shared<RecastModel>(
-    iteratedModel, recast_vars_comps_total, all_relax_di, all_relax_dr,
-    recast_view, 1, 0, 0, recast_resp_order);
+  minMaxModel = std::make_shared<RecastModel>
+                         (iteratedModel, recast_vars_comps_total,
+                          all_relax_di, all_relax_dr, recast_view, 1, 0, 0,
+                          recast_resp_order);
 
-  switch (sub_optimizer_select(
-          method_store.get<unsigned short>("nond.opt_subproblem_solver"))) {
+  // instantiate the optimizer used to compute the output interval bounds
+  switch (sub_optimizer_select(opt_subproblem_solver)) {
   case SUBMETHOD_NPSOL: {
 #ifdef HAVE_NPSOL
     int deriv_level = 3;
-    minMaxOptimizer = std::make_unique<NPSOLOptimizer>(
-      minMaxModel, deriv_level, convergenceTol);
+    minMaxOptimizer = std::make_unique<NPSOLOptimizer>
+                               (minMaxModel, deriv_level, convergenceTol);
     npsolFlag = true;
-#endif
+//#elif // handled within NonD::sub_optimizer_select()
+#endif // HAVE_NPSOL
     break;
   }
   case SUBMETHOD_OPTPP:
 #ifdef HAVE_OPTPP
-    minMaxOptimizer = std::make_unique<SNLLOptimizer>(
-      "optpp_q_newton", minMaxModel);
-#endif
+    minMaxOptimizer = std::make_unique<SNLLOptimizer>
+                               ("optpp_q_newton", minMaxModel);
+//#elif // handled within NonD::sub_optimizer_select()
+#endif // HAVE_OPTPP
     break;
   default:
     err_flag = true;  break;

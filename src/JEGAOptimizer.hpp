@@ -337,7 +337,7 @@ class JEGAOptimizer :
          */
         void
         LoadTheParameterDatabase(
-            );
+            const IRStore* method_store = nullptr);
 
         /**
          * \brief Completely initializes the supplied algorithm configuration.

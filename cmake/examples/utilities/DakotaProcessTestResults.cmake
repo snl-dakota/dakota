@@ -49,6 +49,58 @@ function( process_dakota_test_results _build_path )
 endfunction()
 
 # ***********************************************************************
+# Function: process_python_parity_results
+# ***********************************************************************
+function( process_python_parity_results _build_path )
+
+  set( python_parity_results_log "python_parity_results.log" )
+  list( APPEND removeFiles "${python_parity_results_log}" )
+
+  foreach( file ${removeFiles} )
+    message("Processing ${_build_path}/${file}")
+    if ( EXISTS ${_build_path}/${file} )
+      message("Deleting ${_build_path}/${file}")
+      execute_process(
+        COMMAND ${CMAKE_COMMAND} -E remove ${file}
+        WORKING_DIRECTORY ${_build_path} )
+    endif()
+  endforeach()
+
+  file( WRITE ${_build_path}/${python_parity_results_log} "Python Parity Test Results:\n" )
+
+  # Collect dakota_diffs.out from all python_parity/<case>/ subdirectories
+  file( GLOB python_parity_diff_files
+    "${_build_path}/test/python_parity/*/dakota_diffs.out" )
+  list( SORT python_parity_diff_files )
+
+  set( passCount 0 )
+  set( failCount 0 )
+  set( diffCount 0 )
+
+  foreach( diff_file ${python_parity_diff_files} )
+    file( READ ${diff_file} diff_content )
+    file( APPEND ${_build_path}/${python_parity_results_log} "${diff_content}\n" )
+    file( STRINGS ${diff_file} passLines REGEX "PASS" )
+    file( STRINGS ${diff_file} failLines REGEX "FAIL" )
+    file( STRINGS ${diff_file} diffLines REGEX "DIFF" )
+    list( LENGTH passLines casePasses )
+    list( LENGTH failLines caseFails )
+    list( LENGTH diffLines caseDiffs )
+    math( EXPR passCount "${passCount} + ${casePasses}" )
+    math( EXPR failCount "${failCount} + ${caseFails}" )
+    math( EXPR diffCount "${diffCount} + ${caseDiffs}" )
+  endforeach()
+
+  file( APPEND ${_build_path}/${python_parity_results_log}
+    "\nDashboard/Email Reporting.. \n" )
+  file( APPEND ${_build_path}/${python_parity_results_log} "PythonParity Counts:\n" )
+  file( APPEND ${_build_path}/${python_parity_results_log} "PASS: ${passCount}\n" )
+  file( APPEND ${_build_path}/${python_parity_results_log} "FAIL: ${failCount}\n" )
+  file( APPEND ${_build_path}/${python_parity_results_log} "DIFF: ${diffCount}\n" )
+
+endfunction()
+
+# ***********************************************************************
 # Function: process_unit_test_results
 # ***********************************************************************
 function( process_unit_test_results _build_path ) 

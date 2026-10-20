@@ -13,6 +13,7 @@
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 //#include "PRPMultiIndex.hpp"
 
 //#define DEBUG
@@ -122,6 +123,50 @@ ApproximationInterface(ProblemDescDB& problem_db, const Variables& am_vars,
     }
   }
   */
+}
+
+
+ApproximationInterface::
+ApproximationInterface(const IRStore& model_store, const Variables& am_vars,
+                       bool am_cache, const String& am_interface_id,
+                       const StringArray& fn_labels, short data_order,
+                       short output_level):
+  Interface(fn_labels.size(), output_level),
+  approxFnIndices(model_store.get<SizetSet>("surrogate.function_indices")),
+  trackEvalIds(false),
+  challengeFile(model_store.get<String>("surrogate.challenge_points_file")),
+  challengeFormat(
+    model_store.get<unsigned short>("surrogate.challenge_points_file_format")),
+  challengeUseVarLabels(
+    model_store.get<bool>("surrogate.challenge_use_variable_labels")),
+  challengeActiveOnly(
+    model_store.get<bool>("surrogate.challenge_points_file_active")),
+  actualModelVars(am_vars.copy()), actualModelCache(am_cache),
+  actualModelInterfaceId(am_interface_id)
+{
+  interfaceId = String("APPROX_INTERFACE_") + std::to_string(++approxIdNum);
+  interfaceType = APPROX_INTERFACE;
+  algebraicMappings = false;
+
+  const size_t num_fns = fn_labels.size();
+  if (approxFnIndices.empty())
+    for (size_t i = 0; i < num_fns; ++i)
+      approxFnIndices.insert(i);
+
+  UShortArray approx_order;
+  const short polynomial_order =
+    model_store.get<short>("surrogate.polynomial_order");
+  if (polynomial_order >= 0)
+    approx_order.assign(am_vars.cv(), polynomial_order);
+
+  const size_t num_vars = am_vars.cv() + am_vars.div() + am_vars.dsv() +
+                          am_vars.drv();
+  sharedData = SharedApproxData(model_store, approx_order, num_vars,
+                                data_order, output_level);
+
+  functionSurfaces.resize(num_fns);
+  for (const auto fn_index : approxFnIndices)
+    functionSurfaces[fn_index] = Approximation(sharedData);
 }
 
 

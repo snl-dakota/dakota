@@ -54,6 +54,9 @@ public:
 
   /// constructor
   NonDGPMSABayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDGPMSABayesCalibration(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDGPMSABayesCalibration();
 
@@ -66,6 +69,8 @@ protected:
   void derived_init_communicators(ParLevLIter pl_iter);
   void derived_set_communicators(ParLevLIter pl_iter);
   void derived_free_communicators(ParLevLIter pl_iter);
+
+  void initialize(std::shared_ptr<Model> model);
 
   /// performs a forward uncertainty propagation by using GPM/SA to 
   /// generate a posterior distribution on parameters given a set of 

@@ -91,7 +91,8 @@ protected:
   NonD(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
   /// DI constructor using method IR plus optional runtime services
   NonD(std::shared_ptr<StudyServices> services,
-       const IRStore& method_store, std::shared_ptr<Model> model);
+       const IRStore& method_store, std::shared_ptr<Model> model,
+       const ViewRequest& view_req = ViewRequest(ViewRequest::ALEATORY_UNCERTAIN));
   /// alternate constructor for sample generation and evaluation "on the fly"
   NonD(unsigned short method_name, std::shared_ptr<Model>);
   /// alternate constructor for sample generation and evaluation "on the fly"
