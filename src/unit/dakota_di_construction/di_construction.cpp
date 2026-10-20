@@ -552,12 +552,12 @@ TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
     {{"taylor_series", true}, {"truth_model_pointer", "DI"}},
     truth, variables, response);
   auto multipoint = study.model().multipoint_surrogate(
-    {{"type", {{"tana", json::object()}}},
+    {{"type", {{"tana", true}}},
      {"truth_model_pointer", "DI"}},
     truth, variables, response);
   auto global = study.model().global_surrogate(
     {{"type", {{"polynomial", {
-       {"order", {{"quadratic", json::object()}}}
+       {"order", {{"quadratic", true}}}
      }}}},
      {"build_data", {{"truth_model_pointer", "DI"}}}},
     variables, response, truth);
@@ -567,7 +567,7 @@ TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
     truth);
   auto dace_global = study.model().global_surrogate(
     {{"type", {{"polynomial", {
-       {"order", {{"linear", json::object()}}}
+       {"order", {{"linear", true}}}
      }}}},
      {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
     variables, response, nullptr, dace);
@@ -585,7 +585,7 @@ TEST(di_construction_tests, study_factory_constructs_data_fit_surrogates)
   EXPECT_THROW(
     study.model().global_surrogate(
       {{"type", {{"polynomial", {
-         {"order", {{"linear", json::object()}}}
+         {"order", {{"linear", true}}}
        }}}},
        {"build_data", {{"dace_method_pointer", {{"pointer", "DI"}}}}}},
       variables, response, truth, dace),
