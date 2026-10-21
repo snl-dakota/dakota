@@ -1,35 +1,40 @@
 # DAKOTA INPUT FILE - dakota_uq_textbook_adaptsampling.in
-# This sampling input file demonstrates adaptive sampling. 
+# Adaptive sampling tests varying fitness_metric, batch_selection, and
+# synchronous vs. asynchronous interface.
+#   s0: predicted_variance fitness, naive batch, direct (sync) - baseline
+#   s1: distance fitness, naive batch, direct
+#   s2: gradient fitness, naive batch, direct
+#   s3: predicted_variance fitness, distance batch, direct
+#   s4: distance fitness, distance batch, direct
+#   s5: predicted_variance fitness, naive batch, fork async
+#   s6: distance fitness, naive batch, fork async
+#   s7: gradient fitness, naive batch, fork async
 
 method,
-	adaptive_sampling,
+	adaptive_sampling
 	  initial_samples = 20
 	  seed = 1234
-	  # rng mt19937
-	   
-          response_levels =  10.0
-          samples_on_emulator = 400
-          max_iterations = 50
-          refinement_samples = 2
-          batch_selection = naive
-          fitness_metric = predicted_variance
-          #fitness_metric = distance
-          #fitness_metric = gradient
-          # previous implementation with misc_options: 
-          # misc_options  'sample_design=sampling_lhs' 
-          # 'approx_type=global_kriging'
-          # 'candidate_size=400' 'rounds=50' 'score_type=alm'
-          # 'batch_size=2' 'batch_environment=naive'
+	  response_levels = 10.0
+	  samples_on_emulator = 400
+	  max_iterations = 50
+	  refinement_samples = 2
+	  batch_selection = naive                 #s0,#s1,#s2,#s5,#s6,#s7
+#	  batch_selection = distance              #s3,#s4
+	  fitness_metric = predicted_variance     #s0,#s3,#s5
+#	  fitness_metric = distance               #s1,#s4,#s6
+#	  fitness_metric = gradient               #s2,#s7
 
 variables,
 	uniform_uncertain = 2
-          descriptors  = 'x1' 'x2'
-	  lower_bounds =  -2.0   -2.0
-	  upper_bounds =  2.0   2.0
+	  descriptors  = 'x1' 'x2'
+	  lower_bounds = -2.0 -2.0
+	  upper_bounds =  2.0  2.0
 
 interface,
-        direct
+	direct                                               #s0,#s1,#s2,#s3,#s4
+#	fork                                                 #s5,#s6,#s7
 	  analysis_driver = 'text_book'
+#	  asynchronous evaluation_concurrency = 4            #s5,#s6,#s7
 
 responses,
 	response_functions = 1
