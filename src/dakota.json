@@ -783,6 +783,20 @@
                     "x-model-default": "RngOptionsContext2Mt19937",
                     "x-union-pattern": 1
                 },
+                "distribution": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
+                        },
+                        {
+                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
+                        }
+                    ],
+                    "description": "Selection of cumulative or complementary cumulative functions",
+                    "title": "Distribution",
+                    "x-model-default": "DistributionCumulComplContext1Cumulative",
+                    "x-union-pattern": 1
+                },
                 "response_levels": {
                     "anyOf": [
                         {
@@ -802,60 +816,6 @@
                             "storage_type": "RESPONSE_LEVELS_ARRAY"
                         }
                     ]
-                },
-                "probability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/ProbabilityLevelsContext2ProbabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify probability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.probability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "gen_reliability_levels": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GenReliabilityLevelsGenReliabilityLevels"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "argument": "values",
-                    "default": null,
-                    "description": "Specify generalized relability levels at which to estimate the corresponding response value",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.nond.gen_reliability_levels",
-                            "ir_value_type": "RealVectorArray",
-                            "storage_type": "RESPONSE_LEVELS_ARRAY"
-                        }
-                    ]
-                },
-                "distribution": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Cumulative"
-                        },
-                        {
-                            "$ref": "#/$defs/DistributionCumulComplContext1Complementary"
-                        }
-                    ],
-                    "description": "Selection of cumulative or complementary cumulative functions",
-                    "title": "Distribution",
-                    "x-model-default": "DistributionCumulComplContext1Cumulative",
-                    "x-union-pattern": 1
                 },
                 "max_iterations": {
                     "default": 9223372036854775807,
