@@ -158,7 +158,10 @@ void CONMINOptimizer::allocate_constraints()
     num_lin_ineq = ModelUtils::num_linear_ineq_constraints(*iteratedModel),
     num_lin_eq   = ModelUtils::num_linear_eq_constraints(*iteratedModel);
   numConminNlnConstr = 2*num_nln_eq;
-  numConminNlnConstr += (int)constraintMapOffsets.size();
+  // count the nonlinear inequality entries added by
+  // Optimizer::configure_constraint_maps rather than assuming the maps
+  // hold only those entries
+  numConminNlnConstr += num_nonlin_ineq_constraints_found();
 
   // Augment nonlinear inequality maps (set in Optimizer::configure_constraint_maps) with additional constraint info ...
   configure_equality_constraints(CONSTRAINT_TYPE::NONLINEAR, num_nln_ineq);
@@ -268,6 +271,14 @@ void CONMINOptimizer::check_sub_iterator_conflict()
 
 void CONMINOptimizer::initialize_run()
 {
+  // The constraint-map builders (Optimizer::configure_constraint_maps and
+  // allocate_constraints below) only append; clear previous contents so
+  // repeated runs of the same iterator instance (e.g. under multi_start
+  // or pareto_set) do not accumulate stale, misclassified entries
+  constraintMapIndices.clear();
+  constraintMapMultipliers.clear();
+  constraintMapOffsets.clear();
+
   Optimizer::initialize_run();
 
   // Allocate space for CONMIN arrays
