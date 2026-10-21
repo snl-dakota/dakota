@@ -605,6 +605,13 @@ load_experiment(size_t exp_index, std::ifstream& scalar_data_stream,
 	  scalar_map_indices[i] = i;
 	}
       }
+      else {
+	// no experiment_variance_type specified: default to unit variance
+	// (as the scalar_data_file branch does above) so the cached
+	// covariance determinant is 1.0, not 0.0 (log det = -inf)
+	sigma_scalars[i] = 1.0;
+	scalar_map_indices[i] = i;
+      }
     }
 
   }
