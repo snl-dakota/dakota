@@ -557,6 +557,13 @@ void LeastSq::post_run(std::ostream& s)
     std::shared_ptr<ScalingModel> scale_model_rep =
       std::static_pointer_cast<ScalingModel>(scalingModel);
     RealVector best_fns = best_resp.function_values_view();
+    // iter_resp holds the solver's LAST evaluation, not the best point;
+    // the solver-returned best (scaled) constraints are cached in
+    // best_resp, so stage them into iter_resp's constraint block before
+    // unscaling them back into best_fns
+    copy_data_partial(best_fns, (int)numUserPrimaryFns,
+		      (int)numNonlinearConstraints, iter_fns,
+		      (int)numLeastSqTerms);
     // only requesting scaling of constraints, so no need for variable Jacobian
     activeSet.request_values(1);
     // the size of the Iterator's primary fns may differ from the
