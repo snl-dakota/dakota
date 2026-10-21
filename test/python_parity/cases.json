@@ -1714,5 +1714,139 @@
       "NonDLHSSampling",
       "OPTPPOptimizer"
     ]
+  },
+  {
+    "id": "method_hybrid_sequential",
+    "input": "python_parity/inputs/hybrid_sequential.in",
+    "subtest": 0,
+    "script": "method_hybrid_sequential.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_ea",
+      "MethodFactory.coliny_pattern_search",
+      "MethodFactory.hybrid"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer",
+      "SeqHybridMetaIterator"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_hybrid_embedded",
+    "input": "python_parity/inputs/hybrid_embedded.in",
+    "subtest": 0,
+    "script": "method_hybrid_embedded.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_ea",
+      "MethodFactory.coliny_pattern_search",
+      "MethodFactory.hybrid"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer",
+      "EmbedHybridMetaIterator"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_hybrid_collaborative",
+    "input": "python_parity/inputs/hybrid_collaborative.in",
+    "subtest": 0,
+    "script": "method_hybrid_collaborative.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.coliny_ea",
+      "MethodFactory.coliny_pattern_search",
+      "MethodFactory.hybrid"
+    ],
+    "classes": [
+      "SimulationModel",
+      "COLINOptimizer",
+      "CollabHybridMetaIterator"
+    ],
+    "requires_features": [
+      "HAVE_ACRO"
+    ]
+  },
+  {
+    "id": "method_surrogate_based_local",
+    "input": "python_parity/inputs/surrogate_based_local.in",
+    "subtest": 0,
+    "script": "method_surrogate_based_local.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.surrogate_based_local"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSSampling",
+      "DataFitSurrModel",
+      "DataFitSurrBasedLocalMinimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO",
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "method_surrogate_based_global",
+    "input": "python_parity/inputs/surrogate_based_global.in",
+    "subtest": 0,
+    "script": "method_surrogate_based_global.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.surrogate_based_global"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSSampling",
+      "DataFitSurrModel",
+      "SurrBasedGlobalMinimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO",
+      "HAVE_SURFPACK"
+    ]
   }
 ]

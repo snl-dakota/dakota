@@ -73,3 +73,45 @@ def response_interface(study, mode="high", id=None):
             "interface_type": {"fork": {}},
         }
     )
+
+
+def hybrid_sub_methods(study):
+    """Coliny EA and pattern search sub-methods sharing one text_book model."""
+    design = {"count": 2, "initial_point": [0.9, 1.1], "descriptors": ["x1", "x2"]}
+    design.update(lower_bounds=[0.5, 0.5], upper_bounds=[1.5, 1.5])
+    variables = study.variables(continuous_design=design)
+    model = study.model.simulation(variables, interface(study), response(study, variables))
+    ga = study.method.coliny_ea(
+        model,
+        id_method="GA",
+        max_iterations=2,
+        max_function_evaluations=24,
+        seed=1234,
+        population_size=8,
+    )
+    ps = study.method.coliny_pattern_search(
+        model,
+        id_method="PS",
+        max_iterations=5,
+        max_function_evaluations=25,
+        seed=1234,
+        initial_delta=0.1,
+        variable_tolerance=0.0001,
+    )
+    return ga, ps
+
+
+def dace_global_surrogate(study):
+    """Quadratic polynomial surrogate of text_book built by a ten-point LHS."""
+    design = {"count": 2, "initial_point": [0.9, 1.1], "descriptors": ["x1", "x2"]}
+    design.update(lower_bounds=[0.5, 0.5], upper_bounds=[1.5, 1.5])
+    variables = study.variables(continuous_design=design)
+    responses = response(study, variables)
+    truth = study.model.simulation(variables, interface(study), responses)
+    dace = study.method.sampling(truth, samples=10, seed=1234, sample_type={"lhs": True})
+    return study.model.global_surrogate(
+        variables,
+        responses,
+        dace_iterator=dace,
+        type={"polynomial": {"order": {"quadratic": True}}},
+    )

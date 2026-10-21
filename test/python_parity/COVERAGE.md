@@ -1,6 +1,6 @@
 # Python paired execution inventory
 
-73 of 73 factory entry points have paired cases.
+76 of 76 factory entry points have paired cases.
 
 This lists authored execution pairs, not verified native passes. Optional
 factories are included unless `--native` filters to the installed extension.
@@ -17,8 +17,8 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.coliny_beta` | method_coliny_beta |
 | `MethodFactory.coliny_cobyla` | method_coliny_cobyla |
 | `MethodFactory.coliny_direct` | method_coliny_direct |
-| `MethodFactory.coliny_ea` | method_coliny_ea |
-| `MethodFactory.coliny_pattern_search` | method_coliny_pattern_search |
+| `MethodFactory.coliny_ea` | method_coliny_ea, method_hybrid_sequential, method_hybrid_embedded, method_hybrid_collaborative |
+| `MethodFactory.coliny_pattern_search` | method_coliny_pattern_search, method_hybrid_sequential, method_hybrid_embedded, method_hybrid_collaborative |
 | `MethodFactory.coliny_solis_wets` | method_coliny_solis_wets |
 | `MethodFactory.conmin_frcg` | method_conmin_frcg |
 | `MethodFactory.conmin_mfd` | method_conmin_mfd |
@@ -35,6 +35,7 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.global_interval_est` | method_global_interval_est |
 | `MethodFactory.global_reliability` | method_global_reliability |
 | `MethodFactory.gpais` | method_gpais |
+| `MethodFactory.hybrid` | method_hybrid_sequential, method_hybrid_embedded, method_hybrid_collaborative |
 | `MethodFactory.import_points` | import_points |
 | `MethodFactory.importance_sampling` | method_importance_sampling |
 | `MethodFactory.list_parameter_study` | pstudy_s3 |
@@ -63,28 +64,30 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.optpp_cg` | method_optpp_cg |
 | `MethodFactory.optpp_fd_newton` | textbook_nips_s2 |
 | `MethodFactory.optpp_newton` | textbook_nips_s4 |
-| `MethodFactory.optpp_pds` | method_optpp_pds, local_surrogate_mixed_vars |
+| `MethodFactory.optpp_pds` | method_optpp_pds, local_surrogate_mixed_vars, dace_pstudy_under_optimizer |
 | `MethodFactory.optpp_q_newton` | textbook_nips_s0 |
 | `MethodFactory.pof_darts` | method_pof_darts |
 | `MethodFactory.polynomial_chaos` | method_polynomial_chaos |
 | `MethodFactory.richardson_extrap` | method_richardson_extrap |
 | `MethodFactory.rkd_darts` | method_rkd_darts |
-| `MethodFactory.sampling` | sampling_small, model_nested, method_snowpac, method_surrogate_based_uq, nested_inferred_view, dace_sampling_aleatory_truth |
+| `MethodFactory.sampling` | sampling_small, model_nested, method_snowpac, method_surrogate_based_uq, nested_inferred_view, dace_sampling_aleatory_truth, dace_pstudy_under_optimizer, method_surrogate_based_local, method_surrogate_based_global |
 | `MethodFactory.snowpac` | method_snowpac |
 | `MethodFactory.soga` | method_soga |
 | `MethodFactory.stoch_collocation` | method_stoch_collocation |
+| `MethodFactory.surrogate_based_global` | method_surrogate_based_global |
+| `MethodFactory.surrogate_based_local` | method_surrogate_based_local |
 | `MethodFactory.surrogate_based_uq` | method_surrogate_based_uq |
 | `MethodFactory.vector_parameter_study` | pstudy_s0, model_global, model_local, model_multipoint, model_ensemble, model_nested, multistart_ie_s0, nested_inferred_view |
 | `ModelFactory.ensemble_surrogate` | model_ensemble, method_multilevel_polynomial_chaos, method_multifidelity_polynomial_chaos, method_multifidelity_stoch_collocation, method_multilevel_function_train, method_multifidelity_function_train, method_multilevel_sampling, method_multifidelity_sampling, method_approximate_control_variate, method_multilevel_blue, method_multilevel_multifidelity_sampling, ensemble_inferred_view |
-| `ModelFactory.global_surrogate` | model_global, method_surrogate_based_uq, dace_sampling_aleatory_truth |
+| `ModelFactory.global_surrogate` | model_global, method_surrogate_based_uq, dace_sampling_aleatory_truth, dace_pstudy_under_optimizer, method_surrogate_based_local, method_surrogate_based_global |
 | `ModelFactory.local_surrogate` | model_local, local_surrogate_mixed_vars |
 | `ModelFactory.multipoint_surrogate` | model_multipoint |
 | `ModelFactory.nested` | model_nested, method_snowpac, nested_inferred_view |
-| `ModelFactory.simulation` | pstudy_s0, pstudy_s3, pstudy_s4, pstudy_s5, textbook_s0, textbook_nips_s0, textbook_nips_s2, textbook_nips_s4, sampling_small, import_points, model_local, model_multipoint, model_ensemble, model_nested, method_dot_bfgs, method_dot_frcg, method_dot_slp, method_dot_sqp, method_conmin_frcg, method_conmin_mfd, method_nonlinear_cg, method_nowpac, method_snowpac, method_genie_direct, method_genie_opt_darts, method_coliny_cobyla, method_coliny_pattern_search, multistart_ie_s0, method_coliny_direct, method_coliny_ea, method_coliny_solis_wets, method_optpp_cg, method_optpp_pds, method_ncsu_direct, method_nlpql_sqp, method_npsol_sqp, method_mesh_adaptive_search, method_asynch_pattern_search, method_soga, method_moga, method_local_reliability, method_global_reliability, method_global_interval_est, method_global_evidence, method_local_interval_est, method_local_evidence, method_importance_sampling, method_gpais, method_pof_darts, method_rkd_darts, method_adaptive_sampling, method_polynomial_chaos, method_stoch_collocation, method_function_train, method_surrogate_based_uq, method_multilevel_polynomial_chaos, method_multifidelity_polynomial_chaos, method_multifidelity_stoch_collocation, method_multilevel_function_train, method_multifidelity_function_train, method_multilevel_sampling, method_multifidelity_sampling, method_approximate_control_variate, method_multilevel_blue, method_multilevel_multifidelity_sampling, method_efficient_global, method_coliny_beta, method_nl2sol, method_branch_and_bound, method_richardson_extrap, method_bayes_calibration, nested_inferred_view, dace_sampling_aleatory_truth, local_surrogate_mixed_vars, ensemble_inferred_view |
+| `ModelFactory.simulation` | pstudy_s0, pstudy_s3, pstudy_s4, pstudy_s5, textbook_s0, textbook_nips_s0, textbook_nips_s2, textbook_nips_s4, sampling_small, import_points, model_local, model_multipoint, model_ensemble, model_nested, method_dot_bfgs, method_dot_frcg, method_dot_slp, method_dot_sqp, method_conmin_frcg, method_conmin_mfd, method_nonlinear_cg, method_nowpac, method_snowpac, method_genie_direct, method_genie_opt_darts, method_coliny_cobyla, method_coliny_pattern_search, multistart_ie_s0, method_coliny_direct, method_coliny_ea, method_coliny_solis_wets, method_optpp_cg, method_optpp_pds, method_ncsu_direct, method_nlpql_sqp, method_npsol_sqp, method_mesh_adaptive_search, method_asynch_pattern_search, method_soga, method_moga, method_local_reliability, method_global_reliability, method_global_interval_est, method_global_evidence, method_local_interval_est, method_local_evidence, method_importance_sampling, method_gpais, method_pof_darts, method_rkd_darts, method_adaptive_sampling, method_polynomial_chaos, method_stoch_collocation, method_function_train, method_surrogate_based_uq, method_multilevel_polynomial_chaos, method_multifidelity_polynomial_chaos, method_multifidelity_stoch_collocation, method_multilevel_function_train, method_multifidelity_function_train, method_multilevel_sampling, method_multifidelity_sampling, method_approximate_control_variate, method_multilevel_blue, method_multilevel_multifidelity_sampling, method_efficient_global, method_coliny_beta, method_nl2sol, method_branch_and_bound, method_richardson_extrap, method_bayes_calibration, nested_inferred_view, dace_sampling_aleatory_truth, local_surrogate_mixed_vars, ensemble_inferred_view, dace_pstudy_under_optimizer, method_hybrid_sequential, method_hybrid_embedded, method_hybrid_collaborative, method_surrogate_based_local, method_surrogate_based_global |
 
 ## Native classes exercised by the paired scripts
 
-`APPSOptimizer`, `COLINOptimizer`, `CONMINOptimizer`, `ConcurrentMetaIterator`, `DOTOptimizer`, `DataFitSurrModel`, `EffGlobalMinimizer`, `EnsembleSurrModel`, `JEGAOptimizer`, `NCSUOptimizer`, `NL2SOLLeastSq`, `NLPQLPOptimizer`, `NOWPACOptimizer`, `NPSOLOptimizer`, `NestedModel`, `NomadOptimizer`, `NonDACVSampling`, `NonDAdaptImpSampling`, `NonDAdaptiveSampling`, `NonDC3FunctionTrain`, `NonDGPImpSampling`, `NonDGlobalReliability`, `NonDImportPoints`, `NonDLHSEvidence`, `NonDLHSSampling`, `NonDLHSSingleInterval`, `NonDLocalEvidence`, `NonDLocalReliability`, `NonDLocalSingleInterval`, `NonDMultifidelitySampling`, `NonDMultilevBLUESampling`, `NonDMultilevControlVarSampling`, `NonDMultilevelFunctionTrain`, `NonDMultilevelPolynomialChaos`, `NonDMultilevelSampling`, `NonDMultilevelStochCollocation`, `NonDPOFDarts`, `NonDPolynomialChaos`, `NonDRKDDarts`, `NonDStochCollocation`, `NonDSurrogateExpansion`, `NonDWASABIBayesCalibration`, `NonlinearCGOptimizer`, `OPTPPOptimizer`, `OptDartsOptimizer`, `ParamStudy`, `PebbldMinimizer`, `RichExtrapVerification`, `SNLLOptimizer`, `SimulationModel`
+`APPSOptimizer`, `COLINOptimizer`, `CONMINOptimizer`, `CollabHybridMetaIterator`, `ConcurrentMetaIterator`, `DOTOptimizer`, `DataFitSurrBasedLocalMinimizer`, `DataFitSurrModel`, `EffGlobalMinimizer`, `EmbedHybridMetaIterator`, `EnsembleSurrModel`, `JEGAOptimizer`, `NCSUOptimizer`, `NL2SOLLeastSq`, `NLPQLPOptimizer`, `NOWPACOptimizer`, `NPSOLOptimizer`, `NestedModel`, `NomadOptimizer`, `NonDACVSampling`, `NonDAdaptImpSampling`, `NonDAdaptiveSampling`, `NonDC3FunctionTrain`, `NonDGPImpSampling`, `NonDGlobalReliability`, `NonDImportPoints`, `NonDLHSEvidence`, `NonDLHSSampling`, `NonDLHSSingleInterval`, `NonDLocalEvidence`, `NonDLocalReliability`, `NonDLocalSingleInterval`, `NonDMultifidelitySampling`, `NonDMultilevBLUESampling`, `NonDMultilevControlVarSampling`, `NonDMultilevelFunctionTrain`, `NonDMultilevelPolynomialChaos`, `NonDMultilevelSampling`, `NonDMultilevelStochCollocation`, `NonDPOFDarts`, `NonDPolynomialChaos`, `NonDRKDDarts`, `NonDStochCollocation`, `NonDSurrogateExpansion`, `NonDWASABIBayesCalibration`, `NonlinearCGOptimizer`, `OPTPPOptimizer`, `OptDartsOptimizer`, `ParamStudy`, `PebbldMinimizer`, `RichExtrapVerification`, `SNLLOptimizer`, `SeqHybridMetaIterator`, `SimulationModel`, `SurrBasedGlobalMinimizer`
 
 Multiple factory entry points can use the same native class; each factory
 still needs its own execution case. Timing claims require successful native runs.

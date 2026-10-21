@@ -9,11 +9,15 @@
 
 #include "DakotaStudyPython.hpp"
 
+#include "CollabHybridMetaIterator.hpp"
 #include "ConcurrentMetaIterator.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
+#include "DataFitSurrBasedLocalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
+#include "EmbedHybridMetaIterator.hpp"
+#include "HierarchSurrBasedLocalMinimizer.hpp"
 #include "NL2SOLLeastSq.hpp"
 #include "NPSOLOptimizer.hpp"
 #include "NonDACVSampling.hpp"
@@ -46,15 +50,20 @@
 #include "OptDartsOptimizer.hpp"
 #include "ParamStudy.hpp"
 #include "RichExtrapVerification.hpp"
+#include "SeqHybridMetaIterator.hpp"
 #include "Study.hpp"
+#include "SurrBasedGlobalMinimizer.hpp"
+#include "SurrBasedLocalMinimizer.hpp"
 #include "dakota_global_defs.hpp"
 
 #include <memory>
 #include <nlohmann/json.hpp>
+#include <pybind11/stl.h>
 #include <pybind11_json/pybind11_json.hpp>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 #ifdef HAVE_DOT
 #include "DOTOptimizer.hpp"
@@ -237,6 +246,17 @@ void bind_iterators(py::module_& m)
   py::class_<ConcurrentMetaIterator, Iterator,
              std::shared_ptr<ConcurrentMetaIterator>>(
     m, "ConcurrentMetaIterator", py::module_local());
+  register_iterator<SeqHybridMetaIterator>(m, "SeqHybridMetaIterator");
+  register_iterator<EmbedHybridMetaIterator>(m, "EmbedHybridMetaIterator");
+  register_iterator<CollabHybridMetaIterator>(m, "CollabHybridMetaIterator");
+  register_iterator<SurrBasedLocalMinimizer>(m, "SurrBasedLocalMinimizer");
+  py::class_<DataFitSurrBasedLocalMinimizer, SurrBasedLocalMinimizer,
+             std::shared_ptr<DataFitSurrBasedLocalMinimizer>>(
+    m, "DataFitSurrBasedLocalMinimizer", py::module_local());
+  py::class_<HierarchSurrBasedLocalMinimizer, SurrBasedLocalMinimizer,
+             std::shared_ptr<HierarchSurrBasedLocalMinimizer>>(
+    m, "HierarchSurrBasedLocalMinimizer", py::module_local());
+  register_iterator<SurrBasedGlobalMinimizer>(m, "SurrBasedGlobalMinimizer");
   register_iterator<NonDLocalReliability>(m, "NonDLocalReliability");
   register_iterator<NonDGlobalReliability>(m, "NonDGlobalReliability");
   register_iterator<NonDLocalEvidence>(m, "NonDLocalEvidence");
@@ -392,6 +412,54 @@ This method is present only when Dakota is built with DOT. See
 :raises TypeError: If the dependency is null or both configuration forms are used.
 
 See :ref:`multi-start options <method-multi_start>`.)doc");
+  factory
+    .def("hybrid",
+         [](const Study::MethodFactory& factory,
+            std::vector<std::shared_ptr<Iterator>> sub_iterators,
+            const py::object& config, py::kwargs kwargs)
+           -> std::shared_ptr<Iterator> {
+           for (const auto& sub_iterator : sub_iterators)
+             if (!sub_iterator)
+               throw py::type_error(
+                 "MethodFactory.hybrid: sub_iterators must not contain None");
+           const auto store = materialize_method(nlohmann::json{{"hybrid",
+             normalize_factory_config(config, kwargs, "MethodFactory.hybrid")}});
+           // mirror the ProblemDescDB dispatch in iterator_utils.cpp
+           switch (store.get<unsigned short>("sub_method")) {
+           case SUBMETHOD_SEQUENTIAL:
+             return std::make_shared<SeqHybridMetaIterator>(
+               store, std::move(sub_iterators), factory.services());
+           case SUBMETHOD_COLLABORATIVE:
+             return std::make_shared<CollabHybridMetaIterator>(
+               store, std::move(sub_iterators), factory.services());
+           case SUBMETHOD_EMBEDDED:
+             if (sub_iterators.size() != 2)
+               throw py::value_error(
+                 "MethodFactory.hybrid: an embedded hybrid requires exactly "
+                 "two sub_iterators (global, local)");
+             return std::make_shared<EmbedHybridMetaIterator>(
+               store, std::move(sub_iterators[0]), std::move(sub_iterators[1]),
+               factory.services());
+           default:
+             throw py::value_error(
+               "MethodFactory.hybrid: unsupported hybrid strategy");
+           }
+         },
+         py::arg("sub_iterators"), py::arg("config") = py::none(),
+         R"doc(Construct a hybrid method around injected sub-iterators.
+
+:param sub_iterators: Methods run by the hybrid, each with its own model. A
+    sequential hybrid runs them in order and a collaborative hybrid runs them
+    together. An embedded hybrid requires exactly two: the global method
+    followed by the local method.
+:type sub_iterators: list[dakota.study.Iterator]
+:param config: A ``HybridConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed meta-iterator.
+:rtype: dakota.study.Iterator
+:raises TypeError: If a dependency is null or both configuration forms are used.
+
+See :ref:`hybrid options <method-hybrid>`.)doc");
 
   bind_method(factory, "vector_parameter_study",
     [](const Study::MethodFactory& f, const IRStore& store,
@@ -443,6 +511,15 @@ See :ref:`multi-start options <method-multi_start>`.)doc");
        std::shared_ptr<Model> model) {
       return f.nl2sol(store, std::move(model));
     });
+  bind_method(factory, "surrogate_based_local",
+    [](const Study::MethodFactory& self, const IRStore& store,
+       std::shared_ptr<Model> model) {
+      // mirror the ProblemDescDB dispatch in iterator_utils.cpp
+      if (model->surrogate_type() == "ensemble")
+        return construct<HierarchSurrBasedLocalMinimizer>(self, store, std::move(model));
+      return construct<DataFitSurrBasedLocalMinimizer>(self, store, std::move(model));
+    });
+  bind_method(factory, "surrogate_based_global", &construct<SurrBasedGlobalMinimizer>);
 
   bind_method(factory, "local_reliability", &construct<NonDLocalReliability>);
   bind_method(factory, "global_reliability", &construct<NonDGlobalReliability>);

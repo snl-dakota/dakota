@@ -1,0 +1,33 @@
+environment
+  method_pointer 'SBGO'
+method
+  id_method 'SBGO'
+  model_pointer 'surr'
+  surrogate_based_global
+    approx_method_name 'coliny_pattern_search'
+    replace_points
+    max_iterations 2
+model
+  id_model 'surr'
+  global_surrogate polynomial quadratic
+    dace_method_pointer 'dace'
+method
+  id_method 'dace'
+  model_pointer 'truth'
+  sampling
+    samples 10 seed 1234 sample_type lhs
+model
+  id_model 'truth'
+  simulation
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'text_book' fork
+responses
+  objective_functions 1
+  no_gradients
+  no_hessians

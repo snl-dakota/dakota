@@ -43,6 +43,13 @@ ITERATOR_TYPES = (
     "NonDGPMSABayesCalibration",
     "NonDDREAMBayesCalibration",
     "NonDMUQBayesCalibration",
+    "SeqHybridMetaIterator",
+    "EmbedHybridMetaIterator",
+    "CollabHybridMetaIterator",
+    "SurrBasedLocalMinimizer",
+    "DataFitSurrBasedLocalMinimizer",
+    "HierarchSurrBasedLocalMinimizer",
+    "SurrBasedGlobalMinimizer",
 )
 
 FACTORY_NAMES = (
@@ -100,4 +107,6 @@ FACTORY_NAMES = (
     "multifidelity_sampling",
     "approximate_control_variate",
     "bayes_calibration",
+    "surrogate_based_local",
+    "surrogate_based_global",
 )

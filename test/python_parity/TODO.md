@@ -9,6 +9,13 @@ Native pass status is separate from the inventory in `COVERAGE.md`.
 - Add separate cases for alternate dispatch paths: global interval/evidence
   optimization (current pairs use LHS), weighted MLMC, recursive ACV/model graph
   searches, and QUESO/GPMSA/DREAM/MUQ Bayesian backends (current pair uses WASABI).
+- Run the hybrid (sequential, embedded, collaborative) and surrogate-based
+  local/global pairs in a native build; they were authored without one.
+- Add a hierarchical `surrogate_based_local` pair
+  (`HierarchSurrBasedLocalMinimizer`) once `ModelFactory.ensemble_surrogate`
+  accepts a `correction` specification; hierarchical SBO requires corrections.
+- Surrogate-based local/global DI construction supports only
+  `approx_method_name`; add `approx_method_pointer` pairs if that is enabled.
 - Measure native runtimes before describing any new case as fast-running.
 - Preserve the deliberate deferral of explicit RecastModel hierarchy bindings;
   these pairs exercise internal method recasts through the exposed factories.
