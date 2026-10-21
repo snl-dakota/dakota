@@ -1,0 +1,22 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  local_interval_est
+    nip
+model
+  id_model 'target'
+  simulation
+variables
+  continuous_interval_uncertain 2
+    num_intervals 1 1
+    interval_probs 1.0 1.0
+    lower_bounds -1.0 -1.0
+    upper_bounds 1.0 1.0
+responses
+  response_functions 1
+  analytic_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py high' fork

@@ -44,6 +44,13 @@ public:
   AdapterModel(void (*resp_map) (const Variables& vars, const ActiveSet& set,
 				 Response& response));
 
+  /// Unit testing constructor: creates minimal AdapterModel with basic variable setup
+  /// for testing optimization interfaces without full Dakota infrastructure
+  AdapterModel(int num_continuous_vars,
+               void (*resp_map)(const Variables& vars, const ActiveSet& set, 
+                               Response& response),
+               bool unit_testing_tag);
+
   /// destructor
   ~AdapterModel() override;
 

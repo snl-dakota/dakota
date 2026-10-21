@@ -10,7 +10,7 @@ endif()
 # Only set project if standalone
 if(DAKOTA_VALIDATION_STANDALONE)
     project(dakota_validation_cpp VERSION 0.1.0 LANGUAGES CXX)
-    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD 20)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     
@@ -25,25 +25,30 @@ if(DAKOTA_VALIDATION_STANDALONE)
     
     # Python
     if(BUILD_PYTHON_BINDINGS)
-        find_package(Python REQUIRED COMPONENTS Interpreter Development)
-        message(STATUS "Python executable: ${Python_EXECUTABLE}")
+        find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+        message(STATUS "Python executable: ${Python3_EXECUTABLE}")
         
         # Validate include path (conda workaround)
-        if(Python_INCLUDE_DIRS)
-            list(GET Python_INCLUDE_DIRS 0 _first_include_dir)
+        if(Python3_INCLUDE_DIRS)
+            list(GET Python3_INCLUDE_DIRS 0 _first_include_dir)
             if(NOT EXISTS "${_first_include_dir}")
                 execute_process(
-                    COMMAND "${Python_EXECUTABLE}" -c 
+                    COMMAND "${Python3_EXECUTABLE}" -c 
                         "import sysconfig; print(sysconfig.get_path('include'))"
                     OUTPUT_VARIABLE _python_include_from_sysconfig
                     OUTPUT_STRIP_TRAILING_WHITESPACE
                     RESULT_VARIABLE _sysconfig_result
                 )
                 if(_sysconfig_result EQUAL 0 AND EXISTS "${_python_include_from_sysconfig}")
-                    set(Python_INCLUDE_DIRS "${_python_include_from_sysconfig}" CACHE PATH "" FORCE)
+                    set(Python3_INCLUDE_DIRS "${_python_include_from_sysconfig}" CACHE PATH "" FORCE)
                 endif()
             endif()
         endif()
+
+        # Preserve legacy variable names for nested third-party CMake logic.
+        set(Python_EXECUTABLE "${Python3_EXECUTABLE}" CACHE FILEPATH "" FORCE)
+        set(Python_INCLUDE_DIRS "${Python3_INCLUDE_DIRS}" CACHE PATH "" FORCE)
+        set(Python_LIBRARIES "${Python3_LIBRARIES}" CACHE STRING "" FORCE)
     endif()
     
     # nlohmann_json
@@ -67,8 +72,8 @@ if(DAKOTA_VALIDATION_STANDALONE)
     if(BUILD_PYTHON_BINDINGS)
         message(STATUS "Fetching pybind11...")
         set(PYBIND11_FINDPYTHON OFF CACHE BOOL "" FORCE)
-        set(PYTHON_EXECUTABLE "${Python_EXECUTABLE}" CACHE FILEPATH "" FORCE)
-        list(GET Python_INCLUDE_DIRS 0 _py_include_dir)
+        set(PYTHON_EXECUTABLE "${Python3_EXECUTABLE}" CACHE FILEPATH "" FORCE)
+        list(GET Python3_INCLUDE_DIRS 0 _py_include_dir)
         set(PYTHON_INCLUDE_DIR "${_py_include_dir}" CACHE PATH "" FORCE)
         
         FetchContent_Declare(
@@ -194,7 +199,10 @@ endif()
 # =============================================================================
 # Tests
 # =============================================================================
-if(BUILD_TESTS)
+# A Dakota build uses DAKOTA_ENABLE_TESTS, while a standalone parser build uses
+# BUILD_TESTS.  Do not rely on BUILD_TESTS inheriting the Dakota setting: it is
+# a cache option and may retain an older OFF value when reconfiguring.
+if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
     if(DAKOTA_VALIDATION_STANDALONE)
         enable_testing()
     endif()
@@ -205,20 +213,9 @@ if(BUILD_TESTS)
         GTest::gtest_main
     )
     add_test(NAME test_validation COMMAND test_validation)
+    set_tests_properties(test_validation PROPERTIES LABELS Unit)
 
     if(BUILD_PYTHON_BINDINGS)
-        # Check Python test requirements before registering pytest-based tests.
-        execute_process(
-            COMMAND ${Python_EXECUTABLE} -c
-                    "import importlib.util, sys; sys.exit(0 if importlib.util.find_spec('pytest') else 1)"
-            RESULT_VARIABLE _pytest_result
-        )
-        if(_pytest_result EQUAL 0)
-            set(PYTEST_AVAILABLE TRUE)
-        else()
-            set(PYTEST_AVAILABLE FALSE)
-        endif()
-
         execute_process(
             COMMAND ${Python_EXECUTABLE} -c
                     "import pydantic, sys; sys.stdout.write(pydantic.__version__)"
@@ -242,13 +239,6 @@ if(BUILD_TESTS)
             endif()
         endif()
 
-        # Report status
-        if(PYTEST_AVAILABLE)
-            message(STATUS "pytest is available")
-        else()
-            message(WARNING "pytest is not available - Python validation tests will be skipped")
-        endif()
-
         if(PYDANTIC_AVAILABLE)
             message(STATUS "Pydantic ${PYDANTIC_VERSION} is available")
         else()
@@ -259,25 +249,39 @@ if(BUILD_TESTS)
             endif()
         endif()
 
-        # Only add Python tests if both pytest and pydantic are available
-        if(PYTEST_AVAILABLE AND PYDANTIC_AVAILABLE)
+        if(PYDANTIC_AVAILABLE)
             add_test(
                 NAME python_validation_tests
-                COMMAND ${Python_EXECUTABLE} -m pytest ${CMAKE_CURRENT_SOURCE_DIR}/test -v
+                COMMAND ${Python_EXECUTABLE} -m unittest discover
+                        -s ${CMAKE_CURRENT_SOURCE_DIR}/test
+                        -p test_validation.py
+                        -v
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             )
 
-            # PYTHONPATH needs:
-            # 1. Combined package (for dakota.spec.* modules) - when model generation is enabled
-            # 2. Current build dir (for the compiled dakota_validation_cpp.so)
-            # The combined package also contains the .so after the combine step
-            set(_PYTEST_PYTHONPATH "${CMAKE_BINARY_DIR}/dakota_package:${CMAKE_CURRENT_BINARY_DIR}")
+            # A Dakota build assembles the in-tree Python package here and the
+            # copy_dakota_validation target places the extension in it.  Keep
+            # the validation binary directory as a fallback for standalone
+            # builds, where the extension is emitted directly there.
+            if(DAKOTA_ENABLE_TESTS)
+                set(_VALIDATION_PYTHON_PACKAGE "${CMAKE_BINARY_DIR}/python")
+            else()
+                set(_VALIDATION_PYTHON_PACKAGE "${CMAKE_BINARY_DIR}/dakota_package")
+            endif()
+            if(WIN32)
+                set(_VALIDATION_TEST_PYTHONPATH
+                    "${_VALIDATION_PYTHON_PACKAGE};${CMAKE_CURRENT_BINARY_DIR}")
+            else()
+                set(_VALIDATION_TEST_PYTHONPATH
+                    "${_VALIDATION_PYTHON_PACKAGE}:${CMAKE_CURRENT_BINARY_DIR}")
+            endif()
 
             set_tests_properties(python_validation_tests PROPERTIES
-                ENVIRONMENT "PYTHONPATH=${_PYTEST_PYTHONPATH}"
+                ENVIRONMENT "PYTHONPATH=${_VALIDATION_TEST_PYTHONPATH}"
+                LABELS "Unit;Python"
             )
         else()
-            message(STATUS "Skipping Python validation tests due to missing dependencies")
+            message(STATUS "Skipping Python validation tests because Pydantic is unavailable")
         endif()
     endif()
 endif()

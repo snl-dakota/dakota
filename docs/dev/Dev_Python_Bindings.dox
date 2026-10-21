@@ -1,0 +1,333 @@
+namespace Dakota {
+
+/** \page PythonBindings Adding a Python Binding for a Dakota Class
+
+\htmlonly
+<b>Python Binding Table of Contents</b>
+<ul>
+<li> <a href="PythonBindings.html#PythonBindingsOverview">Overview</a>
+<li> <a href="PythonBindings.html#PythonBindingsPrerequisites">C++ prerequisites</a>
+<li> <a href="PythonBindings.html#PythonBindingsClass">Register the class</a>
+<li> <a href="PythonBindings.html#PythonBindingsFactory">Expose construction through Study</a>
+<li> <a href="PythonBindings.html#PythonBindingsConfig">Validate and materialize configuration</a>
+<li> <a href="PythonBindings.html#PythonBindingsModule">Register and package the binding</a>
+<li> <a href="PythonBindings.html#PythonBindingsOptional">Optional dependencies</a>
+<li> <a href="PythonBindings.html#PythonBindingsTests">Add unit tests</a>
+<li> <a href="PythonBindings.html#PythonBindingsChecklist">Review checklist</a>
+</ul>
+\endhtmlonly
+
+\section PythonBindingsOverview Overview
+
+The dependency-injection Python API is implemented by the pybind11 module
+\c dakota.study._study.  Its C++ sources are in
+\c dakota/src/python/study, its Python package is in
+\c dakota/python/dakota/study, and its unit tests are in
+\c dakota/src/unit.
+
+Adding a class normally involves two distinct bindings:
+
+<ol>
+<li>Register the C++ type so Python can hold it, recognize its inheritance,
+and call any intentionally exposed instance methods.</li>
+<li>If Python users should construct the class, add a factory method to
+\c Study::MethodFactory or \c Study::ModelFactory.  The factory accepts
+already-constructed semantic dependencies plus a validated configuration
+fragment.</li>
+</ol>
+
+Do not expose a \c ProblemDescDB constructor through this API.  New library
+construction uses a component's \c IRStore constructor and a shared
+\c StudyServices instance.  Child models, iterators, interfaces, variables,
+and responses are passed as objects rather than recovered from pointer names.
+
+The normal configuration flow is:
+
+\verbatim
+dict, keyword arguments, or Pydantic model
+        |
+        v
+normalize_factory_config()       Python validation, exactly once
+        |
+        v
+materialize_{method,model,...}()  validated JSON -> typed IRStore
+        |
+        v
+Study factory / DI constructor    injected dependencies + shared services
+\endverbatim
+
+\section PythonBindingsPrerequisites C++ prerequisites
+
+Before writing the Python binding, make sure the C++ library API is complete.
+The class should have an IR-based constructor whose shape follows the nearby
+component hierarchy.  For example, an iterator that consumes a model normally
+accepts:
+
+\code{.cpp}
+NewIterator(const IRStore& method_store,
+            std::shared_ptr<Model> model,
+            std::shared_ptr<StudyServices> services);
+\endcode
+
+Some established hierarchies place \c StudyServices first.  Preserve the
+class's C++ convention; the binding can adapt the ordering without exposing it
+to Python.
+
+The constructor must:
+
+<ul>
+<li>read its own configuration from \c IRStore;</li>
+<li>accept semantic child objects directly;</li>
+<li>reject null required children;</li>
+<li>validate shared services with \c detail::validate_services(); and</li>
+<li>preserve the existing \c ProblemDescDB construction path.</li>
+</ul>
+
+Validated IR contains every declared key, including defaults.  Read required
+keys with \c store.get<T>("key") directly.  Do not guard reads with
+\c contains(), supply ad hoc fallback values, or infer missing services from a
+child.  A missing IR key is a contract error and should remain visible.
+
+Add C++ construction coverage in
+\c src/unit/dakota_di_construction/di_construction.cpp before or with the
+Python binding.  Test successful construction, service identity, inconsistent
+services, and null required dependencies.
+
+\section PythonBindingsClass Register the class
+
+Put study binding code in the file matching the component family:
+
+<ul>
+<li>\c BindIterator.cpp for iterators;</li>
+<li>\c BindModel.cpp for models;</li>
+<li>\c BindVariables.cpp, \c BindResponse.cpp, or \c BindInterface.cpp for
+the corresponding value or interface type; and</li>
+<li>\c BindStudyConfig.cpp for study-level configuration.</li>
+</ul>
+
+Register base classes before derived classes.  Components managed with
+\c std::shared_ptr in C++ must use the same holder in pybind11:
+
+\code{.cpp}
+py::class_<NewIterator, Iterator, std::shared_ptr<NewIterator>>(
+  m, "NewIterator", py::module_local());
+\endcode
+
+The base type must already be registered:
+
+\code{.cpp}
+py::class_<Iterator, std::shared_ptr<Iterator>>(
+  m, "Iterator", py::module_local());
+\endcode
+
+Use \c py::module_local() consistently with the existing \c _study bindings.
+Expose only useful public behavior.  Prefer a small lambda when a direct member
+pointer is ambiguous, overloaded, or would expose an internal container:
+
+\code{.cpp}
+.def("num_responses",
+     [](const NewIterator& iterator) {
+       return iterator.all_responses().size();
+     });
+\endcode
+
+Do not bind raw pointers or return references whose owner may be destroyed.
+Use \c std::shared_ptr holders and pybind11 lifetime policies where ownership
+is not already carried by the returned object.
+
+\section PythonBindingsFactory Expose construction through Study
+
+Most methods and models should be constructed through a \c Study factory so
+all objects share the same \c StudyServices.  Add the C++ factory first in
+\c Study.hpp and \c Study.cpp.  Its IR overload should perform construction;
+the JSON overload should only validate/materialize and delegate.
+
+For a method with one injected model, the Python signature should place the
+semantic dependency first and configuration last:
+
+\code{.py}
+iterator = study.method.new_method(model, config)
+iterator = study.method.new_method(model, samples=20)
+\endcode
+
+Bind the factory on \c Study::MethodFactory:
+
+\code{.cpp}
+factory.def("new_method",
+  [](const Study::MethodFactory& self,
+     std::shared_ptr<Model> model,
+     const py::object& config, py::kwargs kwargs) {
+    const auto fragment = normalize_factory_config(
+      config, kwargs, "MethodFactory.new_method");
+    const auto store = materialize_method(
+      nlohmann::json{{"new_method", fragment}});
+    return std::make_shared<NewIterator>(
+      store, std::move(model), self.services());
+  },
+  py::arg("model").none(false), py::arg("config") = py::none());
+\endcode
+
+\c BindIterator.cpp provides \c bind_method() and \c construct<T>() helpers
+for the common one-model iterator case.  Use those helpers when the class fits
+their contract.  Write an explicit binding when dependencies or constructor
+semantics differ.
+
+For models, follow the explicit examples in \c BindStudy.cpp.  Keep required
+dependencies non-null with \c py::arg("name").none(false).  Check elements of
+injected vectors when pybind11 cannot enforce non-null entries itself.
+
+Do not resolve child components from pointer strings in the configuration.
+Pointer fields may still be materialized because the shared input grammar uses
+them, but injected C++ objects are the semantic dependencies in library mode.
+
+\section PythonBindingsConfig Validate and materialize configuration
+
+The Python API accepts one of three exclusive configuration forms:
+
+\code{.py}
+factory(model, config={"samples": 20})
+factory(model, config=SamplingConfig(samples=20))
+factory(model, samples=20)
+\endcode
+
+Do not accept both \c config and configuration keyword arguments.  Route all
+three forms through \c normalize_factory_config() in
+\c python/dakota/study/_validation.py.  This function validates dictionaries,
+trusts an instance of the expected Pydantic class, serializes to JSON form, and
+prevents accidental revalidation.
+
+Add the factory-to-schema mapping to \c _FACTORY_CONFIG_CLASSES:
+
+\code{.py}
+"MethodFactory.new_method": method.NewMethodConfig,
+\endcode
+
+If the class is selected by the generated method grammar, confirm that the
+generic registration loop already discovers it before adding a manual entry.
+The schema models and their materialization metadata are authoritative; do not
+reimplement schema defaults or selector rules in the binding.  See
+\ref PydanticSpec for grammar and materialization changes.
+
+After normalization, wrap the fragment with its selection keyword before
+materialization:
+
+\code{.cpp}
+materialize_method(nlohmann::json{{"new_method", fragment}})
+\endcode
+
+Use \c materialize_model(), \c materialize_variables(),
+\c materialize_interface(), or \c materialize_responses() for other block
+types.  Materialization happens after Python validation; it is not a second
+user-input validation layer.
+
+Literal selectors use Boolean \c true, whereas configurable selectors use an
+object.  For example, a field declared as \c Literal[True] is represented by
+\c {"quadratic": true}, not \c {"quadratic": {}}.  Consult the actual
+Pydantic annotation rather than copying a superficially similar selector.
+
+\section PythonBindingsModule Register and package the binding
+
+Each binding file exposes one registration function declared in
+\c DakotaStudyPython.hpp and called from the \c PYBIND11_MODULE block in
+\c DakotaStudyPython.cpp.  If adding a new binding file or registration group:
+
+<ol>
+<li>Declare \c bind_new_classes(py::module_& m) in
+\c DakotaStudyPython.hpp.</li>
+<li>Implement it in \c src/python/study/BindNewClasses.cpp.</li>
+<li>Add that source file to \c dakota_study_python_src in
+\c src/CMakeLists.txt.</li>
+<li>Call \c bind_new_classes(m) from \c PYBIND11_MODULE(_study, m), after any
+base classes it depends on have been registered.</li>
+</ol>
+
+For a class added to an existing binding group, only the existing group
+function normally changes.
+
+Export public names from \c python/dakota/study/__init__.py.  Unconditional
+classes can appear in the main import list.  Classes controlled by optional
+libraries must be imported conditionally or exported through the existing
+iterator manifest so importing \c dakota.study still works when the feature is
+disabled.
+
+The \c _study target is placed directly in the build-tree
+\c dakota/study package and installed by \c src/CMakeLists.txt.  Do not add a
+second extension module solely for one class.
+
+\section PythonBindingsOptional Optional dependencies
+
+Match the feature guard used by the C++ implementation in all relevant places:
+
+<ul>
+<li>the class header include;</li>
+<li>the \c py::class_ registration;</li>
+<li>the factory binding;</li>
+<li>the public Python export; and</li>
+<li>tests that assert availability.</li>
+</ul>
+
+For example, a class requiring DOT must remain inside \c HAVE_DOT guards.
+Tests should skip or test absence when the dependency is unavailable; they
+must not make importing the package fail.
+
+\section PythonBindingsTests Add unit tests
+
+Place Python unit tests in \c src/unit and use the standard-library
+\c unittest framework.  Register them in \c src/unit/CMakeLists.txt with the
+\c Unit and \c Python labels and the build-tree \c PYTHONPATH.  Do not place
+Dakota unit tests under \c python/tests.
+
+At minimum, test:
+
+<ul>
+<li>the class is exported and has the expected base type;</li>
+<li>dict, Pydantic-model, keyword, and supported positional configuration
+forms construct the same component type;</li>
+<li>configuration inputs are not mutated;</li>
+<li>supplying both \c config and keyword configuration fails;</li>
+<li>unknown fields and wrong config types fail during validation;</li>
+<li>required semantic dependencies reject \c None and wrong Python types;</li>
+<li>optional dependencies behave correctly when omitted; and</li>
+<li>the constructed object can execute a small meaningful operation when the
+required driver is available.</li>
+</ul>
+
+When calling \c model_validate() inside a test, pass a deep copy if generated
+before-validators may transform nested dictionaries.  Otherwise the test can
+mutate its own fixture before the factory is called and incorrectly attribute
+that mutation to production code.
+
+Run the focused tests through CTest so they use the same extension module and
+environment as CI.  Typical commands are:
+
+\verbatim
+ctest --test-dir build -R dakota_python_study --output-on-failure
+ctest --test-dir build -R dakota_di_construction --output-on-failure
+\endverbatim
+
+Also run the relevant configuration-normalization tests directly with
+\c python -m unittest when the build-tree package is available.
+
+\section PythonBindingsChecklist Review checklist
+
+Before submitting a new binding, verify:
+
+<ul>
+<li>The C++ class has a tested IR/DI constructor.</li>
+<li>The binding uses the correct base class and \c std::shared_ptr holder.</li>
+<li>Base classes are registered before derived classes.</li>
+<li>Construction goes through the owning \c Study factory and shared services.</li>
+<li>Semantic dependencies are injected as objects, not reconstructed from
+pointer names.</li>
+<li>Configuration is validated once, then materialized to the correct block
+type.</li>
+<li>Required IR keys are read directly without \c contains() fallbacks.</li>
+<li>Python argument order is dependencies first and configuration last.</li>
+<li>Optional build guards are consistent across C++, Python exports, and tests.</li>
+<li>Tests live in \c src/unit, use \c unittest, and are registered with CTest.</li>
+<li>Both Python and C++ DI construction tests pass.</li>
+</ul>
+
+*/
+
+} // namespace Dakota

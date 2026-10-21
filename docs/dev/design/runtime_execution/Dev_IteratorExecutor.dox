@@ -1,0 +1,73 @@
+namespace Dakota {
+
+/** \page IteratorExecutorDesign IteratorExecutor Design Intent
+
+\section IteratorExecutorPurpose Purpose
+
+IteratorExecutor is the low-level execution mechanism for iterator
+orchestration in parallel runtime contexts. It is the class that knows how
+to do the concrete work of preparing, partitioning, initializing, running,
+and tearing down iterator execution under Dakota's communicator and
+scheduling rules.
+
+If StudyRuntime is the runtime-facing abstraction and IteratorContext is the
+per-subordinate execution handle, IteratorExecutor is the engine behind
+those abstractions.
+
+\section IteratorExecutorResponsibilities Responsibilities
+
+IteratorExecutor owns the mechanics of subordinate iterator execution,
+including:
+
+<ul>
+<li>tracking the relevant parallel configuration iterator,</li>
+<li>estimating partition bounds through configure(),</li>
+<li>partitioning ranks for iterator execution,</li>
+<li>initializing a child iterator sufficiently to run,</li>
+<li>setting and freeing iterator communicators,</li>
+<li>running iterators and scheduling batches of iterator jobs, and</li>
+<li>maintaining scheduling-related state such as iterator server identity,
+message-passing mode, and communicator rank/size information.</li>
+</ul>
+
+This class is where most of the real MPI-aware execution behavior still
+lives today.
+
+\section IteratorExecutorStable Stable Intent
+
+The stable intent is that IteratorExecutor remains a mechanism object,
+concerned with how iterator execution happens rather than what a study
+means.
+
+It is expected to remain the place where communicator-partitioning and
+iterator-scheduling mechanics are implemented, even if the surrounding
+runtime abstractions change shape.
+
+\section IteratorExecutorExpectedChange Expected Evolution
+
+The surface through which IteratorExecutor is accessed may change over time.
+In particular, more policy and lifecycle coordination may migrate upward
+into StudyRuntime or be packaged more cleanly through IteratorContext.
+
+What is less likely to change is the need for some mechanism object that
+encodes Dakota's concrete iterator-execution protocol. IteratorExecutor is
+that object today.
+
+\section IteratorExecutorNonGoal Non-Goals
+
+IteratorExecutor is not intended to define user-facing API semantics. It is
+also not intended to be the conceptual center of library-mode execution.
+Those roles belong more naturally to StudyRuntime and the surrounding design
+notes.
+
+For future developers, the important thing to remember is that
+IteratorExecutor should be read as an execution mechanism, not as an
+independent semantic abstraction.
+
+\section IteratorExecutorSeeAlso See Also
+
+See \ref RuntimeExecutionDesign for the subsystem overview.
+
+*/
+
+} // namespace Dakota

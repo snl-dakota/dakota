@@ -9,6 +9,8 @@
 
 #include "dakota_system_defs.hpp"
 #include "SimulationModel.hpp"
+#include "StudyServices.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ProblemDescDB.hpp"
 #include "MarginalsCorrDistribution.hpp"
 
@@ -27,19 +29,51 @@ SimulationModel::SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& par
   simModelEvalCntr(0)
 {
   componentParallelMode = INTERFACE_MODE;
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
-  centralHess  = problem_db.get_bool("responses.central_hess");
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
 
   initialize_solution_control(
-    problem_db.get_string("model.simulation.solution_level_control"),
-    problem_db.get_rv("model.simulation.solution_level_cost"));
+    problem_db.get<const String>("model.simulation.solution_level_control"),
+    problem_db.get<const RealVector>("model.simulation.solution_level_cost"));
+
+  // For legacy-built models the active view is already final; check immediately
+  check_solution_control_inactive();
 
   initialize_solution_recovery(
-    probDescDB.get_string("model.simulation.cost_recovery_metadata"));
+    probDescDB.get<const String>("model.simulation.cost_recovery_metadata"));
 
   // Error checks can encompass a model ensemble at a higher level
   //if (solnCntlCostMap.empty() && costMetadataIndex == _NPOS)
   //  Cerr << "Error: insufficient cost data provided." << std::endl;
+}
+
+
+SimulationModel::SimulationModel(const IRStore& model_store,
+                                 const Variables& variables,
+                                 std::shared_ptr<Interface> interface,
+                                 const Response& response,
+                                 std::shared_ptr<StudyServices> services):
+  Model(std::move(services), model_store, variables, response),
+  userDefinedInterface(std::move(interface)), solnCntlVarType(EMPTY_TYPE),
+  solnCntlADVIndex(_NPOS), solnCntlAVIndex(_NPOS), costMetadataIndex(_NPOS),
+  simModelEvalCntr(0)
+{
+  detail::validate_services(
+    "SimulationModel", study_services(),
+    {detail::runtime_dependency("Interface", userDefinedInterface)});
+
+  componentParallelMode = INTERFACE_MODE;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess  = (currentResponse.hessian_config().interval_type ==
+                  Response::IntervalType::Central);
+
+  initialize_solution_control(
+    model_store.get<String>("simulation.solution_level_control"),
+    model_store.get<RealVector>("simulation.solution_level_cost"));
+
+  initialize_solution_recovery(
+    model_store.get<String>("simulation.cost_recovery_metadata"));
 }
 
 
@@ -81,18 +115,13 @@ initialize_solution_control(const String& control, const RealVector& cost)
   // real.  It should not be an active variable, but may not be an inactive
   // variable (inactive view assigned from a higher level context).
   const SharedVariablesData& svd = currentVariables.shared_data();
+  solnCntlLabel = control;
   solnCntlADVIndex = find_index(
     currentVariables.all_discrete_int_variable_labels(), control);
   if (solnCntlADVIndex != _NPOS) {
     solnCntlAVIndex = svd.adiv_index_to_all_index(solnCntlADVIndex);
     solnCntlVarType = currentVariables.
       all_discrete_int_variable_types()[solnCntlADVIndex];
-    if (find_index(currentVariables.discrete_int_variable_labels(), control)
-	!= _NPOS) {
-      Cerr << "Error: solution_level_control cannot be an active variable."
-	   << std::endl;
-      abort_handler(MODEL_ERROR);
-    }
   }
   else {
     solnCntlADVIndex = find_index(
@@ -101,12 +130,6 @@ initialize_solution_control(const String& control, const RealVector& cost)
       solnCntlAVIndex = svd.adsv_index_to_all_index(solnCntlADVIndex);
       solnCntlVarType = currentVariables.
 	all_discrete_string_variable_types()[solnCntlADVIndex];
-      if (find_index(currentVariables.discrete_string_variable_labels(),
-	  control) != _NPOS) {
-	Cerr << "Error: solution_level_control cannot be an active variable."
-	     << std::endl;
-	abort_handler(MODEL_ERROR);
-      }
     }
     else {
       solnCntlADVIndex = find_index(
@@ -115,12 +138,6 @@ initialize_solution_control(const String& control, const RealVector& cost)
 	solnCntlAVIndex = svd.adrv_index_to_all_index(solnCntlADVIndex);
 	solnCntlVarType = currentVariables.
 	  all_discrete_real_variable_types()[solnCntlADVIndex];
-	if (find_index(currentVariables.discrete_real_variable_labels(),
-	    control) != _NPOS) {
-	  Cerr << "Error: solution_level_control cannot be an active variable."
-	       << std::endl;
-	  abort_handler(MODEL_ERROR);
-	}
       }
       else {
 	Cerr << "Error: solution_level_control string identifier not found "
@@ -524,16 +541,53 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 IntIntPair SimulationModel::
 estimate_partition_bounds(int max_eval_concurrency)
 {
-  // Note: accesses DB data
-  // > for use at construct/init_comms time
-  // > DB list nodes set by calling context
-  return IntIntPair(probDescDB.min_procs_per_ie(), 
-		    probDescDB.max_procs_per_ie(max_eval_concurrency));
+  return userDefinedInterface->estimate_partition_bounds(max_eval_concurrency);
 }
 
 void SimulationModel::declare_sources()
 {
   evaluationsDB.declare_source(modelId, modelType, interface_id(), "interface");
+}
+
+
+void SimulationModel::check_solution_control_inactive() const
+{
+  if (solnCntlLabel.empty()) return; // no solution control configured
+
+  // Check whether solnCntlLabel appears in the active discrete variable labels.
+  // The control variable must be inactive (state or inactive design); if it's
+  // in the active view, the iterator will try to vary it, which is wrong.
+  const StringMultiArrayConstView di_labels =
+    currentVariables.discrete_int_variable_labels();
+  if (find_index(di_labels, solnCntlLabel) != _NPOS) {
+    Cerr << "Error: solution_level_control cannot be an active variable."
+         << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  const StringMultiArrayConstView ds_labels =
+    currentVariables.discrete_string_variable_labels();
+  if (find_index(ds_labels, solnCntlLabel) != _NPOS) {
+    Cerr << "Error: solution_level_control cannot be an active variable."
+         << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+  const StringMultiArrayConstView dr_labels =
+    currentVariables.discrete_real_variable_labels();
+  if (find_index(dr_labels, solnCntlLabel) != _NPOS) {
+    Cerr << "Error: solution_level_control cannot be an active variable."
+         << std::endl;
+    abort_handler(MODEL_ERROR);
+  }
+}
+
+
+void SimulationModel::
+assign_inferred_view(short view, const String& method_label)
+{
+  // Apply the view change first via the base class
+  Model::assign_inferred_view(view, method_label);
+  // Then verify that the solution control variable is not active
+  check_solution_control_inactive();
 }
 
 } // namespace Dakota

@@ -8,8 +8,9 @@
     _______________________________________________________________________ */
 
 #include "ExperimentData.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DakotaVariables.hpp"
 
 namespace Dakota {
@@ -25,20 +26,39 @@ ExperimentData::ExperimentData():
 ExperimentData::
 ExperimentData(const ProblemDescDB& pddb, 
                const SharedResponseData& srd, short output_level):
-  calibrationDataFlag(pddb.get_bool("responses.calibration_data")),
-  numExperiments(pddb.get_sizet("responses.num_experiments")), 
-  numConfigVars(pddb.get_sizet("responses.num_config_vars")),
+  calibrationDataFlag(pddb.get<bool>("responses.calibration_data")),
+  numExperiments(pddb.get<size_t>("responses.num_experiments")), 
+  numConfigVars(pddb.get<size_t>("responses.num_config_vars")),
   covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
-  dataPathPrefix(pddb.get_string("responses.data_directory")),
-  scalarDataFilename(pddb.get_string("responses.scalar_data_filename")),
-  scalarDataFormat(pddb.get_ushort("responses.scalar_data_format")),
+  dataPathPrefix(pddb.get<const String>("responses.data_directory")),
+  scalarDataFilename(pddb.get<const String>("responses.scalar_data_filename")),
+  scalarDataFormat(pddb.get<unsigned short>("responses.scalar_data_format")),
   scalarSigmaPerRow(0), 
-  readSimFieldCoords(pddb.get_bool("responses.read_field_coordinates")), 
-  interpolateFlag(pddb.get_bool("responses.interpolate")),
+  readSimFieldCoords(pddb.get<bool>("responses.read_field_coordinates")), 
+  interpolateFlag(pddb.get<bool>("responses.interpolate")),
   outputLevel(output_level)
 { 
-  initialize(pddb.get_sa("responses.variance_type"), srd);
+  initialize(pddb.get<const StringArray>("responses.variance_type"), srd);
 }                                
+
+
+ExperimentData::
+ExperimentData(const IRStore& responses_store,
+               const SharedResponseData& srd, short output_level):
+  calibrationDataFlag(responses_store.get<bool>("calibration_data")),
+  numExperiments(responses_store.get<size_t>("num_experiments")),
+  numConfigVars(responses_store.get<size_t>("num_config_vars")),
+  covarianceDeterminant(1.0), logCovarianceDeterminant(0.0),
+  dataPathPrefix(responses_store.get<String>("data_directory")),
+  scalarDataFilename(responses_store.get<String>("scalar_data_filename")),
+  scalarDataFormat(responses_store.get<unsigned short>("scalar_data_format")),
+  scalarSigmaPerRow(0),
+  readSimFieldCoords(responses_store.get<bool>("read_field_coordinates")),
+  interpolateFlag(responses_store.get<bool>("interpolate")),
+  outputLevel(output_level)
+{
+  initialize(responses_store.get<StringArray>("variance_type"), srd);
+}
 
 
 ExperimentData::

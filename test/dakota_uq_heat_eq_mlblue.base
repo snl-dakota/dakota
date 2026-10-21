@@ -73,7 +73,7 @@ Test Number 5 succeeded
 Test Number 6 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 9.9998375223e+02
+<<<<< Projected number of equivalent high fidelity evaluations: 9.9998374330e+02
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
@@ -81,8 +81,8 @@ Test Number 6 succeeded
   Projected MC    (    50 HF samples):   1.6545556341e+02
   Projected ML BLUE  (sample profile):   1.9789791420e-03
   Projected ML BLUE ratio   (1 - R^2):   1.1960789357e-05
- Equivalent MC    (  1000 HF samples):   8.2729125869e+00
- Equivalent ML BLUE ratio:               2.3921190043e-04
+ Equivalent MC    (  1000 HF samples):   8.2729126607e+00
+ Equivalent ML BLUE ratio:               2.3921189829e-04
 Test Number 7 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
@@ -99,7 +99,7 @@ Test Number 7 succeeded
 Test Number 8 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
-<<<<< Projected number of equivalent high fidelity evaluations: 1.0005309732e+03
+<<<<< Projected number of equivalent high fidelity evaluations: 1.0005309710e+03
 <<<<< Incurred cost in equivalent high fidelity evaluations: 5.7988839286e+01
 <<<<< Variance for mean estimator:
  response_fn_1:
@@ -107,8 +107,8 @@ Test Number 8 succeeded
   Projected MC    (    50 HF samples):   1.6545556341e+02
   Projected ML BLUE  (sample profile):   1.5197939602e-02
   Projected ML BLUE ratio   (1 - R^2):   9.1855113776e-05
- Equivalent MC    (  1001 HF samples):   8.2683878780e+00
- Equivalent ML BLUE ratio:               1.8380777276e-03
+ Equivalent MC    (  1001 HF samples):   8.2683878965e+00
+ Equivalent ML BLUE ratio:               1.8380777235e-03
 Test Number 9 succeeded
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)
 <<<<< Function evaluation summary: 400 total (400 new, 0 duplicate)

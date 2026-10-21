@@ -24,7 +24,7 @@ SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& paralle
   numFullspaceVars(ModelUtils::cv(*subModel)),
   // default is 0 for no user override, but only used for AdaptedBasis at
   // this time (ActiveSubspace overwrites with basis truncation procedure):
-  reducedRank(problem_db.get_int("model.subspace.dimension")),
+  reducedRank(problem_db.get<int>("model.subspace.dimension")),
   offlineEvalConcurrency(1), onlineEvalConcurrency(1)
 {
   componentParallelMode = CONFIG_PHASE;

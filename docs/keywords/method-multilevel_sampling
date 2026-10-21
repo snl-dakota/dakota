@@ -117,7 +117,7 @@ with multiple discretization levels) follows:
 
     model,
      id_model = 'HIERARCH'
-     surrogate ensemble
+     ensemble_surrogate
        ordered_model_fidelities = 'SIM1'
        correction additive zeroth_order
     

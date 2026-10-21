@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <iostream>
+#include <sstream>
 
 // Compile-time debug flag
 #ifndef DAKOTA_PARSER_DEBUG
@@ -56,6 +57,13 @@ public:
         for (auto& block : doc.blocks) {
             analyze_block(block);
         }
+        SEM_DEBUG_OUT("Semantic analysis complete. Aliases resolved: " << aliases_resolved << "\n");
+    }
+
+    // Analyze a single block
+    void analyze(Block& block) {
+        SEM_DEBUG_OUT("Starting semantic analysis for block\n");
+        analyze_block(block);
         SEM_DEBUG_OUT("Semantic analysis complete. Aliases resolved: " << aliases_resolved << "\n");
     }
     
@@ -130,6 +138,13 @@ private:
             
             SEM_DEBUG_OUT(indent_str << "  -> ALIAS resolved: " << node->name 
                          << " -> " << node->canonical_name << "\n");
+        }
+
+        if (node->unresolved) {
+            std::ostringstream oss;
+            oss << "Unknown or ambiguous keyword '" << node->name << "'";
+            errors.push_back({oss.str(), current_path});
+            SEM_DEBUG_OUT(indent_str << "  -> ERROR: " << oss.str() << "\n");
         }
         
         // Recursively analyze children

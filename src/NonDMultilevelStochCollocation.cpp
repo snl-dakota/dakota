@@ -31,8 +31,8 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
 			       ParallelLibrary& parallel_lib,
 			       std::shared_ptr<Model> model):
   NonDStochCollocation(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass SC ctor
-  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order_sequence")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level_sequence")),
+  quadOrderSeqSpec(problem_db.get<const UShortArray>("method.nond.quadrature_order_sequence")),
+  ssgLevelSeqSpec(problem_db.get<const UShortArray>("method.nond.sparse_grid_level_sequence")),
   sequenceIndex(0)
 {
   assign_modes();
@@ -44,7 +44,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
   // Resolve settings
   // ----------------
   short data_order,
-    u_space_type = probDescDB.get_short("method.nond.expansion_type");
+    u_space_type = probDescDB.get<short>("method.nond.expansion_type");
   resolve_inputs(u_space_type, data_order);
 
   // -------------------
@@ -67,7 +67,7 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
     ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
       ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
   config_integration(quad_order, ssg_level,
-		     probDescDB.get_rv("method.nond.dimension_preference"),
+		     probDescDB.get<const RealVector>("method.nond.dimension_preference"),
 		     u_space_type, u_space_sampler, g_u_model);
   String pt_reuse, approx_type;
   config_approximation_type(approx_type);
@@ -90,25 +90,113 @@ NonDMultilevelStochCollocation(ProblemDescDB& problem_db,
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
-    false, probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format"));
+    false, probDescDB.get<const String>("method.export_approx_points_file"),
+    probDescDB.get<unsigned short>("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------
   // Construct expSampler, if needed
   // -------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"),
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get<unsigned short>("method.sample_type"),
+    problem_db.get<const String>("method.random_number_generator"),
+    problem_db.get<unsigned short>("method.nond.integration_refinement"),
+    problem_db.get<const IntVector>("method.nond.refinement_samples"),
+    probDescDB.get<const String>("method.import_approx_points_file"),
+    probDescDB.get<unsigned short>("method.import_approx_format"),
+    probDescDB.get<bool>("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nStochastic collocation construction completed: initial grid "
 	 << "size of " << numSamplesOnModel << " evaluations to be performed."
 	 << std::endl;
+}
+
+
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDMultilevelStochCollocation::
+NonDMultilevelStochCollocation(std::shared_ptr<StudyServices> services,
+			       const IRStore& method_store,
+			       std::shared_ptr<Model> model):
+  NonDStochCollocation(DEFAULT_METHOD, std::move(services), method_store, model), // bypass SC ctor
+  quadOrderSeqSpec(method_store.get<UShortArray>("nond.quadrature_order_sequence")),
+  ssgLevelSeqSpec(method_store.get<UShortArray>("nond.sparse_grid_level_sequence")),
+  sequenceIndex(0)
+{
+  assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
+
+  // ----------------
+  // Resolve settings
+  // ----------------
+  short data_order,
+    u_space_type = method_store.get<short>("nond.expansion_type");
+  resolve_inputs(u_space_type, data_order);
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, u_space_type); // retain dist bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  // LHS/Incremental LHS/Quadrature/SparseGrid samples in u-space
+  // generated using active sampling view:
+  std::shared_ptr<Iterator> u_space_sampler;
+  unsigned short quad_order = USHRT_MAX, ssg_level = USHRT_MAX;
+  if (!quadOrderSeqSpec.empty())
+    quad_order = (sequenceIndex < quadOrderSeqSpec.size()) ?
+      quadOrderSeqSpec[sequenceIndex] : quadOrderSeqSpec.back();
+  if (!ssgLevelSeqSpec.empty())
+    ssg_level = (sequenceIndex < ssgLevelSeqSpec.size()) ?
+      ssgLevelSeqSpec[sequenceIndex] : ssgLevelSeqSpec.back();
+  config_integration(quad_order, ssg_level,
+                     method_store.get<RealVector>("nond.dimension_preference"),
+                     u_space_type, u_space_sampler, g_u_model);
+  String pt_reuse, approx_type;
+  config_approximation_type(approx_type);
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for SCBDO with polynomials over {u}+{d}, change view to All.
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  UShortArray approx_order; // empty
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  // DFSModel: consume any QoI aggregation; support surrogate gradient evals
+  ShortArray sc_asv(g_u_model->qoi(), 3); // for stand alone mode
+  ActiveSet  sc_set(sc_asv, recast_set.derivative_vector());
+  const ShortShortPair& sc_view = g_u_model->current_variables().view();
+  String empty_str; // build data import not supported for structured grids
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, sc_set, sc_view, approx_type, approx_order, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, empty_str, TABULAR_ANNOTATED,
+    false, method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  initialize_u_space_model();
+
+  // -------------------------------
+  // Construct expSampler, if needed
+  // -------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+
+  if (parallelLib.command_line_check())
+    Cout << "\nStochastic collocation construction completed: initial grid "
+         << "size of " << numSamplesOnModel << " evaluations to be performed."
+         << std::endl;
 }
 
 

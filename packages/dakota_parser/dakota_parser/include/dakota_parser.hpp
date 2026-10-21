@@ -21,7 +21,8 @@ bool parse_dakota_string(const std::string& input_text,
 
 bool validate_document(const Document& doc);
 bool analyze_semantics(Document& doc);
-bool expand_defaults(Document& doc);
+// api_mode=true relaxes required-ness checks for block-pointer fields.
+bool expand_defaults(Document& doc, bool api_mode = false);
 
 } // namespace dakota
 

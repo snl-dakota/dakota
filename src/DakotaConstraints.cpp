@@ -30,22 +30,22 @@ Constraints(BaseConstructor, const ProblemDescDB& problem_db,
 	    const SharedVariablesData& svd):
   sharedVarsData(svd),
   numNonlinearIneqCons(
-    problem_db.get_sizet("responses.num_nonlinear_inequality_constraints")),
+    problem_db.get<size_t>("responses.num_nonlinear_inequality_constraints")),
   nonlinearIneqConLowerBnds(
-    problem_db.get_rv("responses.nonlinear_inequality_lower_bounds")),
+    problem_db.get<const RealVector>("responses.nonlinear_inequality_lower_bounds")),
   nonlinearIneqConUpperBnds(
-    problem_db.get_rv("responses.nonlinear_inequality_upper_bounds")),
+    problem_db.get<const RealVector>("responses.nonlinear_inequality_upper_bounds")),
   numNonlinearEqCons(
-    problem_db.get_sizet("responses.num_nonlinear_equality_constraints")),
+    problem_db.get<size_t>("responses.num_nonlinear_equality_constraints")),
   nonlinearEqConTargets(
-    problem_db.get_rv("responses.nonlinear_equality_targets")), 
+    problem_db.get<const RealVector>("responses.nonlinear_equality_targets")), 
   numLinearIneqCons(0), numLinearEqCons(0),
   linearIneqConLowerBnds(
-    problem_db.get_rv("variables.linear_inequality_lower_bounds")),
+    problem_db.get<const RealVector>("variables.linear_inequality_lower_bounds")),
   linearIneqConUpperBnds(
-    problem_db.get_rv("variables.linear_inequality_upper_bounds")),
+    problem_db.get<const RealVector>("variables.linear_inequality_upper_bounds")),
   linearEqConTargets(
-    problem_db.get_rv("variables.linear_equality_targets"))
+    problem_db.get<const RealVector>("variables.linear_equality_targets"))
 {
   shape_bounds(); // size all*{Lower,Upper}Bnds arrays
   build_views(); // construct active/inactive views of all arrays
@@ -186,28 +186,28 @@ void Constraints::build_active_views()
        /*num_dsv = sharedVarsData.dsv(),*/ num_drv = sharedVarsData.drv();
   if (num_cv) {
     size_t cv_start = sharedVarsData.cv_start();
-    continuousLowerBnds = RealVector(Teuchos::View,
-      &allContinuousLowerBnds[cv_start], num_cv);
-    continuousUpperBnds = RealVector(Teuchos::View,
-      &allContinuousUpperBnds[cv_start], num_cv);
+    rebind_view(continuousLowerBnds, &allContinuousLowerBnds[cv_start],
+      (int)num_cv);
+    rebind_view(continuousUpperBnds, &allContinuousUpperBnds[cv_start],
+      (int)num_cv);
   }
   else // return to default empty initialization
     continuousLowerBnds = continuousUpperBnds = RealVector();
   if (num_div) {
     size_t div_start = sharedVarsData.div_start();
-    discreteIntLowerBnds = IntVector(Teuchos::View,
-      &allDiscreteIntLowerBnds[div_start], num_div);
-    discreteIntUpperBnds = IntVector(Teuchos::View,
-      &allDiscreteIntUpperBnds[div_start], num_div);
+    rebind_view(discreteIntLowerBnds, &allDiscreteIntLowerBnds[div_start],
+      (int)num_div);
+    rebind_view(discreteIntUpperBnds, &allDiscreteIntUpperBnds[div_start],
+      (int)num_div);
   }
   else // return to default empty initialization
     discreteIntLowerBnds = discreteIntUpperBnds = IntVector();
   if (num_drv) {
     size_t drv_start = sharedVarsData.drv_start();
-    discreteRealLowerBnds = RealVector(Teuchos::View,
-      &allDiscreteRealLowerBnds[drv_start], num_drv);
-    discreteRealUpperBnds = RealVector(Teuchos::View,
-      &allDiscreteRealUpperBnds[drv_start], num_drv);
+    rebind_view(discreteRealLowerBnds, &allDiscreteRealLowerBnds[drv_start],
+      (int)num_drv);
+    rebind_view(discreteRealUpperBnds, &allDiscreteRealUpperBnds[drv_start],
+      (int)num_drv);
   }
   else // return to default empty initialization
     discreteRealLowerBnds = discreteRealUpperBnds = RealVector();
@@ -229,28 +229,28 @@ void Constraints::build_inactive_views()
        /*num_idsv = sharedVarsData.idsv(),*/ num_idrv = sharedVarsData.idrv();
   if (num_icv) {
     size_t icv_start = sharedVarsData.icv_start();
-    inactiveContinuousLowerBnds = RealVector(Teuchos::View,
-      &allContinuousLowerBnds[icv_start], num_icv);
-    inactiveContinuousUpperBnds = RealVector(Teuchos::View,
-      &allContinuousUpperBnds[icv_start], num_icv);
+    rebind_view(inactiveContinuousLowerBnds, &allContinuousLowerBnds[icv_start],
+      (int)num_icv);
+    rebind_view(inactiveContinuousUpperBnds, &allContinuousUpperBnds[icv_start],
+      (int)num_icv);
   }
   else // return to default empty initialization
     inactiveContinuousLowerBnds = inactiveContinuousUpperBnds = RealVector();
   if (num_idiv) {
     size_t idiv_start = sharedVarsData.idiv_start();
-    inactiveDiscreteIntLowerBnds = IntVector(Teuchos::View,
-      &allDiscreteIntLowerBnds[idiv_start], num_idiv);
-    inactiveDiscreteIntUpperBnds = IntVector(Teuchos::View,
-      &allDiscreteIntUpperBnds[idiv_start], num_idiv);
+    rebind_view(inactiveDiscreteIntLowerBnds, &allDiscreteIntLowerBnds[idiv_start],
+      (int)num_idiv);
+    rebind_view(inactiveDiscreteIntUpperBnds, &allDiscreteIntUpperBnds[idiv_start],
+      (int)num_idiv);
   }
   else // return to default empty initialization
     inactiveDiscreteIntLowerBnds = inactiveDiscreteIntUpperBnds = IntVector();
   if (num_idrv) {
     size_t idrv_start = sharedVarsData.idrv_start();
-    inactiveDiscreteRealLowerBnds = RealVector(Teuchos::View,
-      &allDiscreteRealLowerBnds[idrv_start], num_idrv);
-    inactiveDiscreteRealUpperBnds = RealVector(Teuchos::View,
-      &allDiscreteRealUpperBnds[idrv_start], num_idrv);
+    rebind_view(inactiveDiscreteRealLowerBnds, &allDiscreteRealLowerBnds[idrv_start],
+      (int)num_idrv);
+    rebind_view(inactiveDiscreteRealUpperBnds, &allDiscreteRealUpperBnds[idrv_start],
+      (int)num_idrv);
   }
   else // return to default empty initialization
     inactiveDiscreteRealLowerBnds = inactiveDiscreteRealUpperBnds
@@ -639,9 +639,9 @@ reshape_update_linear(const SharedVariablesData& prev_svd,
 void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
 {
   const RealVector& linear_ineq_cons
-    = problem_db.get_rv("variables.linear_inequality_constraints");
+    = problem_db.get<const RealVector>("variables.linear_inequality_constraints");
   const RealVector& linear_eq_cons
-    = problem_db.get_rv("variables.linear_equality_constraints");
+    = problem_db.get<const RealVector>("variables.linear_equality_constraints");
   size_t lin_ineq_len = linear_ineq_cons.length(),
          lin_eq_len   = linear_eq_cons.length();
   // get number of active variables to which linear constraints are applied.

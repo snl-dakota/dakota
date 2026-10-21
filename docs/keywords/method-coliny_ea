@@ -3,8 +3,10 @@ Evolutionary Algorithm
 Description::
 Evolutionary Algorithm
 
-*See the page :ref:`topic-package_scolib` for important information
-regarding all SCOLIB methods*
+.. note::
+
+    See the page :ref:`topic-package_scolib` for important information
+    regarding all SCOLIB methods
 
 ``coliny_pattern_search`` supports concurrency up to the size of
 the population

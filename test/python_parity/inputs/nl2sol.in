@@ -1,0 +1,21 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  nl2sol
+    max_iterations 5
+    max_function_evaluations 20
+model
+  id_model 'target'
+  simulation
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    descriptors 'x1' 'x2'
+responses
+  calibration_terms 2
+  analytic_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py least_squares' fork

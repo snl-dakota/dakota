@@ -57,6 +57,9 @@ public:
   /// standard constructor
   NCSUOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
 
+  /// DI constructor using method IR plus optional runtime services
+  NCSUOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services);
+
   /// alternate constructor for instantiations "on the fly"
   NCSUOptimizer(std::shared_ptr<Model> model, size_t max_iter, size_t max_eval,
 		double min_box_size = -1., double vol_box_size = -1.,

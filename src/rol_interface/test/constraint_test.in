@@ -1,0 +1,48 @@
+# Dakota Input File for ROL Constraint Integration Test
+#
+# Objective: Minimize (x-1)^2 + (y-1)^2
+# Constraints:
+#   1. x + y = 1.0 (linear equality)
+#   2. x^2 + y^2 <= 0.5 (nonlinear inequality)
+#
+# Expected solution: x=0.5, y=0.5
+
+environment
+  tabular_data
+    tabular_data_file = 'rol_constraint_test.dat'
+
+method
+  rol
+    step
+      type = "Augmented Lagrangian"
+      augmented_lagrangian
+        subproblem_solver = "Trust Region"
+    status_test
+      gradient_tolerance = 1.0e-8
+      constraint_tolerance = 1.0e-8
+      iteration_limit = 50
+
+variables
+  continuous_design = 2
+    initial_point   -1.0    1.0
+    lower_bounds    -2.0   -2.0
+    upper_bounds     2.0    2.0
+    descriptors      'x'    'y'
+
+interface
+  analysis_driver = 'text_book'
+    analytic_gradients
+    analytic_hessians
+
+responses
+  objective_functions = 1
+  equality_constraints = 1
+    linear_constraint_matrix = [ 1.0 1.0 ]
+    rhs = [ 1.0 ]
+  nonlinear_inequality_constraints = 1
+    lower_bounds = -1.0e+20
+    upper_bounds = 0.5
+  response_functions = 2
+  no_gradients
+  no_hessians
+

@@ -66,6 +66,13 @@ endif()
 
 option(DAKOTA_GENERATE_JSON_SCHEMA
   "Regenerate src/dakota.json from Dakota Pydantic models during the build" OFF)
+option(DAKOTA_CHECK_JSON_SCHEMA
+  "Check that src/dakota.json matches the Dakota Pydantic models" OFF)
+
+if(DAKOTA_GENERATE_JSON_SCHEMA AND DAKOTA_CHECK_JSON_SCHEMA)
+  message(FATAL_ERROR
+    "DAKOTA_GENERATE_JSON_SCHEMA and DAKOTA_CHECK_JSON_SCHEMA are mutually exclusive")
+endif()
 
 
 ## Python options
@@ -82,9 +89,10 @@ option(DAKOTA_GENERATE_JSON_SCHEMA
 # (Formerly, DAKOTA_PYTHON controlled linked/direct Python interface only)
 option(DAKOTA_PYTHON "Dakota Python scripts (Interpreter); default ON" ON)
 
-if(DAKOTA_GENERATE_JSON_SCHEMA AND NOT DAKOTA_PYTHON)
+if((DAKOTA_GENERATE_JSON_SCHEMA OR DAKOTA_CHECK_JSON_SCHEMA)
+   AND NOT DAKOTA_PYTHON)
   message(FATAL_ERROR
-    "DAKOTA_GENERATE_JSON_SCHEMA requires DAKOTA_PYTHON=ON")
+    "DAKOTA_GENERATE_JSON_SCHEMA and DAKOTA_CHECK_JSON_SCHEMA require DAKOTA_PYTHON=ON")
 endif()
 
 # External python methods defaults to OFF to avoid Python library dependencies
@@ -106,7 +114,18 @@ option(DAKOTA_PYTHON_DIRECT_INTERFACE_NUMPY
 option(DAKOTA_PYTHON_WRAPPER
   "Top-level Dakota Python interface (dakota.environment wrapper)" OFF)
 
-if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_WRAPPER)
+# DI/library-mode dakota.study bindings depend on the generated Pydantic
+# specification package, whose generated typing syntax requires Python 3.10+.
+option(DAKOTA_PYTHON_STUDY
+  "Dakota DI/library-mode Python interface (dakota.study wrapper; requires Python >= 3.10 and Pydantic >= 2.12)" OFF)
+
+if(DAKOTA_PYTHON_STUDY AND NOT DAKOTA_PYTHON)
+  message(FATAL_ERROR
+    "DAKOTA_PYTHON_STUDY requires DAKOTA_PYTHON=ON")
+endif()
+
+if(DAKOTA_PYTHON_DIRECT_INTERFACE OR DAKOTA_PYTHON_WRAPPER OR
+   DAKOTA_PYTHON_STUDY)
   set(DAKOTA_PYBIND11 ON CACHE BOOL
     "Dakota using Pybind11 for interfaces.")
 endif()
@@ -157,6 +176,10 @@ endif()
 if(ENABLE_DAKOTA_DOCS AND NOT DAKOTA_PYTHON)
   message(FATAL_ERROR
     "Dakota documentation build only available with DAKOTA_PYTHON=ON")
+endif()
+if(ENABLE_DAKOTA_DOCS AND NOT DAKOTA_PYTHON_STUDY)
+  message(FATAL_ERROR
+    "Dakota documentation build requires DAKOTA_PYTHON_STUDY=ON so Sphinx can document the dakota.study API")
 endif()
 
 option(DAKOTA_GCOV "GNU gcov for Dakota core" OFF)

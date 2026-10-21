@@ -47,10 +47,17 @@ class ValidationMetadataGenerator:
         self.numeric_constraints: Dict[str, List[Tuple[str, str, float]]] = {}
         self.model_validations: Dict[str, List[dict]] = {}
         self.computed_fields: Dict[str, dict] = {}
+        self.property_type_specs: Dict[str, Dict[str, List[dict]]] = {}
         self.float_fields: Dict[str, Dict[str, bool]] = {}
         self.schema_walk_map: Dict[str, Dict[str, str]] = {}
+        self.synthetic_allowed: Dict[str, Set[str]] = {}
         self.block_definitions: Dict[str, Tuple[str, bool, bool]] = {}
+        self.union_block_variants: Dict[str, List[str]] = {}
         self.required_blocks: Set[str] = set(self.schema.get('required', []))
+        self.required_fields: Dict[str, List[str]] = {}
+        self.required_pointer_fields: Dict[str, Set[str]] = {}
+        self.required_pointer_group_fields: Dict[str, Set[str]] = {}
+        self.required_pointer_union_fields: Dict[str, Set[str]] = {}
 
     def process_all(self):
         """Scan all definitions and extract validation metadata."""
@@ -58,10 +65,38 @@ class ValidationMetadataGenerator:
             self._extract_numeric_constraints(def_name, defn)
             self._extract_model_validations(def_name, defn)
             self._extract_computed_fields(def_name, defn)
+            self._extract_property_type_specs(def_name, defn)
             self._extract_float_fields(def_name, defn)
             self._extract_child_refs(def_name, defn)
+            self._extract_required_fields(def_name, defn)
 
         self._extract_block_definitions()
+
+    def _extract_required_fields(self, def_name: str, defn: dict):
+        required = defn.get('required', [])
+        if not required:
+            return
+        props = defn.get('properties', {})
+        # Filter out x-internal-only fields (safety guard)
+        filtered = [r for r in required
+                    if not props.get(r, {}).get('x-internal-only', False)]
+        if filtered:
+            self.required_fields[def_name] = filtered
+        # Identify which required fields are block pointers
+        pointers = {r for r in filtered
+                    if 'x-block-pointer' in props.get(r, {})}
+        if pointers:
+            self.required_pointer_fields[def_name] = pointers
+        # Identify pointer-group fields
+        groups = {r for r in filtered
+                  if props.get(r, {}).get('x-pointer-group', False)}
+        if groups:
+            self.required_pointer_group_fields[def_name] = groups
+        # Identify pointer-union fields
+        unions = {r for r in filtered
+                  if props.get(r, {}).get('x-pointer-union', False)}
+        if unions:
+            self.required_pointer_union_fields[def_name] = unions
 
     def _extract_numeric_constraints(self, def_name: str, defn: dict):
         constraints = []
@@ -98,6 +133,38 @@ class ValidationMetadataGenerator:
         if computed:
             self.computed_fields[def_name] = computed
 
+    def _extract_property_type_specs(self, def_name: str, defn: dict):
+        specs: Dict[str, List[dict]] = {}
+        for field_name, field_schema in defn.get('properties', {}).items():
+            variants: List[dict] = []
+            candidates = field_schema.get('anyOf', [field_schema])
+            for opt in candidates:
+                spec: Dict[str, Any] = {}
+                if '$ref' in opt:
+                    spec['type'] = 'object'
+                elif 'type' in opt:
+                    spec['type'] = opt['type']
+                elif 'const' in opt:
+                    const_val = opt['const']
+                    if const_val is None:
+                        spec['type'] = 'null'
+                    elif isinstance(const_val, bool):
+                        spec['type'] = 'boolean'
+                    elif isinstance(const_val, int) and not isinstance(const_val, bool):
+                        spec['type'] = 'integer'
+                    elif isinstance(const_val, float):
+                        spec['type'] = 'number'
+                    elif isinstance(const_val, str):
+                        spec['type'] = 'string'
+                if 'const' in opt:
+                    spec['const'] = opt['const']
+                if spec:
+                    variants.append(spec)
+            if variants:
+                specs[field_name] = variants
+        if specs:
+            self.property_type_specs[def_name] = specs
+
     def _extract_float_fields(self, def_name: str, defn: dict):
         fields: Dict[str, bool] = {}
         for field_name, field_schema in defn.get('properties', {}).items():
@@ -125,25 +192,38 @@ class ValidationMetadataGenerator:
     def _extract_child_refs(self, def_name: str, defn: dict):
         children = {}
         for prop_name, prop_schema in defn.get('properties', {}).items():
-            if su.is_anchor(prop_schema):
-                # Anchor properties appear in JSON as wrapper objects.
-                # Create a synthetic walk map entry mapping variant children.
-                anchor_def_key = def_name + "__" + prop_name
-                anchor_children = {}
-                for _, vprop_name, vprop_schema in su.iter_variant_children(self.defs, prop_schema):
-                    child_def = su.first_ref(vprop_schema)
-                    if child_def and child_def in self.defs:
-                        anchor_children[vprop_name] = child_def
-                
-                if anchor_children:
-                    self.schema_walk_map[anchor_def_key] = anchor_children
-                children[prop_name] = anchor_def_key
-            else:
-                child_def = su.first_ref(prop_schema)
-                if child_def and child_def in self.defs:
-                    children[prop_name] = child_def
+            child_def = self._register_synthetic_schema(def_name, prop_name, prop_schema)
+            if child_def:
+                children[prop_name] = child_def
         if children:
             self.schema_walk_map[def_name] = children
+
+    def _synthetic_key(self, parent_def: str, prop_name: str) -> str:
+        return parent_def + "__" + prop_name
+
+    def _register_synthetic_schema(self, parent_def: str, prop_name: str, prop_schema: dict):
+        refs = su.all_refs(prop_schema)
+        if not su.is_anchor(prop_schema) and len(refs) <= 1:
+            child_def = su.first_ref(prop_schema)
+            if child_def and child_def in self.defs:
+                return child_def
+            return ""
+
+        synthetic_def_key = self._synthetic_key(parent_def, prop_name)
+
+        synthetic_children = {}
+        synthetic_allowed = set()
+        for _, vprop_name, vprop_schema in su.iter_variant_children(self.defs, prop_schema):
+            synthetic_allowed.add(vprop_name)
+            nested_def = self._register_synthetic_schema(synthetic_def_key, vprop_name, vprop_schema)
+            if nested_def:
+                synthetic_children[vprop_name] = nested_def
+
+        if synthetic_allowed:
+            self.synthetic_allowed[synthetic_def_key] = synthetic_allowed
+        if synthetic_children:
+            self.schema_walk_map[synthetic_def_key] = synthetic_children
+        return synthetic_def_key if synthetic_allowed else ""
 
     def _extract_block_definitions(self):
         for block_name, block_schema in self.schema.get('properties', {}).items():
@@ -155,18 +235,20 @@ class ValidationMetadataGenerator:
             def classify_items(items_schema):
                 refs = su.all_refs(items_schema) if 'anyOf' in items_schema else []
                 if '$ref' in items_schema:
-                    return (su.ref_name(items_schema['$ref']), False, True)
+                    return (su.ref_name(items_schema['$ref']), False, True, [])
                 elif len(refs) > 1:
-                    return ('', True, True)
+                    return ('', True, True, refs)
                 elif len(refs) == 1:
-                    return (refs[0], False, True)
+                    return (refs[0], False, True, [])
                 return None
 
             items = block_schema.get('items', {})
             if items:
                 result = classify_items(items)
                 if result:
-                    self.block_definitions[block_name] = result
+                    self.block_definitions[block_name] = result[:3]
+                    if result[1] and result[3]:
+                        self.union_block_variants[block_name] = result[3]
                 continue
 
             # Nullable patterns via anyOf
@@ -180,7 +262,9 @@ class ValidationMetadataGenerator:
                 if items2:
                     result = classify_items(items2)
                     if result:
-                        self.block_definitions[block_name] = result
+                        self.block_definitions[block_name] = result[:3]
+                        if result[1] and result[3]:
+                            self.union_block_variants[block_name] = result[3]
                     break
 
     # =========================================================================
@@ -193,13 +277,90 @@ class ValidationMetadataGenerator:
         lines.append(self._generate_numeric_constraints_function())
         lines.append(self._generate_model_validations_function())
         lines.append(self._generate_computed_fields_function())
+        lines.append(self._generate_property_type_specs_function())
+        lines.append(self._generate_allowed_properties_function())
+        lines.append(self._generate_top_level_blocks_function())
         lines.append(self._generate_schema_walk_map_function())
         lines.append(self._generate_block_definitions_function())
+        lines.append(self._generate_union_block_selector_function())
         lines.append(self._generate_internal_only_defaults_function())
         lines.append(self._generate_float_field_coercion_function())
         lines.append(self._generate_integer_field_coercion_function())
+        lines.append(self._generate_required_fields_function())
         lines.append(self._generate_validate_definition_function())
         lines.append(self._generate_validate_json_document_function())
+        return '\n'.join(lines)
+
+    def _generate_property_type_specs_function(self) -> str:
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Property type/const specs per definition")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const json& get_property_type_specs(const std::string& def_name) {")
+        lines.append("    static const std::map<std::string, json> data = []() {")
+        lines.append("        std::map<std::string, json> m;")
+
+        for def_name in sorted(self.property_type_specs.keys()):
+            json_str = json.dumps(self.property_type_specs[def_name], separators=(',', ':'))
+            lines.append(f'        m["{def_name}"] = json::parse(R"__pts__({json_str})__pts__");')
+
+        lines.append("        return m;")
+        lines.append("    }();")
+        lines.append("    static const json empty = json::object();")
+        lines.append("    auto it = data.find(def_name);")
+        lines.append("    return it != data.end() ? it->second : empty;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
+    def _generate_allowed_properties_function(self) -> str:
+        allowed: Dict[str, Set[str]] = {}
+
+        for def_name, defn in self.defs.items():
+            props = set(defn.get('properties', {}).keys())
+            if props:
+                allowed[def_name] = props
+
+        for synthetic_def_key, child_names in self.synthetic_allowed.items():
+            allowed[synthetic_def_key] = set(child_names)
+
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Allowed properties per definition")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const std::set<std::string>& get_allowed_properties(const std::string& def_name) {")
+        lines.append("    static const std::map<std::string, std::set<std::string>> data = {")
+
+        for def_name in sorted(allowed.keys()):
+            props = ', '.join(f'"{prop}"' for prop in sorted(allowed[def_name]))
+            lines.append(f'        {{"{def_name}", {{{props}}}}},')
+
+        lines.append("    };")
+        lines.append("    static const std::set<std::string> empty;")
+        lines.append("    auto it = data.find(def_name);")
+        lines.append("    return it != data.end() ? it->second : empty;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
+    def _generate_top_level_blocks_function(self) -> str:
+        blocks = sorted(self.schema.get('properties', {}).keys())
+
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Allowed top-level blocks")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const std::set<std::string>& get_allowed_top_level_blocks() {")
+        lines.append("    static const std::set<std::string> data = {")
+        for block_name in blocks:
+            lines.append(f'        "{block_name}",')
+        lines.append("    };")
+        lines.append("    return data;")
+        lines.append("}")
+        lines.append("")
         return '\n'.join(lines)
 
     def _generate_internal_only_defaults_function(self) -> str:
@@ -269,6 +430,7 @@ class ValidationMetadataGenerator:
 //   {len(self.model_validations)} definitions with x-model-validations ({num_mv} rules)
 //   {len(self.computed_fields)} definitions with x-computed-fields ({num_cf} fields)
 //   {len(self.schema_walk_map)} definitions in schema walk map ({num_wm} property refs)
+//   {len(self.required_fields)} definitions with required fields ({sum(len(v) for v in self.required_fields.values())} total)
 
 #ifndef DAKOTA_VALIDATION_METADATA_HPP
 #define DAKOTA_VALIDATION_METADATA_HPP
@@ -449,6 +611,31 @@ struct FieldConstraint {{
         lines.append("")
         return '\n'.join(lines)
 
+    def _generate_union_block_selector_function(self) -> str:
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Top-level union block selectors")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("inline const std::map<std::string, std::map<std::string, std::string>>&")
+        lines.append("get_union_block_selector_map() {")
+        lines.append("    static const auto data = []() {")
+        lines.append("        std::map<std::string, std::map<std::string, std::string>> m;")
+        for block_name in sorted(self.union_block_variants.keys()):
+            selector_pairs = []
+            for sel_def in self.union_block_variants[block_name]:
+                child_map = self.schema_walk_map.get(sel_def, {})
+                for prop, child_def in sorted(child_map.items()):
+                    selector_pairs.append(f'{{"{prop}", "{child_def}"}}')
+            pairs = ', '.join(selector_pairs)
+            lines.append(f'        m["{block_name}"] = {{{pairs}}};')
+        lines.append("        return m;")
+        lines.append("    }();")
+        lines.append("    return data;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
     def _generate_block_definitions_function(self) -> str:
         lines = []
         lines.append("// ============================================================================")
@@ -622,11 +809,95 @@ struct FieldConstraint {{
         lines.append("")
         return '\n'.join(lines)
 
+    def _generate_required_fields_function(self) -> str:
+        lines = []
+        lines.append("// ============================================================================")
+        lines.append("// Required fields per definition (from JSON Schema 'required' arrays)")
+        lines.append("// ============================================================================")
+        lines.append("")
+        lines.append("struct RequiredFieldInfo {")
+        lines.append("    std::set<std::string> fields;")
+        lines.append("    std::set<std::string> pointer_fields;  // subset that are block pointers")
+        lines.append("    std::set<std::string> pointer_group_fields;  // subset that are pointer groups")
+        lines.append("    std::set<std::string> pointer_union_fields;  // subset that are pointer unions")
+        lines.append("};")
+        lines.append("")
+        lines.append("inline const RequiredFieldInfo& get_required_fields(const std::string& def_name) {")
+        lines.append("    static const std::map<std::string, RequiredFieldInfo> data = {")
+
+        all_defs = sorted(set(self.required_fields.keys()) |
+                          set(self.required_pointer_fields.keys()) |
+                          set(self.required_pointer_group_fields.keys()) |
+                          set(self.required_pointer_union_fields.keys()))
+        for def_name in all_defs:
+            fields = self.required_fields.get(def_name, [])
+            pointers = self.required_pointer_fields.get(def_name, set())
+            groups = self.required_pointer_group_fields.get(def_name, set())
+            unions = self.required_pointer_union_fields.get(def_name, set())
+            field_strs = ', '.join(f'"{f}"' for f in sorted(fields))
+            pointer_strs = ', '.join(f'"{p}"' for p in sorted(pointers))
+            group_strs = ', '.join(f'"{g}"' for g in sorted(groups))
+            union_strs = ', '.join(f'"{u}"' for u in sorted(unions))
+            lines.append(f'        {{"{def_name}", {{{{{field_strs}}}, {{{pointer_strs}}}, {{{group_strs}}}, {{{union_strs}}}}}}},')
+
+        lines.append("    };")
+        lines.append("    static const RequiredFieldInfo empty;")
+        lines.append("    auto it = data.find(def_name);")
+        lines.append("    return it != data.end() ? it->second : empty;")
+        lines.append("}")
+        lines.append("")
+        return '\n'.join(lines)
+
     def _generate_validate_definition_function(self) -> str:
         return """\
 // ============================================================================
 // Single-definition validation
 // ============================================================================
+
+inline bool value_matches_type_name(const json& value, const std::string& type_name) {
+    if (type_name == "null") return value.is_null();
+    if (type_name == "boolean") return value.is_boolean();
+    if (type_name == "string") return value.is_string();
+    if (type_name == "integer") return value.is_number_integer();
+    if (type_name == "number") return value.is_number();
+    if (type_name == "array") return value.is_array();
+    if (type_name == "object") return value.is_object();
+    return true;
+}
+
+inline bool value_matches_variant_spec(const json& value, const json& spec) {
+    if (spec.contains("type")) {
+        const auto& type_name = spec["type"].get_ref<const std::string&>();
+        if (!value_matches_type_name(value, type_name)) {
+            return false;
+        }
+    }
+    if (spec.contains("const") && value != spec["const"]) {
+        return false;
+    }
+    return true;
+}
+
+inline void check_property_type_specs(const json& instance, const std::string& def_name) {
+    const auto& specs = get_property_type_specs(def_name);
+    if (specs.empty()) return;
+
+    for (const auto& [field_name, variants] : specs.items()) {
+        if (!instance.contains(field_name)) continue;
+        const auto& value = instance[field_name];
+        bool matched = false;
+        for (const auto& spec : variants) {
+            if (value_matches_variant_spec(value, spec)) {
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            throw validation::ValidationError(
+                "Field '" + field_name + "' does not match schema type/const requirements (in " + def_name + ")");
+        }
+    }
+}
 
 inline void check_numeric_constraints(
     const json& instance,
@@ -758,14 +1029,47 @@ inline void apply_dotted_mutations(json& target, const json& mutations) {
     }
 }
 
-inline json validate_definition(const std::string& def_name, json instance) {
+inline json validate_definition(const std::string& def_name, json instance,
+                               bool api_mode = false) {
+    // 0. Check required fields (before any mutation steps).
+    {
+        const auto& req_info = get_required_fields(def_name);
+        std::vector<std::string> missing;
+        for (const auto& field : req_info.fields) {
+            if (!instance.contains(field)) {
+                if (api_mode && req_info.pointer_fields.count(field)) {
+                    continue;  // skip pointer in API mode
+                }
+                if (api_mode && req_info.pointer_group_fields.count(field)) {
+                    continue;  // skip pointer group in API mode
+                }
+                if (api_mode && req_info.pointer_union_fields.count(field)) {
+                    continue;  // skip pointer union in API mode
+                }
+                missing.push_back(field);
+            }
+        }
+        if (!missing.empty()) {
+            std::string msg = "Missing required field(s): ";
+            for (size_t i = 0; i < missing.size(); ++i) {
+                if (i > 0) msg += ", ";
+                msg += "'" + missing[i] + "'";
+            }
+            msg += " (in " + def_name + ")";
+            throw validation::ValidationError(msg);
+        }
+    }
+
     // 1. Coerce string representations of non-finite values for float fields.
     coerce_nonfinite_float_fields(instance, def_name);
 
-    // 2. Check field-level numeric constraints
+    // 2. Enforce basic schema type/const requirements for direct properties.
+    check_property_type_specs(instance, def_name);
+
+    // 3. Check field-level numeric constraints
     check_numeric_constraints(instance, def_name);
 
-    // 3. Run x-model-validations individually with null-mutation guard
+    // 4. Run x-model-validations individually with null-mutation guard
     //    We inline the loop here instead of calling validate_all() because
     //    validate_all uses merge_patch(mutations) which, per RFC 7396, replaces
     //    the entire instance with null when a validator returns an uninitialized
@@ -926,9 +1230,17 @@ inline void walk_and_validate(
     json& instance,
     const std::string& def_name,
     const std::string& path,
-    std::vector<std::string>& errors)
+    std::vector<std::string>& errors,
+    bool api_mode = false)
 {
     if (!instance.is_object()) return;
+
+    const auto& allowed_props = get_allowed_properties(def_name);
+    for (auto& [prop_name, _] : instance.items()) {
+        if (!allowed_props.empty() && !allowed_props.count(prop_name)) {
+            errors.push_back(path + ": unexpected property '" + prop_name + "'");
+        }
+    }
 
     if (g_validation_debug) {
         std::cerr << "[VAL_DEBUG] walk: " << path
@@ -937,7 +1249,7 @@ inline void walk_and_validate(
     }
 
     try {
-        instance = validate_definition(def_name, std::move(instance));
+        instance = validate_definition(def_name, std::move(instance), api_mode);
     } catch (const validation::ValidationError& e) {
         if (g_validation_debug) {
             std::cerr << "[VAL_DEBUG] ValidationError at " << path
@@ -965,7 +1277,7 @@ inline void walk_and_validate(
         std::string child_path = path + "." + prop_name;
 
         if (child.is_object()) {
-            walk_and_validate(child, child_def, child_path, errors);
+            walk_and_validate(child, child_def, child_path, errors, api_mode);
         }
     }
 }
@@ -977,10 +1289,18 @@ inline void walk_and_validate(
 // Document-level validation entry point
 // ============================================================================
 
-inline int validate_json_document(json& doc, std::vector<std::string>& errors) {
+inline int validate_json_document(json& doc, std::vector<std::string>& errors,
+                                  bool api_mode = false) {
     const auto& block_defs = get_block_definitions();
-    const auto& walk_map = get_schema_walk_map();
+    const auto& union_selector_map = get_union_block_selector_map();
+    const auto& allowed_blocks = get_allowed_top_level_blocks();
     int initial_errors = static_cast<int>(errors.size());
+
+    for (auto& [block_name, _] : doc.items()) {
+        if (!allowed_blocks.count(block_name)) {
+            errors.push_back("Unexpected top-level block: " + block_name);
+        }
+    }
 
     for (const auto& [block_name, block_def] : block_defs) {
         if (!doc.contains(block_name)) {
@@ -997,27 +1317,32 @@ inline int validate_json_document(json& doc, std::vector<std::string>& errors) {
             if (block_def.is_array && block_json.is_array()) {
                 for (size_t i = 0; i < block_json.size(); ++i) {
                     std::string path = block_name + "[" + std::to_string(i) + "]";
-                    walk_and_validate(block_json[i], block_def.config_type, path, errors);
+                    walk_and_validate(block_json[i], block_def.config_type, path, errors, api_mode);
                 }
             } else if (block_json.is_object()) {
-                walk_and_validate(block_json, block_def.config_type, block_name, errors);
+                walk_and_validate(block_json, block_def.config_type, block_name, errors, api_mode);
             }
         } else if (block_def.is_union) {
-            // Union block (method, model): find discriminator keywords
+            // Union block (method, model): validate against the explicit
+            // top-level selector map for that block. Do not scan the entire
+            // walk map, since nested contexts may reuse the same property names.
             auto process_union = [&](json& instance, const std::string& path) {
                 if (!instance.is_object()) return;
 
-                for (auto& [prop_name, prop_val] : instance.items()) {
-                    if (!prop_val.is_object()) continue;
+                auto sel_map_it = union_selector_map.find(block_name);
+                if (sel_map_it == union_selector_map.end()) return;
+                const auto& selector_children = sel_map_it->second;
 
-                    // Search walk map for any definition that has this property
-                    for (const auto& [sel_def, sel_children] : walk_map) {
-                        auto child_it = sel_children.find(prop_name);
-                        if (child_it != sel_children.end()) {
-                            std::string child_path = path + "." + prop_name;
-                            walk_and_validate(prop_val, child_it->second, child_path, errors);
-                            break;
-                        }
+                for (auto& [prop_name, prop_val] : instance.items()) {
+                    auto child_it = selector_children.find(prop_name);
+                    if (child_it == selector_children.end()) {
+                        errors.push_back(path + ": unexpected property '" + prop_name + "'");
+                        continue;
+                    }
+
+                    std::string child_path = path + "." + prop_name;
+                    if (prop_val.is_object()) {
+                        walk_and_validate(prop_val, child_it->second, child_path, errors, api_mode);
                     }
                 }
             };
@@ -1057,6 +1382,8 @@ inline int validate_json_document(json& doc, std::vector<std::string>& errors) {
         print(f"    - {len(self.model_validations)} defs with x-model-validations ({num_mv} rules)")
         print(f"    - {len(self.computed_fields)} defs with x-computed-fields ({num_cf} fields)")
         print(f"    - {len(self.schema_walk_map)} defs in walk map ({num_wm} property refs)")
+        total_req = sum(len(v) for v in self.required_fields.values())
+        print(f"    - {len(self.required_fields)} defs with required fields ({total_req} total)")
 
         print(f"    Block definitions:")
         for block_name in sorted(self.block_definitions.keys()):

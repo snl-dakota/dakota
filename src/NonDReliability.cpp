@@ -19,17 +19,43 @@ namespace Dakota {
 
 NonDReliability::NonDReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonD(problem_db, parallel_lib, model),
-  mppSearchType(probDescDB.get_ushort("method.sub_method")),
+  mppSearchType(probDescDB.get<unsigned short>("method.sub_method")),
   integrationRefinement(
-    probDescDB.get_ushort("method.nond.integration_refinement")),
+    probDescDB.get<unsigned short>("method.nond.integration_refinement")),
   numRelAnalyses(0)
-  //refinementSamples(probDescDB.get_int("method.samples")),
-  //refinementSeed(probDescDB.get_int("method.random_seed"))
+  //refinementSamples(probDescDB.get<int>("method.samples")),
+  //refinementSeed(probDescDB.get<int>("method.random_seed"))
 {
   // Check for suitable distribution types.
   if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
     Cerr << "Error: discrete random variables are not supported in reliability "
 	 << "methods." << std::endl;
+    abort_handler(-1);
+  }
+
+  initialize_final_statistics(); // default statistics set
+
+  // RealVectors are sized within derived classes
+  computedRespLevels.resize(numFunctions);
+  computedProbLevels.resize(numFunctions);
+  computedGenRelLevels.resize(numFunctions);
+}
+
+
+NonDReliability::
+NonDReliability(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  mppSearchType(method_store.get<unsigned short>("sub_method")),
+  integrationRefinement(method_store.get<unsigned short>("nond.integration_refinement")),
+  numRelAnalyses(0)
+  //refinementSamples(probDescDB.get<int>("method.samples")),
+  //refinementSeed(probDescDB.get<int>("method.random_seed"))
+{
+  // Check for suitable distribution types.
+  if (numDiscreteIntVars || numDiscreteStringVars || numDiscreteRealVars) {
+    Cerr << "Error: discrete random variables are not supported in reliability "
+         << "methods." << std::endl;
     abort_handler(-1);
   }
 

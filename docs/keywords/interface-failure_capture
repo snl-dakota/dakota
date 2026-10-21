@@ -20,7 +20,6 @@ Once Dakota detects analysis failure, the failure can be mitigated in four ways:
 - :dakkw:`interface-failure_capture-continuation`
 
 Refer to :ref:`failure` for additional information.
-Topics::
 
 **Default Behavior:** If no failure capturing specification is
 provided, then the default behavior is method dependent. For those

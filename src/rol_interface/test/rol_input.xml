@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<ParameterList name="Inputs">
+  <!-- ===========  BEGIN GENERAL INPUT PARAMETER SUBLIST  =========== -->
+  <ParameterList name="General">
+    <Parameter name="Print Verbosity" type="int" value="1"/>
+    <Parameter name="Recompute Objective Function" type="bool" value="false"/>
+    <Parameter name="Scale for Epsilon Active Sets" type="double" value="1.0"/>
+    
+    <!-- ===========  SECANT INPUTS  =========== -->
+    <ParameterList name="Secant">
+      <Parameter name="Type" type="string" value="Limited-Memory BFGS"/>
+      <Parameter name="Use as Preconditioner" type="bool" value="false"/>
+      <Parameter name="Use as Hessian" type="bool" value="false"/>
+      <Parameter name="Maximum Storage" type="int" value="10"/>
+    </ParameterList>
+
+    <!-- ===========  KRYLOV INPUTS  =========== -->
+    <ParameterList name="Krylov">
+      <Parameter name="Type" type="string" value="Conjugate Gradients"/>
+      <Parameter name="Absolute Tolerance" type="double" value="1.e-4"/>
+      <Parameter name="Relative Tolerance" type="double" value="1.e-2"/>
+      <Parameter name="Iteration Limit" type="int" value="100"/>
+    </ParameterList>
+  </ParameterList>
+
+  <!-- ===========  STEP SUBLIST  =========== -->
+  <ParameterList name="Step">
+    <Parameter name="Type" type="string" value="Augmented Lagrangian"/>
+    
+    <!-- ===========  AUGMENTED LAGRANGIAN PARAMETERS  =========== -->
+    <ParameterList name="Augmented Lagrangian">
+      <Parameter name="Subproblem Solver" type="string" value="Trust Region"/>
+      <Parameter name="Subproblem Iteration Limit" type="int" value="50"/>
+      <Parameter name="Use Default Problem Scaling" type="bool" value="false"/>
+      <Parameter name="Use Default Initial Penalty Parameter" type="bool" value="false"/>
+      <Parameter name="Initial Penalty Parameter" type="double" value="10.0"/>
+      <Parameter name="Penalty Parameter Growth Factor" type="double" value="10.0"/>
+    </ParameterList>
+    
+    <!-- ===========  TRUST REGION PARAMETERS  =========== -->
+    <ParameterList name="Trust Region">
+      <Parameter name="Subproblem Solver" type="string" value="Truncated CG"/>
+      <Parameter name="Subproblem Model" type="string" value="Coleman-Li"/>
+      <Parameter name="Initial Radius" type="double" value="1.0"/>
+      <Parameter name="Maximum Radius" type="double" value="1000.0"/>
+      <Parameter name="Step Acceptance Threshold" type="double" value="0.05"/>
+      <Parameter name="Radius Shrinking Threshold" type="double" value="0.05"/>
+      <Parameter name="Radius Growing Threshold" type="double" value="0.9"/>
+      <Parameter name="Radius Shrinking Rate (Negative rho)" type="double" value="0.0625"/>
+      <Parameter name="Radius Shrinking Rate (Positive rho)" type="double" value="0.25"/>
+      <Parameter name="Radius Growing Rate" type="double" value="2.5"/>
+      <Parameter name="Safeguard Size" type="double" value="100.0"/>
+    </ParameterList>
+  </ParameterList>
+
+  <!-- ===========  STATUS TEST SUBLIST  =========== -->
+  <ParameterList name="Status Test">
+    <Parameter name="Gradient Tolerance" type="double" value="1.0e-8"/>
+    <Parameter name="Constraint Tolerance" type="double" value="1.0e-8"/>
+    <Parameter name="Step Tolerance" type="double" value="1.0e-12"/>
+    <Parameter name="Iteration Limit" type="int" value="100"/>
+  </ParameterList>
+</ParameterList>

@@ -5,7 +5,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6334552651e+02  3.5896984358e+02 -1.5536883737e-03 -1.1934727461e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317004e+02  3.6401539762e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
@@ -45,7 +45,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6334552651e+02  3.5896984358e+02 -1.5536883737e-03 -1.1934727461e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317004e+02  3.6401539762e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
@@ -88,7 +88,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6334552651e+02  3.5896984356e+02 -1.5536883750e-03 -1.1934727461e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317003e+02  3.6401539760e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------
@@ -131,7 +131,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  4.6334552651e+02  3.5896984356e+02 -1.5536883750e-03 -1.1934727461e+00
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.5630899510e+02  4.7038205792e+02  3.5406317003e+02  3.6401539760e+02
           Bin Lower          Bin Upper      Density Value
           ---------          ---------      -------------

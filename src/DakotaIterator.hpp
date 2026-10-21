@@ -12,7 +12,8 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaModel.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
+#include "IteratorViewRequest.hpp"
 #include "ResultsManager.hpp"
 #include "DakotaTraitsBase.hpp"
 #include <memory>
@@ -20,11 +21,17 @@
 
 namespace Dakota {
 
+class OutputManager;
+class StudyRuntime;
+class RunOptions;
+class StudyServices;
+
 class ParallelLib;
 class ProblemDescDB;
 class Variables;
 class Response;
 class EvaluationStore;
+class IRStore;
 
 /// Base class for the iterator class hierarchy.
 
@@ -159,24 +166,24 @@ public:
   virtual void nested_response_mappings(const RealMatrix& primary_coeffs,
 					const RealMatrix& secondary_coeffs);
 
-  /// used by IteratorScheduler to set the starting data for a run
+  /// used by IteratorExecutor to set the starting data for a run
   virtual void initialize_iterator(int job_index);
-  /// used by IteratorScheduler to pack starting data for an iterator run
+  /// used by IteratorExecutor to pack starting data for an iterator run
   virtual void pack_parameters_buffer(MPIPackBuffer& send_buffer,
 				      int job_index);
-  /// used by IteratorScheduler to unpack starting data for an iterator run
+  /// used by IteratorExecutor to unpack starting data for an iterator run
   virtual void unpack_parameters_buffer(MPIUnpackBuffer& recv_buffer,
 					int job_index);
-  /// used by IteratorScheduler to unpack starting data and initialize
+  /// used by IteratorExecutor to unpack starting data and initialize
   /// an iterator run
   virtual void unpack_parameters_initialize(MPIUnpackBuffer& recv_buffer,
 					    int job_index);
-  /// used by IteratorScheduler to pack results data from an iterator run
+  /// used by IteratorExecutor to pack results data from an iterator run
   virtual void pack_results_buffer(MPIPackBuffer& send_buffer, int job_index);
-  /// used by IteratorScheduler to unpack results data from an iterator run
+  /// used by IteratorExecutor to unpack results data from an iterator run
   virtual void unpack_results_buffer(MPIUnpackBuffer& recv_buffer,
 				     int job_index);
-  /// used by IteratorScheduler to update local results arrays
+  /// used by IteratorExecutor to update local results arrays
   virtual void update_local_results(int job_index);
 
   /// return a single final iterator solution (variables)
@@ -330,6 +337,12 @@ public:
   ProblemDescDB& problem_description_db() const;
   /// return the parallel library (parallelLib)
   ParallelLibrary& parallel_library() const;
+  ParallelLibrary* parallel_library_ptr() const;
+  OutputManager* output_manager_ptr() const;
+  RunOptions* run_options_ptr() const;
+  StudyServices* study_services_ptr() const;
+  std::shared_ptr<StudyServices> study_services() const;
+  StudyRuntime study_runtime() const;
 
   /// set the method name to an enumeration value
   void method_name(unsigned short m_name);
@@ -424,6 +437,12 @@ protected:
   Iterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
 	   std::shared_ptr<TraitsBase> traits =
 	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+  /// DI constructor using a method IR store plus study services
+  Iterator(std::shared_ptr<StudyServices> services,
+           const IRStore& method_store,
+	   std::shared_ptr<TraitsBase> traits =
+	   std::shared_ptr<TraitsBase>(new TraitsBase()));
+
 
   /// alternate constructor for base iterator classes constructed on the fly
   Iterator(unsigned short method_name, std::shared_ptr<Model> model,
@@ -473,6 +492,24 @@ protected:
   /// export final surrogates generated, e.g., GP in EGO and friends
   void export_final_surrogates(Model& data_fit_surr_model);
 
+  /** Resolve a ViewRequest and assign the resulting active variable view to
+   *  \a model before update_from_model() is called.  Called from the DI
+   *  constructors of Analyzer and Minimizer with the request provided by the
+   *  concrete iterator subclass.
+   *
+   *  Guards (in order):
+   *  1. No variables store on the model → return (legacy-built model).
+   *  2. methodName == 0 → return (no algorithm configured yet).
+   *  3. User set active= explicitly → mark_active_view_assigned() + return.
+   *  4. Resolve spec from responseRule + request.spec + uncertain counts.
+   *  5. KEEP spec → return without change.
+   *  6. Compute domain (relaxed vs. mixed) from current view.
+   *  7. Call model.assign_inferred_view(Variables::method_map(spec, relaxed), label).
+   *
+   *  Divergence from legacy: UNCERTAIN_BY_COUNTS with no uncertain variables
+   *  keeps the current view (ALL) without error.  See DI_CLEANUP_TODO.md. */
+  void assign_requested_view(Model& model, const ViewRequest& request);
+
   //
   //- Heading: Data
   //
@@ -480,6 +517,9 @@ protected:
   /// the model to be iterated (for iterators and meta-iterators
   /// employing a single model instance)
   std::shared_ptr<Model> iteratedModel;
+
+  /// shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyServices> sharedStudyServices;
 
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
@@ -489,6 +529,9 @@ protected:
 
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
+
+  /// run-phase options used by Iterator::run and pre/post helpers
+  RunOptions& runOptions;
 
   /// the active ParallelConfiguration used by this Iterator instance
   ParConfigLIter methodPCIter;
@@ -535,10 +578,10 @@ protected:
   /// but false for on-the-fly (helper) iterators and sub-iterator use cases
   bool summaryOutputFlag;
 
-  /// reference to the global iterator results database
+  /// reference to the study-specific iterator results database
   ResultsManager& resultsDB;
 
-  /// reference to the global evaluation database
+  /// reference to the study-specific evaluation database
   EvaluationStore& evaluationsDB;
 
   /// State of evaluations DB for this iterator

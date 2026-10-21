@@ -11,7 +11,7 @@
 #define NOND_ENSEMBLE_SAMPLING_H
 
 #include "NonDSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "DakotaResponseContainer.hpp"
 
 namespace Dakota {
@@ -32,6 +32,11 @@ public:
 
   /// standard constructor
   NonDEnsembleSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDEnsembleSampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model,
+             const ViewRequest& view_req =
+               ViewRequest(ViewRequest::ALEATORY_UNCERTAIN));
   /// destructor (virtual declaration should be redundant with ~Iterator,
   /// but this is top of MLMF diamond so doesn't hurt to be explicit)
   ~NonDEnsembleSampling() override;
@@ -264,9 +269,9 @@ protected:
   /// index into relaxFactorSequence
   size_t relaxIndex;
   /// a sequence of relaxation factors to use across ML/MF iterations
-  /// (see DataMethod.hpp for usage notes)
+  /// (see DakotaMethodEnums.hpp for usage notes)
   RealVector relaxFactorSequence;
-  /// a recursive relaxation factor (see DataMethod.hpp for usage notes)
+  /// a recursive relaxation factor (see DakotaMethodEnums.hpp for usage notes)
   Real relaxRecursiveFactor;
 
   // store the allocation_target input specification, prior to run-time

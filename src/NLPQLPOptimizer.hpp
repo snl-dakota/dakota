@@ -108,6 +108,9 @@ public:
 
   /// standard constructor
   NLPQLPOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NLPQLPOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                 std::shared_ptr<StudyServices> services);
   /// alternate constructor
   NLPQLPOptimizer(std::shared_ptr<Model> model);
   /// destructor

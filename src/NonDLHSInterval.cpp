@@ -11,7 +11,8 @@
 #include "dakota_data_types.hpp"
 #include "dakota_system_defs.hpp"
 #include "NonDLHSSampling.hpp"
-#include "ProblemDescDB.hpp" 
+#include "ProblemDescDB.hpp"
+#include "IRStore.hpp" 
 #include "ParallelLibrary.hpp" 
 #include "pecos_stat_util.hpp"
 
@@ -22,9 +23,9 @@ namespace Dakota {
 
 NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDInterval(problem_db, parallel_lib, model),
-  seedSpec(probDescDB.get_int("method.random_seed")),
-  numSamples(probDescDB.get_int("method.samples")),
-  rngName(probDescDB.get_string("method.random_number_generator"))
+  seedSpec(probDescDB.get<int>("method.random_seed")),
+  numSamples(probDescDB.get<int>("method.samples")),
+  rngName(probDescDB.get<const String>("method.random_number_generator"))
 {
   // if the user does not specify the number of samples, 
   // perform at least 10000 to get accurate assessments of belief and plaus.
@@ -35,6 +36,26 @@ NonDLHSInterval::NonDLHSInterval(ProblemDescDB& problem_db, ParallelLibrary& par
 
   unsigned short sample_type = SUBMETHOD_DEFAULT;
   bool vary_pattern = false; // for consistency across outer loop invocations
+  lhsSampler = std::make_unique<NonDLHSSampling>(iteratedModel,
+    sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE);
+}
+
+
+NonDLHSInterval::NonDLHSInterval(std::shared_ptr<StudyServices> services,
+                                 const IRStore& method_store,
+                                 std::shared_ptr<Model> model):
+  NonDInterval(std::move(services), method_store, model),
+  seedSpec(method_store.get<int>("random_seed")),
+  numSamples(method_store.get<int>("samples")),
+  rngName(method_store.get<String>("random_number_generator"))
+{
+  if (!numSamples)
+    numSamples = 10000;
+
+  maxEvalConcurrency *= numSamples;
+
+  unsigned short sample_type = SUBMETHOD_DEFAULT;
+  bool vary_pattern = false;
   lhsSampler = std::make_unique<NonDLHSSampling>(iteratedModel,
     sample_type, numSamples, seedSpec, rngName, vary_pattern, ACTIVE);
 }

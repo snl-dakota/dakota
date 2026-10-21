@@ -39,7 +39,7 @@ method,
 model,
 	id_model = 'SURROGATE'
 	responses_pointer = 'SURROGATE_RESP'
-	surrogate global                  	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15,#s16,#s17
+	global_surrogate                  	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15,#s16,#s17
 	  dace_method_pointer = 'SAMPLING'	#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11,#s14,#s15,#s16,#s17
 	  polynomial quadratic			#s0,#s2,#s3,#s5,#s6,#s8,#s9,#s11
 #	  gaussian_process surfpack		#s14,#s15
@@ -51,9 +51,9 @@ model,
 #           basis_order 2			#s17
 #	  use_derivatives			#s15
 	  correction additive first_order	#s0,#s3,#s6,#s9
-# 	surrogate local taylor_series		#s1,#s4,#s7,#s10
+# 	local_surrogate taylor_series		#s1,#s4,#s7,#s10
 #	  truth_model_pointer = 'TRUTH'	#s1,#s4,#s7,#s10
-# 	surrogate multipoint tana		#s12,#s13
+# 	multipoint_surrogate tana		#s12,#s13
 #	  truth_model_pointer = 'TRUTH'	#s12,#s13
 
 variables,

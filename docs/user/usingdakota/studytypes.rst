@@ -6,9 +6,10 @@ Study Types
 .. toctree::
    :maxdepth: 1
    
-   studytypes/parameterstudies
-   studytypes/designofexperiments
-   studytypes/sensitivityanalysis.rst
    studytypes/uq
    studytypes/optimization
-   studytypes/nonlinearleastsquares
+   studytypes/sensitivityanalysis.rst
+   studytypes/modelcalibration
+   studytypes/parameterstudies
+   studytypes/designofexperiments
+

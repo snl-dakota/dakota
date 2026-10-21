@@ -20,11 +20,35 @@ namespace Dakota {
 NonDImportPoints::NonDImportPoints(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDSampling(problem_db, parallel_lib, model), numResponseFunctions(0),
   vbdViaSamplingMethod(VBD_BINNED),
-  vbdViaSamplingNumBins(probDescDB.get_int("method.vbd_via_sampling_num_bins")),
-  importPointsFile(problem_db.get_string("method.import_points_file")),
-  importPointsFormat(problem_db.get_ushort("method.import_points_format")),
-  importUseVariableLabels(problem_db.get_bool("method.import_points.use_variable_labels")),
-  importActiveVariablesOnly(problem_db.get_bool("method.import_points.active_only") )
+  vbdViaSamplingNumBins(probDescDB.get<int>("method.vbd_via_sampling_num_bins")),
+  importPointsFile(problem_db.get<const String>("method.import_points_file")),
+  importPointsFormat(problem_db.get<unsigned short>("method.import_points_format")),
+  importUseVariableLabels(problem_db.get<bool>("method.import_points.use_variable_labels")),
+  importActiveVariablesOnly(problem_db.get<bool>("method.import_points.active_only") )
+{
+
+  if (model->primary_fn_type() == GENERIC_FNS)
+    numResponseFunctions = model->num_primary_fns();
+
+  initialize_final_statistics();
+
+}
+
+
+/** This constructor is called for a standard letter-envelope iterator
+    instantiation.  In this case, set_db_list_nodes has been called and
+    IRStore can be queried for settings from the method specification. */
+NonDImportPoints::
+NonDImportPoints(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		 std::shared_ptr<Model> model):
+  NonDSampling(std::move(services), method_store, model,
+               ViewRequest(ViewRequest::UNCERTAIN_BY_COUNTS)), numResponseFunctions(0),
+  vbdViaSamplingMethod(VBD_BINNED),
+  vbdViaSamplingNumBins(method_store.get<int>("vbd_via_sampling_num_bins")),
+  importPointsFile(method_store.get<String>("import_points_file")),
+  importPointsFormat(method_store.get<unsigned short>("import_points_format")),
+  importUseVariableLabels(method_store.get<bool>("import_points.use_variable_labels")),
+  importActiveVariablesOnly(method_store.get<bool>("import_points.active_only"))
 {
 
   if (model->primary_fn_type() == GENERIC_FNS)
@@ -108,16 +132,10 @@ void NonDImportPoints::post_run(std::ostream& s)
                                                   numSamples,
                                                   allSamples,
                                                   allResponses);
-
-      nonDSampCorr.archive_sobol_indices(run_identifier(),
-                                         resultsDB,
-                                         iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
-                                         ModelUtils::response_labels(*iteratedModel),
-                                         vbdDropTol); // set in DakotaAnalyzer constructor
     }
 
     compute_statistics(allSamples, allResponses);
-
+    archive_results(numSamples);
     Analyzer::post_run(s);
 
 }
@@ -135,5 +153,50 @@ void NonDImportPoints::print_results(std::ostream& s, short results_state)
     int actual_samples = allSamples.numCols();
     print_header_and_statistics(s, actual_samples);
 } 
+
+void NonDImportPoints::archive_results(int num_samples) {
+
+    // Pass index zero for increment ID since import_points doesn't
+    // support incremental studies.
+    int increment_id = 0;
+    // Archive moments
+    if(functionMomentsComputed) {
+      archive_moments(increment_id);
+      archive_moment_confidence_intervals(increment_id);
+    }
+    // Archive level mappings and pdfs
+    if(totalLevelRequests) {
+      for(int i = 0; i < numFunctions; ++i) {
+        archive_from_resp(i,increment_id);
+        archive_to_resp(i,increment_id);
+        if(pdfOutput && pdfComputed[i]) {
+          archive_pdf(i, increment_id);
+          pdfComputed[i] = false; // reset for next increment
+        }
+      }
+    }
+
+  nonDSampCorr.archive_correlations(run_identifier(), resultsDB, iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                      ModelUtils::response_labels(*iteratedModel),increment_id);
+
+  // Archive Standardized Regression Coefficients
+  if (stdRegressionCoeffs) {
+    nonDSampCorr.archive_std_regress_coeffs(run_identifier(), resultsDB,
+                                            iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                            ModelUtils::response_labels(*iteratedModel), increment_id);
+  }
+
+  if(vbdFlag) {
+      nonDSampCorr.archive_sobol_indices(run_identifier(),
+                                         resultsDB,
+                                         iteratedModel->current_variables().ordered_labels(ACTIVE_VARS),
+                                         ModelUtils::response_labels(*iteratedModel),
+                                         vbdDropTol); // set in DakotaAnalyzer constructor
+    }
+
+  if (toleranceIntervalsFlag) {
+    archive_tolerance_intervals(increment_id);
+  }
+}
 
 } // namespace Dakota

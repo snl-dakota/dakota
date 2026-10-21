@@ -65,7 +65,7 @@ class BranchAndBoundConfig(MethodThreeOptionalKeywordsMixin, DefaultScalingMixin
     sub_method: Union[BranchAndBoundMethodPointer, BranchAndBoundMethodName] = (
         DakotaField(
             description="Local Optimizer Selection",
-            dakota={"anchor": True, "union_pattern": 4},
+            dakota={"anchor": True, "union_pattern": 4, "pointer_union": True},
         )
     )
 

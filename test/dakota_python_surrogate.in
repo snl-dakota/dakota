@@ -20,7 +20,7 @@ method,
 
 model,
         id_model = 'SURR'
-        surrogate global,
+        global_surrogate,
           dace_method_pointer = 'DACE'                           #s0,#s1
           reuse_samples all
           polynomial linear                                      #s0,#s2

@@ -12,6 +12,7 @@
 
 #include "SharedSurfpackApproxData.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "dakota_data_io.hpp"
 
 // Headers from Surfpack
@@ -23,6 +24,29 @@
 
 namespace Dakota {
 
+SharedSurfpackApproxData::
+SharedSurfpackApproxData(const IRStore& model_store,
+                         const UShortArray& approx_order, size_t num_vars,
+                         short data_order, short output_level):
+  SharedApproxData(NoDBBaseConstructor(), model_store, num_vars, data_order,
+                   output_level),
+  diagnosticSet(model_store.get<StringArray>("metrics")),
+  crossValidateFlag(model_store.get<bool>("surrogate.cross_validate")),
+  numFolds(model_store.get<int>("surrogate.folds")),
+  percentFold(model_store.get<Real>("surrogate.percent")),
+  pressFlag(model_store.get<bool>("surrogate.press"))
+{
+  if (approx_order.empty())
+    approxOrder = 2;
+  else {
+    approxOrder = approx_order[0];
+    if (approx_order.size() != num_vars)
+      abort_handler(-1);
+    for (size_t i = 1; i < num_vars; ++i)
+      approxOrder = std::max(approx_order[i], approxOrder);
+  }
+}
+
 
 /** Initialize the embedded Surfpack surface object and configure it
     using the specifications from the input file.  Data for the
@@ -31,18 +55,18 @@ namespace Dakota {
 SharedSurfpackApproxData::
 SharedSurfpackApproxData(ProblemDescDB& problem_db, size_t num_vars):
   SharedApproxData(BaseConstructor(), problem_db, num_vars),
-  diagnosticSet(problem_db.get_sa("model.metrics")),
-  crossValidateFlag(problem_db.get_bool("model.surrogate.cross_validate")),
-  numFolds(problem_db.get_int("model.surrogate.folds")),
-  percentFold(problem_db.get_real("model.surrogate.percent")),
-  pressFlag(problem_db.get_bool("model.surrogate.press"))
+  diagnosticSet(problem_db.get<const StringArray>("model.metrics")),
+  crossValidateFlag(problem_db.get<bool>("model.surrogate.cross_validate")),
+  numFolds(problem_db.get<int>("model.surrogate.folds")),
+  percentFold(problem_db.get<const Real>("model.surrogate.percent")),
+  pressFlag(problem_db.get<bool>("model.surrogate.press"))
 {
   // For Polynomial surface fits
   if (approxType == "global_polynomial")
-    approxOrder = problem_db.get_short("model.surrogate.polynomial_order");
+    approxOrder = problem_db.get<short>("model.surrogate.polynomial_order");
   else if (approxType == "global_kriging") {
     const String& trend_string = 
-      problem_db.get_string("model.surrogate.trend_order");
+      problem_db.get<const String>("model.surrogate.trend_order");
     if (trend_string == "constant")    approxOrder = 0;
     else if (trend_string == "linear") approxOrder = 1;
     else approxOrder = 2; // empty, reduced_quadratic, quadratic

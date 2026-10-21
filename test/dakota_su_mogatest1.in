@@ -46,7 +46,7 @@ method
 
 model
     id_model = 'SURROGATE'
-    surrogate global
+    global_surrogate
         dace_method_pointer = 'SAMPLING'
         correction additive zeroth_order
 #	polynomial quadratic

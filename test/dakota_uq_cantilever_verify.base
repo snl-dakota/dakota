@@ -6,7 +6,7 @@ Sample moment statistics for each response function:
  response_fn_2  4.4362644920e-01  1.5448154942e-01  1.3467075304e-01  4.3369834779e-02
  response_fn_3  7.6330949366e-01  1.8023379300e-01  1.3597955733e-01  5.6840148880e-02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  6.2500000000e+00  6.2500000000e+00  0.0000000000e+00  0.0000000000e+00
  response_fn_2  4.4266896864e-01  4.4458392976e-01  1.5380748880e-01  1.5516158534e-01
  response_fn_3  7.6219240004e-01  7.6442658727e-01  1.7944736575e-01  1.8102719167e-01

@@ -10,6 +10,7 @@
 #include "CollabHybridMetaIterator.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
+#include "StudyRuntime.hpp"
 
 static const char rcsId[]="@(#) $Id: CollabHybridMetaIterator.cpp 6715 2010-04-02 21:58:15Z wjbohnh $";
 
@@ -19,18 +20,18 @@ namespace Dakota {
 CollabHybridMetaIterator::CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   MetaIterator(problem_db, parallel_lib), singlePassedModel(false)
   //hybridCollabType(
-  //  problem_db.get_string("method.hybrid.collaborative_type"))
+  //  problem_db.get<const String>("method.hybrid.collaborative_type"))
 {
   const StringArray& method_ptrs
-    = problem_db.get_sa("method.hybrid.method_pointers");
+    = problem_db.get<const StringArray>("method.hybrid.method_pointers");
   const StringArray& method_names
-    = problem_db.get_sa("method.hybrid.method_names");
+    = problem_db.get<const StringArray>("method.hybrid.method_names");
 
   if (!method_ptrs.empty())
     { lightwtMethodCtor = false; methodStrings = method_ptrs;  }
   else if (!method_names.empty()) {
     lightwtMethodCtor = true;    methodStrings = method_names;
-    modelStrings = problem_db.get_sa("method.hybrid.model_pointers");
+    modelStrings = problem_db.get<const StringArray>("method.hybrid.model_pointers");
     // define an array of null strings to use for set_db_model_nodes()
     if (modelStrings.empty()) modelStrings.resize(method_names.size());
     // allow input of single string
@@ -55,14 +56,14 @@ CollabHybridMetaIterator::
 CollabHybridMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   MetaIterator(problem_db, parallel_lib, model), singlePassedModel(true)
   //hybridCollabType(
-  //  problem_db.get_string("method.hybrid.collaborative_type"))
+  //  problem_db.get<const String>("method.hybrid.collaborative_type"))
 {
   const StringArray& method_ptrs
-    = problem_db.get_sa("method.hybrid.method_pointers");
+    = problem_db.get<const StringArray>("method.hybrid.method_pointers");
   const StringArray& method_names
-    = problem_db.get_sa("method.hybrid.method_names");
+    = problem_db.get<const StringArray>("method.hybrid.method_names");
   const StringArray& model_ptrs
-    = problem_db.get_sa("method.hybrid.model_pointers");
+    = problem_db.get<const StringArray>("method.hybrid.model_pointers");
 
   // process and validate method and model strings
   size_t i, num_iterators; String empty_str;
@@ -136,8 +137,8 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
   // from this point on, we can specialize logic in terms of iterator servers.
   // An idle partition need not instantiate iterators/models (empty Iterator
   // envelopes are adequate for serve_iterators()), so return now.  A dedicated
-  // scheduler processor is managed in IteratorScheduler::init_iterator().
-  if (iterSched.iteratorServerId > iterSched.numIteratorServers)
+  // scheduler processor is managed in IteratorExecutor::init_iterator().
+  if (iterSched.idle_partition())
     return;
 
   // Instantiate all Models and Iterators
@@ -159,32 +160,13 @@ void CollabHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 
 void CollabHybridMetaIterator::derived_set_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    size_t i, num_iterators = methodStrings.size();
-    for (i=0; i<num_iterators; ++i)
-      iterSched.set_iterator(*selectedIterators[i], si_pl_iter);
-  }
+  iterSched.set_child_iterators(selectedIterators, methodPCIter, pl_iter);
 }
 
 
 void CollabHybridMetaIterator::derived_free_communicators(ParLevLIter pl_iter)
 {
-  size_t mi_pl_index = methodPCIter->mi_parallel_level_index(pl_iter) + 1;
-  iterSched.update(methodPCIter, mi_pl_index);
-  if (iterSched.iteratorServerId <= iterSched.numIteratorServers) {
-    ParLevLIter si_pl_iter
-      = methodPCIter->mi_parallel_level_iterator(mi_pl_index);
-    size_t i, num_iterators = methodStrings.size();
-    for (i=0; i<num_iterators; ++i)
-      iterSched.free_iterator(*selectedIterators[i], si_pl_iter);
-  }
-
-  // deallocate the mi_pl parallelism level
-  iterSched.free_iterator_parallelism();
+  iterSched.free_child_iterators(selectedIterators, methodPCIter, pl_iter);
 }
 
 
@@ -194,8 +176,6 @@ void CollabHybridMetaIterator::core_run()
 
   bool lead_rank = iterSched.lead_rank();
   size_t i, num_iterators = methodStrings.size();
-  int server_id =  iterSched.iteratorServerId;
-  bool    rank0 = (iterSched.iteratorCommRank == 0);
   for (i=0; i<num_iterators; i++) {
 
     if (lead_rank)
@@ -207,8 +187,8 @@ void CollabHybridMetaIterator::core_run()
     // For graphics data, limit to iterator server comm leaders; this is further
     // segregated w/i initialize_graphics(): all iterator dedicated schedulers
     // stream tabular data, but only server 1 generates a graphics window.
-    if (rank0 && server_id > 0 && server_id <= iterSched.numIteratorServers)
-      curr_iterator.initialize_graphics(server_id);
+    if (iterSched.graphics_server())
+      curr_iterator.initialize_graphics(iterSched.iteratorServerId());
 
     iterSched.schedule_iterators(*this, curr_iterator);
   }
@@ -235,10 +215,10 @@ IntIntPair CollabHybridMetaIterator::estimate_partition_bounds()
 
   // now apply scheduling data for this level (recursion is complete)
   min_max.first = ProblemDescDB::min_procs_per_level(min_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers());
   min_max.second = ProblemDescDB::max_procs_per_level(max_procs,
-    iterSched.procsPerIterator, iterSched.numIteratorServers,
-    iterSched.iteratorScheduling, 1, false, maxIteratorConcurrency);
+    iterSched.procsPerIterator(), iterSched.numIteratorServers(),
+    iterSched.iteratorScheduling(), 1, false, maxIteratorConcurrency);
   return min_max;
 }
 

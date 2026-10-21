@@ -74,7 +74,7 @@ method
 # model                                     #s10,#s11
 #     id_model = 'SURROGATE'                #s10,#s11
 #     responses_pointer = 'SURROGATE_RESP'  #s10,#s11
-#     surrogate global                      #s10,#s11
+#     global_surrogate                      #s10,#s11
 #         dace_method_pointer = 'SAMPLING'  #s10,#s11
 #         polynomial quadratic              #s10,#s11
 

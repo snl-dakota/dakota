@@ -412,6 +412,10 @@ public:
   /// and optionally recurse into subModel
   void inactive_view(short view, bool recurse_flag = true) override;
 
+  /// Assign an inferred active view; recurse into subModel (legacy rule:
+  /// a RecastModel wrapper always passes the outer method's view down).
+  void assign_inferred_view(short view, const String& method_label) override;
+
   /// return the subModel interface identifier
   const String& interface_id() const override;
   /// if recurse_flag, return the subModel evaluation cache usage
@@ -1136,6 +1140,15 @@ inline void RecastModel::inactive_view(short view, bool recurse_flag)
   Model::inactive_view(view);
   if (recurse_flag)
     subModel->inactive_view(view, recurse_flag);
+}
+
+
+inline void RecastModel::assign_inferred_view(short view,
+                                              const String& method_label)
+{
+  // Recurse into subModel first, then assign to self.
+  subModel->assign_inferred_view(view, method_label);
+  Model::assign_inferred_view(view, method_label);
 }
 
 

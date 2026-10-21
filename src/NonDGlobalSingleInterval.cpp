@@ -23,6 +23,13 @@ NonDGlobalSingleInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
 { }
 
 
+NonDGlobalSingleInterval::
+NonDGlobalSingleInterval(std::shared_ptr<StudyServices> services,
+                         const IRStore& method_store, std::shared_ptr<Model> model):
+  NonDGlobalInterval(std::move(services), method_store, model)
+{ }
+
+
 NonDGlobalSingleInterval::~NonDGlobalSingleInterval()
 { }
 

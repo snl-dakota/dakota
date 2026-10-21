@@ -20,7 +20,7 @@ method,
 
 model,
   id_model = 'NONHIER'
-  surrogate ensemble
+  ensemble_surrogate
   truth_model = 'HF'
 
 model,

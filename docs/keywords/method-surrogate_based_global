@@ -26,7 +26,7 @@ Configuring the method:
 
 
 - The sub-method, specified with either :dakkw:`method-surrogate_based_global-method_pointer` or :dakkw:`method-surrogate_based_global-method_name` should typically be an optimizer that returns multiple final solutions, such as :dakkw:`method-moga` or :dakkw:`method-soga`.
-- The :dakkw:`method-surrogate_based_global-model_pointer` keyword must identify a surrogate model which includes an underlying truth model, typically via :dakkw:`model-surrogate-global-truth_model_pointer` or :dakkw:`model-surrogate-global-dace_method_pointer`
+- The :dakkw:`method-surrogate_based_global-model_pointer` keyword must identify a surrogate model which includes an underlying truth model, typically via :dakkw:`model-global_surrogate-truth_model_pointer` or :dakkw:`model-global_surrogate-dace_method_pointer`
 
 Workflow:
 

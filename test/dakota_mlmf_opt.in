@@ -26,7 +26,7 @@ method,
 
 model,
 	id_model = 'HIERARCH'
-	surrogate ensemble
+	ensemble_surrogate
 	  ordered_model_fidelities = 'LO' 'HI'
 	  correction additive first_order
 

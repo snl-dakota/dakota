@@ -1,4 +1,4 @@
-.. _topic-package_optpp:
+.. _`topic-package_optpp`:
 
 Package: OPT++
 ==============
@@ -23,11 +23,11 @@ The library also contains a direct search algorithm, PDS
 bound constraints.
 
 *Controls*
- -# ``max_iterations``
- -# ``max_function_evaluations``
- -# ``convergence_tolerance``
- -# ``output``
- -# ``speculative``
+ - ``max_iterations``
+ - ``max_function_evaluations``
+ - ``convergence_tolerance``
+ - ``output``
+ - ``speculative``
 
 
 

@@ -18,7 +18,7 @@ model,
 	id_model = 'SBGO_M'
 	variables_pointer  = 'SBGO_V'
 	responses_pointer  = 'SBGO_R'
-	surrogate global
+	global_surrogate
           dace_method_pointer = 'SAMPLING'
 	  gaussian_process surfpack
 #	  correction additive zeroth_order

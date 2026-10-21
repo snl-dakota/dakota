@@ -91,7 +91,7 @@ std::shared_ptr<Approximation> Approximation::
 get_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
            const String& approx_label)
 {
-  bool pw_decomp = problem_db.get_bool("model.surrogate.domain_decomp");
+  bool pw_decomp = problem_db.get<bool>("model.surrogate.domain_decomp");
   if (pw_decomp) {
     return std::make_shared<VPSApproximation>
       (problem_db, shared_data, approx_label);

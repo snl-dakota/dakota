@@ -11,7 +11,7 @@
 #define ENSEMBLE_SURR_MODEL_H
 
 #include "SurrogateModel.hpp"
-#include "DataModel.hpp"
+#include "DakotaModelEnums.hpp"
 
 namespace Dakota {
 
@@ -29,6 +29,7 @@ enum { DEFAULT_CORRECTION = 0, SINGLE_CORRECTION, FULL_MODEL_FORM_CORRECTION,
     tolerances, etc.). */
 
 class ParallelLibrary;
+class StudyServices;
 
 class EnsembleSurrModel: public SurrogateModel
 {
@@ -39,6 +40,11 @@ public:
   //
 
   EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  EnsembleSurrModel(const IRStore& model_store,
+                    std::shared_ptr<Model> truth_model,
+                    std::vector<std::shared_ptr<Model>> approximation_models,
+                    const Variables& variables, const Response& response,
+                    std::shared_ptr<StudyServices> services);
 
   //
   //- Heading: Member functions
@@ -204,6 +210,10 @@ protected:
   /// context and optionally recurse into
   void inactive_view(short view, bool recurse_flag = true) override;
 
+  /// Assign an inferred active view; recurse into approxModels and truthModel
+  /// following the same rule as inactive_view.
+  void assign_inferred_view(short view, const String& method_label) override;
+
   /// if recurse_flag, return true if evaluation cache usage in
   /// subordinate models {approxModels,truthModel}
   bool evaluation_cache(bool recurse_flag = true) const override;
@@ -350,6 +360,9 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// Initialize injected truth and approximation models for DI construction.
+  void initialize_subordinate_models();
 
   /// synchronize the HF model's solution level control with truthModelKey
   void assign_truth_key();

@@ -54,12 +54,34 @@ NLSSOLLeastSq::NLSSOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& paralle
 
   // invoke SOLBase set function (shared with NPSOLOptimizer)
   set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
-              probDescDB.get_int("method.npsol.verify_level"),
-              probDescDB.get_real("method.function_precision"),
-              probDescDB.get_real("method.npsol.linesearch_tolerance"),
+              probDescDB.get<int>("method.npsol.verify_level"),
+              probDescDB.get<const Real>("method.function_precision"),
+              probDescDB.get<const Real>("method.npsol.linesearch_tolerance"),
               maxIterations, constraintTol, convergenceTol,
 	      iteratedModel->gradient_type(),
 	      iteratedModel->fd_gradient_step_size());
+}
+
+
+/** This is the primary constructor.  It accepts a Model reference. */
+NLSSOLLeastSq::
+NLSSOLLeastSq(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	      std::shared_ptr<Model> model):
+  LeastSq(std::move(services), method_store, model,
+	  std::shared_ptr<TraitsBase>(new NLSSOLLeastSqTraits())),
+  SOLBase(model)
+{
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
+  // invoke SOLBase set function (shared with NPSOLOptimizer)
+  set_options(speculativeFlag, vendorNumericalGradFlag, outputLevel,
+              method_store.get<int>("npsol.verify_level"),
+              method_store.get<Real>("function_precision"),
+              method_store.get<Real>("npsol.linesearch_tolerance"),
+              maxIterations, constraintTol, convergenceTol,
+              iteratedModel->gradient_type(),
+              iteratedModel->fd_gradient_step_size());
 }
 
 

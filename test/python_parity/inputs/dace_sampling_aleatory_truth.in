@@ -1,0 +1,35 @@
+environment
+  method_pointer 'outer'
+method
+  id_method 'outer'
+  model_pointer 'surr'
+  sampling
+    samples 10 seed 5678 sample_type lhs
+model
+  id_model 'surr'
+  global_surrogate polynomial quadratic
+    truth_model_pointer 'truth'
+    dace_method_pointer 'dace'
+method
+  id_method 'dace'
+  model_pointer 'truth'
+  sampling
+    samples 16 seed 1234 sample_type lhs
+model
+  id_model 'truth'
+  simulation
+variables
+  continuous_design 2
+    initial_point 1.0 1.0
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+  uniform_uncertain 1
+    lower_bounds 0.5
+    upper_bounds 1.5
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+interface
+  analysis_drivers 'text_book' fork

@@ -13,7 +13,7 @@
 // * support input and output filters in Matlab
 
 #include "MatlabInterface.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "engine.h"
 
 namespace Dakota {

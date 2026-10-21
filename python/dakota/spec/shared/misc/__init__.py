@@ -1102,7 +1102,7 @@ class JoeKuo(DakotaBaseModel):
 
     joe_kuo: Literal[True] = DakotaField(
         default=True,
-        description="Generating matrices that provide up to 2\ :sup:`32` points in up to 250 dimensions",
+        description="Generating matrices that provide up to 2\\ :sup:`32` points in up to 250 dimensions",
         dakota={
             "materialization": [
                 {
@@ -1121,7 +1121,7 @@ class SobolOrder2(DakotaBaseModel):
 
     sobol_order_2: Literal[True] = DakotaField(
         default=True,
-        description="Generating matrices that provide up to 2\ :sup:`32` points in up to 1024 dimensions",
+        description="Generating matrices that provide up to 2\\ :sup:`32` points in up to 1024 dimensions",
         dakota={
             "materialization": [
                 {
@@ -4706,7 +4706,7 @@ class Kuo(DakotaBaseModel):
 
     kuo: Literal[True] = DakotaField(
         default=True,
-        description="A generating vector that provides up to 2\ :sup:`20` points in up to 3600 dimensions",
+        description="A generating vector that provides up to 2\\ :sup:`20` points in up to 3600 dimensions",
         dakota={
             "materialization": [
                 {
@@ -4725,7 +4725,7 @@ class CoolsKuoNuyens(DakotaBaseModel):
 
     cools_kuo_nuyens: Literal[True] = DakotaField(
         default=True,
-        description="A generating vector that provides up to 2\ :sup:`20` points in up to 250 dimensions",
+        description="A generating vector that provides up to 2\\ :sup:`20` points in up to 250 dimensions",
         dakota={
             "materialization": [
                 {

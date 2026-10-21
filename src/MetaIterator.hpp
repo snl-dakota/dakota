@@ -13,10 +13,15 @@
 #include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"
-#include "IteratorScheduler.hpp"
+#include "StudyRuntime.hpp"
 
 
 namespace Dakota {
+
+class StudyServices;
+
+class IRStore;
+class OutputManager;
 
 
 /// Base class for meta-iterators.
@@ -46,6 +51,10 @@ protected:
   MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
   /// alternate constructor
   MetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus study services
+  MetaIterator(std::shared_ptr<StudyServices> services,
+               const IRStore& method_store,
+               std::shared_ptr<Model> model);
   /// destructor
   ~MetaIterator() override;
 
@@ -91,7 +100,7 @@ protected:
   //
 
   /// scheduler for concurrent execution of Iterators
-  IteratorScheduler iterSched;
+  StudyRuntime::IteratorContext iterSched;
 
   /// maximum number of concurrent sub-iterator executions
   int maxIteratorConcurrency;

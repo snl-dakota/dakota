@@ -320,13 +320,28 @@ function(dakota_regression_test test_name test_ext serpar_string test_props
        list(APPEND copied_files_abs "${copied_file}")
      endforeach()
 
+    # Build the ENVIRONMENT property list for this test.
+    # Always set PYTHONPATH.  Forward the two baseline env vars only
+    # when they are already set in the cmake/ctest environment so that
+    # the default (no baselining) is truly the default.
+    #
+    # DAKOTA_TEST_BASELINE_NEW       -- write *.base.new alongside .tst
+    # DAKOTA_TEST_BASELINE_OVERWRITE -- overwrite the source baseline in-place
     if(WIN32)
-       set_tests_properties(${_par_mark}${test_name} PROPERTIES
-         ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+      set(_test_env "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
     else()
-      set_tests_properties(${_par_mark}${test_name} PROPERTIES
-        ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+      set(_test_env "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
     endif()
+    if(DEFINED ENV{DAKOTA_TEST_BASELINE_NEW})
+      list(APPEND _test_env
+        "DAKOTA_TEST_BASELINE_NEW=$ENV{DAKOTA_TEST_BASELINE_NEW}")
+    endif()
+    if(DEFINED ENV{DAKOTA_TEST_BASELINE_OVERWRITE})
+      list(APPEND _test_env
+        "DAKOTA_TEST_BASELINE_OVERWRITE=$ENV{DAKOTA_TEST_BASELINE_OVERWRITE}")
+    endif()
+    set_tests_properties(${_par_mark}${test_name} PROPERTIES
+      ENVIRONMENT "${_test_env}")
 
 
    endif()

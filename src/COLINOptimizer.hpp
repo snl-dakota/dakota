@@ -86,6 +86,9 @@ public:
 
   /// standard constructor
   COLINOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus optional runtime services
+  COLINOptimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+               std::shared_ptr<StudyServices> services);
   /// alternate constructor for on-the-fly instantiations
   COLINOptimizer(const String& method_name, std::shared_ptr<Model> model, int seed,
 		 size_t max_iter, size_t max_eval);
@@ -124,14 +127,14 @@ protected:
   
   /// convenience function for setting up the particular COLIN solver
   /// and appropriate Application
-  void solver_setup(unsigned short method_name);
+  void solver_setup(unsigned short method_name, const String* beta_solver_name = nullptr);
 
   /// sets up the random number generator for stochastic methods
   void set_rng(int seed);
 
   /// sets construct-time options for specific methods based on user
   /// specifications, including calling method-specific set functions
-  void set_solver_parameters();
+  void set_solver_parameters(const IRStore* method_store = nullptr);
 
   //
   //- Heading: runtime convenience member functions

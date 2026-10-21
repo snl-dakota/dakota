@@ -38,7 +38,7 @@ method,
 model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'LF_VARS'
-	surrogate ensemble
+	ensemble_surrogate
 	  ordered_model_fidelities = 'HF' #'LF'
 	  correction additive zeroth_order
 

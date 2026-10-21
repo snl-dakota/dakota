@@ -22,7 +22,7 @@ export/import context.
 - When importing tabular data, a warning will be generated if a specific number of data are expected, but extra is found and an error generated when there is insufficient data.
 - Some TPLs like SCOLIB and JEGA manage their own file I/O and only support the ``freeform`` option.
 Topics::
-file_formats
+
 Examples::
 Export a custom-annotated tabular file in Dakota 6.0 format, which
 contained only header and eval_id (no interface_id), and data for

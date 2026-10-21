@@ -4,22 +4,20 @@ Description::
 The DIviding RECTangles (DIRECT) optimization algorithm is a
 derivative free global optimization method that balances local search
 in promising regions of the design space with global search in
-unexplored regions. As shown in Figure 5.1, DIRECT adaptively
+unexplored regions. DIRECT adaptively
 subdivides the space of feasible design points so as to guarantee that
 iterates are generated in the neighborhood of a global minimum in
 finitely many iterations.
-
-\image html direct1.jpg "Figure 5.1 Design space partitioning with
-DIRECT" \image latex direct1.eps "Design space partitioning with
-DIRECT" width=10cm
 
 In practice, DIRECT has proven an effective heuristic for engineering
 design applications, for which it is able to quickly identify
 candidate solutions that can be further refined with fast local
 optimizers.
 
-*See the page :ref:`topic-package_scolib` for important information
-regarding all SCOLIB methods*
+.. note::
+
+    See the page :ref:`topic-package_scolib` for important information
+    regarding all SCOLIB methods.
 
 The DIRECT algorithm supports concurrency up to twice the number of
 variables being optimized.
@@ -45,12 +43,13 @@ that is suitable for most applications.
 *Stopping Critieria*
 
 DIRECT can be terminated with:
- \li :dakkw:`method-coliny_direct-max_function_evaluations`
- \li :dakkw:`method-coliny_direct-max_iterations`
- \li :dakkw:`method-coliny_direct-convergence_tolerance`
- \li :dakkw:`method-coliny_direct-solution_target`
- \li :dakkw:`method-coliny_direct-max_boxsize_limit`
- \li :dakkw:`method-coliny_direct-min_boxsize_limit` - most effective in practice
+
+* :dakkw:`method-coliny_direct-max_function_evaluations`
+* :dakkw:`method-coliny_direct-max_iterations`
+* :dakkw:`method-coliny_direct-convergence_tolerance`
+* :dakkw:`method-coliny_direct-solution_target`
+* :dakkw:`method-coliny_direct-max_boxsize_limit`
+* :dakkw:`method-coliny_direct-min_boxsize_limit` - most effective in practice
 
 
 *Expected HDF5 Output*

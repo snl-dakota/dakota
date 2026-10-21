@@ -19,7 +19,7 @@ incrementing by 2, and limited at order 6.
 
     model,
      id_model = 'FT'
-     surrogate global function_train
+     global_surrogate function_train
        start_rank = 4
        adapt_order  start_order = 2  kick_order = 2  max_order = 6
        solver_tolerance   = 1e-12

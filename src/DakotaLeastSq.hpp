@@ -34,6 +34,10 @@ protected:
   LeastSq(std::shared_ptr<TraitsBase> traits);
   /// standard constructor
   LeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
+  /// DI constructor
+  LeastSq(std::shared_ptr<StudyServices> services,
+          const IRStore& method_store, std::shared_ptr<Model> model,
+          std::shared_ptr<TraitsBase> traits);
   /// alternate "on the fly" constructor
   LeastSq(unsigned short method_name, std::shared_ptr<Model> model, std::shared_ptr<TraitsBase> traits);
   /// destructor

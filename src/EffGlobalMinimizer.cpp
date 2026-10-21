@@ -16,6 +16,7 @@
 #include "DakotaApproximation.hpp"
 #include "DakotaSurrogatesGP.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "DakotaGraphics.hpp"
 #ifdef HAVE_NCSU
 #include "NCSUOptimizer.hpp"
@@ -37,10 +38,10 @@ EffGlobalMinimizer::
 EffGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   SurrBasedMinimizer(problem_db, parallel_lib, model,
 		     std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
-  batchSize(probDescDB.get_int("method.batch_size")),
-  batchSizeExploration(probDescDB.get_int("method.batch_size.exploration")),
+  batchSize(probDescDB.get<int>("method.batch_size")),
+  batchSizeExploration(probDescDB.get<int>("method.batch_size.exploration")),
   dataOrder(1), batchEvalId(1),
-  batchAsynch(probDescDB.get_short("method.synchronization") ==
+  batchAsynch(probDescDB.get<short>("method.synchronization") ==
 	      NONBLOCKING_SYNCHRONIZATION)
 {
   // substract the total batchSize from batchSizeExploration
@@ -48,7 +49,7 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std
 
   // historical default convergence tolerances
   if (convergenceTol < 0.) convergenceTol = 1.e-12;
-  distanceTol = probDescDB.get_real("method.x_conv_tol");
+  distanceTol = probDescDB.get<const Real>("method.x_conv_tol");
   if (distanceTol < 0.) distanceTol = 1.e-8;
 
   bestVariablesArray.push_back(iteratedModel->current_variables().copy());
@@ -56,37 +57,97 @@ EffGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std
 
   // Always build a global Gaussian process model.  No correction is needed.
   String approx_type;
-  switch (probDescDB.get_short("method.nond.emulator")) {
+  switch (probDescDB.get<short>("method.nond.emulator")) {
   case GP_EMULATOR:     approx_type = "global_gaussian";        break;
   case EXPGP_EMULATOR:  approx_type = "global_exp_gauss_proc";  break;
   default:              approx_type = "global_kriging";         break;
   }
 
-  int db_samples = probDescDB.get_int("method.samples");
+  int db_samples = probDescDB.get<int>("method.samples");
   int samples = (db_samples > 0) ? db_samples :
     (numContinuousVars+1)*(numContinuousVars+2)/2;
   // get point samples file
   const String& import_pts_file
-    = probDescDB.get_string("method.import_build_points_file");
+    = probDescDB.get<const String>("method.import_build_points_file");
   String sample_reuse;
   if (!import_pts_file.empty()) // TO DO: allow reuse separate from import
     { samples = 0; sample_reuse = "all"; }
   else sample_reuse = "none";
 
   initialize_sub_problem(approx_type, samples,
-			 probDescDB.get_int("method.random_seed"),
-			 probDescDB.get_bool("method.derivative_usage"),
-			 sample_reuse, import_pts_file,
-			 probDescDB.get_ushort("method.import_build_format"),
-			 probDescDB.get_bool("method.import_build_active_only"),
-			 probDescDB.get_string(
-			   "method.export_approx_points_file"),
-			 probDescDB.get_ushort("method.export_approx_format"));
+		 probDescDB.get<int>("method.random_seed"),
+		 probDescDB.get<bool>("method.derivative_usage"),
+		 sample_reuse, import_pts_file,
+		 probDescDB.get<unsigned short>("method.import_build_format"),
+		 probDescDB.get<bool>("method.import_build_active_only"),
+		 probDescDB.get<const String>("method.export_approx_points_file"),
+		 probDescDB.get<unsigned short>("method.export_approx_format"));
 
   if (approx_type == "global_exp_gauss_proc") {
 #if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
     const String& advanced_options_file
-      = problem_db.get_string("method.advanced_options_file");
+      = problem_db.get<const String>("method.advanced_options_file");
+    if (!advanced_options_file.empty())
+      set_model_gp_options(*fHatModel, advanced_options_file);
+#else
+    Cerr << "\nError: efficient_global does not support global_exp_gauss_proc "
+         << "when Dakota is built without DAKOTA_MODULE_SURROGATES enabled." << std::endl;
+    abort_handler(METHOD_ERROR);
+#endif
+  }
+}
+
+
+EffGlobalMinimizer::
+EffGlobalMinimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                   std::shared_ptr<StudyServices> services):
+  SurrBasedMinimizer(std::move(services), method_store, model,
+                     std::shared_ptr<TraitsBase>(new EffGlobalTraits())),
+  batchSize(method_store.get<int>("batch_size")),
+  batchSizeExploration(method_store.get<int>("batch_size.exploration")),
+  dataOrder(1), batchEvalId(1),
+  batchAsynch(method_store.get<short>("synchronization") ==
+              NONBLOCKING_SYNCHRONIZATION)
+{
+  batchSizeAcquisition = batchSize - batchSizeExploration;
+
+  if (convergenceTol < 0.) convergenceTol = 1.e-12;
+  distanceTol = method_store.get<Real>("x_conv_tol");
+  if (distanceTol < 0.) distanceTol = 1.e-8;
+
+  bestVariablesArray.push_back(iteratedModel->current_variables().copy());
+  initialize_multipliers();
+
+  String approx_type;
+  switch (method_store.get<short>("nond.emulator")) {
+  case GP_EMULATOR:     approx_type = "global_gaussian";        break;
+  case EXPGP_EMULATOR:  approx_type = "global_exp_gauss_proc";  break;
+  default:              approx_type = "global_kriging";         break;
+  }
+
+  int db_samples = method_store.get<int>("samples");
+  int samples = (db_samples > 0) ? db_samples :
+    (numContinuousVars+1)*(numContinuousVars+2)/2;
+  const String& import_pts_file
+    = method_store.get<String>("import_build_points_file");
+  String sample_reuse;
+  if (!import_pts_file.empty())
+    { samples = 0; sample_reuse = "all"; }
+  else sample_reuse = "none";
+
+  initialize_sub_problem(approx_type, samples,
+                         method_store.get<int>("random_seed"),
+                         method_store.get<bool>("derivative_usage"),
+                         sample_reuse, import_pts_file,
+                         method_store.get<unsigned short>("import_build_format"),
+                         method_store.get<bool>("import_build_active_only"),
+                         method_store.get<String>("export_approx_points_file"),
+                         method_store.get<unsigned short>("export_approx_format"));
+
+  if (approx_type == "global_exp_gauss_proc") {
+#if defined(HAVE_DAKOTA_SURROGATES) && defined(HAVE_ROL)
+    const String& advanced_options_file
+      = method_store.get<String>("advanced_options_file");
     if (!advanced_options_file.empty())
       set_model_gp_options(*fHatModel, advanced_options_file);
 #else
@@ -115,7 +176,7 @@ EffGlobalMinimizer(std::shared_ptr<Model> model, const String& approx_type, int 
   // historical default convergence tolerances
   //if (convergenceTol < 0.)
     convergenceTol = 1.e-12;
-  //distanceTol = probDescDB.get_real("method.x_conv_tol");
+  //distanceTol = probDescDB.get<const Real>("method.x_conv_tol");
   //if (distanceTol < 0.)
     distanceTol = 1.e-8;
 
@@ -205,7 +266,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   abort_handler(METHOD_ERROR);
 #endif //HAVE_NCSU
 
-  // IteratorScheduler::init_iterator() initializes the parallel configuration
+  // IteratorExecutor::init_iterator() initializes the parallel configuration
   // for EffGlobalMinimizer + iteratedModel using EffGlobalMinimizer's
   // maxEvalConcurrency.  During fHatModel construction above,
   // DataFitSurrModel::derived_init_communicators() initializes the parallel
@@ -214,7 +275,7 @@ initialize_sub_problem(const String& approx_type, int samples, int seed,
   // is that used by dace_iterator within the initial GP construction, but the
   // EffGlobalMinimizer maxEvalConcurrency must still be set so as to avoid
   // parallel config errors resulting from avail_procs > max_concurrency within
-  // IteratorScheduler::init_iterator().  A max of the local derivative
+  // IteratorExecutor::init_iterator().  A max of the local derivative
   // concurrency and the DACE concurrency is used for this purpose.
   maxEvalConcurrency = std::max(maxEvalConcurrency,
 				dace_iterator->maximum_evaluation_concurrency());

@@ -47,7 +47,7 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
 			std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, parallel_lib, model),
   activeBudget((Real)maxFunctionEvals),
-  truthFixedByPilot(problem_db.get_bool("method.nond.truth_fixed_by_pilot")),
+  truthFixedByPilot(problem_db.get<bool>("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
   reorderModelsOnTheFly(false), // active for MFMC
@@ -58,7 +58,7 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
   //   fallback, but since this is a runtime detection, go ahead and enforce
   //   that a numerical solution fallback is available.
   optSubProblemSolver = sub_optimizer_select(
-    probDescDB.get_ushort("method.nond.opt_subproblem_solver"),
+    probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"),
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
   if (!optSubProblemSolver) // error messages output by sub_optimizer_select()
     abort_handler(METHOD_ERROR);
@@ -73,6 +73,41 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
   // else we rely on online cost recovery through response metadata
   costSource = configure_cost(num_forms_resolutions, sequenceType,
 			      sequenceCost, costMetadataIndices);
+}
+
+
+NonDNumericAllocSampling::
+NonDNumericAllocSampling(std::shared_ptr<StudyServices> services,
+			 const IRStore& method_store,
+			 std::shared_ptr<Model> model):
+  NonDEnsembleSampling(std::move(services), method_store, model),
+  activeBudget((Real)maxFunctionEvals),
+  truthFixedByPilot(method_store.get<bool>("nond.truth_fixed_by_pilot")),
+  analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
+  hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
+  reorderModelsOnTheFly(false), // active for MFMC
+  recurConversion(false)        // protect cyclic estvar/estvar ratio conversion
+{
+  // solver(s) that perform the numerical solution for resource allocations
+  // > Note: this is not a hard error for analytic MFMC that doesn't require
+  //   fallback, but since this is a runtime detection, go ahead and enforce
+  //   that a numerical solution fallback is available.
+  optSubProblemSolver = sub_optimizer_select(
+    method_store.get<unsigned short>("nond.opt_subproblem_solver"),
+    SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
+  if (!optSubProblemSolver) // error messages output by sub_optimizer_select()
+    abort_handler(METHOD_ERROR);
+
+  size_t num_forms_resolutions;
+  configure_enumeration(num_forms_resolutions, sequenceType);
+  numApprox = num_forms_resolutions - 1;
+  if (methodName != MULTILEVEL_BLUE) // else deferred until ML BLUE ctor
+    numGroups = num_forms_resolutions;
+
+  // Precedence: if solution costs provided, then we use them;
+  // else we rely on online cost recovery through response metadata
+  costSource = configure_cost(num_forms_resolutions, sequenceType,
+                              sequenceCost, costMetadataIndices);
 }
 
 

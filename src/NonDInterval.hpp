@@ -40,6 +40,8 @@ public:
   //
 
   NonDInterval(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  NonDInterval(std::shared_ptr<StudyServices> services,
+               const IRStore& method_store, std::shared_ptr<Model> model); ///< DI constructor
   ~NonDInterval() override;                                       ///< destructor
 
   //
@@ -63,6 +65,8 @@ protected:
   //
   //- Heading: Virtual member function redefinitions
   //
+
+  void initialize(bool reliability_levels_nonempty);
 
   /// initialize finalStatistics for belief/plausibility results sets
   void initialize_final_statistics() override;

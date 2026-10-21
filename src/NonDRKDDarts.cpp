@@ -46,9 +46,9 @@ static const char rcsId[] = "@(#) $Id: NonDRKDDart.cpp 6080 2009-09-08 19:03:20Z
 namespace Dakota {
 
 NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
-  NonD(problem_db, parallel_lib, model), seed(probDescDB.get_int("method.random_seed")),
-  emulatorSamples(probDescDB.get_int("method.nond.samples_on_emulator")),
-  samples(probDescDB.get_int("method.build_samples"))
+  NonD(problem_db, parallel_lib, model), seed(probDescDB.get<int>("method.random_seed")),
+  emulatorSamples(probDescDB.get<int>("method.nond.samples_on_emulator")),
+  samples(probDescDB.get<int>("method.build_samples"))
 {
     // Constructor
     std::cout << "------------------" << std::endl;
@@ -57,10 +57,26 @@ NonDRKDDarts::NonDRKDDarts(ProblemDescDB& problem_db, ParallelLibrary& parallel_
     
     if (emulatorSamples==0) emulatorSamples = 1E6;
 }
-    // --------------------------
-    // Destructor
-    NonDRKDDarts::~NonDRKDDarts()
-    { }
+
+NonDRKDDarts::
+NonDRKDDarts(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	     std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model),
+  seed(method_store.get<int>("random_seed")),
+  emulatorSamples(method_store.get<int>("nond.samples_on_emulator")),
+  samples(method_store.get<int>("build_samples"))
+{
+    // Constructor
+    std::cout << "------------------" << std::endl;
+    std::cout << "*** LAUNCH RKD ***" << std::endl;
+    std::cout << "------------------" << std::endl;
+
+    if (emulatorSamples==0) emulatorSamples = 1E6;
+}
+
+
+NonDRKDDarts::~NonDRKDDarts()
+{ }
 
 bool NonDRKDDarts::resize()
 {

@@ -20,7 +20,7 @@ method
 
 model,                                         
         id_model = 'SURR'    			 
-        surrogate global,			 
+        global_surrogate,			 
 	  truth_model_pointer = 'TRUTH'
           reuse_samples all
 	  gaussian_process		     #s0,#s1

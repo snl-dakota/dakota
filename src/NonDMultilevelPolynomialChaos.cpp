@@ -29,13 +29,13 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
 			      ParallelLibrary& parallel_lib,
 			      std::shared_ptr<Model> model):
   NonDPolynomialChaos(DEFAULT_METHOD, problem_db, parallel_lib, model), // bypass PCE ctor
-  expOrderSeqSpec(problem_db.get_usa("method.nond.expansion_order_sequence")),
-  expSamplesSeqSpec(problem_db.get_sza("method.nond.expansion_samples_sequence")),
-  quadOrderSeqSpec(problem_db.get_usa("method.nond.quadrature_order_sequence")),
-  ssgLevelSeqSpec(problem_db.get_usa("method.nond.sparse_grid_level_sequence")),
+  expOrderSeqSpec(problem_db.get<const UShortArray>("method.nond.expansion_order_sequence")),
+  expSamplesSeqSpec(problem_db.get<const SizetArray>("method.nond.expansion_samples_sequence")),
+  quadOrderSeqSpec(problem_db.get<const UShortArray>("method.nond.quadrature_order_sequence")),
+  ssgLevelSeqSpec(problem_db.get<const UShortArray>("method.nond.sparse_grid_level_sequence")),
   sequenceIndex(0) //resizedFlag(false), callResize(false)
 {
-  randomSeedSeqSpec = problem_db.get_sza("method.random_seed_sequence");
+  randomSeedSeqSpec = problem_db.get<const SizetArray>("method.random_seed_sequence");
 
   assign_modes();
   configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
@@ -51,7 +51,7 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
   // --------------------
   // Data import settings
   // --------------------
-  String pt_reuse = probDescDB.get_string("method.nond.point_reuse");
+  String pt_reuse = probDescDB.get<const String>("method.nond.point_reuse");
   if (!importBuildPointsFile.empty() && pt_reuse.empty())
     pt_reuse = "all"; // reassign default if data import
 
@@ -66,8 +66,8 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
   // -------------------------
   std::shared_ptr<Iterator> u_space_sampler;
   String approx_type;
-  unsigned short sample_type = probDescDB.get_ushort("method.sample_type");
-  const String& rng = probDescDB.get_string("method.random_number_generator");
+  unsigned short sample_type = probDescDB.get<unsigned short>("method.sample_type");
+  const String& rng = probDescDB.get<const String>("method.random_number_generator");
 
   UShortArray exp_orders; // defined for expansion_samples/regression
   configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
@@ -77,10 +77,10 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
       !config_expectation(expansion_samples(), sample_type, random_seed(), rng,
 	u_space_sampler, g_u_model, approx_type) &&
 	!config_regression(exp_orders, collocation_points(),
-	probDescDB.get_real("method.nond.collocation_ratio_terms_order"),
-	probDescDB.get_short("method.nond.regression_type"),
-	probDescDB.get_short("method.nond.least_squares_regression_type"),
-	probDescDB.get_usa("method.nond.tensor_grid_order"), sample_type,
+	probDescDB.get<const Real>("method.nond.collocation_ratio_terms_order"),
+	probDescDB.get<short>("method.nond.regression_type"),
+	probDescDB.get<short>("method.nond.least_squares_regression_type"),
+	probDescDB.get<const UShortArray>("method.nond.tensor_grid_order"), sample_type,
 	random_seed(), rng, pt_reuse, u_space_sampler, g_u_model, approx_type)){
     Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
 	 << "constructor." << std::endl;
@@ -106,26 +106,131 @@ NonDMultilevelPolynomialChaos(ProblemDescDB& problem_db,
   uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
     g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
     corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
-    probDescDB.get_ushort("method.import_build_format"),
-    probDescDB.get_bool("method.import_build_active_only"),
-    probDescDB.get_string("method.export_approx_points_file"),
-    probDescDB.get_ushort("method.export_approx_format"));
+    probDescDB.get<unsigned short>("method.import_build_format"),
+    probDescDB.get<bool>("method.import_build_active_only"),
+    probDescDB.get<const String>("method.export_approx_points_file"),
+    probDescDB.get<unsigned short>("method.export_approx_format"));
   initialize_u_space_model();
 
   // -------------------------------------
   // Construct expansionSampler, if needed
   // -------------------------------------
-  construct_expansion_sampler(problem_db.get_ushort("method.sample_type"),
-    problem_db.get_string("method.random_number_generator"),
-    problem_db.get_ushort("method.nond.integration_refinement"),
-    problem_db.get_iv("method.nond.refinement_samples"),
-    probDescDB.get_string("method.import_approx_points_file"),
-    probDescDB.get_ushort("method.import_approx_format"),
-    probDescDB.get_bool("method.import_approx_active_only"));
+  construct_expansion_sampler(problem_db.get<unsigned short>("method.sample_type"),
+    problem_db.get<const String>("method.random_number_generator"),
+    problem_db.get<unsigned short>("method.nond.integration_refinement"),
+    problem_db.get<const IntVector>("method.nond.refinement_samples"),
+    probDescDB.get<const String>("method.import_approx_points_file"),
+    probDescDB.get<unsigned short>("method.import_approx_format"),
+    probDescDB.get<bool>("method.import_approx_active_only"));
 
   if (parallelLib.command_line_check())
     Cout << "\nPolynomial_chaos construction completed: initial grid size of "
 	 << numSamplesOnModel << " evaluations to be performed." << std::endl;
+}
+
+
+NonDMultilevelPolynomialChaos::
+NonDMultilevelPolynomialChaos(std::shared_ptr<StudyServices> services,
+			      const IRStore& method_store,
+			      std::shared_ptr<Model> model):
+  NonDPolynomialChaos(DEFAULT_METHOD, std::move(services), method_store, model), // bypass PCE ctor
+  expOrderSeqSpec(method_store.get<UShortArray>("nond.expansion_order_sequence")),
+  expSamplesSeqSpec(method_store.get<SizetArray>("nond.expansion_samples_sequence")),
+  quadOrderSeqSpec(method_store.get<UShortArray>("nond.quadrature_order_sequence")),
+  ssgLevelSeqSpec(method_store.get<UShortArray>("nond.sparse_grid_level_sequence")),
+  sequenceIndex(0) //resizedFlag(false), callResize(false)
+{
+  randomSeedSeqSpec = method_store.get<SizetArray>("random_seed_sequence");
+
+  assign_modes();
+  configure_1d_sequence(numSteps, secondaryIndex, sequenceType);
+  costSource
+    = initialize_costs(sequenceCost, modelCostSpec, costMetadataIndices);
+
+  // ----------------
+  // Resolve settings
+  // ----------------
+  short data_order;
+  resolve_inputs(uSpaceType, data_order);
+
+  // --------------------
+  // Data import settings
+  // --------------------
+  String pt_reuse = method_store.get<String>("nond.point_reuse");
+  if (!importBuildPointsFile.empty() && pt_reuse.empty())
+    pt_reuse = "all"; // reassign default if data import
+
+  // -------------------
+  // Recast g(x) to G(u)
+  // -------------------
+  auto g_u_model = std::make_shared<ProbabilityTransformModel>(
+    iteratedModel, uSpaceType); // retain dist bounds
+
+  // -------------------------
+  // Construct u_space_sampler
+  // -------------------------
+  std::shared_ptr<Iterator> u_space_sampler;
+  String approx_type;
+  unsigned short sample_type = method_store.get<unsigned short>("sample_type");
+  const String& rng = method_store.get<String>("random_number_generator");
+
+  UShortArray exp_orders; // defined for expansion_samples/regression
+  configure_expansion_orders(expansion_order(), dimPrefSpec, exp_orders);
+
+  if (!config_integration(quadrature_order(), sparse_grid_level(), cubIntSpec,
+        u_space_sampler, g_u_model, approx_type) &&
+      !config_expectation(expansion_samples(), sample_type, random_seed(), rng,
+        u_space_sampler, g_u_model, approx_type) &&
+        !config_regression(exp_orders, collocation_points(),
+        method_store.get<Real>("nond.collocation_ratio_terms_order"),
+        method_store.get<short>("nond.regression_type"),
+        method_store.get<short>("nond.least_squares_regression_type"),
+        method_store.get<UShortArray>("nond.tensor_grid_order"), sample_type,
+        random_seed(), rng, pt_reuse, u_space_sampler, g_u_model, approx_type)){
+    Cerr << "Error: incomplete configuration in NonDMultilevelPolynomialChaos "
+         << "constructor." << std::endl;
+    abort_handler(METHOD_ERROR);
+  }
+
+  // Configure settings for ML allocation (follows solver type config)
+  assign_allocation_control();
+
+  // --------------------------------
+  // Construct G-hat(u) = uSpaceModel
+  // --------------------------------
+  // G-hat(u) uses an orthogonal polynomial approximation over the
+  // active/uncertain variables (using same view as iteratedModel/g_u_model:
+  // not the typical All view for DACE).  No correction is employed.
+  // *** Note: for PCBDO with polynomials over {u}+{d}, change view to All.
+  short corr_order = -1, corr_type = NO_CORRECTION;
+  const ActiveSet& recast_set = g_u_model->current_response().active_set();
+  // DFSModel consumes QoI aggregations; supports surrogate grad evals at most
+  ShortArray pce_asv(g_u_model->qoi(), 3); // for stand alone mode
+  ActiveSet  pce_set(pce_asv, recast_set.derivative_vector());
+  const ShortShortPair& pce_view = g_u_model->current_variables().view();
+  uSpaceModel = std::make_shared<DataFitSurrModel>(u_space_sampler,
+    g_u_model, pce_set, pce_view, approx_type, exp_orders, corr_type,
+    corr_order, data_order, outputLevel, pt_reuse, importBuildPointsFile,
+    method_store.get<unsigned short>("import_build_format"),
+    method_store.get<bool>("import_build_active_only"),
+    method_store.get<String>("export_approx_points_file"),
+    method_store.get<unsigned short>("export_approx_format"));
+  initialize_u_space_model();
+
+  // -------------------------------------
+  // Construct expansionSampler, if needed
+  // -------------------------------------
+  construct_expansion_sampler(method_store.get<unsigned short>("sample_type"),
+    method_store.get<String>("random_number_generator"),
+    method_store.get<unsigned short>("nond.integration_refinement"),
+    method_store.get<IntVector>("nond.refinement_samples"),
+    method_store.get<String>("import_approx_points_file"),
+    method_store.get<unsigned short>("import_approx_format"),
+    method_store.get<bool>("import_approx_active_only"));
+
+  if (parallelLib.command_line_check())
+    Cout << "\nPolynomial_chaos construction completed: initial grid size of "
+         << numSamplesOnModel << " evaluations to be performed." << std::endl;
 }
 
 

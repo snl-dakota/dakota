@@ -13,7 +13,7 @@ environment,
 
 #model,						#s1
 #	id_model = 'SURROGATE'			#s1
-#	surrogate global		      	#s1	
+#	global_surrogate		      	#s1
 #	  dace_method_pointer = 'SAMPLING' 	#s1
 #	  use_derivatives			#s1	
 #	  gaussian_process surfpack		#s1	

@@ -1,0 +1,87 @@
+namespace Dakota {
+
+/** \page StudyRuntimeDesign StudyRuntime Design Intent
+
+\section StudyRuntimePurpose Purpose
+
+StudyRuntime is the top-level execution-facing abstraction for a
+constructed Dakota study graph. Its job is to give callers a single
+runtime object they can use to execute an already-constructed top-level
+Iterator in library mode, while keeping runtime concerns separate from
+component semantics.
+
+The key idea is that study construction and study execution are distinct
+concerns. Models and iterators describe what the study means. StudyRuntime
+describes how that already-constructed study is executed with a particular
+ParallelLibrary and OutputManager.
+
+\section StudyRuntimeResponsibilities Responsibilities
+
+StudyRuntime has two roles.
+
+First, it is the direct execution entry point for top-level API use. A
+library-mode caller can construct semantic Dakota objects and then ask a
+StudyRuntime to initialize communicators, execute the top-level iterator,
+and tear communicators down.
+
+Second, it acts as the runtime-side factory for IteratorContext objects.
+That gives subordinate-execution clients such as NestedModel and the
+meta-iterators a way to obtain execution helpers tied to the same runtime
+services as the rest of the study.
+
+\section StudyRuntimeNotPurpose What It Is Not
+
+StudyRuntime is not intended to hold the semantic definition of a study.
+It does not define variable mappings, response mappings, nested-study
+meaning, or optimization/UQ algorithm behavior.
+
+It is also not currently the main home of the low-level execution
+mechanics. Much of the concrete MPI-aware iterator execution logic still
+lives in IteratorExecutor and in existing iterator/model lifecycle code.
+Today StudyRuntime is more facade than engine.
+
+\section StudyRuntimeStable Stable Intent
+
+The following ideas are intended to be relatively stable.
+
+<ul>
+<li>Top-level execution should be expressed as a runtime operation, not as an
+intrinsic semantic operation of an Iterator or Model.</li>
+<li>StudyRuntime should be the public-ish runtime handle for library-mode
+execution of a constructed study graph.</li>
+<li>StudyRuntime should define the boundary between semantic study objects and
+runtime execution concerns.</li>
+</ul>
+
+\section StudyRuntimeExpectedChange Expected Evolution
+
+The implementation under this abstraction is expected to evolve.
+
+Today StudyRuntime is intentionally thin. Over time, more execution policy
+may migrate behind this boundary. Examples include more unified handling of
+top-level and subordinate execution, additional communicator lifecycle
+coordination, and a cleaner home for execution policies that currently live
+in callers or in IteratorExecutor.
+
+In other words, the abstraction boundary is intended to remain, even though
+the amount of behavior living behind it may grow.
+
+\section StudyRuntimeRelationship Relationship To IteratorContext And IteratorExecutor
+
+StudyRuntime is the runtime-level handle. IteratorContext is the
+subordinate-execution helper created from that runtime for one specific
+sub-iterator relationship. IteratorExecutor is the lower-level mechanism
+that actually performs most of the iterator execution work.
+
+A top-level API user generally interacts directly with StudyRuntime.
+Dakota internals that need subordinate execution usually interact with an
+IteratorContext, which in turn uses IteratorExecutor and sometimes routes
+operations through StudyRuntime.
+
+\section StudyRuntimeSeeAlso See Also
+
+See \ref RuntimeExecutionDesign for the subsystem overview.
+
+*/
+
+} // namespace Dakota

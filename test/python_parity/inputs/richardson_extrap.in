@@ -1,0 +1,21 @@
+environment
+  method_pointer 'main'
+method
+  id_method 'main'
+  model_pointer 'target'
+  richardson_extrap
+    estimate_order
+    refinement_rate 2.
+model
+  id_model 'target'
+  simulation
+variables
+  continuous_state 1
+    initial_state 8
+    descriptors 'resolution'
+responses
+  response_functions 1
+  no_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py richardson' fork

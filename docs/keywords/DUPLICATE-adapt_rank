@@ -21,7 +21,7 @@ incrementing by 2, and limited at rank 10.
 
     model,
      id_model = 'FT'
-     surrogate global function_train
+     global_surrogate function_train
        start_order = 5
        adapt_rank  start_rank = 2  kick_rank = 2  max_rank = 10
        solver_tolerance   = 1e-12

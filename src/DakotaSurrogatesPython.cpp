@@ -27,9 +27,9 @@ SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		const String& approx_label):
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
 {
-  moduleFile = problem_db.get_string("model.surrogate.class_path_and_name");
+  moduleFile = problem_db.get<const String>("model.surrogate.class_path_and_name");
 //  surrogateOpts.set("advanced_options_file",
-//		    problem_db.get_string("model.advanced_options_file"));
+//		    problem_db.get<const String>("model.advanced_options_file"));
 
   // validate supported metrics - can this be ascertained from python? RWH
   std::set<std::string> allowed_metrics =
@@ -49,9 +49,9 @@ SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		const StringArray& approx_labels):
   SurrogatesBaseApprox(problem_db, shared_data, approx_labels)
 {
-  moduleFile = problem_db.get_string("model.surrogate.class_path_and_name");
+  moduleFile = problem_db.get<const String>("model.surrogate.class_path_and_name");
 //  surrogateOpts.set("advanced_options_file",
-//		    problem_db.get_string("model.advanced_options_file"));
+//		    problem_db.get<const String>("model.advanced_options_file"));
 
   // validate supported metrics - can this be ascertained from python? RWH
   std::set<std::string> allowed_metrics =

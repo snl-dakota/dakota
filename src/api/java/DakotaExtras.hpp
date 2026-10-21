@@ -17,11 +17,6 @@
 #include "DakotaInterface.hpp"
 
 namespace Dakota {
-  DataMethodRep* dataMethodRep(DataMethod &dm);
-  DataVariablesRep* dataVarsRep(DataVariables &dm);
-  DataInterfaceRep* dataIfaceRep(DataInterface &dm);
-  DataResponsesRep* dataRespRep(DataResponses &dm);
-
   std::vector<std::string> active_cr_variable_labels(const Variables& vars);
   std::vector<std::string> active_di_variable_labels(const Variables& vars);
   std::vector<std::string> active_dr_variable_labels(const Variables& vars);

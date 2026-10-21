@@ -41,7 +41,7 @@ Examples::
     
     model
       id_model = 'SURR'
-        surrogate global,
+        global_surrogate,
         dace_method_pointer = 'DACE'
         polynomial quadratic
     

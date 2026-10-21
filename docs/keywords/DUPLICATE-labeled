@@ -25,7 +25,7 @@ about the results file format.
 <p> By default, Dakota does not require labels for function values, and
 ignores them if they are present.</p>
 Topics::
-file_formats
+
 Examples::
 
 Theory::

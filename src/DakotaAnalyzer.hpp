@@ -12,11 +12,17 @@
 
 #include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
+#include "IteratorViewRequest.hpp"
 #include "ParamResponsePair.hpp"
 //#include "DakotaResponse.hpp"
 
 
 namespace Dakota {
+
+class StudyServices;
+
+class IRStore;
+class OutputManager;
 
 /// Base class for NonD, DACE, and ParamStudy branches of the iterator
 /// hierarchy.
@@ -58,6 +64,10 @@ protected:
   Analyzer();
   /// standard constructor
   Analyzer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor using method IR plus optional runtime services
+  Analyzer(std::shared_ptr<StudyServices> services,
+           const IRStore& method_store, std::shared_ptr<Model> model,
+           const ViewRequest& view_req);
   /// alternate constructor for instantiations "on the fly" with a Model
   Analyzer(unsigned short method_name, std::shared_ptr<Model> model);
   /// alternate constructor for instantiations "on the fly" with a Model

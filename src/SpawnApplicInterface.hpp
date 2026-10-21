@@ -12,8 +12,12 @@
 
 #include "ProcessHandleApplicInterface.hpp"
 
+#include <memory>
 
 namespace Dakota {
+
+class IRStore;
+class StudyServices;
 
 /// Derived application interface class which spawns simulation codes
 /// using spawnvp.
@@ -31,6 +35,9 @@ public:
 
   /// constructor
   SpawnApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  /// DI constructor from a materialized interface IR store
+  SpawnApplicInterface(const IRStore& interface_store,
+                       std::shared_ptr<StudyServices> services);
   /// destructor
   ~SpawnApplicInterface();
 

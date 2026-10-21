@@ -11,7 +11,7 @@
 #define NOND_ADAPTIVE_SAMPLING_H
 
 #include "NonDSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 // forward declaration so class size doesn't change conditionally
 class MS_Complex;
@@ -38,6 +38,9 @@ public:
 
   /// standard constructor
   NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDAdaptiveSampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
 
   /// alternate constructor for sample generation and evaluation "on the fly"
   /// has not been implemented
@@ -206,7 +209,7 @@ private:
   /// over the validationSet, and output some topological comparisons
   void compare_complices(int dim, std::ostream& output);
   /// Parse misc_options specified in a user input deck
-  void parse_options();
+  void parse_options(const StringArray& options);
 
   /// function to pick the next X value to be evaluated by the Iterated model
   RealVectorArray drawNewX(int this_k, int respFnCount=0);

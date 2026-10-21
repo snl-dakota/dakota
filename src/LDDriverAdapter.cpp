@@ -9,11 +9,14 @@
 
 #include "LDDriverAdapter.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 namespace Dakota {
 
 // Constructor
 LDDriverAdapter::LDDriverAdapter(ProblemDescDB& problem_db) : ldDriver(problem_db) { }
+
+LDDriverAdapter::LDDriverAdapter(const IRStore& method_store) : ldDriver(method_store) { }
 
 // Override methods from SamplerAdapter
 void LDDriverAdapter::generate_samples(

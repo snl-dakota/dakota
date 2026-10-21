@@ -12,7 +12,7 @@
 #include "LibraryEnvironment.hpp"
 #include "WorkdirHelper.hpp"
 #include "ProblemDescDB.hpp"
-#include "IteratorScheduler.hpp"
+#include "StudyRuntime.hpp"
 #include "dakota_preproc_util.hpp"
 #include "ProblemDescDBUtils.hpp"
 #include "dakota_input_reader.hpp"
@@ -105,7 +105,9 @@ void process_json_input_object(const ProgramOptions& program_options,
 Environment::Environment(BaseConstructor):
   mpiManager(), programOptions(mpiManager.world_rank()), outputManager(),
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()),
+  studyRuntime(parallelLib, &outputManager),
+  usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -137,13 +139,15 @@ Environment::Environment(BaseConstructor, int argc, char* argv[]):
 		mpiManager.mpirun_flag()),
   // now instantiate the parallel library and problem description DB
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()),
+  studyRuntime(parallelLib, &outputManager),
+  usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
     exit_mode(programOptions.exit_mode());
 
-  // Initialize paths used by WorkdirHelper and NIDR
+  // Initialize paths used by WorkdirHelper
 
   // these data were previously statically initialized, so perform first
   WorkdirHelper::initialize();
@@ -164,7 +168,9 @@ Environment::Environment(BaseConstructor, ProgramOptions prog_opts,
   outputManager(programOptions, mpiManager.world_rank(),
 		mpiManager.mpirun_flag()), 
   parallelLib(mpiManager, programOptions, outputManager),
-  probDescDB(mpiManager.world_size(), mpiManager.world_rank()), usageTracker(mpiManager.world_rank())
+  probDescDB(mpiManager.world_size(), mpiManager.world_rank()),
+  studyRuntime(parallelLib, &outputManager),
+  usageTracker(mpiManager.world_rank())
 {
   // set exit mode as early as possible
   if (!programOptions.exit_mode().empty())
@@ -345,48 +351,60 @@ void Environment::parse(bool check_bcast_database,
 
   // Output/restart management utilizes iterator partitions, so calls to
   // push_output_tag() follow ParallelLibrary::init_iterator_communicators()
-  // within IteratorScheduler::partition().
+  // within IteratorExecutor::partition().
 
   const bool on_rank_zero = (parallelLib.world_rank() == 0);
   const bool has_freeform_input = !programOptions.input_file().empty() ||
                                   !programOptions.input_string().empty(); 
 
-  
-  // parse input and callback functions
-  if ( has_freeform_input) {
-    auto [final_input, template_string] = 
-      ProblemDescDBUtils::final_input_and_template(programOptions);
-    if(programOptions.echo_input())
-      ProblemDescDBUtils::echo_input(final_input, template_string);
-    if (on_rank_zero && programOptions.use_new_parser()) {
-      load_validated_json_input(
-        probDescDB,
-        parse_new_freeform_input(programOptions, final_input),
-        callback, callback_data, parallelLib.world_rank());
+  try {
+    // parse input and callback functions
+    if ( has_freeform_input) {
+      auto [final_input, template_string] = 
+        ProblemDescDBUtils::final_input_and_template(programOptions);
+      if (on_rank_zero && programOptions.echo_input())
+        ProblemDescDBUtils::echo_input(final_input, template_string);
+      if (on_rank_zero)
+        Cout << "Using Dakota parser: " << programOptions.parser_options()
+             << std::endl;
+
+      if (on_rank_zero && programOptions.use_standard_parser()) {
+        load_validated_json_input(
+          probDescDB,
+          parse_new_freeform_input(programOptions, final_input),
+          callback, callback_data, parallelLib.world_rank());
+      }
+      else if (programOptions.use_legacy_nidr_parser()) {
+        Cerr << "\nError: NIDR parser is no longer supported."
+             << std::endl;
+        abort_handler(-1);
+      }
+      if(programOptions.preproc_input())
+          std::filesystem::remove(programOptions.preprocessed_file());
     }
-    else if (programOptions.use_legacy_nidr_parser()) {
-      probDescDB.parse_inputs(final_input, programOptions.parser_options(),
-        programOptions.user_modes().run, callback, callback_data);
+
+    // Allow optional JSON input
+    if (on_rank_zero && !programOptions.json_input_file().empty()) {
+      process_json_input_file(programOptions, probDescDB, callback, callback_data,
+                              parallelLib.world_rank());
     }
-    if(programOptions.preproc_input())
-        std::filesystem::remove(programOptions.preprocessed_file());
-  }
 
-  // Allow optional JSON input
-  if (on_rank_zero && !programOptions.json_input_file().empty()) {
-    process_json_input_file(programOptions, probDescDB, callback, callback_data,
-                            parallelLib.world_rank());
-  }
+    if (on_rank_zero && programOptions.has_json_input()) {
+      process_json_input_object(programOptions, probDescDB, callback,
+                                callback_data, parallelLib.world_rank());
+    }
 
-  if (on_rank_zero && programOptions.has_json_input()) {
-    process_json_input_object(programOptions, probDescDB, callback,
-                              callback_data, parallelLib.world_rank());
+    // check if true, otherwise caller assumes responsibility  
+    if (check_bcast_database)
+      ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.dump_ir_file(),
+        programOptions.user_modes(), parallelLib); 
   }
-
-  // check if true, otherwise caller assumes responsibility  
-  if (check_bcast_database)
-    ProblemDescDBUtils::check_and_broadcast_pdb(probDescDB, programOptions.dump_ir_file(),
-      programOptions.user_modes(), parallelLib); 
+  catch (const std::exception& e) {
+    if (abort_mode == ABORT_THROWS)
+      throw;
+    Cerr << e.what() << std::endl;
+    abort_handler(PARSE_ERROR);
+  }
 }
 
 
@@ -408,7 +426,7 @@ void Environment::construct()
   // populated in the calls to the keyword handlers is used to build the
   // model and the iterator.
   const String& method_ptr
-    = probDescDB.get_string("environment.top_method_pointer");
+    = probDescDB.get<const String>("environment.top_method_pointer");
   // The method pointer is optional and some detective work may be required to
   // resolve which method sits on top of a recursion.  Only set the method node:
   // leave model nodes locked for meta-iterators; standard iterators set model
@@ -419,7 +437,7 @@ void Environment::construct()
   // (std iterators need model; meta-iterators may need a default model spec)
   if (assign_model_pointer())
     probDescDB.set_db_model_nodes(
-      probDescDB.get_string("method.model_pointer"));
+      probDescDB.get<const String>("method.model_pointer"));
 
   // w_pl is the same for all parallel configurations
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
@@ -429,7 +447,7 @@ void Environment::construct()
 
   // Instantiate topLevelIterator in parallel
   // (invoke ProblemDescDB ctor chain on all processors)
-  IteratorScheduler::init_iterator(probDescDB, parallelLib, topLevelIterator, w_pl_iter);
+  studyRuntime.initialize_top_level_iterator(probDescDB, topLevelIterator, w_pl_iter);
   // Notfiy the iterator that it is the top level
   topLevelIterator->top_level(true);
 }
@@ -462,7 +480,7 @@ void Environment::execute()
       topLevelIterator->initialize_graphics(); // default to server_id = 1
 
     ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-    IteratorScheduler::run_iterator(*topLevelIterator, w_pl_iter);
+    studyRuntime.execute_top_level_iterator(*topLevelIterator, w_pl_iter);
 
     if (output_rank)
       Cout << "<<<<< Environment execution completed.\n";
@@ -498,7 +516,7 @@ void Environment::destruct()
     return;
 
   ParLevLIter w_pl_iter = parallelLib.w_parallel_level_iterator();
-  IteratorScheduler::free_iterator(*topLevelIterator, w_pl_iter);
+  studyRuntime.free_top_level_iterator(*topLevelIterator, w_pl_iter);
 
   // decrement hierarchical output/restart streams (w_pl does not induce a tag)
   parallelLib.pop_output_tag(*w_pl_iter);

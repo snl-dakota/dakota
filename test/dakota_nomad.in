@@ -30,7 +30,7 @@ method,
 
 #model,								#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #	id_model = 'SURROGATE'					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
-#	surrogate global					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
+#	global_surrogate					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #	  polynomial quadratic					#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 #	  dace_method_pointer = 'SAMPLING'			#s9,#s10,#s11,#s12,#s13,#s14,#s15,#s16
 

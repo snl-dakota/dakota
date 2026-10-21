@@ -101,7 +101,7 @@ derived_map_asynch(const Dakota::ParamResponsePair& pair)
 /** For use by ApplicationInterface::serve_evaluations_asynch(), which can
     provide a batch processing capability within message passing schedulers
     (called using chain ApplicationInterface::serve_evaluations() from
-    Model::serve() from IteratorScheduler::run_iterator()). */
+    Model::serve() from IteratorExecutor::run_iterator()). */
 inline void ParallelDirectApplicInterface::
 test_local_evaluations(Dakota::PRPQueue& prp_queue)
 { wait_local_evaluations(prp_queue); }

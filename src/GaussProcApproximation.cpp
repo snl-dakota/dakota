@@ -133,10 +133,10 @@ GaussProcApproximation(const ProblemDescDB& problem_db,
 		       const SharedApproxData& shared_data,
                        const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
-  usePointSelection(problem_db.get_bool("model.surrogate.point_selection"))
+  usePointSelection(problem_db.get<bool>("model.surrogate.point_selection"))
 {
   const String& trend_string
-    = problem_db.get_string("model.surrogate.trend_order");
+    = problem_db.get<const String>("model.surrogate.trend_order");
   if (trend_string == "constant")               trendOrder = 0;
   else if (trend_string == "linear")            trendOrder = 1;
   else if (trend_string == "reduced_quadratic") trendOrder = 2;

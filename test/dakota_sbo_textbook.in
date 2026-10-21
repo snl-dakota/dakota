@@ -44,7 +44,7 @@ method,
 model,
 	id_model = 'SURROGATE'
 	responses_pointer = 'SURROGATE_RESP'
-	surrogate global
+	global_surrogate
 	  dace_method_pointer = 'SAMPLING'
 #	  reuse_samples region
 #	  correction additive       zeroth_order #s1,#s5,#s8,#s9
@@ -63,7 +63,7 @@ model,
 #         experimental_polynomial    	 	 #s9
 #           basis_order 2			 #s9
 #	  mars
-# 	surrogate local taylor_series
+# 	local_surrogate taylor_series
 #	  truth_model_pointer = 'TRUTH'
 
 variables,

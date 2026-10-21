@@ -23,11 +23,9 @@ namespace Dakota {
 
 AdaptedBasisModel::
 AdaptedBasisModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
-  method_rotation(problem_db.get_short("model.adapted_basis.rotation_method")),
-  adaptedBasisTruncationTolerance(probDescDB.get_real(
-    "model.adapted_basis.truncation_tolerance")),
-  subspaceDimension(probDescDB.get_int(
-    "model.subspace.dimension")),  
+  method_rotation(problem_db.get<short>("model.adapted_basis.rotation_method")),
+  adaptedBasisTruncationTolerance(probDescDB.get<const Real>("model.adapted_basis.truncation_tolerance")),
+  subspaceDimension(probDescDB.get<int>("model.subspace.dimension")),  
   SubspaceModel(problem_db, parallel_lib, get_sub_model(problem_db, parallel_lib))
 {
   // BMA: can't do this in get_sub_model as Iterator envelope hasn't
@@ -49,22 +47,22 @@ AdaptedBasisModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
 std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
 {
   const String& actual_model_pointer
-    = problem_db.get_string("model.surrogate.truth_model_pointer");
+    = problem_db.get<const String>("model.surrogate.truth_model_pointer");
   unsigned short ssg_level
-    = problem_db.get_ushort("model.adapted_basis.sparse_grid_level");
+    = problem_db.get<unsigned short>("model.adapted_basis.sparse_grid_level");
   unsigned short exp_order
-    = problem_db.get_ushort("model.adapted_basis.expansion_order");
+    = problem_db.get<unsigned short>("model.adapted_basis.expansion_order");
   Real colloc_ratio
-    = problem_db.get_real("model.adapted_basis.collocation_ratio");
+    = problem_db.get<const Real>("model.adapted_basis.collocation_ratio");
   short refine_type
-      = problem_db.get_short("method.nond.expansion_refinement_type"),
+      = problem_db.get<short>("method.nond.expansion_refinement_type"),
     refine_cntl
-      = problem_db.get_short("method.nond.expansion_refinement_control"),
-    cov_cntl = problem_db.get_short("method.nond.covariance_control"),
-    rule_nest = problem_db.get_short("method.nond.nesting_override"),
-    rule_growth = problem_db.get_short("method.nond.growth_override");
-  bool pw_basis = problem_db.get_bool("method.nond.piecewise_basis"),
-     use_derivs = problem_db.get_bool("method.derivative_usage");
+      = problem_db.get<short>("method.nond.expansion_refinement_control"),
+    cov_cntl = problem_db.get<short>("method.nond.covariance_control"),
+    rule_nest = problem_db.get<short>("method.nond.nesting_override"),
+    rule_growth = problem_db.get<short>("method.nond.growth_override");
+  bool pw_basis = problem_db.get<bool>("method.nond.piecewise_basis"),
+     use_derivs = problem_db.get<bool>("method.derivative_usage");
 
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
@@ -86,7 +84,7 @@ std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_d
     pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
       exp_coeffs_approach, exp_order, dim_pref, colloc_pts, colloc_ratio, seed,
       EXTENDED_U, refine_type, refine_cntl, cov_cntl, //rule_nest, rule_growth,
-      pw_basis, use_derivs, problem_db.get_bool("method.nond.cross_validation"),
+      pw_basis, use_derivs, problem_db.get<bool>("method.nond.cross_validation"),
       import_file, TABULAR_ANNOTATED, false);
   }
   else {

@@ -48,7 +48,8 @@ enum { DEFAULT_METHOD=0,
        GEN_APPROX_CONTROL_VARIATE, MULTILEVEL_BLUE,
        LIST_SAMPLING, RANDOM_SAMPLING,
        IMPORT_POINTS, // TNP TODO: Maybe move this depending on where it goes in the class hierarchy
-       // Variables::method_view(): epistemic if method_name > RANDOM_SAMPLING
+       // Ordering used by iterator view inference: epistemic if method_name > RANDOM_SAMPLING
+       // (legacy path: Variables::method_view(); DI path: ViewRequest::EPISTEMIC_UNCERTAIN in NonDInterval)
        LOCAL_INTERVAL_EST, LOCAL_EVIDENCE, GLOBAL_INTERVAL_EST, GLOBAL_EVIDENCE,
        //BAYES_CALIBRATION=(ANALYZER_BIT | NOND_BIT | PARALLEL_BIT),
        //BRANCH_AND_BOUND=(MINIMIZER_BIT | PARALLEL_BIT),
@@ -71,8 +72,6 @@ enum { DEFAULT_METHOD=0,
        NPSOL_SQP, NLPQL_SQP, //REDUCED_SQP,
        DOT_BFGS, DOT_FRCG, DOT_MMFD, DOT_SLP, DOT_SQP, CONMIN_FRCG, CONMIN_MFD,
        ROL,
-       // Generic Optimizers / Minimizers:
-       DL_SOLVER,
        // Minimizers that are both opt & least sq
        BRANCH_AND_BOUND=(MINIMIZER_BIT | OPTIMIZER_BIT | LEASTSQ_BIT) };
 
@@ -166,7 +165,6 @@ REGISTER_DAKOTA_ENUM( DOT_SQP,                            DOT_SQP)
 REGISTER_DAKOTA_ENUM( CONMIN_FRCG,                        CONMIN_FRCG)
 REGISTER_DAKOTA_ENUM( CONMIN_MFD,                         CONMIN_MFD)
 REGISTER_DAKOTA_ENUM( ROL,                                ROL)
-REGISTER_DAKOTA_ENUM( DL_SOLVER,                          DL_SOLVER)
 REGISTER_DAKOTA_ENUM( BRANCH_AND_BOUND,                   BRANCH_AND_BOUND)
 
 /// Sub-methods, including sampling, inference algorithm, opt algorithm types

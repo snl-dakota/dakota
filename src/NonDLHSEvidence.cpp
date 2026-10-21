@@ -21,6 +21,13 @@ NonDLHSEvidence::NonDLHSEvidence(ProblemDescDB& problem_db, ParallelLibrary& par
 { }
 
 
+NonDLHSEvidence::
+NonDLHSEvidence(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+                        std::shared_ptr<Model> model):
+  NonDLHSInterval(std::move(services), method_store, model)
+{ }
+
+
 NonDLHSEvidence::~NonDLHSEvidence()
 { }
 

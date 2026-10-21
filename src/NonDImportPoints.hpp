@@ -11,7 +11,7 @@
 #define NOND_IMPORT_POINTS_H
 
 #include "NonDSampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 namespace Dakota {
 
@@ -30,6 +30,9 @@ public:
 
   /// standard constructor
   NonDImportPoints(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDImportPoints(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   ~NonDImportPoints() override;
 
   //
@@ -50,6 +53,9 @@ public:
 
   /// print the final statistics
   void print_results(std::ostream& s, short results_state = FINAL_RESULTS) override;
+
+  /// Archive all results
+  void archive_results(int num_samples);
 
   //
   //- Heading: Member functions

@@ -14,9 +14,14 @@
 #include "DakotaInterface.hpp"
 #include "ParallelLibrary.hpp"
 #include "EvaluationStore.hpp"
-#include "DataInterface.hpp"
+#include "DakotaInterfaceEnums.hpp"
 
 namespace Dakota {
+
+class StudyServices;
+
+class IRStore;
+class OutputManager;
 
 /// Derived model class which utilizes a simulation-based application
 /// interface to map variables into responses.
@@ -36,6 +41,9 @@ public:
   //
 
   SimulationModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+  SimulationModel(const IRStore& model_store, const Variables& variables,
+                  std::shared_ptr<Interface> interface, const Response& response,
+                  std::shared_ptr<StudyServices> services); ///< DI constructor
   
   /// Return the "default" or maximal ActiveSet for the model
   //ActiveSet default_active_set();
@@ -49,6 +57,9 @@ protected:
   /// return userDefinedInterface
   std::shared_ptr<Interface> derived_interface() override;
   void derived_interface(std::shared_ptr<Interface>) override;
+
+  /// assign the inferred view, then verify solution control stays inactive
+  void assign_inferred_view(short view, const String& method_label) override;
 
   /// return size of solnCntlCostMap, optionally enforcing lower bound
   /// of 1 solution level
@@ -182,6 +193,11 @@ private:
   /// solnCntlCostMap, and solnCntl{AV,ADV}Index
   void initialize_solution_recovery(const String& cost_label);
 
+  /// abort if the solution_level_control variable is in the active view.
+  /// Legacy models check at construction; DI models check once the active
+  /// view is final (explicit at construction, else when it is inferred).
+  void check_solution_control_inactive() const;
+
   //
   //- Heading: Data members
   //
@@ -200,6 +216,8 @@ private:
   size_t solnCntlAVIndex;
   /// sorted array of relative costs associated with a set of solution levels
   std::multimap<Real, size_t> solnCntlCostMap;
+  /// label of the solution_level_control variable (empty if none)
+  String solnCntlLabel;
 
   /// index of metadata label used for online cost recovery
   size_t costMetadataIndex;

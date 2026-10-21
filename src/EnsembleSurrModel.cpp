@@ -8,8 +8,15 @@
     _______________________________________________________________________ */
 
 #include "EnsembleSurrModel.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
+#include "StudyServices.hpp"
+
+#include <stdexcept>
+#include <utility>
+
+#include <stdexcept>
 
 static const char rcsId[]=
   "@(#) $Id: EnsembleSurrModel.cpp 6656 2010-02-26 05:20:48Z mseldre $";
@@ -22,9 +29,9 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
   modeKeyBufferSize(0), correctionMode(SINGLE_CORRECTION)
 {
   const String& truth_model_ptr
-    = problem_db.get_string("model.surrogate.truth_model_pointer");
+    = problem_db.get<const String>("model.surrogate.truth_model_pointer");
   const StringArray& ensemble_model_ptrs
-    = problem_db.get_sa("model.surrogate.ensemble_model_pointers");
+    = problem_db.get<const StringArray>("model.surrogate.ensemble_model_pointers");
 
   size_t i, num_models = ensemble_model_ptrs.size(),
            model_index = problem_db.get_db_model_node(); // for restoration
@@ -48,7 +55,7 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
 
   if (truth_model_spec) problem_db.set_db_model_nodes(truth_model_ptr);
   else problem_db.set_db_model_nodes(ensemble_model_ptrs[num_approx]);
-  truthModel = ModelUtils::get_model(problem_db, parallel_lib);
+  truthModel = Model::get_model(problem_db, parallel_lib);
 
   // honor an asynchronous local specification and perform local scheduling
   // even if the concurrency is 1.  This avoid blocking other models within
@@ -83,9 +90,66 @@ EnsembleSurrModel::EnsembleSurrModel(ProblemDescDB& problem_db, ParallelLibrary&
   // Ensemble surrogate models pass through numerical derivatives
   supportsEstimDerivs = false;
   // initialize ignoreBounds even though it's irrelevant for pass through
-  ignoreBounds = problem_db.get_bool("responses.ignore_bounds");
+  ignoreBounds = problem_db.get<bool>("responses.ignore_bounds");
   // initialize centralHess even though it's irrelevant for pass through
-  centralHess = problem_db.get_bool("responses.central_hess");
+  centralHess = problem_db.get<bool>("responses.central_hess");
+}
+
+
+EnsembleSurrModel::EnsembleSurrModel(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  std::vector<std::shared_ptr<Model>> approximation_models,
+  const Variables& variables, const Response& response,
+  std::shared_ptr<StudyServices> services):
+  SurrogateModel(model_store, variables, response, std::move(services)),
+  truthModel(std::move(truth_model)), approxModels(std::move(approximation_models)),
+  sameModelInstance(false), sameInterfaceInstance(false),
+  ensemblePrecedence(DEFAULT_PRECEDENCE), modeKeyBufferSize(0),
+  correctionMode(SINGLE_CORRECTION)
+{
+  if (surrogateType != "ensemble")
+    throw std::runtime_error(
+      "EnsembleSurrModel DI construction requires surrogate.type 'ensemble', "
+      "not '" + surrogateType + "'.");
+
+  initialize_subordinate_models();
+}
+
+
+void EnsembleSurrModel::initialize_subordinate_models()
+{
+  detail::validate_services(
+    "EnsembleSurrModel", study_services(),
+    {detail::runtime_dependency("truth model", truthModel)});
+
+  if (!truthModel)
+    throw std::runtime_error(
+      "EnsembleSurrModel requires a non-null truth model in DI construction.");
+
+  for (const auto& approximation_model: approxModels) {
+    detail::validate_services(
+      "EnsembleSurrModel", study_services(),
+      {detail::runtime_dependency("approximation model", approximation_model)});
+    if (!approximation_model)
+      throw std::runtime_error(
+        "EnsembleSurrModel requires non-null approximation models in DI construction.");
+    check_submodel_compatibility(*approximation_model);
+    approximation_model->serialize_threshold(0);
+  }
+
+  check_submodel_compatibility(*truthModel);
+  truthModel->serialize_threshold(0);
+
+  responseMode = AGGREGATED_MODELS;
+  assign_default_keys(responseMode);
+  if (parallelLib.mpirun_flag())
+    modeKeyBufferSize = server_buffer_size(responseMode, activeKey);
+
+  initialize_correction();
+  supportsEstimDerivs = false;
+  ignoreBounds = currentResponse.gradient_config().ignore_bounds;
+  centralHess = (currentResponse.hessian_config().interval_type ==
+                 Response::IntervalType::Central);
 }
 
 
@@ -182,14 +246,16 @@ estimate_partition_bounds(int max_eval_concurrency)
   // responseMode is a run-time setting, so we are conservative on usage of
   // max_eval_concurrency as in derived_init_communicators()
 
-  probDescDB.set_db_model_nodes(truthModel->model_id());
+  if (!study_services())
+    probDescDB.set_db_model_nodes(truthModel->model_id());
   IntIntPair min_max_i,
     min_max = truthModel->estimate_partition_bounds(max_eval_concurrency);
 
   size_t i, num_approx = approxModels.size();
   for (i=0; i<num_approx; ++i) {
     Model& model_i = *approxModels[i];
-    probDescDB.set_db_model_nodes(model_i.model_id());
+    if (!study_services())
+      probDescDB.set_db_model_nodes(model_i.model_id());
     min_max_i = model_i.estimate_partition_bounds(max_eval_concurrency);
     if (min_max_i.first  < min_max.first)  min_max.first  = min_max_i.first;
     if (min_max_i.second > min_max.second) min_max.second = min_max_i.second;
@@ -213,6 +279,15 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
   // and free and a more aggressive approach with set.
 
   if (recurse_flag) {
+    if (study_services()) {
+      for (const auto& model : approxModels) {
+        model->init_communicators(pl_iter, max_eval_concurrency);
+        model->init_communicators(pl_iter, model->derivative_concurrency());
+      }
+      truthModel->init_communicators(pl_iter, max_eval_concurrency);
+      truthModel->init_communicators(pl_iter, truthModel->derivative_concurrency());
+      return;
+    }
     size_t i, model_index = probDescDB.get_db_model_node(), // for restoration
               num_models  = approxModels.size();
     if (truthModel) ++num_models;
@@ -220,7 +295,7 @@ derived_init_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     // For now, use the DB method name to construct a list of methods that
     // might perform gradient-based minimization.  Note: EnsembleSurrModel
     // has no construct on the fly option at this time.
-    unsigned short method_name = probDescDB.get_ushort("method.algorithm");
+    unsigned short method_name = probDescDB.get<unsigned short>("method.algorithm");
     bool extra_deriv_config = (method_name  & MINIMIZER_BIT      ||
 			       method_name == BAYES_CALIBRATION  ||
 			       method_name == LOCAL_RELIABILITY  ||
@@ -325,7 +400,7 @@ derived_set_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
     switch (responseMode) {
 
       // CASES WITH A SINGLE ACTIVE MODEL:
-  
+
       case UNCORRECTED_SURROGATE: {
         auto lf_model = active_surrogate_model(0);
         lf_model->set_communicators(pl_iter, max_eval_concurrency);
@@ -494,7 +569,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(ModelUtils::all_continuous_variable_labels(model), surr_label);
       // push value from currentVariables to sub-ordinate variables
       if (m_index != _NPOS)
-	ModelUtils::all_continuous_variable(model, 
+	ModelUtils::all_continuous_variable(model,
 	  currentVariables.all_continuous_variables()[ac_index1], m_index);
     }
     else if (adi_index1 != _NPOS) {
@@ -502,7 +577,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
 	= currentVariables.all_discrete_int_variable_labels()[adi_index1];
       m_index = find_index(ModelUtils::all_discrete_int_variable_labels(model),surr_label);
       if (m_index != _NPOS)
-	ModelUtils::all_discrete_int_variable(model, 
+	ModelUtils::all_discrete_int_variable(model,
 	  currentVariables.all_discrete_int_variables()[adi_index1], m_index);
     }
     else if (ads_index1 != _NPOS) {
@@ -511,7 +586,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(ModelUtils::all_discrete_string_variable_labels(model),
 			   surr_label);
       if (m_index != _NPOS)
-	ModelUtils::all_discrete_string_variable(model, 
+	ModelUtils::all_discrete_string_variable(model,
 	  currentVariables.all_discrete_string_variables()[ads_index1],m_index);
     }
     else if (adr_index1 != _NPOS) {
@@ -520,7 +595,7 @@ void EnsembleSurrModel::init_model_mapped_variables(Model& model)
       m_index = find_index(ModelUtils::all_discrete_real_variable_labels(model),
 			   surr_label);
       if (m_index != _NPOS)
-	ModelUtils::all_discrete_real_variable(model, 
+	ModelUtils::all_discrete_real_variable(model,
 	  currentVariables.all_discrete_real_variables()[adr_index1], m_index);
     }
     else {
@@ -1500,7 +1575,7 @@ void EnsembleSurrModel::active_model_key(const Pecos::ActiveKey& key)
 
   // Pull inactive variable change up into top-level currentVariables,
   // so that data flows correctly within Model recursions?  No, current
-  // design is that forward pushes are automated, but inverse pulls are 
+  // design is that forward pushes are automated, but inverse pulls are
   // generally special case invocations from Iterator code (e.g., with
   // locally-managed Model recursions).
   //update_from_model(truthModel);
@@ -2017,7 +2092,7 @@ void EnsembleSurrModel::component_parallel_mode(short model_id)
 	}
       }
     }
- 
+
     // componentParallelKey is not necessary for case where either all models
     // are active for a set of samples (AGGREGATED_MODELS mode for which any
     // drop outs are managed by ASV) or only one model is active
@@ -2415,6 +2490,28 @@ void EnsembleSurrModel::recursive_apply(const Variables& vars, Response& resp)
   //    single_apply(vars, resp, corrSequence[i]);
   //  break;
   }
+}
+
+
+void EnsembleSurrModel::
+assign_inferred_view(short view, const String& method_label)
+{
+  // Apply to children first (approxModels, then truthModel), then self.
+  // This mirrors how inactive_view recurses into sub-models.
+  size_t num_approx = approxModels.size();
+  for (size_t i = 0; i < num_approx; ++i)
+    approxModels[i]->assign_inferred_view(view, method_label);
+  truthModel->assign_inferred_view(view, method_label);
+
+  // Now assign to self (base Model implementation handles precedence / conflicts).
+  Model::assign_inferred_view(view, method_label);
+
+  // Re-check compatibility and refresh correction sizing if counts may have
+  // changed.
+  for (size_t i = 0; i < num_approx; ++i)
+    check_submodel_compatibility(*approxModels[i]);
+  check_submodel_compatibility(*truthModel);
+  initialize_correction();
 }
 
 } // namespace Dakota

@@ -261,11 +261,11 @@ class EmbeddedConfig(MethodIteratorServerSchedulingMixin):
 
     sub_method: Union[GlobalMethodName, GlobalMethodPointer] = DakotaField(
         description="Global Sub-method Selection",
-        dakota={"anchor": True, "union_pattern": 4},
+        dakota={"anchor": True, "union_pattern": 4, "pointer_union": True},
     )
     local_sub_method: Union[LocalMethodName, LocalMethodPointer] = DakotaField(
         description="Local Sub-method Selection",
-        dakota={"anchor": True, "union_pattern": 4},
+        dakota={"anchor": True, "union_pattern": 4, "pointer_union": True},
     )
     local_search_probability: DakotaFloat = DakotaField(
         default=0.1,
