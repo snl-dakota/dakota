@@ -297,48 +297,71 @@ map(const Variables& vars, const ActiveSet& set, Response& response,
     for (it=approxFnIndices.begin(); it!=approxFnIndices.end(); ++it) {
       fn_index = *it;
       Approximation & approx = function_surface(fn_index);
-      if (core_asv[fn_index] & 1) {
-        if( approx.num_components() < 2 ) {
+      size_t num_comps = approx.num_components();
+      if( num_comps < 2 ) {
+        if (core_asv[fn_index] & 1) {
           Real approx_fn = function_surface(fn_index).value(surf_vars);
           //if (approx_scale_len)  fn_val *= approxScale[fn_index];
           //if (approx_offset_len) fn_val += approxOffset[fn_index];
           core_response.function_value(approx_fn, fn_index);
         }
-        else {
-          RealVector approx_fns = function_surface(fn_index).values(surf_vars);
-          for (size_t c=0; c<approx.num_components(); ++c) {
-            Real approx_fn = approx_fns[c];
-            core_response.function_value(approx_fn, fn_index+c);
-          }
+        if (core_asv[fn_index] & 2) {
+	  const RealVector& approx_grad
+	    = function_surface(fn_index).gradient(surf_vars);
+	  //if (approx_scale_len)
+	  //  for (size_t j=0; j<num_core_vars; j++)
+	  //    approx_grad[j] *= approxScale[fn_index];
+
+	  // Manage potential DVV mismatch (all vs. active)
+	  core_response.function_gradient(approx_grad, fn_index,
+					  assign_indices, curr_indices);
+        }
+        if (core_asv[fn_index] & 4) {
+	  const RealSymMatrix& approx_hess
+	    = function_surface(fn_index).hessian(surf_vars);
+	  //if (approx_scale_len)
+	  //  for (size_t j=0; j<num_core_vars; j++)
+	  //    for (size_t k=0; k<=j; k++)
+	  //      approx_hess[j][k] *= approxScale[fn_index];
+
+	  // Manage potential DVV mismatch (all vs. active)
+	  core_response.function_hessian(approx_hess, fn_index,
+				         assign_indices, curr_indices);
         }
       }
-      if (core_asv[fn_index] & 2) {
-	const RealVector& approx_grad
-	  = function_surface(fn_index).gradient(surf_vars);
-	//if (approx_scale_len)
-	//  for (size_t j=0; j<num_core_vars; j++)
-	//    approx_grad[j] *= approxScale[fn_index];
-
-	// Manage potential DVV mismatch (all vs. active)
-	core_response.function_gradient(approx_grad, fn_index,
-					assign_indices, curr_indices);
-      }
-      if (core_asv[fn_index] & 4) {
-	const RealSymMatrix& approx_hess
-	  = function_surface(fn_index).hessian(surf_vars);
-	//if (approx_scale_len)
-	//  for (size_t j=0; j<num_core_vars; j++)
-	//    for (size_t k=0; k<=j; k++)
-	//      approx_hess[j][k] *= approxScale[fn_index];
-
-	// Manage potential DVV mismatch (all vs. active)
-	core_response.function_hessian(approx_hess, fn_index,
-				       assign_indices, curr_indices);
-      }
-      // Handle indexing for fields
-      if( approx.num_components() > 0 )
-        for (size_t c=0; c<approx.num_components()-1; ++c)
+      else {
+        // Field approximation: honor each component's ASV request rather
+        // than gating the whole field on the leading component's bits
+        bool any_val = false;
+        for (size_t c=0; c<num_comps; ++c)
+          if (core_asv[fn_index+c] & 1)
+            { any_val = true; break; }
+        if (any_val) {
+          RealVector approx_fns = function_surface(fn_index).values(surf_vars);
+          for (size_t c=0; c<num_comps; ++c)
+            if (core_asv[fn_index+c] & 1)
+              core_response.function_value(approx_fns[c], fn_index+c);
+        }
+        for (size_t c=0; c<num_comps; ++c) {
+          if (core_asv[fn_index+c] & 2) {
+            const RealVector& approx_grad
+              = function_surface(fn_index+c).gradient(surf_vars);
+            // Manage potential DVV mismatch (all vs. active)
+            core_response.function_gradient(approx_grad, fn_index+c,
+                                            assign_indices, curr_indices);
+          }
+          if (core_asv[fn_index+c] & 4) {
+            const RealSymMatrix& approx_hess
+              = function_surface(fn_index+c).hessian(surf_vars);
+            // Manage potential DVV mismatch (all vs. active)
+            core_response.function_hessian(approx_hess, fn_index+c,
+                                           assign_indices, curr_indices);
+          }
+        }
+        // Handle indexing for fields: advance past the other components
+        for (size_t c=0; c<num_comps-1; ++c)
           ++it;
+      }
     }
   }
 
