@@ -2106,7 +2106,7 @@ iterator_response_overlay(const Response& sub_iterator_response,
       RealVector mapped_grad = mapped_response.function_gradient_view(m_index);
       for (j=0; j<num_mapped_deriv_vars; ++j) {
 	if (identityRespMap)
-	  mapped_grad[m_index] = sub_iterator_grads(j,m_index);
+	  mapped_grad[j] = sub_iterator_grads(j,m_index);
 	else {
 	  Real& inner_prod = mapped_grad[j]; inner_prod = 0.;
 	  for (k=0; k<numSubIterFns; ++k) {
