@@ -6,7 +6,7 @@ Library APIs
 Dakota's Python and C++ APIs are an alternative way to construct and run
 studies without running Dakota from the command line. They use the same
 configuration grammar as JSON input, but replace pointer-based relationships
-(such as `interface_pointer` -> `id_interface`) between Dakota blocks with 
+(such as ```interface_pointer``` ➔ ``id_interface``) between Dakota blocks with 
 references to constructed objects.
 
 Motivation

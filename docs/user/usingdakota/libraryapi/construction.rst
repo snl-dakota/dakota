@@ -4,7 +4,7 @@ Constructing a Study
 ====================
 
 Users familiar with Dakota input files can think of the library APIs as
-constructing the same study graph (method->model->variables, interface, responses)
+constructing the same study graph (method➔model➔variables, interface, responses)
 from the leaves inward.  A typical study is assembled in this order:
 
 #. Create a :py:class:`~dakota.study.Study`, which owns the runtime services
