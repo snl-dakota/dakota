@@ -22,11 +22,7 @@ variables,
 
 interface,
         fork
-          analysis_driver = 'python text_book_driver.py'
-          parameters_file = 'params.in'
-          results_file = 'results.out'
-          file_tag
-          file_save
+          analysis_driver = 'text_book'
           asynchronous evaluation_concurrency = 4
 
 responses,

@@ -914,10 +914,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
     //Naive batch selection will grab x highest scored candidates
     // where x=batchSize
     for(i = 0; i < batchSize; i++) {
-      int max_index = 0;
+      int max_index = -1;
       for(j=0; j < temp_length; j++) {
-        if(emulEvalScores[max_index] < emulEvalScores[j] &&
-            selected_indices.count(j) == 0) {
+        if(selected_indices.count(j) == 0 &&
+            (max_index < 0 || emulEvalScores[max_index] < emulEvalScores[j])) {
           max_index = j;
         }
       }
@@ -1030,10 +1030,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       else if(scoringMetric == "alm_topo_hybrid")
         calc_score_topo_alm_hybrid(respFnCount);
 
-      int max_index = 0;
+      int max_index = -1;
       for(j=0; j < temp_length; j++) {
-        if(emulEvalScores[max_index] < emulEvalScores[j] &&
-            selected_indices.count(j) == 0) {
+        if(selected_indices.count(j) == 0 &&
+            (max_index < 0 || emulEvalScores[max_index] < emulEvalScores[j])) {
           max_index = j;
         }
       }
@@ -1055,7 +1055,14 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       }
 #endif
     }
-    gpModel->pop_approximation(false, true/*, batchSize*/);
+    for (i = 0; i < batchSize; ++i)
+      gpModel->pop_approximation(false, i == batchSize - 1);
+#ifdef HAVE_MORSE_SMALE
+    for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+    {
+      update_amsc(ifunc);
+    }
+#endif
   }
   else {
 #ifdef HAVE_MORSE_SMALE
@@ -1121,15 +1128,13 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
             temp_dist += pow((gpCvars[i][k] - selected_data[j][k]),2);
           }
           temp_dist = sqrt(temp_dist);
-          //If it is the first iteration for i, j==1, then set the min_distances
-          // regardless, otherwise only if the last selected point is closer 
-          // than all previous selected points
-          if(min_distances[j] > temp_dist || j == 0)
-            min_distances[j] = temp_dist;
+          //j==0 is the first selected point: initialize min_distances[i];
+          // later selected points update it if they are closer
+          if(j == 0 || temp_dist < min_distances[i])
+            min_distances[i] = temp_dist;
         }
       }
 
-      int while_iter = 0;
       while(selected_data.size() < batchSize) {
         for(j = 0; j < temp_length; j++) {
           temp_dist = 0;
@@ -1138,13 +1143,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
                   selected_data[selected_data.size()-1][k]),2);
           }
           temp_dist = sqrt(temp_dist);
-          //If it is the first iteration, set the min_distances
-          // regardless, otherwise only if the last selected point is closer than
-          // all previous selected points
-          if(min_distances[j] > temp_dist || while_iter == 0)
+          //Update min_distances only if the most recently added point is closer
+          if(min_distances[j] > temp_dist)
             min_distances[j] = temp_dist;
         }
-        ++while_iter;
 
         int max_index;
         Real max_weighted_score;
@@ -1197,10 +1199,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
     //Naive batch selection will grab x highest scored candidates
     // where x=batchSize
     for(i = 0; i < batchSize; i++) {
-      int max_index = 0;
+      int max_index = -1;
       for(j=0; j < temp_length; j++) {
-        if(emulEvalScores[max_index] < emulEvalScores[j] &&
-            selected_indices.count(j) == 0) {
+        if(selected_indices.count(j) == 0 &&
+            (max_index < 0 || emulEvalScores[max_index] < emulEvalScores[j])) {
           max_index = j;
         }
       }
