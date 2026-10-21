@@ -382,7 +382,7 @@ void NomadOptimizer::core_run()
   // For real sets and strings, map from index back to value.
   bestVariablesArray.front().discrete_int_variables(discIntVars);
   for (j=0; j<numDiscreteRealVars; j++)
-    discRealVars = 
+    discRealVars[j] =
       set_index_to_value((*bestX)[j+numContinuousVars+numDiscreteIntVars].value(), set_real_vars[j]);
   bestVariablesArray.front().discrete_real_variables(discRealVars);
 
