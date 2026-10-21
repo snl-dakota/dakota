@@ -612,6 +612,22 @@ void Variables::load(Archive& ar, const unsigned int version)
   ar & variablesRep->allDiscreteStringVars;
   ar & variablesRep->allDiscreteRealVars;
 
+  // Validate the archive-supplied array lengths against the SVD-derived
+  // counts before building views (mirrors the length check in the annotated
+  // text path); mismatched lengths would otherwise yield views that index
+  // out of bounds of the variables arrays.
+  size_t num_acv, num_adiv, num_adsv, num_adrv;
+  svd.all_counts(num_acv, num_adiv, num_adsv, num_adrv);
+  if ((size_t)variablesRep->allContinuousVars.length()   != num_acv  ||
+      (size_t)variablesRep->allDiscreteIntVars.length()  != num_adiv ||
+      variablesRep->allDiscreteStringVars.size()         != num_adsv ||
+      (size_t)variablesRep->allDiscreteRealVars.length() != num_adrv) {
+    Cerr << "Error: variables array lengths in Variables::load(Archive&) are "
+	 << "inconsistent\n       with the shared variables data."
+	 << std::endl;
+    abort_handler(VARS_ERROR);
+  }
+
   // rebuild active/inactive views
   variablesRep->build_views();
   // types/ids not required
