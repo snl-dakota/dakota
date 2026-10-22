@@ -23,8 +23,9 @@
 #include "pecos_stat_util.hpp"
 #include "DakotaApproximation.hpp"
 #include "FSUDesignCompExp.hpp"
-#include <sstream>
 #include <fstream>
+#include <limits>
+#include <sstream>
 
 // Options HAVE_MORSE_SMALE and HAVE_DIONYSUS are managed in CMake
 #ifdef HAVE_MORSE_SMALE
@@ -63,7 +64,7 @@ NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLi
   if (numEmulEval == 0)
     numEmulEval = 400; 
   batchSize = 1;
-  const IntVector& db_refine_samples = 
+  const IntVector& db_refine_samples =
     probDescDB.get<const IntVector>("method.nond.refinement_samples");
   if (db_refine_samples.length() == 1)
     batchSize = db_refine_samples[0];
@@ -72,6 +73,10 @@ NonDAdaptiveSampling::NonDAdaptiveSampling(ProblemDescDB& problem_db, ParallelLi
       << "length 1 if specified." << std::endl;
     abort_handler(PARSE_ERROR);
   }
+  // Ensure communicators are sized for at least batchSize concurrent evals.
+  // NonDSampling sizes maxEvalConcurrency by numSamples (the initial LHS set),
+  // which may be smaller than batchSize in some configurations.
+  if (batchSize > maxEvalConcurrency) maxEvalConcurrency = batchSize;
   batchStrategy = probDescDB.get<const String>("method.batch_selection");
   if (batchStrategy.empty())
     batchStrategy="naive";
@@ -203,6 +208,7 @@ NonDAdaptiveSampling(std::shared_ptr<StudyServices> services,
       << "length 1 if specified." << std::endl;
     abort_handler(PARSE_ERROR);
   }
+  if (batchSize > maxEvalConcurrency) maxEvalConcurrency = batchSize;
   batchStrategy = method_store.get<String>("batch_selection");
   if (batchStrategy.empty())
     batchStrategy="naive";
@@ -425,15 +431,27 @@ void NonDAdaptiveSampling::core_run()
     compare_complices(dim, fout);
 
     // add new_X to the build points and append approximation
-    VariablesArray points_to_add;
+    IntVariablesMap points_to_add;
     IntResponseMap responses_to_add;
-    for(int i = 0; i < new_Xs.size(); i++) 
-    {
-      ModelUtils::continuous_variables(*iteratedModel, new_Xs[i]);
-      iteratedModel->evaluate();
-      responses_to_add.insert(IntResponsePair(iteratedModel->evaluation_id(),
-            iteratedModel->current_response()));
-      points_to_add.push_back(iteratedModel->current_variables());
+    if (iteratedModel->asynch_flag()) {
+      for(int i = 0; i < new_Xs.size(); i++) {
+        ModelUtils::continuous_variables(*iteratedModel, new_Xs[i]);
+        iteratedModel->evaluate_nowait();
+        // Key by eval ID so points_to_add and responses_to_add are paired
+        // correctly regardless of completion order.
+        points_to_add[iteratedModel->evaluation_id()] =
+            iteratedModel->current_variables().copy();
+      }
+      responses_to_add = iteratedModel->synchronize();
+    } else {
+      for(int i = 0; i < new_Xs.size(); i++) {
+        ModelUtils::continuous_variables(*iteratedModel, new_Xs[i]);
+        iteratedModel->evaluate();
+        int eval_id = iteratedModel->evaluation_id();
+        responses_to_add.insert(IntResponsePair(eval_id,
+              iteratedModel->current_response()));
+        points_to_add[eval_id] = iteratedModel->current_variables().copy();
+      }
     }
 
     gpModel->append_approximation(points_to_add,responses_to_add, true);
@@ -570,9 +588,9 @@ void NonDAdaptiveSampling::calc_score_alm( )
   emulEvalScores.resize(numEmulEval);
   for (int i = 0; i < numEmulEval; i++)
   {
-    Real max_score;
-    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
-    {			
+    Real max_score = 0.0;
+    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++)
+    {
       ModelUtils::continuous_variables(*gpModel, gpCvars[i]);
       Real score = gpModel->approximation_variances(gpModel->current_variables())[respFnCount];
       if (respFnCount == 0 || score > max_score) max_score = score;
@@ -586,16 +604,16 @@ void NonDAdaptiveSampling::calc_score_delta_x( )
 {
 #pragma region Score Emulator sample points based on the closest data point:
   emulEvalScores.resize(numEmulEval);
-  for (int i = 0; i < numEmulEval; i++) 
+  for (int i = 0; i < numEmulEval; i++)
   {
-    Real max_score;
-    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
-    {			
+    Real max_score = 0.0;
+    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++)
+    {
       const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
       const Pecos::SDVArray& sdv_array = gp_data.variables_data();
-      double min_sq_dist;
-      int min_index;
-      bool first = true;
+      if (sdv_array.empty()) continue;
+      double min_sq_dist = std::numeric_limits<double>::max();
+      int min_index = 0;
       for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retrieve closest data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
       {
         double sq_dist = 0;
@@ -604,11 +622,10 @@ void NonDAdaptiveSampling::calc_score_delta_x( )
         {
           sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
         }
-        if(first || sq_dist < min_sq_dist) 
+        if(sq_dist < min_sq_dist)
         {
           min_sq_dist = sq_dist;
           min_index = j;
-          first = false;
         }
       }
       Real score = sqrt(min_sq_dist);
@@ -623,17 +640,17 @@ void NonDAdaptiveSampling::calc_score_delta_y( )
 {
 #pragma region Score Emulator sample points based on the response function difference of closest data point and current candidate:
   emulEvalScores.resize(numEmulEval);
-  for (int i = 0; i < numEmulEval; i++) 
+  for (int i = 0; i < numEmulEval; i++)
   {
-    Real max_score;
-    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++) 
-    {	
+    Real max_score = 0.0;
+    for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++)
+    {
       const Pecos::SurrogateData& gp_data = gpModel->approximation_data(respFnCount);
       const Pecos::SDVArray& sdv_array = gp_data.variables_data();
       const Pecos::SDRArray& sdr_array = gp_data.response_data();
-      double min_sq_dist;
-      int min_index;
-      bool first = true;
+      if (sdv_array.empty()) continue;
+      double min_sq_dist = std::numeric_limits<double>::max();
+      int min_index = 0;
 
       for (int j = 0; j < sdv_array.size(); j++) // This is a Naiive way to retriev closet data point. SHOULD BE RELACED IN THE FUTURE FOR BETTER PERFORMANCE!
       {
@@ -643,13 +660,12 @@ void NonDAdaptiveSampling::calc_score_delta_y( )
         {
           sq_dist += pow(gpCvars[i][d] - c_vars[d],2);
         }
-        if(first || sq_dist < min_sq_dist) 
+        if(sq_dist < min_sq_dist)
         {
           min_sq_dist = sq_dist;
           min_index = j;
-          first = false;
         }
-      }					
+      }
       Real score = fabs(gpMeans[i][respFnCount] - sdr_array[min_index].response_function());
       if (respFnCount == 0 || score > max_score) max_score = score;
     }
@@ -679,7 +695,7 @@ void NonDAdaptiveSampling::calc_score_topo_bottleneck( )
       temp_x[d] = gpCvars[i][d];
     }
 
-    Real max_score;
+    Real max_score = 0.0;
     for (int respFnCount = 0; respFnCount < numFunctions; respFnCount++)
     {
       temp_x[gpCvars[i].length()] = gpMeans[i][respFnCount];
@@ -898,10 +914,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
     //Naive batch selection will grab x highest scored candidates
     // where x=batchSize
     for(i = 0; i < batchSize; i++) {
-      int max_index = 0;
+      int max_index = -1;
       for(j=0; j < temp_length; j++) {
-        if(emulEvalScores[max_index] < emulEvalScores[j] &&
-            selected_indices.count(j) == 0) {
+        if(selected_indices.count(j) == 0 &&
+            (max_index < 0 || emulEvalScores[max_index] < emulEvalScores[j])) {
           max_index = j;
         }
       }
@@ -1014,10 +1030,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       else if(scoringMetric == "alm_topo_hybrid")
         calc_score_topo_alm_hybrid(respFnCount);
 
-      int max_index = 0;
+      int max_index = -1;
       for(j=0; j < temp_length; j++) {
-        if(emulEvalScores[max_index] < emulEvalScores[j] &&
-            selected_indices.count(j) == 0) {
+        if(selected_indices.count(j) == 0 &&
+            (max_index < 0 || emulEvalScores[max_index] < emulEvalScores[j])) {
           max_index = j;
         }
       }
@@ -1039,7 +1055,14 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       }
 #endif
     }
-    gpModel->pop_approximation(false, true/*, batchSize*/);
+    for (i = 0; i < batchSize; ++i)
+      gpModel->pop_approximation(false, i == batchSize - 1);
+#ifdef HAVE_MORSE_SMALE
+    for (int ifunc = 0; ifunc < numFunctions; ifunc++)
+    {
+      update_amsc(ifunc);
+    }
+#endif
   }
   else {
 #ifdef HAVE_MORSE_SMALE
@@ -1086,7 +1109,7 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
       }
     }
     std::map<double, int>::reverse_iterator mv_iter = max_values.rbegin();
-    while(mv_iter != max_values.rend() && selected_data.size() <= batchSize) {
+    while(mv_iter != max_values.rend() && selected_data.size() < batchSize) {
       selected_data.push_back(gpCvars[mv_iter->second]);
       selected_indices.insert(mv_iter->second);
       mv_iter++;
@@ -1105,11 +1128,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
             temp_dist += pow((gpCvars[i][k] - selected_data[j][k]),2);
           }
           temp_dist = sqrt(temp_dist);
-          //If it is the first iteration for i, j==1, then set the min_distances
-          // regardless, otherwise only if the last selected point is closer 
-          // than all previous selected points
-          if(min_distances[j] > temp_dist || j == 0)
-            min_distances[j] = temp_dist;
+          //j==0 is the first selected point: initialize min_distances[i];
+          // later selected points update it if they are closer
+          if(j == 0 || temp_dist < min_distances[i])
+            min_distances[i] = temp_dist;
         }
       }
 
@@ -1117,14 +1139,12 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
         for(j = 0; j < temp_length; j++) {
           temp_dist = 0;
           for(int k = 0; k < gpCvars[j].length(); k++) {
-            temp_dist += pow((gpCvars[j][k] - 
+            temp_dist += pow((gpCvars[j][k] -
                   selected_data[selected_data.size()-1][k]),2);
           }
           temp_dist = sqrt(temp_dist);
-          //If it is the first iteration i==1, then set the min_distances
-          // regardless, otherwise only if the last selected point is closer than
-          // all previous selected points
-          if(min_distances[j] > temp_dist || i== 1)
+          //Update min_distances only if the most recently added point is closer
+          if(min_distances[j] > temp_dist)
             min_distances[j] = temp_dist;
         }
 
@@ -1179,10 +1199,10 @@ RealVectorArray NonDAdaptiveSampling::drawNewX(int this_k, int respFnCount)
     //Naive batch selection will grab x highest scored candidates
     // where x=batchSize
     for(i = 0; i < batchSize; i++) {
-      int max_index = 0;
+      int max_index = -1;
       for(j=0; j < temp_length; j++) {
-        if(emulEvalScores[max_index] < emulEvalScores[j] &&
-            selected_indices.count(j) == 0) {
+        if(selected_indices.count(j) == 0 &&
+            (max_index < 0 || emulEvalScores[max_index] < emulEvalScores[j])) {
           max_index = j;
         }
       }

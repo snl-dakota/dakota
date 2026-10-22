@@ -8,11 +8,12 @@ from typing import Literal, Union
 
 # Cross-module model imports
 from dakota.spec.shared.misc import (
+    DistributionCumulComplContext1Mixin,
     ImportBuildMixin,
-    LevelMappingsNoRelContext1Mixin,
     MethodMaxIterationsContext1Mixin,
     MethodOptionalModelPointerMixin,
     MethodThreeOptionalKeywordsMixin,
+    ResponseLevelsComputeProbGenContext1Mixin,
     RngOptionsContext2Mixin,
 )
 from dakota.spec.shared.surrogate import MethodExportApproxFormatMixin
@@ -172,7 +173,8 @@ class AdaptiveSamplingConfig(
     MethodThreeOptionalKeywordsMixin,
     ImportBuildMixin,
     MethodMaxIterationsContext1Mixin,
-    LevelMappingsNoRelContext1Mixin,
+    ResponseLevelsComputeProbGenContext1Mixin,
+    DistributionCumulComplContext1Mixin,
     RngOptionsContext2Mixin,
     MethodOptionalModelPointerMixin,
 ):
