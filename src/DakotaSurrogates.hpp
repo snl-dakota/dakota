@@ -23,6 +23,9 @@ namespace dakota {
 
 namespace Dakota {
 
+class IRStore;
+class SpecSource;
+
 /// Derived Approximation class for new Surrogates modules.
 
 /** Encapsulates common behavior for Surrogates modules, with
@@ -45,6 +48,10 @@ public:
   SurrogatesBaseApprox(const ProblemDescDB& problem_db,
 		       const SharedApproxData& shared_data,
 		       const StringArray& approx_labels);
+  /// DI constructor for scalar surfaces: settings from a model IR store
+  SurrogatesBaseApprox(const IRStore& model_store,
+		       const SharedApproxData& shared_data,
+		       const String& approx_label);
   /// alternate constructor
   SurrogatesBaseApprox(const SharedApproxData& shared_data);
   /// destructor
@@ -93,7 +100,7 @@ protected:
   void set_verbosity();
 
   /// construct-time only import of serialized surrogate
-  void import_model(const ProblemDescDB& problem_db);
+  void import_model(const SpecSource& spec);
 
   /// validate imported labels and initialize map if needed
   void map_variable_labels(const Variables& vars) override;

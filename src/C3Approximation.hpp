@@ -30,6 +30,8 @@ class SurrogateData;
 
 namespace Dakota {
 
+class IRStore;
+
 class SharedC3ApproxData;  // forward declare
 
 
@@ -54,6 +56,10 @@ public:
   C3Approximation(ProblemDescDB& problem_db,
 		  const SharedApproxData& shared_data,
 		  const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  C3Approximation(const IRStore& model_store,
+                  const SharedApproxData& shared_data,
+                  const String& approx_label);
   /// alternate constructor
   C3Approximation(const SharedApproxData& shared_data);
   ~C3Approximation(); // destructor

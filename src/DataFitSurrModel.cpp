@@ -264,16 +264,7 @@ DataFitSurrModel::DataFitSurrModel(
       "transformed approximation type '" + surrogateType +
       "'; support is deferred pending the RecastModel refactor.");
 
-  if (model_store.get<bool>("surrogate.import_surrogate"))
-    throw std::runtime_error(
-      "DataFitSurrModel DI construction cannot yet import a serialized "
-      "surrogate model because the approximation backend import path still "
-      "requires ProblemDescDB.");
-  if (model_store.get<bool>("surrogate.domain_decomp"))
-    throw std::runtime_error(
-      "DataFitSurrModel DI construction cannot yet create a domain-"
-      "decomposed surrogate because VPSApproximation still requires "
-      "ProblemDescDB configuration.");
+  const bool import_surrogate = model_store.get<bool>("surrogate.import_surrogate");
 
   const bool global_approx = strbegins(surrogateType, "global_");
   if (daceIterator) {
@@ -309,10 +300,11 @@ DataFitSurrModel::DataFitSurrModel(
   const bool export_pts = !exportPointsFile.empty() || !exportVarianceFile.empty();
   if (pointReuse.empty())
     pointReuse = import_pts ? "all" : "none";
-  if (!actualModel && pointReuse == "none" && !import_pts)
+  if (!actualModel && pointReuse == "none" && !import_pts && !import_surrogate)
     throw std::invalid_argument(
       "DataFitSurrModel global construction requires a truth model, a DACE "
-      "iterator, imported build points, or reusable points.");
+      "iterator, imported build points, reusable points, or an imported "
+      "surrogate.");
 
   if (actualModel) {
     mvDist = actualModel->multivariate_distribution().copy();
@@ -363,6 +355,17 @@ DataFitSurrModel::DataFitSurrModel(
     initialize_export();
   if (import_pts || export_pts)
     manage_data_recastings();
+
+  // actual import of the model happens in ctor of specific Approximations
+  // this prevents an initial build
+  if (import_surrogate) {
+    for (auto& approx : approxInterface->approximations())
+      approx.map_variable_labels(vars);
+    ++approxBuilds;
+    if (global_approx) update_global_reference();
+    else               update_local_reference();
+  }
+
   currentResponse.reshape_metadata(0);
 }
 

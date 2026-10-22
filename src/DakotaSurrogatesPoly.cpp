@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "DakotaSurrogatesPoly.hpp"
+#include "SpecSource.hpp"
 
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
@@ -26,12 +27,27 @@ SurrogatesPolyApprox(const ProblemDescDB& problem_db,
 		const SharedApproxData& shared_data,
 		const String& approx_label):
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
+{ initialize(SpecSource(problem_db)); }
+
+
+/** DI constructor: same configuration as the ProblemDescDB constructor,
+    with settings drawn from the model IR store. */
+SurrogatesPolyApprox::
+SurrogatesPolyApprox(const IRStore& model_store,
+		const SharedApproxData& shared_data,
+		const String& approx_label):
+  SurrogatesBaseApprox(model_store, shared_data, approx_label)
+{ initialize(SpecSource(model_store)); }
+
+
+/** Shared configuration code for the ProblemDescDB and DI constructors. */
+void SurrogatesPolyApprox::initialize(const SpecSource& spec)
 {
   surrogateOpts.set("max degree",
-		    static_cast<int>(problem_db.get<short>("model.surrogate.polynomial_order"))
+		    static_cast<int>(spec.get<short>("model.surrogate.polynomial_order"))
 		    );
 //  surrogateOpts.set("advanced_options_file",
-//		    problem_db.get<const String>("model.advanced_options_file"));
+//		    spec.get<const String>("model.advanced_options_file"));
 
   // validate supported metrics
   std::set<std::string> allowed_metrics =

@@ -166,7 +166,8 @@ ApproximationInterface(const IRStore& model_store, const Variables& am_vars,
 
   functionSurfaces.resize(num_fns);
   for (const auto fn_index : approxFnIndices)
-    functionSurfaces[fn_index] = Approximation(sharedData);
+    functionSurfaces[fn_index] =
+      Approximation(model_store, sharedData, fn_labels[fn_index]);
 }
 
 

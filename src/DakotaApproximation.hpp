@@ -17,6 +17,7 @@
 namespace Dakota {
 
 class ProblemDescDB;
+class IRStore;
 class Variables;
 class Response;
 
@@ -49,6 +50,9 @@ public:
                 const String& approx_label);
    /// alternate constructor
   Approximation(const SharedApproxData& shared_data);
+  /// DI envelope constructor: letter type and settings from a model IR store
+  Approximation(const IRStore& model_store, const SharedApproxData& shared_data,
+                const String& approx_label);
   /// copy constructor
   Approximation(const Approximation& approx);
 
@@ -368,6 +372,11 @@ protected:
   /// derived class constructors - Coplien, p. 139)
   Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data);
 
+  /// constructor initializes the base class part of letter classes that
+  /// carry a function label but no ProblemDescDB (DI path)
+  Approximation(BaseConstructor, const SharedApproxData& shared_data,
+                const String& approx_label);
+
   //
   //- Heading: Member functions
   //
@@ -382,6 +391,12 @@ protected:
   /// approxRep to the appropriate derived type.
   std::shared_ptr<Approximation>
   get_approx(const SharedApproxData& shared_data);
+
+  /// Used only by the DI envelope constructor to initialize approxRep to
+  /// the appropriate derived type.
+  std::shared_ptr<Approximation>
+  get_approx(const IRStore& model_store, const SharedApproxData& shared_data,
+             const String& approx_label);
 
   /// create a SurrogateDataVars instance from a Real*
   Pecos::SurrogateDataVars variables_to_sdv(const Real* sample_c_vars);

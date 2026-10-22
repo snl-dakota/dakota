@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Derived approximation class for TANA-3 two-point exponential
 /// approximation (a multipoint approximation).
 
@@ -36,6 +38,10 @@ public:
   /// standard constructor
   TANA3Approximation(ProblemDescDB& problem_db,
 		     const SharedApproxData& shared_data,
+                     const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  TANA3Approximation(const IRStore& model_store,
+                     const SharedApproxData& shared_data,
                      const String& approx_label);
   /// alternate constructor
   TANA3Approximation(const SharedApproxData& shared_data);

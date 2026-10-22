@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "DakotaApproximation.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaResponse.hpp"
@@ -61,6 +62,17 @@ Approximation::Approximation(BaseConstructor, const ProblemDescDB& problem_db,
 Approximation::
 Approximation(NoDBBaseConstructor, const SharedApproxData& shared_data):
   approxData(true), sharedDataRep(shared_data.data_rep())
+{ /* empty ctor */ }
+
+
+/** Base class constructor for DI letters: like NoDBBaseConstructor, but
+    retains the function label used for diagnostics and model
+    import/export file names. */
+Approximation::
+Approximation(BaseConstructor, const SharedApproxData& shared_data,
+              const String& approx_label):
+  approxData(true), approxLabel(approx_label),
+  sharedDataRep(shared_data.data_rep())
 { /* empty ctor */ }
 
 
@@ -207,6 +219,84 @@ Approximation::get_approx(const SharedApproxData& shared_data)
 #ifdef HAVE_DAKOTA_PYTHON_SURROGATES
   else if (approx_type == "global_exp_python")
     return std::make_shared<SurrogatesPythonApprox>(shared_data);
+#endif // HAVE_DAKOTA_PYTHON_SURROGATES
+#endif // HAVE_DAKOTA_SURROGATES
+  else
+    Cerr << "Error: Approximation type " << approx_type << " not available."
+	 << std::endl;
+
+  return std::shared_ptr<Approximation>();
+}
+
+
+/** DI envelope constructor: mirrors the ProblemDescDB envelope, with
+    approximation settings drawn from the model IR store. */
+Approximation::
+Approximation(const IRStore& model_store, const SharedApproxData& shared_data,
+              const String& approx_label):
+  // Set the rep pointer to the appropriate derived type
+  approxRep(get_approx(model_store, shared_data, approx_label))
+{
+  if ( !approxRep ) // bad type or insufficient memory
+    abort_handler(APPROX_ERROR);
+}
+
+
+/** Used only by the DI envelope constructor to initialize approxRep to the
+    appropriate derived type; dispatch mirrors the ProblemDescDB overload. */
+std::shared_ptr<Approximation> Approximation::
+get_approx(const IRStore& model_store, const SharedApproxData& shared_data,
+           const String& approx_label)
+{
+  if (model_store.get<bool>("surrogate.domain_decomp"))
+    return std::make_shared<VPSApproximation>
+      (model_store, shared_data, approx_label);
+
+  const String& approx_type = shared_data.data_rep()->approxType;
+  if (approx_type == "local_taylor")
+    return std::make_shared<TaylorApproximation>
+      (model_store, shared_data, approx_label);
+  else if (approx_type == "multipoint_tana")
+    return std::make_shared<TANA3Approximation>
+      (model_store, shared_data, approx_label);
+  else if (approx_type == "multipoint_qmea")
+    return std::make_shared<QMEApproximation>
+      (model_store, shared_data, approx_label);
+  else if (strends(approx_type, "_orthogonal_polynomial") ||
+	   strends(approx_type, "_interpolation_polynomial"))
+    return std::make_shared<PecosApproximation>
+      (model_store, shared_data, approx_label);
+  else if (approx_type == "global_gaussian")
+    return std::make_shared<GaussProcApproximation>
+      (model_store, shared_data, approx_label);
+#ifdef HAVE_C3
+  else if (approx_type == "global_function_train")
+    return std::make_shared<C3Approximation>
+      (model_store, shared_data, approx_label);
+#endif
+#ifdef HAVE_SURFPACK
+  else if (approx_type == "global_polynomial"     ||
+	   approx_type == "global_kriging"        ||
+	   approx_type == "global_neural_network" || // TO DO: Two ANN's ?
+	   approx_type == "global_radial_basis"   ||
+	   approx_type == "global_mars"           ||
+	   approx_type == "global_moving_least_squares")
+    return std::make_shared<SurfpackApproximation>
+      (model_store, shared_data, approx_label);
+#endif // HAVE_SURFPACK
+#ifdef HAVE_DAKOTA_SURROGATES
+#ifdef HAVE_ROL
+  else if (approx_type == "global_exp_gauss_proc")
+    return std::make_shared<SurrogatesGPApprox>
+      (model_store, shared_data, approx_label);
+#endif
+  else if (approx_type == "global_exp_poly")
+    return std::make_shared<SurrogatesPolyApprox>
+      (model_store, shared_data, approx_label);
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+  else if (approx_type == "global_exp_python")
+    return std::make_shared<SurrogatesPythonApprox>
+      (model_store, shared_data, approx_label);
 #endif // HAVE_DAKOTA_PYTHON_SURROGATES
 #endif // HAVE_DAKOTA_SURROGATES
   else

@@ -45,6 +45,14 @@ SharedSurfpackApproxData(const IRStore& model_store,
     for (size_t i = 1; i < num_vars; ++i)
       approxOrder = std::max(approx_order[i], approxOrder);
   }
+
+  // As for the ProblemDescDB ctor, the Kriging trend sets its order
+  if (approxType == "global_kriging") {
+    const String& trend_string = model_store.get<String>("surrogate.trend_order");
+    if (trend_string == "constant")    approxOrder = 0;
+    else if (trend_string == "linear") approxOrder = 1;
+    else approxOrder = 2; // empty, reduced_quadratic, quadratic
+  }
 }
 
 

@@ -1866,5 +1866,237 @@
     "requires_features": [
       "HAVE_NL2SOL"
     ]
+  },
+  {
+    "id": "model_global_kriging",
+    "input": "python_parity/inputs/global_kriging.in",
+    "subtest": 0,
+    "script": "model_global_kriging.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "model_global_gp_dakota",
+    "input": "python_parity/inputs/global_gp_dakota.in",
+    "subtest": 0,
+    "script": "model_global_gp_dakota.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_NCSU"
+    ]
+  },
+  {
+    "id": "model_global_neural_network",
+    "input": "python_parity/inputs/global_neural_network.in",
+    "subtest": 0,
+    "script": "model_global_neural_network.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "model_global_radial_basis",
+    "input": "python_parity/inputs/global_radial_basis.in",
+    "subtest": 0,
+    "script": "model_global_radial_basis.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "model_global_mars",
+    "input": "python_parity/inputs/global_mars.in",
+    "subtest": 0,
+    "script": "model_global_mars.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "model_global_moving_least_squares",
+    "input": "python_parity/inputs/global_moving_least_squares.in",
+    "subtest": 0,
+    "script": "model_global_moving_least_squares.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "model_global_experimental_gaussian_process",
+    "input": "python_parity/inputs/global_experimental_gaussian_process.in",
+    "subtest": 0,
+    "script": "model_global_experimental_gaussian_process.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_DAKOTA_SURROGATES",
+      "HAVE_ROL"
+    ]
+  },
+  {
+    "id": "model_global_experimental_polynomial",
+    "input": "python_parity/inputs/global_experimental_polynomial.in",
+    "subtest": 0,
+    "script": "model_global_experimental_polynomial.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_DAKOTA_SURROGATES"
+    ]
+  },
+  {
+    "id": "model_global_import",
+    "input": "python_parity/inputs/global_import.in",
+    "subtest": 0,
+    "script": "model_global_import.py",
+    "setup_input": "python_parity/inputs/global_import_export.in",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "model_global_domain_decomposition",
+    "input": "python_parity/inputs/global_domain_decomposition.in",
+    "subtest": 0,
+    "script": "model_global_domain_decomposition.py",
+    "required_files": [
+      "python_parity/inputs/build_points.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.global_surrogate",
+      "MethodFactory.vector_parameter_study"
+    ],
+    "classes": [
+      "DataFitSurrModel",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "HAVE_SURFPACK"
+    ]
   }
 ]

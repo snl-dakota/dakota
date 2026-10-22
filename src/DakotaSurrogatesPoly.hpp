@@ -32,6 +32,10 @@ public:
   SurrogatesPolyApprox(const ProblemDescDB& problem_db,
 		       const SharedApproxData& shared_data,
 		       const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  SurrogatesPolyApprox(const IRStore& model_store,
+		       const SharedApproxData& shared_data,
+		       const String& approx_label);
   /// alternate constructor
   SurrogatesPolyApprox(const SharedApproxData& shared_data);
   /// destructor
@@ -45,6 +49,10 @@ protected:
   ///  Do the build
   void build() override;
 
+private:
+
+  /// shared configuration code for the ProblemDescDB and DI constructors
+  void initialize(const SpecSource& spec);
 };
 
 } // namespace Dakota

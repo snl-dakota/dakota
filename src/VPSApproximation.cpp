@@ -14,6 +14,7 @@
 //- Version:
 //-------------------------------------------------------------------------
 #include "VPSApproximation.hpp"
+#include "SpecSource.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
 #include "ProblemDescDB.hpp"
@@ -40,12 +41,25 @@ namespace Dakota
     VPSApproximation::VPSApproximation(const ProblemDescDB& problem_db,
                                        const SharedApproxData& shared_data,
                                        const String& approx_label):
-                                       Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
-                                       _disc_min_jump(problem_db.get<const Real>("model.surrogate.discont_jump_thresh")),
-                                       _disc_min_grad(problem_db.get<const Real>("model.surrogate.discont_grad_thresh"))
-    {
+                                       Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
+    { initialize(SpecSource(problem_db)); }
 
-        const String& surrogate_type = problem_db.get<const String>("model.surrogate.type");
+    /// DI constructor (settings from a model IR store)
+
+    VPSApproximation::VPSApproximation(const IRStore& model_store,
+                                       const SharedApproxData& shared_data,
+                                       const String& approx_label):
+                                       Approximation(BaseConstructor(), shared_data, approx_label)
+    { initialize(SpecSource(model_store)); }
+
+    /// shared constructor code
+
+    void VPSApproximation::initialize(const SpecSource& spec)
+    {
+        _disc_min_jump = spec.get<const Real>("model.surrogate.discont_jump_thresh");
+        _disc_min_grad = spec.get<const Real>("model.surrogate.discont_grad_thresh");
+
+        const String& surrogate_type = spec.get<const String>("model.surrogate.type");
       
         if (surrogate_type != "global_kriging" && surrogate_type != "global_polynomial" &&
 	        surrogate_type != "global_radial_basis")
@@ -66,13 +80,13 @@ namespace Dakota
 	
         if (_vps_subsurrogate == LS && _vps_subsurrogate_basis == polynomial)
         {
-            surrogateOrder = problem_db.get<short>("model.surrogate.polynomial_order");
+            surrogateOrder = spec.get<short>("model.surrogate.polynomial_order");
         }
 
         std::cout << ".: VPS :.   Initializing, Surrogate order " << surrogateOrder << "." << std::endl;
         std::cout << ".: VPS :.   Initializing, Surrogate type " << surrogate_type <<  "." << std::endl;
         
-        _use_derivatives = problem_db.get<bool>("model.surrogate.derivative_usage");
+        _use_derivatives = spec.get<bool>("model.surrogate.derivative_usage");
         
         if (_use_derivatives) std::cout << ".: VPS :.   Derivatives' information will be used for approximation." << std::endl;
         else                  std::cout << ".: VPS :.   Approximation will not use derivatives' information." << std::endl;

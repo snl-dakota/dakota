@@ -134,6 +134,16 @@ def main():
             origin = Path(args.driver) if required == "text_book" else source / required
             shutil.copy2(origin, directory / Path(required).name)
         env["PATH"] = str(directory) + os.pathsep + os.environ.get("PATH", "")
+        # Optional freeform setup study (e.g. exporting a surrogate that the
+        # pair then imports) run in each working directory before the pair.
+        if "setup_input" in case:
+            shutil.copy2(source / case["setup_input"], directory / "setup.in")
+            execute(
+                [args.dakota, "-i", "setup.in", "-o", "setup.out", "-e", "setup.err"],
+                directory,
+                "setup",
+                env,
+            )
         if kind == "freeform":
             execute(
                 [

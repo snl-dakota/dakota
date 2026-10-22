@@ -16,6 +16,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 class SharedApproxData;
 
 
@@ -39,6 +41,10 @@ public:
   /// standard ProblemDescDB-driven constructor
   PecosApproximation(ProblemDescDB& problem_db,
 		     const SharedApproxData& shared_data,
+                     const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  PecosApproximation(const IRStore& model_store,
+                     const SharedApproxData& shared_data,
                      const String& approx_label);
   /// alternate constructor
   PecosApproximation(const SharedApproxData& shared_data);

@@ -33,6 +33,24 @@ TANA3Approximation(ProblemDescDB& problem_db,
 }
 
 
+TANA3Approximation::
+TANA3Approximation(const IRStore& /*model_store*/,
+		   const SharedApproxData& shared_data,
+                   const String& approx_label):
+  Approximation(BaseConstructor(), shared_data, approx_label)
+{
+  // sanity checks
+  if (sharedDataRep->buildDataOrder != 3) {
+    Cerr << "Error: response values and gradients required in "
+	 << "TANA3Approximation." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+
+  pExp.sizeUninitialized(sharedDataRep->numVars);
+  minX.sizeUninitialized(sharedDataRep->numVars);
+}
+
+
 int TANA3Approximation::min_coefficients() const
 {
   // TANA-3 requires 2 expansion points, each with value and gradient data.

@@ -36,6 +36,11 @@ public:
   /// derived class constructors - Coplien, p. 139)
   FieldApproximation(NoDBBaseConstructor, const SharedApproxData& shared_data);
 
+  /// constructor initializes the base class part of letter classes that
+  /// carry function labels but no ProblemDescDB (DI path)
+  FieldApproximation(BaseConstructor, const SharedApproxData& shared_data,
+                     const StringArray& approx_labels);
+
   /// default constructor
   FieldApproximation();
   /// standard constructor for envelope

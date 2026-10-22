@@ -9,6 +9,7 @@
 
 #include <limits>
 #include "GaussProcApproximation.hpp"
+#include "SpecSource.hpp"
 #include "dakota_data_types.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaResponse.hpp"
@@ -132,11 +133,26 @@ GaussProcApproximation::
 GaussProcApproximation(const ProblemDescDB& problem_db,
 		       const SharedApproxData& shared_data,
                        const String& approx_label):
-  Approximation(BaseConstructor(), problem_db, shared_data, approx_label),
-  usePointSelection(problem_db.get<bool>("model.surrogate.point_selection"))
+  Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
+{ initialize(SpecSource(problem_db)); }
+
+
+/** DI constructor: same configuration as the ProblemDescDB constructor,
+    with settings drawn from the model IR store. */
+GaussProcApproximation::
+GaussProcApproximation(const IRStore& model_store,
+		       const SharedApproxData& shared_data,
+                       const String& approx_label):
+  Approximation(BaseConstructor(), shared_data, approx_label)
+{ initialize(SpecSource(model_store)); }
+
+
+/** Shared configuration code for the ProblemDescDB and DI constructors. */
+void GaussProcApproximation::initialize(const SpecSource& spec)
 {
+  usePointSelection = spec.get<bool>("model.surrogate.point_selection");
   const String& trend_string
-    = problem_db.get<const String>("model.surrogate.trend_order");
+    = spec.get<const String>("model.surrogate.trend_order");
   if (trend_string == "constant")               trendOrder = 0;
   else if (trend_string == "linear")            trendOrder = 1;
   else if (trend_string == "reduced_quadratic") trendOrder = 2;

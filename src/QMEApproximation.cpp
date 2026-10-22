@@ -34,6 +34,23 @@ QMEApproximation(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 }
 
 
+QMEApproximation::
+QMEApproximation(const IRStore& /*model_store*/, const SharedApproxData& shared_data,
+		 const String& approx_label):
+  Approximation(BaseConstructor(), shared_data, approx_label),
+  numUsed(0), currGradIndex(_NPOS), prevGradIndex(_NPOS)
+{
+  // sanity checks
+  if (sharedDataRep->buildDataOrder != 3) {
+    Cerr << "Error: response values and gradients required in "
+	 << "QMEApproximation." << std::endl;
+    abort_handler(APPROX_ERROR);
+  }
+  pExp.sizeUninitialized(sharedDataRep->numVars);
+  minX.sizeUninitialized(sharedDataRep->numVars);
+}
+
+
 int QMEApproximation::min_coefficients() const
 {
   // QMEA requires at least two expansion points, each with a value,  

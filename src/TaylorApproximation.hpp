@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Derived approximation class for first- or second-order Taylor
 /// series (a local approximation).
 
@@ -37,6 +39,10 @@ public:
   /// standard constructor
   TaylorApproximation(ProblemDescDB& problem_db,
 		      const SharedApproxData& shared_data,
+                      const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  TaylorApproximation(const IRStore& model_store,
+                      const SharedApproxData& shared_data,
                       const String& approx_label);
   /// alternate constructor
   TaylorApproximation(const SharedApproxData& shared_data);

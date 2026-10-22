@@ -34,6 +34,14 @@ FieldApproximation(NoDBBaseConstructor ndbbc, const SharedApproxData& shared_dat
 { /* empty ctor */ }
 
 
+FieldApproximation::
+FieldApproximation(BaseConstructor bc, const SharedApproxData& shared_data,
+                   const StringArray& approx_labels):
+  Approximation(bc, shared_data, approx_labels.at(0)),
+  numComponents(approx_labels.size())
+{ /* empty ctor */ }
+
+
 /** The default constructor is used in Array<Approximation> instantiations
     and by the alternate envelope constructor.  approxRep is NULL in this
     case (problem_db is needed to build a meaningful Approximation object). */

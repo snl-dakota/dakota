@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "DakotaSurrogatesGP.hpp"
+#include "SpecSource.hpp"
 
 #include "DakotaVariables.hpp"
 #include "ProblemDescDB.hpp"
@@ -26,12 +27,27 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 		   const SharedApproxData& shared_data,
 		   const String& approx_label):
   SurrogatesBaseApprox(problem_db, shared_data, approx_label)
+{ initialize(SpecSource(problem_db)); }
+
+
+/** DI constructor: same configuration as the ProblemDescDB constructor,
+    with settings drawn from the model IR store. */
+SurrogatesGPApprox::
+SurrogatesGPApprox(const IRStore& model_store,
+		const SharedApproxData& shared_data,
+		const String& approx_label):
+  SurrogatesBaseApprox(model_store, shared_data, approx_label)
+{ initialize(SpecSource(model_store)); }
+
+
+/** Shared configuration code for the ProblemDescDB and DI constructors. */
+void SurrogatesGPApprox::initialize(const SpecSource& spec)
 {
   // DTS: Updated default behavior to have no trend (i.e. if trend
   // keyword is absent there is no trend)
   surrogateOpts.sublist("Trend").set("estimate trend", true);
   const String& trend_string =
-    problem_db.get<const String>("model.surrogate.trend_order");
+    spec.get<const String>("model.surrogate.trend_order");
   if (trend_string == "constant")
     surrogateOpts.sublist("Trend").sublist("Options").set("max degree", 0);
   else if (trend_string == "linear")
@@ -50,8 +66,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
 
   // TODO: Surfpack find_nugget is an integer; likely want bool or
   // different semantics
-  Real nugget = problem_db.get<const Real>("model.surrogate.nugget");
-  short find_nugget = problem_db.get<short>("model.surrogate.find_nugget");
+  Real nugget = spec.get<const Real>("model.surrogate.nugget");
+  short find_nugget = spec.get<short>("model.surrogate.find_nugget");
   if (find_nugget > 0) {
     surrogateOpts.sublist("Nugget").set("estimate nugget", true);
     surrogateOpts.sublist("Nugget").set("fixed nugget", 0.0);
@@ -63,7 +79,7 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
   }
 
   // Number of optimization restarts
-  int num_restarts = problem_db.get<int>("model.surrogate.num_restarts");
+  int num_restarts = spec.get<int>("model.surrogate.num_restarts");
   surrogateOpts.set("num restarts", num_restarts);
 
   // validate supported metrics
@@ -76,8 +92,8 @@ SurrogatesGPApprox(const ProblemDescDB& problem_db,
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
   shared_surf_data_rep->validate_metrics(allowed_metrics);
 
-  if (problem_db.get<bool>("model.surrogate.import_surrogate"))
-    import_model(problem_db);
+  if (spec.get<bool>("model.surrogate.import_surrogate"))
+    import_model(spec);
 }
 
 

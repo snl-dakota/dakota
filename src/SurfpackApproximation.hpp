@@ -23,6 +23,8 @@ template< typename T > class SurfpackMatrix;
 namespace Dakota {
 
 class SharedApproxData;
+class IRStore;
+class SpecSource;
 
 
 /// Derived approximation class for Surfpack approximation classes.
@@ -48,6 +50,10 @@ public:
   SurfpackApproximation();
   /// standard constructor: Surfpack surface of appropriate type will be created
   SurfpackApproximation(const ProblemDescDB& problem_db,
+			const SharedApproxData& shared_data,
+                        const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  SurfpackApproximation(const IRStore& model_store,
 			const SharedApproxData& shared_data,
                         const String& approx_label);
   /// alternate constructor
@@ -143,8 +149,11 @@ private:
   //- Heading: Convenience functions
   //
 
+  /// shared configuration code for the ProblemDescDB and DI constructors
+  void initialize(const SpecSource& spec);
+
   /// construct-time only import of serialized surrogate
-  void import_model(const ProblemDescDB& problem_db);
+  void import_model(const SpecSource& spec);
 
   /// copy from SurrogateData to SurfPoint/SurfData in surfData
   void surrogates_to_surf_data();

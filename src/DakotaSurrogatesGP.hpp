@@ -34,6 +34,10 @@ public:
   SurrogatesGPApprox(const ProblemDescDB& problem_db,
 		     const SharedApproxData& shared_data,
 		     const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  SurrogatesGPApprox(const IRStore& model_store,
+		     const SharedApproxData& shared_data,
+		     const String& approx_label);
   /// alternate constructor
   SurrogatesGPApprox(const SharedApproxData& shared_data);
   /// destructor
@@ -51,6 +55,10 @@ protected:
 
   Real prediction_variance(const RealVector& c_vars) override;
 
+private:
+
+  /// shared configuration code for the ProblemDescDB and DI constructors
+  void initialize(const SpecSource& spec);
 };
 
 // free function for setting up experimental GPs with an

@@ -22,6 +22,14 @@ TaylorApproximation(ProblemDescDB& problem_db,
 { }
 
 
+TaylorApproximation::
+TaylorApproximation(const IRStore& /*model_store*/,
+		    const SharedApproxData& shared_data,
+                    const String& approx_label):
+  Approximation(BaseConstructor(), shared_data, approx_label)
+{ }
+
+
 int TaylorApproximation::min_coefficients() const
 {
   short  bdo   = sharedDataRep->buildDataOrder;

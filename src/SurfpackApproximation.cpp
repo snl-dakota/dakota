@@ -11,6 +11,7 @@
 #include <typeinfo>
 
 #include "SurfpackApproximation.hpp"
+#include "SpecSource.hpp"
 #include "SharedSurfpackApproxData.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaVariables.hpp"
@@ -41,7 +42,22 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
 		      const SharedApproxData& shared_data,
                       const String& approx_label):
   Approximation(BaseConstructor(), problem_db, shared_data, approx_label)
-  //sharedDataRep((SharedSurfpackApproxData*)shared_data.data_rep())
+{ initialize(SpecSource(problem_db)); }
+
+
+/** DI constructor: same configuration as the ProblemDescDB constructor,
+    with settings drawn from the model IR store. */
+SurfpackApproximation::
+SurfpackApproximation(const IRStore& model_store,
+		      const SharedApproxData& shared_data,
+                      const String& approx_label):
+  Approximation(BaseConstructor(), shared_data, approx_label)
+{ initialize(SpecSource(model_store)); }
+
+
+/** Configure the embedded Surfpack surface object from the user
+    specification (shared by the ProblemDescDB and DI constructors). */
+void SurfpackApproximation::initialize(const SpecSource& spec)
 {
   std::shared_ptr<SharedSurfpackApproxData> shared_surf_data_rep =
     std::static_pointer_cast<SharedSurfpackApproxData>(sharedDataRep);
@@ -68,7 +84,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
     args["type"]  = "kriging";
     args["order"] = toString<unsigned short>(shared_surf_data_rep->approxOrder);
     args["reduced_polynomial"] =
-      (problem_db.get<const String>("model.surrogate.trend_order") == "quadratic") ?
+      (spec.get<const String>("model.surrogate.trend_order") == "quadratic") ?
       toString<bool>(false) : toString<bool>(true);
 
     // activate derivative information if available
@@ -91,7 +107,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
     // optimization options are none | sample | local | global (default)
     args["optimization_method"] = "global";
     const String& optimization_method = 
-      problem_db.get<const String>("model.surrogate.kriging_opt_method");
+      spec.get<const String>("model.surrogate.kriging_opt_method");
     if (!optimization_method.empty()) {
       if (optimization_method == "none" || optimization_method == "sampling" 
 	  || optimization_method == "local" 
@@ -106,14 +122,14 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
     }
 
     short max_trials
-      = problem_db.get<short>("model.surrogate.kriging_max_trials");
+      = spec.get<short>("model.surrogate.kriging_max_trials");
     if (max_trials > 0)
       args["max_trials"] = toString<short>(max_trials);
 
     // NIDR support for RealArray (aka std::vector) would eliminate xtra copy!
     // old parameters
-    Real nugget = problem_db.get<const Real>("model.surrogate.nugget");
-    short find_nugget = problem_db.get<short>("model.surrogate.find_nugget");
+    Real nugget = spec.get<const Real>("model.surrogate.nugget");
+    short find_nugget = spec.get<short>("model.surrogate.find_nugget");
     if (nugget > 0) {
       args["nugget"] = toString<Real>(nugget);
     } 
@@ -131,7 +147,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
     }
 
     const RealVector& correlation_rv
-      = problem_db.get<const RealVector>("model.surrogate.kriging_correlations");
+      = spec.get<const RealVector>("model.surrogate.kriging_correlations");
     if (!correlation_rv.empty()) {
       RealArray correlation_ra; //std::vector<double>
       copy_data(correlation_rv, correlation_ra);
@@ -141,7 +157,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
 
     /*
     const RealVector& max_correlations_rv 
-      = problem_db.get<const RealVector>("model.surrogate.kriging_max_correlations");
+      = spec.get<const RealVector>("model.surrogate.kriging_max_correlations");
     if (!max_correlations_rv.empty()) {
       RealArray max_correlation_ra; //std::vector<double>
       copy_data(max_correlations_rv, max_correlation_ra);
@@ -149,7 +165,7 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
     }
 
     const RealVector& min_correlations_rv 
-      = problem_db.get<const RealVector>("model.surrogate.kriging_min_correlations");
+      = spec.get<const RealVector>("model.surrogate.kriging_min_correlations");
     if (!min_correlations_rv.empty()) {
       RealArray min_correlation_ra; //std::vector<double>
       copy_data(min_correlations_rv, min_correlation_ra);
@@ -183,17 +199,17 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   else if (sharedDataRep->approxType == "global_neural_network") {
     args["type"] = "ann";
     short random_weight
-      = problem_db.get<short>("model.surrogate.neural_network_random_weight");
+      = spec.get<short>("model.surrogate.neural_network_random_weight");
     if (random_weight > 0) {
       args["random_weight"] = toString<short>(random_weight);
     }
     short nodes
-      = problem_db.get<short>("model.surrogate.neural_network_nodes");
+      = spec.get<short>("model.surrogate.neural_network_nodes");
     if (nodes > 0) {
       args["nodes"] = toString<short>(nodes);
     }
     const Real& range
-      = problem_db.get<const Real>("model.surrogate.neural_network_range");
+      = spec.get<const Real>("model.surrogate.neural_network_range");
     if (range > 0) {
       args["range"] = toString<Real>(range);
     }
@@ -203,11 +219,11 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   else if (sharedDataRep->approxType == "global_moving_least_squares") {
     args["type"] = "mls";
     short weight
-      = problem_db.get<short>("model.surrogate.mls_weight_function");
+      = spec.get<short>("model.surrogate.mls_weight_function");
     if (weight > 0) {
       args["weight"] = toString<short>(weight);
     }
-    short order = problem_db.get<short>("model.surrogate.polynomial_order");
+    short order = spec.get<short>("model.surrogate.polynomial_order");
     if (order > 0) {
       args["order"] = toString<short>(order);
     }
@@ -217,22 +233,22 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   else if (sharedDataRep->approxType == "global_radial_basis") {
     args["type"] = "rbf";
     // mapping number bases to number of centers
-    short bases = problem_db.get<short>("model.surrogate.rbf_bases");
+    short bases = spec.get<short>("model.surrogate.rbf_bases");
     if (bases > 0) {
       args["centers"] = toString<short>(bases);
     }
     short min_partition
-      = problem_db.get<short>("model.surrogate.rbf_min_partition");
+      = spec.get<short>("model.surrogate.rbf_min_partition");
     if (min_partition > 0) {
       args["min_partition"] = toString<short>(min_partition);
     }
     short max_subsets
-      = problem_db.get<short>("model.surrogate.rbf_max_subsets");
+      = spec.get<short>("model.surrogate.rbf_max_subsets");
     if (max_subsets > 0) {
       args["max_iter"] = toString<short>(max_subsets);
     }
     // mapping max_pts to cvt_pts
-    short max_pts = problem_db.get<short>("model.surrogate.rbf_max_pts");
+    short max_pts = spec.get<short>("model.surrogate.rbf_max_pts");
     if (max_pts > 0) {
       args["cvt_pts"] = toString<short>(max_pts);
     }
@@ -241,12 +257,12 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
   //// For Mars surface fits
   else if (sharedDataRep->approxType == "global_mars") {
     args["type"] = "mars";
-    short max_bases = problem_db.get<short>("model.surrogate.mars_max_bases");
+    short max_bases = spec.get<short>("model.surrogate.mars_max_bases");
     if (max_bases > 0) {
       args["max_bases"] = toString<short>(max_bases);
     }
     const String& interpolation
-      = problem_db.get<const String>("model.surrogate.mars_interpolation");
+      = spec.get<const String>("model.surrogate.mars_interpolation");
     if (interpolation != "") {
       args["interpolation"] = interpolation; 
     }
@@ -271,8 +287,8 @@ SurfpackApproximation(const ProblemDescDB& problem_db,
       "rsquared" };
   shared_surf_data_rep->validate_metrics(allowed_metrics);
 
-  if (problem_db.get<bool>("model.surrogate.import_surrogate"))
-    import_model(problem_db);
+  if (spec.get<bool>("model.surrogate.import_surrogate"))
+    import_model(spec);
 }
 
 
@@ -834,12 +850,12 @@ RealArray SurfpackApproximation::challenge_diagnostic(const StringArray& metric_
 }
 
 
-void SurfpackApproximation::import_model(const ProblemDescDB& problem_db)
+void SurfpackApproximation::import_model(const SpecSource& spec)
 {
   auto import_prefix =
-    problem_db.get<const String>("model.surrogate.model_import_prefix");
+    spec.get<const String>("model.surrogate.model_import_prefix");
   auto import_format =
-    problem_db.get<unsigned short>("model.surrogate.model_import_format");
+    spec.get<unsigned short>("model.surrogate.model_import_format");
   bool is_binary = import_format & BINARY_ARCHIVE;
   std::string filename = import_prefix + "." + approxLabel +
     (is_binary ? ".bsps" : ".sps");

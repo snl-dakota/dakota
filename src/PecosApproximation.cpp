@@ -70,6 +70,34 @@ PecosApproximation(ProblemDescDB& problem_db,
 }
 
 
+PecosApproximation::
+PecosApproximation(const IRStore& /*model_store*/,
+		   const SharedApproxData& shared_data,
+                   const String& approx_label):
+  Approximation(BaseConstructor(), shared_data, approx_label)
+  //sharedPecosDataRep((SharedPecosApproxData*)sharedDataRep)
+{
+  // Dakota::PecosApproximation manages the Pecos::BasisApproximation instance,
+  // and Dakota::SharedPecosApproxData manages the Pecos::SharedBasisApproxData
+  // instance.  The latter shared data instance must be passed through to
+  // initialize the former approximation instance, which retains a pointer to
+  // the shared data representation.
+
+  std::shared_ptr<SharedPecosApproxData> shared_pecos_data_rep
+    = std::static_pointer_cast<SharedPecosApproxData>(sharedDataRep);
+  pecosBasisApprox
+    = Pecos::BasisApproximation(shared_pecos_data_rep->pecos_shared_data());
+
+  // Make a shallow copy of approxData instance (shared rep).
+  // Note: this SurrogateData instance is empty at construct time.
+  pecosBasisApprox.surrogate_data(approxData);
+
+  // convenience pointer (we use PolynomialApproximation exclusively)
+  polyApproxRep = std::static_pointer_cast<Pecos::PolynomialApproximation>
+  (pecosBasisApprox.approx_rep());
+}
+
+
 /*
 void PecosApproximation::link_multilevel_surrogate_data()
 {

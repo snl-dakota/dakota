@@ -213,6 +213,8 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
                 for file in case["required_files"]:
                     if file != "text_book":
                         self.assertTrue((SOURCE / file).is_file(), file)
+                if "setup_input" in case:
+                    self.assertTrue((SOURCE / case["setup_input"]).is_file())
 
     def test_failed_process_and_missing_output(self):
         with self.assertRaises(subprocess.CalledProcessError):

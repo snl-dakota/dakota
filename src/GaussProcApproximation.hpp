@@ -28,6 +28,8 @@ namespace Teuchos {
 namespace Dakota {
 
 class ProblemDescDB;
+class IRStore;
+class SpecSource;
 
 /// Derived approximation class for Gaussian Process implementation
 
@@ -51,6 +53,10 @@ public:
   GaussProcApproximation(const SharedApproxData& shared_data);
   /// standard constructor
   GaussProcApproximation(const ProblemDescDB& problem_db,
+			 const SharedApproxData& shared_data,
+                         const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  GaussProcApproximation(const IRStore& model_store,
 			 const SharedApproxData& shared_data,
                          const String& approx_label);
   /// destructor
@@ -84,6 +90,9 @@ private:
   //
   //- Heading: Member functions
   //
+
+  /// shared configuration code for the ProblemDescDB and DI constructors
+  void initialize(const SpecSource& spec);
 
   /// Function to compute hyperparameters governing the GP.
   void GPmodel_build();

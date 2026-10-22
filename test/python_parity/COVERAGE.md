@@ -77,9 +77,9 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.surrogate_based_global` | method_surrogate_based_global |
 | `MethodFactory.surrogate_based_local` | method_surrogate_based_local |
 | `MethodFactory.surrogate_based_uq` | method_surrogate_based_uq |
-| `MethodFactory.vector_parameter_study` | pstudy_s0, model_global, model_local, model_multipoint, model_ensemble, model_nested, multistart_ie_s0, nested_inferred_view |
+| `MethodFactory.vector_parameter_study` | pstudy_s0, model_global, model_local, model_multipoint, model_ensemble, model_nested, multistart_ie_s0, nested_inferred_view, model_global_kriging, model_global_gp_dakota, model_global_neural_network, model_global_radial_basis, model_global_mars, model_global_moving_least_squares, model_global_experimental_gaussian_process, model_global_experimental_polynomial, model_global_import, model_global_domain_decomposition |
 | `ModelFactory.ensemble_surrogate` | model_ensemble, method_multilevel_polynomial_chaos, method_multifidelity_polynomial_chaos, method_multifidelity_stoch_collocation, method_multilevel_function_train, method_multifidelity_function_train, method_multilevel_sampling, method_multifidelity_sampling, method_approximate_control_variate, method_multilevel_blue, method_multilevel_multifidelity_sampling, ensemble_inferred_view |
-| `ModelFactory.global_surrogate` | model_global, method_surrogate_based_uq, dace_sampling_aleatory_truth, dace_pstudy_under_optimizer, method_surrogate_based_local, method_surrogate_based_global |
+| `ModelFactory.global_surrogate` | model_global, method_surrogate_based_uq, dace_sampling_aleatory_truth, dace_pstudy_under_optimizer, method_surrogate_based_local, method_surrogate_based_global, model_global_kriging, model_global_gp_dakota, model_global_neural_network, model_global_radial_basis, model_global_mars, model_global_moving_least_squares, model_global_experimental_gaussian_process, model_global_experimental_polynomial, model_global_import, model_global_domain_decomposition |
 | `ModelFactory.local_surrogate` | model_local, local_surrogate_mixed_vars |
 | `ModelFactory.multipoint_surrogate` | model_multipoint |
 | `ModelFactory.nested` | model_nested, method_snowpac, nested_inferred_view |

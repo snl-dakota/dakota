@@ -11,6 +11,7 @@
 #include "DakotaSurrogates.hpp"
 
 #include "ProblemDescDB.hpp"
+#include "SpecSource.hpp"
 #include "DakotaVariables.hpp"
 #include "DakotaMethodEnums.hpp"
 #include "SharedSurfpackApproxData.hpp"
@@ -44,6 +45,18 @@ SurrogatesBaseApprox(const ProblemDescDB& problem_db,
   FieldApproximation(BaseConstructor(), problem_db, shared_data, approx_labels)
 {
   advanced_options_file = problem_db.get<const String>("model.advanced_options_file");
+  set_verbosity();
+}
+
+
+SurrogatesBaseApprox::
+SurrogatesBaseApprox(const IRStore& model_store,
+		     const SharedApproxData& shared_data,
+		     const String& approx_label):
+  FieldApproximation(BaseConstructor(), shared_data, StringArray{approx_label})
+{
+  advanced_options_file =
+    SpecSource(model_store).get<const String>("model.advanced_options_file");
   set_verbosity();
 }
 
@@ -319,12 +332,12 @@ const RealSymMatrix& SurrogatesBaseApprox::hessian(const RealVector& c_vars)
 
 
 void SurrogatesBaseApprox::
-import_model(const ProblemDescDB& problem_db)
+import_model(const SpecSource& spec)
 {
   auto import_prefix =
-    problem_db.get<const String>("model.surrogate.model_import_prefix");
+    spec.get<const String>("model.surrogate.model_import_prefix");
   auto import_format =
-    problem_db.get<unsigned short>("model.surrogate.model_import_format");
+    spec.get<unsigned short>("model.surrogate.model_import_format");
   bool is_binary = import_format & BINARY_ARCHIVE;
   std::string filename = import_prefix + "." + approxLabel +
     (is_binary ? ".bin" : ".txt");

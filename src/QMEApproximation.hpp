@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class IRStore;
+
 /// Derived approximation class for QMEA Quadratic Multipoint Exponential Approximation
 /// (a multipoint approximation).
 
@@ -37,6 +39,10 @@ public:
   QMEApproximation(ProblemDescDB& problem_db,
 		     const SharedApproxData& shared_data,
                      const String& approx_label);
+  /// DI constructor: settings and function label from a model IR store
+  QMEApproximation(const IRStore& model_store,
+                   const SharedApproxData& shared_data,
+                   const String& approx_label);
   /// alternate constructor
   QMEApproximation(const SharedApproxData& shared_data);
   /// destructor

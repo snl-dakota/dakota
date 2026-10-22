@@ -36,6 +36,10 @@ public:
   SurrogatesPythonApprox(const ProblemDescDB& problem_db,
 		         const SharedApproxData& shared_data,
 		         const StringArray& approx_labels);
+  /// DI constructor: settings and function label from a model IR store
+  SurrogatesPythonApprox(const IRStore& model_store,
+		         const SharedApproxData& shared_data,
+		         const String& approx_label);
   /// alternate constructor
   SurrogatesPythonApprox(const SharedApproxData& shared_data);
   /// destructor
@@ -54,6 +58,11 @@ protected:
 
   /// Python module filename
   String moduleFile;
+
+private:
+
+  /// shared configuration code for the ProblemDescDB and DI constructors
+  void initialize(const SpecSource& spec);
 };
 
 } // namespace Dakota

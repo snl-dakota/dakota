@@ -19,6 +19,8 @@
 namespace Dakota
 {
     class ProblemDescDB;
+    class IRStore;
+    class SpecSource;
     
     /// Derived approximation class for VPS implementation
 
@@ -39,6 +41,11 @@ namespace Dakota
 
         /// standard constructor (to call VPS from an input deck)
         VPSApproximation(const ProblemDescDB& problem_db,
+                         const SharedApproxData& shared_data,
+                         const String& approx_label);
+
+        /// DI constructor (settings from a model IR store)
+        VPSApproximation(const IRStore& model_store,
                          const SharedApproxData& shared_data,
                          const String& approx_label);
     
@@ -165,6 +172,9 @@ private:
   //
   //- Heading: Member functions
   //
+
+  /// shared code for the ProblemDescDB and DI constructors
+  void initialize(const SpecSource& spec);
 
   /// Function to compute coefficients governing the VPS surrogates.
   void VPSmodel_build();

@@ -32,6 +32,16 @@ C3Approximation(ProblemDescDB& problem_db,
 { } // FT memory allocations managed by C3FnTrainData
 
 
+C3Approximation::
+C3Approximation(const IRStore& /*model_store*/,
+		const SharedApproxData& shared_data,
+		const String& approx_label):
+  Approximation(BaseConstructor(), shared_data, approx_label),
+  levApproxIter(levelApprox.end()), expansionCoeffFlag(true),
+  expansionCoeffGradFlag(false)
+{ } // FT memory allocations managed by C3FnTrainData
+
+
 
 C3Approximation::C3Approximation(const SharedApproxData& shared_data):
   Approximation(NoDBBaseConstructor(), shared_data),
