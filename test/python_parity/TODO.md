@@ -9,8 +9,12 @@ Native pass status is separate from the inventory in `COVERAGE.md`.
 - Add separate cases for alternate dispatch paths: global interval/evidence
   optimization (current pairs use LHS), weighted MLMC, recursive ACV/model graph
   searches, and QUESO/GPMSA/DREAM/MUQ Bayesian backends (current pair uses WASABI).
-- Run the hybrid (sequential, embedded, collaborative) and surrogate-based
-  local/global pairs in a native build; they were authored without one.
+- Embedded and collaborative hybrids have no pairs: neither
+  `EmbedHybridMetaIterator` nor `CollabHybridMetaIterator` defines the
+  `initialize_iterator`/`update_local_results` callbacks that
+  `schedule_iterators` invokes, so both abort with METHOD_ERROR in the
+  executable (also on `devel`). Their `MethodFactory.hybrid` bindings remain;
+  add pairs once the classes are fixed.
 - Add a hierarchical `surrogate_based_local` pair
   (`HierarchSurrBasedLocalMinimizer`) once `ModelFactory.ensemble_surrogate`
   accepts a `correction` specification; hierarchical SBO requires corrections.
