@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "SubspaceModel.hpp"
+#include "IRStore.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
@@ -25,6 +26,21 @@ SubspaceModel::SubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& paralle
   // default is 0 for no user override, but only used for AdaptedBasis at
   // this time (ActiveSubspace overwrites with basis truncation procedure):
   reducedRank(problem_db.get<int>("model.subspace.dimension")),
+  offlineEvalConcurrency(1), onlineEvalConcurrency(1)
+{
+  componentParallelMode = CONFIG_PHASE;
+}
+
+
+SubspaceModel::
+SubspaceModel(std::shared_ptr<StudyServices> services,
+	      const IRStore& model_store, const Variables& variables,
+	      const Response& response, std::shared_ptr<Model> sub_model):
+  RecastModel(std::move(services), model_store, variables, response, sub_model),
+  randomSeed(24620), numFullspaceVars(ModelUtils::cv(*subModel)),
+  // as for the ProblemDescDB ctor, 0 means no user override
+  reducedRank(model_store.contains("subspace.dimension") ?
+	      model_store.get<int>("subspace.dimension") : 0),
   offlineEvalConcurrency(1), onlineEvalConcurrency(1)
 {
   componentParallelMode = CONFIG_PHASE;

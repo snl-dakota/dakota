@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ActiveSubspaceModel.hpp"
+#include "SpecSource.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "NonDLHSSampling.hpp"
 #include "BootstrapSampler.hpp"
@@ -17,6 +18,7 @@
 #include "DataFitSurrModel.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "dakota_mersenne_twister.hpp"
+#include <stdexcept>
 
 namespace Dakota {
 
@@ -29,30 +31,52 @@ ActiveSubspaceModel* ActiveSubspaceModel::asmInstance(NULL);
 
 ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   SubspaceModel(problem_db, parallel_lib, get_sub_model(problem_db, parallel_lib)),
-  initialSamples(problem_db.get<int>("model.initial_samples")),
-  subspaceIdBingLi(
-    probDescDB.get<bool>("model.active_subspace.truncation_method.bing_li")),
-  subspaceIdConstantine(
-    probDescDB.get<bool>("model.active_subspace.truncation_method.constantine")),
-  subspaceIdEnergy(
-    probDescDB.get<bool>("model.active_subspace.truncation_method.energy")),
-  subspaceIdCV(
-    probDescDB.get<bool>("model.active_subspace.truncation_method.cv")),
-  numReplicates(problem_db.get<int>("model.active_subspace.bootstrap_samples")),
-  totalSamples(0), gradientScaleFactors(RealArray(numFns, 1.)),
-  truncationTolerance(probDescDB.get<const Real>("model.active_subspace.truncation_method.energy.truncation_tolerance")),
-  buildSurrogate(probDescDB.get<bool>("model.active_subspace.build_surrogate")),
-  refinementSamples(0),
-  subspaceNormalization(
-    probDescDB.get<unsigned short>("model.active_subspace.normalization")),
-  cvIncremental(probDescDB.get<bool>("model.active_subspace.cv.incremental")),
-  cvIdMethod(probDescDB.get<unsigned short>("model.active_subspace.cv.id_method")),
-  cvRelTolerance(
-    probDescDB.get<const Real>("model.active_subspace.cv.relative_tolerance")),
-  cvDecreaseTolerance(
-    probDescDB.get<const Real>("model.active_subspace.cv.decrease_tolerance")),
-  cvMaxRank(problem_db.get<int>("model.active_subspace.cv.max_rank"))
+  totalSamples(0), refinementSamples(0)
+{ initialize(SpecSource(problem_db)); }
+
+
+/** DI constructor: the truth model is injected rather than identified by
+    truth_model_pointer; as for the ProblemDescDB ctor, it is wrapped in a
+    standard normal ProbabilityTransformModel. */
+ActiveSubspaceModel::
+ActiveSubspaceModel(std::shared_ptr<StudyServices> services,
+                    const IRStore& model_store, const Variables& variables,
+                    const Response& response, std::shared_ptr<Model> truth_model):
+  SubspaceModel(std::move(services), model_store, variables, response,
+                transform_sub_model(truth_model)),
+  totalSamples(0), refinementSamples(0)
 {
+  transformVars = true; // hardwired for now, as in get_sub_model()
+  initialize(SpecSource(model_store));
+}
+
+
+/** Shared configuration code for the ProblemDescDB and DI constructors. */
+void ActiveSubspaceModel::initialize(const SpecSource& spec)
+{
+  initialSamples = spec.get<int>("model.initial_samples");
+  subspaceIdBingLi =
+    spec.get<bool>("model.active_subspace.truncation_method.bing_li");
+  subspaceIdConstantine =
+    spec.get<bool>("model.active_subspace.truncation_method.constantine");
+  subspaceIdEnergy =
+    spec.get<bool>("model.active_subspace.truncation_method.energy");
+  subspaceIdCV = spec.get<bool>("model.active_subspace.truncation_method.cv");
+  numReplicates = spec.get<int>("model.active_subspace.bootstrap_samples");
+  gradientScaleFactors = RealArray(numFns, 1.);
+  truncationTolerance = spec.get<const Real>(
+    "model.active_subspace.truncation_method.energy.truncation_tolerance");
+  buildSurrogate = spec.get<bool>("model.active_subspace.build_surrogate");
+  subspaceNormalization =
+    spec.get<unsigned short>("model.active_subspace.normalization");
+  cvIncremental = spec.get<bool>("model.active_subspace.cv.incremental");
+  cvIdMethod = spec.get<unsigned short>("model.active_subspace.cv.id_method");
+  cvRelTolerance =
+    spec.get<const Real>("model.active_subspace.cv.relative_tolerance");
+  cvDecreaseTolerance =
+    spec.get<const Real>("model.active_subspace.cv.decrease_tolerance");
+  cvMaxRank = spec.get<int>("model.active_subspace.cv.max_rank");
+
   modelType = "active_subspace";
   modelId = RecastModel::recast_model_id(root_model_id(), "ACTIVE_SUBSPACE");
   // Set seed of bootstrap sampler:
@@ -65,10 +89,10 @@ ActiveSubspaceModel::ActiveSubspaceModel(ProblemDescDB& problem_db, ParallelLibr
   // initialize the fullspace derivative sampler; this
   // will configure it to perform initialSamples
   init_fullspace_sampler(
-    probDescDB.get<unsigned short>("model.active_subspace.sample_type"));
+    spec.get<unsigned short>("model.active_subspace.sample_type"));
 
-  const IntVector& db_refine_samples =
-    problem_db.get<const IntVector>("model.refinement_samples");
+  const IntVector db_refine_samples =
+    spec.get<const IntVector>("model.refinement_samples");
   if (db_refine_samples.length() == 1)
     refinementSamples = db_refine_samples[0];
   else if (db_refine_samples.length() > 1) {
@@ -108,6 +132,17 @@ ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
 
   initialize_subspace();
   mappingInitialized = true; // no need to initialize_mapping() for this ctor
+}
+
+
+std::shared_ptr<Model>
+ActiveSubspaceModel::transform_sub_model(std::shared_ptr<Model> truth_model)
+{
+  if (!truth_model)
+    throw std::invalid_argument(
+      "ActiveSubspaceModel DI construction requires a non-null truth model.");
+  return std::make_shared<ProbabilityTransformModel>(
+    truth_model, STD_NORMAL_U); // retain dist bounds
 }
 
 

@@ -2196,5 +2196,45 @@
       "DAKOTA_PYTHON_SURROGATES",
       "DAKOTA_PYTHON_DIRECT_INTERFACE"
     ]
+  },
+  {
+    "id": "model_adapted_basis",
+    "input": "dakota_uq_adapted_basis.in",
+    "subtest": 0,
+    "script": "model_adapted_basis.py",
+    "required_files": [],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "ModelFactory.adapted_basis",
+      "MethodFactory.sampling"
+    ],
+    "classes": [
+      "SimulationModel",
+      "AdaptedBasisModel",
+      "NonDLHSSampling"
+    ]
+  },
+  {
+    "id": "model_active_subspace",
+    "input": "dakota_cv_subspace.in",
+    "subtest": 0,
+    "script": "model_active_subspace.py",
+    "required_files": [],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "ModelFactory.active_subspace",
+      "MethodFactory.sampling"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ActiveSubspaceModel",
+      "NonDLHSSampling"
+    ]
   }
 ]

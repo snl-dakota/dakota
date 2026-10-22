@@ -9,6 +9,8 @@
 
 #include "Study.hpp"
 
+#include "ActiveSubspaceModel.hpp"
+#include "AdaptedBasisModel.hpp"
 #include "ConcurrentMetaIterator.hpp"
 #include "DataFitSurrModel.hpp"
 #include "DOTOptimizer.hpp"
@@ -48,6 +50,7 @@
 #include "OutputManager.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProgramOptions.hpp"
+#include "RandomFieldModel.hpp"
 #include "RichExtrapVerification.hpp"
 #include "RunOptions.hpp"
 #include "SimulationModel.hpp"
@@ -710,6 +713,70 @@ Study::ModelFactory::multipoint_surrogate(
   return multipoint_surrogate(
     validate_and_materialize_selected_model(model_json, "multipoint_surrogate"),
     std::move(truth_model), variables, response);
+}
+
+std::shared_ptr<ActiveSubspaceModel>
+Study::ModelFactory::active_subspace(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return std::make_shared<ActiveSubspaceModel>(
+    study.services(), model_store, variables, response, std::move(truth_model));
+}
+
+std::shared_ptr<ActiveSubspaceModel>
+Study::ModelFactory::active_subspace(
+  const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return active_subspace(
+    validate_and_materialize_selected_model(model_json, "active_subspace"),
+    std::move(truth_model), variables, response);
+}
+
+std::shared_ptr<AdaptedBasisModel>
+Study::ModelFactory::adapted_basis(
+  const IRStore& model_store, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return std::make_shared<AdaptedBasisModel>(
+    study.services(), model_store, variables, response, std::move(truth_model));
+}
+
+std::shared_ptr<AdaptedBasisModel>
+Study::ModelFactory::adapted_basis(
+  const nlohmann::json& model_json, std::shared_ptr<Model> truth_model,
+  const Variables& variables, const Response& response) const
+{
+  return adapted_basis(
+    validate_and_materialize_selected_model(model_json, "adapted_basis"),
+    std::move(truth_model), variables, response);
+}
+
+std::shared_ptr<RandomFieldModel>
+Study::ModelFactory::random_field(
+  const IRStore& model_store, std::shared_ptr<Model> propagation_model,
+  const Variables& variables, const Response& response,
+  std::shared_ptr<Iterator> dace_iterator) const
+{
+  if (!propagation_model)
+    throw std::invalid_argument(
+      "Study::model().random_field requires a non-null propagation model.");
+  return std::make_shared<RandomFieldModel>(
+    study.services(), model_store, variables, response,
+    std::move(propagation_model), std::move(dace_iterator));
+}
+
+std::shared_ptr<RandomFieldModel>
+Study::ModelFactory::random_field(
+  const nlohmann::json& model_json, std::shared_ptr<Model> propagation_model,
+  const Variables& variables, const Response& response,
+  std::shared_ptr<Iterator> dace_iterator) const
+{
+  return random_field(
+    validate_and_materialize_selected_model(model_json, "random_field"),
+    std::move(propagation_model), variables, response,
+    std::move(dace_iterator));
 }
 
 std::shared_ptr<EnsembleSurrModel>

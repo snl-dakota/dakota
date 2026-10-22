@@ -65,3 +65,27 @@ construction for Dakota components.
    configuration through the IR-backed approximation path. Remove the
    constructor guard and replace its rejection regression test with successful
    truth-model and DACE construction/execution tests.
+
+7. Classes that keep only a `ProblemDescDB` constructor by design:
+   - Dead or not compiled: `GridApplicInterface` (`DAKOTA_GRID` is never
+     defined and the source is not in CMake), `SoleilDirectApplicInterface`
+     and `DartSerialDirectApplicInterface` (call a removed single-argument
+     `DirectApplicInterface` constructor), `ScilabInterface` (header declares
+     `ParallelLib&`, so it does not compile when enabled).
+   - Test fixtures and library-mode demos with no `Study` path:
+     `OptTestDirectApplicInterface`, `RolTestInterface` (never
+     instantiated), `SIM::SerialDirectApplicInterface`,
+     `SIM::ParallelDirectApplicInterface`.
+   - Redundant on the IRStore path: `MixedVarConstraints` and
+     `RelaxedVarConstraints` (bounds come from
+     `initialize_constraints_from_variables`, linear constraints from
+     `Constraints::manage_linear_constraints(const IRStore&)`),
+     `ExperimentResponse` (production code builds it from
+     `SharedResponseData`).
+   - `ProblemDescDB` itself (copy constructor only).
+
+8. Approximation letters read their settings through `SpecSource`
+   (`SpecSource.hpp`), a read-only view over either a `ProblemDescDB` or a
+   model `IRStore`, so each class keeps one configuration body. Keys missing
+   from an IRStore yield value-initialized defaults; this relies on the
+   materializer's contract defaults for every key read.

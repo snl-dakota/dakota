@@ -8,6 +8,8 @@
     _______________________________________________________________________ */
 
 #include "RandomFieldModel.hpp"
+#include "IRStore.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "MarginalsCorrDistribution.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -32,6 +34,39 @@ RandomFieldModel::RandomFieldModel(ProblemDescDB& problem_db, ParallelLibrary& p
   modelType = "random_field";
   modelId = RecastModel::recast_model_id(root_model_id(), "RANDOM_FIELD");
   init_dace_iterator(problem_db);
+
+  validate_inputs();
+}
+
+
+/** DI constructor: the propagation model and the optional DACE iterator
+    that generates field realizations are injected rather than identified
+    by pointer. */
+RandomFieldModel::
+RandomFieldModel(std::shared_ptr<StudyServices> services,
+		 const IRStore& model_store, const Variables& variables,
+		 const Response& response,
+		 std::shared_ptr<Model> propagation_model,
+		 std::shared_ptr<Iterator> dace_iterator):
+  RecastModel(std::move(services), model_store, variables, response,
+	      propagation_model),
+  numObservations(0), daceIterator(std::move(dace_iterator)),
+  expansionForm(model_store.get<unsigned short>("rf.expansion_form")),
+  covarianceForm(model_store.get<unsigned short>("rf.analytic_covariance")),
+  requestedReducedRank(model_store.get<int>("rf.expansion_bases")),
+  percentVariance(model_store.get<Real>("truncation_tolerance")),
+  actualReducedRank(5)
+{
+  modelType = "random_field";
+  modelId = RecastModel::recast_model_id(root_model_id(), "RANDOM_FIELD");
+  if (daceIterator) {
+    detail::validate_services("RandomFieldModel", study_services(),
+      {detail::runtime_dependency("Iterator", daceIterator)});
+    // see init_dace_iterator()
+    if (outputLevel > NORMAL_OUTPUT && daceIterator->iterated_model())
+      daceIterator->iterated_model()->fine_grained_evaluation_counters();
+    daceIterator->sub_iterator_flag(true);
+  }
 
   validate_inputs();
 }

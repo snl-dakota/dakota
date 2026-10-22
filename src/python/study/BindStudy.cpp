@@ -18,6 +18,9 @@
 #include "DOTOptimizer.hpp"
 #endif
 #include "NestedModel.hpp"
+#include "ActiveSubspaceModel.hpp"
+#include "AdaptedBasisModel.hpp"
+#include "RandomFieldModel.hpp"
 #ifdef DAKOTA_PYBIND11
 #include "Pybind11Interface.hpp"
 #endif
@@ -157,6 +160,95 @@ See :ref:`nested-model options <model-nested>`.)doc")
 :rtype: dakota.study.DataFitSurrModel
 
 See :ref:`global surrogate options <model-global_surrogate>`.)doc")
+    .def("active_subspace",
+         [](const Study::ModelFactory& factory,
+            std::shared_ptr<Model> truth_model,
+            const Variables& variables, const Response& response,
+            const py::object& config, py::kwargs kwargs) {
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.active_subspace");
+           return factory.active_subspace(
+             materialize_model(nlohmann::json{{"active_subspace", fragment}}),
+             std::move(truth_model), variables, response);
+         },
+         py::arg("truth_model").none(false),
+         py::arg("variables").none(false), py::arg("response").none(false),
+         py::arg("config") = py::none(),
+         R"doc(Construct an active subspace model over an injected truth model.
+
+:param truth_model: Model whose inputs are reduced.
+:type truth_model: dakota.study.Model
+:param variables: Variables exposed by the reduced model.
+:type variables: dakota.study.Variables
+:param response: Response definition exposed by the reduced model.
+:type response: dakota.study.Response
+:param config: A ``ActiveSubspaceConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed model.
+:rtype: dakota.study.ActiveSubspaceModel
+
+See :ref:`active subspace options <model-active_subspace>`.)doc")
+    .def("adapted_basis",
+         [](const Study::ModelFactory& factory,
+            std::shared_ptr<Model> truth_model,
+            const Variables& variables, const Response& response,
+            const py::object& config, py::kwargs kwargs) {
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.adapted_basis");
+           return factory.adapted_basis(
+             materialize_model(nlohmann::json{{"adapted_basis", fragment}}),
+             std::move(truth_model), variables, response);
+         },
+         py::arg("truth_model").none(false),
+         py::arg("variables").none(false), py::arg("response").none(false),
+         py::arg("config") = py::none(),
+         R"doc(Construct an adapted basis model over an injected truth model.
+
+:param truth_model: Model whose inputs are reduced.
+:type truth_model: dakota.study.Model
+:param variables: Variables exposed by the reduced model.
+:type variables: dakota.study.Variables
+:param response: Response definition exposed by the reduced model.
+:type response: dakota.study.Response
+:param config: A ``AdaptedBasisConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed model.
+:rtype: dakota.study.AdaptedBasisModel
+
+See :ref:`adapted basis options <model-adapted_basis>`.)doc")
+    .def("random_field",
+         [](const Study::ModelFactory& factory,
+            std::shared_ptr<Model> propagation_model,
+            const Variables& variables, const Response& response,
+            std::shared_ptr<Iterator> dace_iterator,
+            const py::object& config, py::kwargs kwargs) {
+           const auto fragment = normalize_factory_config(
+             config, kwargs, "ModelFactory.random_field");
+           return factory.random_field(
+             materialize_model(nlohmann::json{{"random_field", fragment}}),
+             std::move(propagation_model), variables, response,
+             std::move(dace_iterator));
+         },
+         py::arg("propagation_model").none(false),
+         py::arg("variables").none(false), py::arg("response").none(false),
+         py::arg("dace_iterator") = py::none(),
+         py::arg("config") = py::none(),
+         R"doc(Construct a random field model over an injected propagation model.
+
+:param propagation_model: Model through which field realizations propagate.
+:type propagation_model: dakota.study.Model
+:param variables: Variables exposed by the random field model.
+:type variables: dakota.study.Variables
+:param response: Response definition exposed by the random field model.
+:type response: dakota.study.Response
+:param dace_iterator: Optional iterator that generates field realizations.
+:type dace_iterator: dakota.study.Iterator or None
+:param config: A ``RandomFieldConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed model.
+:rtype: dakota.study.RandomFieldModel
+
+See :ref:`random field options <model-random_field>`.)doc")
     .def("local_surrogate",
          [](const Study::ModelFactory& factory,
             std::shared_ptr<Model> truth_model,

@@ -36,6 +36,12 @@ public:
   /// Problem database constructor
   AdaptedBasisModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
+  /// DI constructor using model IR, own variables/response, and the
+  /// injected truth model
+  AdaptedBasisModel(std::shared_ptr<StudyServices> services,
+		    const IRStore& model_store, const Variables& variables,
+		    const Response& response, std::shared_ptr<Model> truth_model);
+
 protected:
 
   //
@@ -57,6 +63,16 @@ protected:
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
   std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  /// DI counterpart: pilot PCE over an injected truth model
+  std::shared_ptr<Model> get_sub_model(const IRStore& model_store,
+				       std::shared_ptr<Model> truth_model);
+  /// shared pilot PCE construction for both get_sub_model() overloads
+  std::shared_ptr<Model>
+  build_pilot_pce(std::shared_ptr<Model> actual_model, unsigned short ssg_level,
+		  unsigned short exp_order, Real colloc_ratio, short refine_type,
+		  short refine_cntl, short cov_cntl, short rule_nest,
+		  short rule_growth, bool pw_basis, bool use_derivs,
+		  bool cross_valid);
 
   // ---
   // Subspace identification functions: rank-revealing build phase

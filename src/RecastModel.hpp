@@ -88,6 +88,12 @@ public:
   /// mappings to be initialized later; only initializes based on sub-model
   RecastModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> sub_model);
 
+  /// DI counterpart of the ProblemDescDB ctor: variables and response from
+  /// this model's specification; mappings initialized later
+  RecastModel(std::shared_ptr<StudyServices> services,
+	      const IRStore& model_store, const Variables& variables,
+	      const Response& response, std::shared_ptr<Model> sub_model);
+
   /// lightest constructor used when transform sizes aren't known at
   /// construct time; doesn't initialize variables and responses, so
   /// this Model can't be used to construct an Iterator; requires

@@ -38,6 +38,11 @@ public:
   /// Problem database constructor
   SubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> sub_model);
 
+  /// DI constructor using model IR, own variables/response, and sub-model
+  SubspaceModel(std::shared_ptr<StudyServices> services,
+		const IRStore& model_store, const Variables& variables,
+		const Response& response, std::shared_ptr<Model> sub_model);
+
   /// lightweight constructor
   SubspaceModel(std::shared_ptr<Model>, unsigned int dimension,
 		short output_level);

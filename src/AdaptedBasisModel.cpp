@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "AdaptedBasisModel.hpp"
+#include "IRStore.hpp"
 #include "dakota_linear_algebra.hpp"
 #include "ParallelLibrary.hpp"
 #include "ProblemDescDB.hpp"
@@ -16,6 +17,7 @@
 #include "SharedPecosApproxData.hpp"
 #include <random>
 #include "LHSDriver.hpp"
+#include <stdexcept>
 #define N 2
 
 namespace Dakota {
@@ -44,6 +46,30 @@ AdaptedBasisModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   
 }
 
+AdaptedBasisModel::
+AdaptedBasisModel(std::shared_ptr<StudyServices> services,
+		  const IRStore& model_store, const Variables& variables,
+		  const Response& response, std::shared_ptr<Model> truth_model):
+  SubspaceModel(std::move(services), model_store, variables, response,
+		get_sub_model(model_store, truth_model)),
+  method_rotation(model_store.get<short>("adapted_basis.rotation_method")),
+  adaptedBasisTruncationTolerance(
+    model_store.get<Real>("adapted_basis.truncation_tolerance")),
+  subspaceDimension(model_store.contains("subspace.dimension") ?
+		    model_store.get<int>("subspace.dimension") : 0)
+{
+  // see ProblemDescDB ctor regarding ownership of pcePilotExpRepPtr
+  pcePilotExpansion = std::shared_ptr<NonDPolynomialChaos>
+			       (pcePilotExpRepPtr);
+  modelType = "adapted_basis";
+  modelId = RecastModel::recast_model_id(root_model_id(), "ADAPTED_BASIS");
+  supportsEstimDerivs = true;  // perform numerical derivatives in subspace
+
+  validate_inputs();
+
+  offlineEvalConcurrency = pcePilotExpansion->maximum_evaluation_concurrency();
+}
+
 std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
 {
   const String& actual_model_pointer
@@ -62,13 +88,59 @@ std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_d
     rule_nest = problem_db.get<short>("method.nond.nesting_override"),
     rule_growth = problem_db.get<short>("method.nond.growth_override");
   bool pw_basis = problem_db.get<bool>("method.nond.piecewise_basis"),
-     use_derivs = problem_db.get<bool>("method.derivative_usage");
+     use_derivs = problem_db.get<bool>("method.derivative_usage"),
+    cross_valid = problem_db.get<bool>("method.nond.cross_validation");
 
   size_t model_index = problem_db.get_db_model_node(); // for restoration
   problem_db.set_db_model_nodes(actual_model_pointer);
 
   auto actual_model(Model::get_model(problem_db, parallel_lib));
 
+  auto sub_model = build_pilot_pce(actual_model, ssg_level, exp_order,
+    colloc_ratio, refine_type, refine_cntl, cov_cntl, rule_nest, rule_growth,
+    pw_basis, use_derivs, cross_valid);
+
+  problem_db.set_db_model_nodes(model_index); // restore
+
+  return sub_model;
+}
+
+
+/** DI counterpart of get_sub_model(): the truth model is injected and the
+    pilot PCE settings come from the model IR store.  The PCE refinement
+    controls that get_sub_model() reads from the active method block take
+    their specification defaults, since a model IR store has no method
+    context. */
+std::shared_ptr<Model> AdaptedBasisModel::
+get_sub_model(const IRStore& model_store, std::shared_ptr<Model> truth_model)
+{
+  if (!truth_model)
+    throw std::invalid_argument(
+      "AdaptedBasisModel DI construction requires a non-null truth model.");
+  auto get = [&](const String& key) { return model_store.contains(key); };
+  return build_pilot_pce(truth_model,
+    get("adapted_basis.sparse_grid_level") ?
+      model_store.get<unsigned short>("adapted_basis.sparse_grid_level") : 0,
+    get("adapted_basis.expansion_order") ?
+      model_store.get<unsigned short>("adapted_basis.expansion_order") : 0,
+    get("adapted_basis.collocation_ratio") ?
+      model_store.get<Real>("adapted_basis.collocation_ratio") : 0.,
+    Pecos::NO_REFINEMENT, Pecos::NO_CONTROL, DEFAULT_COVARIANCE,
+    Pecos::NO_NESTING_OVERRIDE, Pecos::NO_GROWTH_OVERRIDE,
+    false, false, false);
+}
+
+
+/** Construct the pilot PCE over actual_model (shared by both
+    get_sub_model() overloads) and return the transformed model
+    subordinate to its DataFitSurrModel. */
+std::shared_ptr<Model> AdaptedBasisModel::
+build_pilot_pce(std::shared_ptr<Model> actual_model, unsigned short ssg_level,
+		unsigned short exp_order, Real colloc_ratio, short refine_type,
+		short refine_cntl, short cov_cntl, short rule_nest,
+		short rule_growth, bool pw_basis, bool use_derivs,
+		bool cross_valid)
+{
     // configure pilot PCE object (instantiate now; build expansion at run time)
   RealVector dim_pref;
   if (ssg_level) {
@@ -84,7 +156,7 @@ std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_d
     pcePilotExpRepPtr = new NonDPolynomialChaos(actual_model,
       exp_coeffs_approach, exp_order, dim_pref, colloc_pts, colloc_ratio, seed,
       EXTENDED_U, refine_type, refine_cntl, cov_cntl, //rule_nest, rule_growth,
-      pw_basis, use_derivs, problem_db.get<bool>("method.nond.cross_validation"),
+      pw_basis, use_derivs, cross_valid,
       import_file, TABULAR_ANNOTATED, false);
   }
   else {
@@ -106,8 +178,6 @@ std::shared_ptr<Model> AdaptedBasisModel::get_sub_model(ProblemDescDB& problem_d
   // assign it into pcePilotExpansion in the AdaptedBasisModel initializer list.
   //pcePilotExpansion->assign_rep(pce_rep);
     
-  problem_db.set_db_model_nodes(model_index); // restore
-
   auto u_space_model = pcePilotExpRepPtr->algorithm_space_model();
   // Consider option of using PCE surrogate for all subsequent computations:
   //return u_space_model;

@@ -9,9 +9,11 @@
 
 #include "dakota_system_defs.hpp"
 #include "RecastModel.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "EvaluationStore.hpp"
 #include "DakotaModelEnums.hpp"
 #include "DakotaMethodEnums.hpp"
+#include <stdexcept>
 
 static const char rcsId[]="@(#) $Id: RecastModel.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -206,6 +208,30 @@ RecastModel::RecastModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
   primaryRespMapping(NULL), secondaryRespMapping(NULL), invVarsMapping(NULL),
   invSetMapping(NULL), invPriRespMapping(NULL), invSecRespMapping(NULL)
 {
+  init_basic();
+  // synchronize output level and grad/Hess settings with subModel
+  initialize_data_from_submodel();
+}
+
+
+/** DI counterpart of the ProblemDescDB ctor, for use by DI subclasses such
+    as subspace models: variables and response come from this model's own
+    specification; mappings are initialized later. */
+RecastModel::RecastModel(std::shared_ptr<StudyServices> services,
+			 const IRStore& model_store, const Variables& variables,
+			 const Response& response, std::shared_ptr<Model> sub_model):
+  Model(std::move(services), model_store, variables, response),
+  subModel(sub_model), recastModelEvalCntr(0), variablesMapping(NULL),
+  setMapping(NULL), primaryRespMapping(NULL), secondaryRespMapping(NULL),
+  invVarsMapping(NULL), invSetMapping(NULL), invPriRespMapping(NULL),
+  invSecRespMapping(NULL)
+{
+  if (!subModel)
+    throw std::invalid_argument(
+      "RecastModel DI construction requires a non-null sub-model.");
+  detail::validate_services("RecastModel", study_services(),
+    {detail::runtime_dependency("Model", subModel)});
+
   init_basic();
   // synchronize output level and grad/Hess settings with subModel
   initialize_data_from_submodel();

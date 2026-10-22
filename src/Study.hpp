@@ -28,6 +28,8 @@ namespace Dakota {
  */
 
 class ConcurrentMetaIterator;
+class ActiveSubspaceModel;
+class AdaptedBasisModel;
 class DataFitSurrModel;
 class DOTOptimizer;
 class EffGlobalMinimizer;
@@ -45,6 +47,7 @@ class NonDLHSSampling;
 class OutputManager;
 class ParallelLibrary;
 class ProgramOptions;
+class RandomFieldModel;
 class Response;
 class RichExtrapVerification;
 class RunOptions;
@@ -357,6 +360,40 @@ public:
                        std::shared_ptr<Model> truth_model,
                        const Variables& variables,
                        const Response& response) const;
+
+  /// Construct an active subspace model over a non-null truth model.
+  std::shared_ptr<ActiveSubspaceModel>
+  active_subspace(const IRStore& model_store, std::shared_ptr<Model> truth_model,
+                  const Variables& variables, const Response& response) const;
+  /// Validate an active_subspace fragment and construct the model.
+  std::shared_ptr<ActiveSubspaceModel>
+  active_subspace(const nlohmann::json& model_json,
+                  std::shared_ptr<Model> truth_model,
+                  const Variables& variables, const Response& response) const;
+
+  /// Construct an adapted basis model over a non-null truth model.
+  std::shared_ptr<AdaptedBasisModel>
+  adapted_basis(const IRStore& model_store, std::shared_ptr<Model> truth_model,
+                const Variables& variables, const Response& response) const;
+  /// Validate an adapted_basis fragment and construct the model.
+  std::shared_ptr<AdaptedBasisModel>
+  adapted_basis(const nlohmann::json& model_json,
+                std::shared_ptr<Model> truth_model,
+                const Variables& variables, const Response& response) const;
+
+  /// Construct a random field model over a non-null propagation model, with
+  /// an optional DACE iterator that generates field realizations.
+  std::shared_ptr<RandomFieldModel>
+  random_field(const IRStore& model_store,
+               std::shared_ptr<Model> propagation_model,
+               const Variables& variables, const Response& response,
+               std::shared_ptr<Iterator> dace_iterator = nullptr) const;
+  /// Validate a random_field fragment and construct the model.
+  std::shared_ptr<RandomFieldModel>
+  random_field(const nlohmann::json& model_json,
+               std::shared_ptr<Model> propagation_model,
+               const Variables& variables, const Response& response,
+               std::shared_ptr<Iterator> dace_iterator = nullptr) const;
 
   /// Construct an ensemble from models ordered low-to-high; the last is truth.
   std::shared_ptr<EnsembleSurrModel>

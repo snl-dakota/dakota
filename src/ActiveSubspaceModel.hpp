@@ -15,6 +15,8 @@
 
 namespace Dakota {
 
+class SpecSource;
+
 /// forward declarations
 class ProblemDescDB;
 class ParallelLibrary;
@@ -58,6 +60,13 @@ public:
 
   /// Problem database constructor
   ActiveSubspaceModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+
+  /// DI constructor using model IR, own variables/response, and the
+  /// injected truth model
+  ActiveSubspaceModel(std::shared_ptr<StudyServices> services,
+                      const IRStore& model_store, const Variables& variables,
+                      const Response& response,
+                      std::shared_ptr<Model> truth_model);
 
   /// lightweight constructor
   ActiveSubspaceModel(std::shared_ptr<Model> sub_model, unsigned int dimension,
@@ -116,6 +125,14 @@ protected:
 
   /// retrieve the sub-Model from the DB to pass up the constructor chain
   std::shared_ptr<Model> get_sub_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+
+  /// wrap an injected truth model in the standard normal transformation
+  /// (DI counterpart of get_sub_model())
+  static std::shared_ptr<Model>
+  transform_sub_model(std::shared_ptr<Model> truth_model);
+
+  /// shared configuration code for the ProblemDescDB and DI constructors
+  void initialize(const SpecSource& spec);
 
   /// initialize the native problem space Monte Carlo sampler
   void init_fullspace_sampler(unsigned short sample_type);

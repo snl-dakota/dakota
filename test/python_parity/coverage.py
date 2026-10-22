@@ -15,7 +15,7 @@ def report(native=False):
     methods = set(re.findall(r'bind_method\(factory, "(\w+)"', iterator))
     methods.update(re.findall(r'\.def\("(sampling|dot_bfgs|multi_start|hybrid)"', iterator))
     models = set(
-        re.findall(r'\.def\("(single|simulation|nested|\w+_surrogate)"', study)
+        re.findall(r'\.def\("(single|simulation|nested|\w+_surrogate|active_subspace|adapted_basis|random_field)"', study)
     )
     factories = sorted(
         ["MethodFactory." + n for n in methods]

@@ -41,6 +41,14 @@ public:
   /// Problem database constructor
   RandomFieldModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
+  /// DI constructor using model IR, own variables/response, the injected
+  /// propagation model, and an optional field-generating DACE iterator
+  RandomFieldModel(std::shared_ptr<StudyServices> services,
+		   const IRStore& model_store, const Variables& variables,
+		   const Response& response,
+		   std::shared_ptr<Model> propagation_model,
+		   std::shared_ptr<Iterator> dace_iterator);
+
   //
   //- Heading: Virtual function redefinitions
   //
