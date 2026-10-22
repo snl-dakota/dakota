@@ -257,6 +257,27 @@ The following setup will make the dakota command and other helper programs avail
 
 To persist the PATH to Dakota across terminals/sessions, make the following changes to the appropriate shell login script. If you prefer to just test in your current terminal, execute the commands directly in a terminal.
 
+**Alternative: register the Python package automatically (Linux/Mac)**
+
+If you built Dakota from source and want ``import dakota`` to work without
+setting ``PYTHONPATH`` by hand, run the ``install-python`` build target after
+a normal install::
+
+   make install-python
+
+This writes a ``dakota.pth`` file into the site-packages directory of the
+Python interpreter Dakota was configured with (the active venv or conda env if
+one is active, otherwise your user site-packages). The package files stay in
+``$INSTALL_DIR/share/dakota/Python``, so existing RPATHs are preserved.
+To undo the registration run ``make uninstall-python``.
+
+**Note:** ``install-python`` targets the interpreter chosen at CMake configure
+time (``-DPython3_EXECUTABLE=...``). If you later switch environments, re-run
+``make install-python`` from the new environment. Because Dakota's Python
+components are built for a specific major.minor version of Python (e.g. 3.14),
+if the Python version in the new environment differs, a complete re-configure and 
+re-build will be needed, not just a fresh install.
+
 **Make Changes in Bash Shell**
 
 1. Edit your Bash startup file in your favorite text editor. For Linux, this is ~/.bashrc. macOS terminal runs a login shell, and so the start up file may be ~/.bashrc, ~/.bash_profile, ~/.bash_login, or ~/.profile. See the manpage for Bash for more information about the differences between login and non-login shells.

@@ -228,6 +228,7 @@ set(dakota_test_executables
   cyl_head
   expdesign_high
   expdesign_low
+  g3_state_var
   gerstner_int
   gerstner_string
   herbie

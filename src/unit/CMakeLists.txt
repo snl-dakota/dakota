@@ -32,6 +32,8 @@ link_directories(${Dakota_LIBRARY_DIRS})
 # Demo: minimal Dakota unit test example using header-only Boost.Test
 add_subdirectory(dakota_min_unit)
 
+# Regression test for EGO state-variable convergence corruption
+
 # Unit test: work directory utilities
 # Copy workdir unit_test helper script into the build tree at build time
 # NOTE:  at runtime the workdir test will look for the script in the parent dir

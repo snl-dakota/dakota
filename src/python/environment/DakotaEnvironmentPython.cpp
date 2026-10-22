@@ -316,6 +316,49 @@ PYBIND11_MODULE(environment, m) {
     .def("execute", &Dakota::LibraryEnvironment::execute)
     .def("variables_results", &Dakota::LibraryEnvironment::variables_results)
     .def("response_results", &Dakota::LibraryEnvironment::response_results)
+
+    // Explicitly flush and close the HDF5 results file.
+    //
+    // Dakota holds the HDF5 file open through OutputManager::resultsDB and
+    // evaluationsDB until ~OutputManager() runs.  In a normal Dakota process
+    // that happens at process exit, which is fine.  When the environment is
+    // used from Python (this module), the LibraryEnvironment object is on the
+    // Python heap and CPython's garbage collector does not guarantee *when*
+    // it collects it — even an explicit `del env` may not trigger the C++
+    // destructor immediately.  The result is a still-open HDF5 file after
+    // the study finishes, which prevents tools like h5py from reading the
+    // file in the same Python session.
+    //
+    // close() calls OutputManager::close_results_db(), which is exactly what
+    // ~OutputManager() would call, but does so deterministically.  It is safe
+    // to call more than once (the second call is a no-op because the databases
+    // list is already empty).
+    .def("close",
+         [](Dakota::LibraryEnvironment& env) {
+           env.output_manager().close_results_db();
+         },
+         "Flush and close the HDF5 results file.\n\n"
+         "Call this after execute() when you need to read the HDF5 file in\n"
+         "the same Python session.  Also called automatically by __exit__\n"
+         "when the environment is used as a context manager.")
+
+    // Context-manager support so users can write:
+    //   with dakota.environment.study(...) as s:
+    //       s.execute()
+    //   # HDF5 file is closed here
+    .def("__enter__",
+         [](Dakota::LibraryEnvironment& env) -> Dakota::LibraryEnvironment& {
+           return env;
+         },
+         py::return_value_policy::reference)
+    .def("__exit__",
+         [](Dakota::LibraryEnvironment& env,
+            py::object /*exc_type*/,
+            py::object /*exc_val*/,
+            py::object /*exc_tb*/) {
+           env.output_manager().close_results_db();
+           return false;  // do not suppress exceptions
+         })
     ;
 
 #ifdef DAKOTA_PYTHON_NUMPY
