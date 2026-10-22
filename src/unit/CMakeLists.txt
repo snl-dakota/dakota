@@ -33,7 +33,6 @@ link_directories(${Dakota_LIBRARY_DIRS})
 add_subdirectory(dakota_min_unit)
 
 # Regression test for EGO state-variable convergence corruption
-add_subdirectory(dakota_ego_state_variable)
 
 # Unit test: work directory utilities
 # Copy workdir unit_test helper script into the build tree at build time
