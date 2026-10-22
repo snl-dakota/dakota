@@ -18,6 +18,7 @@
 namespace Dakota {
 
 class ProblemDescDB;
+class IRStore;
 
   enum class CONSTRAINT_TYPE { LINEAR, NONLINEAR };
   enum class CONSTRAINT_EQUALITY_TYPE { EQUALITY, INEQUALITY };
@@ -286,6 +287,10 @@ public:
   void reshape_nonlinear(size_t num_nln_ineq_cons, size_t num_nln_eq_cons);
   /// reshape the linear constraint array sizes
   void reshape_linear(size_t num_lin_ineq_cons, size_t num_lin_eq_cons);
+  /// assign linear constraint coefficients, bounds, and targets from a
+  /// variables IR store, with the same checks and defaults as the
+  /// ProblemDescDB path
+  void manage_linear_constraints(const IRStore& variables_store);
   /// reshape and repopulate the linear constraint arrays
   void reshape_update_linear(const SharedVariablesData& prev_svd,
 			     const SharedVariablesData& curr_svd);
@@ -333,6 +338,10 @@ protected:
   /// perform checks on user input, convert linear constraint
   /// coefficient input to matrices, and assign defaults
   void manage_linear_constraints(const ProblemDescDB& problem_db);
+  /// shared checks, coefficient conversion, and defaults for linear
+  /// constraints; bounds and targets must already be assigned
+  void manage_linear_constraints(const RealVector& linear_ineq_cons,
+				 const RealVector& linear_eq_cons);
 
   //
   //- Heading: Data

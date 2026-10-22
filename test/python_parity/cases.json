@@ -1796,5 +1796,75 @@
       "HAVE_ACRO",
       "HAVE_SURFPACK"
     ]
+  },
+  {
+    "id": "linear_constraints",
+    "input": "python_parity/inputs/linear_constraints.in",
+    "subtest": 0,
+    "script": "linear_constraints.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.conmin_mfd"
+    ],
+    "classes": [
+      "SimulationModel",
+      "CONMINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_CONMIN"
+    ]
+  },
+  {
+    "id": "scaling",
+    "input": "python_parity/inputs/scaling.in",
+    "subtest": 0,
+    "script": "scaling.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.conmin_frcg"
+    ],
+    "classes": [
+      "SimulationModel",
+      "CONMINOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_CONMIN"
+    ]
+  },
+  {
+    "id": "calibration_data",
+    "input": "python_parity/inputs/calibration_data.in",
+    "subtest": 0,
+    "script": "calibration_data.py",
+    "required_files": [
+      "python_parity/response_driver.py",
+      "python_parity/inputs/least_squares_data.dat"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.nl2sol"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NL2SOLLeastSq"
+    ],
+    "requires_features": [
+      "HAVE_NL2SOL"
+    ]
   }
 ]

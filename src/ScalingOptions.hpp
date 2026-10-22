@@ -12,11 +12,14 @@
 
 #include "dakota_data_types.hpp"
 
+#include <functional>
+
 namespace Dakota {
 
 /// indicate type of scaling active for a component (bitwise)
 enum {SCALE_NONE = 0, SCALE_VALUE = 1, SCALE_LOG = 2, SCALE_AUTO = 4};
 
+class IRStore;
 class ProblemDescDB;
 class SharedResponseData;
 
@@ -31,6 +34,10 @@ public:
 
   /// standard ctor: scaling from problem DB
   ScalingOptions(const ProblemDescDB& problem_db, const SharedResponseData& srd);
+
+  /// DI ctor: scaling from variables and responses IR stores
+  ScalingOptions(const IRStore& variables_store, const IRStore& responses_store,
+		 const SharedResponseData& srd);
 
   /// continuous variables scale types
   UShortArray cvScaleTypes;
@@ -58,6 +65,11 @@ public:
   RealVector  linEqScales;               
 
 private:
+
+  /// shared ctor code; lookups take ProblemDescDB-style keys
+  void initialize(const std::function<RealVector(const String&)>& real_vector,
+		  const std::function<StringArray(const String&)>& string_array,
+		  const SharedResponseData& srd);
 
   /// when values are given, but not types, initialize type to value
   static void default_scale_types(const RealVector& scale_values,

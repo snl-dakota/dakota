@@ -1,0 +1,20 @@
+method
+  conmin_mfd
+    max_iterations 10
+    convergence_tolerance 1.e-4
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    lower_bounds 0.5 0.5
+    upper_bounds 1.5 1.5
+    descriptors 'x1' 'x2'
+  linear_inequality_constraint_matrix 1.0 1.0
+  linear_inequality_upper_bounds 1.8
+  linear_equality_constraint_matrix 1.0 -1.0
+  linear_equality_targets 0.0
+interface
+  analysis_drivers 'text_book' fork
+responses
+  objective_functions 1
+  analytic_gradients
+  no_hessians

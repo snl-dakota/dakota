@@ -1,0 +1,15 @@
+method
+  nl2sol
+    max_iterations 5
+    max_function_evaluations 20
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    descriptors 'x1' 'x2'
+responses
+  calibration_terms 2
+    calibration_data_file 'least_squares_data.dat' freeform
+  analytic_gradients
+  no_hessians
+interface
+  analysis_drivers 'python3 response_driver.py least_squares' fork

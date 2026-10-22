@@ -978,6 +978,7 @@ void initialize_constraints_from_variables(
   constraints.all_discrete_int_upper_bounds(int_upper);
   constraints.all_discrete_real_lower_bounds(real_lower);
   constraints.all_discrete_real_upper_bounds(real_upper);
+  constraints.manage_linear_constraints(store);
 }
 
 Model::Model(std::shared_ptr<StudyServices> services,
@@ -1036,6 +1037,11 @@ Model::Model(std::shared_ptr<StudyServices> services,
     userDefinedConstraints.nonlinear_eq_constraint_targets(
       responses->get<RealVector>("nonlinear_equality_targets"));
   }
+  if (currentVariables.variables_store_ptr() &&
+      currentResponse.responses_store_ptr())
+    scalingOpts = ScalingOptions(*currentVariables.variables_store_ptr(),
+                                 *currentResponse.responses_store_ptr(),
+                                 currentResponse.shared_data());
   initialize_multivariate_distribution_from_variables(currentVariables, mvDist);
   initialize_distribution_parameters_from_variables(currentVariables, mvDist);
 

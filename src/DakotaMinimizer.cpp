@@ -39,6 +39,32 @@ extern PRPCache data_pairs; // global container
 Minimizer* Minimizer::minimizerInstance(NULL);
 
 
+namespace {
+
+/// IRStore counterpart of the responses.calibration_data DB check
+bool responses_calibration_data(const std::shared_ptr<Model>& model)
+{
+  std::shared_ptr<IRStore> store =
+    model ? model->current_response().responses_store_ptr() : nullptr;
+  return store && (store->get<bool>("calibration_data") ||
+                   !store->get<String>("scalar_data_filename").empty());
+}
+
+/// IRStore counterpart of the ProblemDescDB ExperimentData construction
+ExperimentData responses_experiment_data(const std::shared_ptr<Model>& model,
+                                         short output_level)
+{
+  std::shared_ptr<IRStore> store =
+    model ? model->current_response().responses_store_ptr() : nullptr;
+  if (!store)
+    return ExperimentData();
+  return ExperimentData(*store, model->current_response().shared_data(),
+                        output_level);
+}
+
+} // namespace
+
+
 /** This constructor extracts inherited data for the optimizer and least
     squares branches and performs sanity checking on constraint settings. */
 Minimizer::
@@ -82,8 +108,8 @@ Minimizer(std::shared_ptr<StudyServices> services,
   boundConstraintFlag(false),
   speculativeFlag(method_store.get<bool>("speculative")),
   optimizationFlag(true),
-  calibrationDataFlag(false),
-  expData(),
+  calibrationDataFlag(responses_calibration_data(model)),
+  expData(responses_experiment_data(model, outputLevel)),
   numExperiments(0), numTotalCalibTerms(0),
   scaleFlag(method_store.get<bool>("scaling"))
 {
@@ -439,7 +465,8 @@ void Minimizer::data_transform_model()
     Cout << "Initializing calibration data transformation" << std::endl;
   
   // TODO: need better validation of these sizes and data with error msgs
-  numExperiments = probDescDB.get<size_t>("responses.num_experiments");
+  numExperiments = (&probDescDB == &dummy_db) ? expData.num_experiments() :
+    probDescDB.get<size_t>("responses.num_experiments");
   if (numExperiments < 1) {
       Cerr << "Error in number of experiments" << std::endl;
       abort_handler(-1);

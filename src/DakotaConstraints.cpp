@@ -10,6 +10,7 @@
 #include "dakota_system_defs.hpp"
 #include "ProblemDescDB.hpp"
 #include "DakotaConstraints.hpp"
+#include "IRStore.hpp"
 #include "RelaxedVarConstraints.hpp"
 #include "MixedVarConstraints.hpp"
 #include "dakota_data_util.hpp"
@@ -638,10 +639,38 @@ reshape_update_linear(const SharedVariablesData& prev_svd,
     can currently support mixed variable linear constraints. */
 void Constraints::manage_linear_constraints(const ProblemDescDB& problem_db)
 {
-  const RealVector& linear_ineq_cons
-    = problem_db.get<const RealVector>("variables.linear_inequality_constraints");
-  const RealVector& linear_eq_cons
-    = problem_db.get<const RealVector>("variables.linear_equality_constraints");
+  manage_linear_constraints(
+    problem_db.get<const RealVector>("variables.linear_inequality_constraints"),
+    problem_db.get<const RealVector>("variables.linear_equality_constraints"));
+}
+
+
+/** IRStore counterpart of the ProblemDescDB overload: assigns the linear
+    constraint bounds/targets from the variables store, then applies the same
+    checks and defaults. */
+void Constraints::manage_linear_constraints(const IRStore& variables_store)
+{
+  if (constraintsRep) {
+    constraintsRep->manage_linear_constraints(variables_store);
+    return;
+  }
+
+  auto real_vector = [&](const String& key) {
+    return variables_store.contains(key) ?
+      variables_store.get<RealVector>(key) : RealVector();
+  };
+  linearIneqConLowerBnds = real_vector("linear_inequality_lower_bounds");
+  linearIneqConUpperBnds = real_vector("linear_inequality_upper_bounds");
+  linearEqConTargets     = real_vector("linear_equality_targets");
+  manage_linear_constraints(real_vector("linear_inequality_constraints"),
+                            real_vector("linear_equality_constraints"));
+}
+
+
+void Constraints::
+manage_linear_constraints(const RealVector& linear_ineq_cons,
+                          const RealVector& linear_eq_cons)
+{
   size_t lin_ineq_len = linear_ineq_cons.length(),
          lin_eq_len   = linear_eq_cons.length();
   // get number of active variables to which linear constraints are applied.

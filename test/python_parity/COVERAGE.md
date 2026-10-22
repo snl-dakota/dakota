@@ -20,8 +20,8 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.coliny_ea` | method_coliny_ea, method_hybrid_sequential |
 | `MethodFactory.coliny_pattern_search` | method_coliny_pattern_search, method_hybrid_sequential |
 | `MethodFactory.coliny_solis_wets` | method_coliny_solis_wets |
-| `MethodFactory.conmin_frcg` | method_conmin_frcg |
-| `MethodFactory.conmin_mfd` | method_conmin_mfd |
+| `MethodFactory.conmin_frcg` | method_conmin_frcg, scaling |
+| `MethodFactory.conmin_mfd` | method_conmin_mfd, linear_constraints |
 | `MethodFactory.dot_bfgs` | method_dot_bfgs |
 | `MethodFactory.dot_frcg` | method_dot_frcg |
 | `MethodFactory.dot_mmfd` | textbook_s0 |
@@ -56,7 +56,7 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.multilevel_polynomial_chaos` | method_multilevel_polynomial_chaos |
 | `MethodFactory.multilevel_sampling` | method_multilevel_sampling, ensemble_inferred_view |
 | `MethodFactory.ncsu_direct` | method_ncsu_direct |
-| `MethodFactory.nl2sol` | method_nl2sol |
+| `MethodFactory.nl2sol` | method_nl2sol, calibration_data |
 | `MethodFactory.nlpql_sqp` | method_nlpql_sqp |
 | `MethodFactory.nonlinear_cg` | method_nonlinear_cg |
 | `MethodFactory.nowpac` | method_nowpac |
@@ -83,7 +83,7 @@ factories are included unless `--native` filters to the installed extension.
 | `ModelFactory.local_surrogate` | model_local, local_surrogate_mixed_vars |
 | `ModelFactory.multipoint_surrogate` | model_multipoint |
 | `ModelFactory.nested` | model_nested, method_snowpac, nested_inferred_view |
-| `ModelFactory.simulation` | pstudy_s0, pstudy_s3, pstudy_s4, pstudy_s5, textbook_s0, textbook_nips_s0, textbook_nips_s2, textbook_nips_s4, sampling_small, import_points, model_local, model_multipoint, model_ensemble, model_nested, method_dot_bfgs, method_dot_frcg, method_dot_slp, method_dot_sqp, method_conmin_frcg, method_conmin_mfd, method_nonlinear_cg, method_nowpac, method_snowpac, method_genie_direct, method_genie_opt_darts, method_coliny_cobyla, method_coliny_pattern_search, multistart_ie_s0, method_coliny_direct, method_coliny_ea, method_coliny_solis_wets, method_optpp_cg, method_optpp_pds, method_ncsu_direct, method_nlpql_sqp, method_npsol_sqp, method_mesh_adaptive_search, method_asynch_pattern_search, method_soga, method_moga, method_local_reliability, method_global_reliability, method_global_interval_est, method_global_evidence, method_local_interval_est, method_local_evidence, method_importance_sampling, method_gpais, method_pof_darts, method_rkd_darts, method_adaptive_sampling, method_polynomial_chaos, method_stoch_collocation, method_function_train, method_surrogate_based_uq, method_multilevel_polynomial_chaos, method_multifidelity_polynomial_chaos, method_multifidelity_stoch_collocation, method_multilevel_function_train, method_multifidelity_function_train, method_multilevel_sampling, method_multifidelity_sampling, method_approximate_control_variate, method_multilevel_blue, method_multilevel_multifidelity_sampling, method_efficient_global, method_coliny_beta, method_nl2sol, method_branch_and_bound, method_richardson_extrap, method_bayes_calibration, nested_inferred_view, dace_sampling_aleatory_truth, local_surrogate_mixed_vars, ensemble_inferred_view, dace_pstudy_under_optimizer, method_hybrid_sequential, method_surrogate_based_local, method_surrogate_based_global |
+| `ModelFactory.simulation` | pstudy_s0, pstudy_s3, pstudy_s4, pstudy_s5, textbook_s0, textbook_nips_s0, textbook_nips_s2, textbook_nips_s4, sampling_small, import_points, model_local, model_multipoint, model_ensemble, model_nested, method_dot_bfgs, method_dot_frcg, method_dot_slp, method_dot_sqp, method_conmin_frcg, method_conmin_mfd, method_nonlinear_cg, method_nowpac, method_snowpac, method_genie_direct, method_genie_opt_darts, method_coliny_cobyla, method_coliny_pattern_search, multistart_ie_s0, method_coliny_direct, method_coliny_ea, method_coliny_solis_wets, method_optpp_cg, method_optpp_pds, method_ncsu_direct, method_nlpql_sqp, method_npsol_sqp, method_mesh_adaptive_search, method_asynch_pattern_search, method_soga, method_moga, method_local_reliability, method_global_reliability, method_global_interval_est, method_global_evidence, method_local_interval_est, method_local_evidence, method_importance_sampling, method_gpais, method_pof_darts, method_rkd_darts, method_adaptive_sampling, method_polynomial_chaos, method_stoch_collocation, method_function_train, method_surrogate_based_uq, method_multilevel_polynomial_chaos, method_multifidelity_polynomial_chaos, method_multifidelity_stoch_collocation, method_multilevel_function_train, method_multifidelity_function_train, method_multilevel_sampling, method_multifidelity_sampling, method_approximate_control_variate, method_multilevel_blue, method_multilevel_multifidelity_sampling, method_efficient_global, method_coliny_beta, method_nl2sol, method_branch_and_bound, method_richardson_extrap, method_bayes_calibration, nested_inferred_view, dace_sampling_aleatory_truth, local_surrogate_mixed_vars, ensemble_inferred_view, dace_pstudy_under_optimizer, method_hybrid_sequential, method_surrogate_based_local, method_surrogate_based_global, linear_constraints, scaling, calibration_data |
 
 ## Native classes exercised by the paired scripts
 
