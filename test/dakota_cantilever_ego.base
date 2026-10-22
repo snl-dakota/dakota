@@ -45,18 +45,18 @@ Test Number 2 succeeded
 Test Number 3 succeeded
 <<<<< Function evaluation summary: 17 total (17 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.1676601918e+00 w
-                      3.6748999419e+00 t
+                      2.1544225982e+00 w
+                      3.6840505343e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.9659343129e+00
+                      7.9370017239e+00
 <<<<< Best constraint values   =
-                     -5.3256606239e-02
-                     -3.8965363712e-03
-<<<<< Best evaluation ID: 16
+                     -4.8404320303e-02
+                      6.4517606082e-03
+<<<<< Best evaluation ID: 17
 Test Number 4 succeeded
 <<<<< Function evaluation summary: 42 total (33 new, 9 duplicate)
 <<<<< Best parameters          =
