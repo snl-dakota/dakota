@@ -717,7 +717,8 @@ process_truth_response_map(const IntResponseMap& truth_resp_map, bool rebuild)
   // Process completions: replace liar resp w/ new truth resp based on eval ids
   fHatModel->replace_approximation(truth_resp_map, rebuild);
   // update constraints (truth resp only, not for liar resp)
-  if (numNonlinearConstraints)
+  // skipped once converged, so the best-sample ranking isn't corrupted
+  if (numNonlinearConstraints && !converged())
     update_constraints(truth_resp_map);
 }
 
