@@ -12,6 +12,8 @@
 
 #include "ApproximationInterface.hpp"
 
+#include <functional>
+
 
 namespace Dakota {
 
@@ -30,6 +32,11 @@ public:
   ApproximationFieldInterface(ProblemDescDB& problem_db, const Variables& am_vars,
 			 bool am_cache, const String& am_interface_id,
 			 const Response & resp);
+  /// DI constructor: approximation settings from a model IR store
+  ApproximationFieldInterface(const IRStore& model_store,
+			 const Variables& am_vars, bool am_cache,
+			 const String& am_interface_id, const Response& resp,
+			 short data_order, short output_level);
   /// alternate constructor for instantiations on the fly
   //ApproximationFieldInterface(const String& approx_type,
   //      		 const UShortArray& approx_order,
@@ -41,6 +48,12 @@ public:
   ~ApproximationFieldInterface();
 
 protected:
+
+  /// shared constructor code: field bookkeeping plus surface construction
+  /// using the supplied scalar and field approximation factories
+  void initialize(const Response& response,
+		  const std::function<Approximation(const String&)>& make_scalar,
+		  const std::function<Approximation(const StringArray&)>& make_field);
 
   /// return reference to specified approximation
   Approximation& function_surface(size_t) override;

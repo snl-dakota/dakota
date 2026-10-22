@@ -101,6 +101,7 @@ def main():
         "work",
         "dakota",
         "driver",
+        "plugin",
         "python",
         "python-path",
         "perl",
@@ -131,8 +132,10 @@ def main():
     for kind in ("freeform", "python"):
         directory = work / kind
         for required in case["required_files"]:
-            origin = Path(args.driver) if required == "text_book" else source / required
-            shutil.copy2(origin, directory / Path(required).name)
+            # reserved names resolve to build products rather than source files
+            built = {"text_book": args.driver, "identity_map": args.plugin}
+            origin = Path(built[required]) if required in built else source / required
+            shutil.copy2(origin, directory / origin.name)
         env["PATH"] = str(directory) + os.pathsep + os.environ.get("PATH", "")
         # Optional freeform setup study (e.g. exporting a surrogate that the
         # pair then imports) run in each working directory before the pair.

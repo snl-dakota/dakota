@@ -155,6 +155,8 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             shutil.which("false"),
             "--driver",
             PERL,
+            "--plugin",
+            PERL,
             "--python",
             sys.executable,
             "--python-path",
@@ -211,7 +213,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
                     (SOURCE / "python_parity" / case["script"]).is_file()
                 )
                 for file in case["required_files"]:
-                    if file != "text_book":
+                    if file not in ("text_book", "identity_map"):
                         self.assertTrue((SOURCE / file).is_file(), file)
                 if "setup_input" in case:
                     self.assertTrue((SOURCE / case["setup_input"]).is_file())

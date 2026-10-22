@@ -48,6 +48,14 @@ SurrogatesPythonApprox(const IRStore& model_store,
 { initialize(SpecSource(model_store)); }
 
 
+SurrogatesPythonApprox::
+SurrogatesPythonApprox(const IRStore& model_store,
+		const SharedApproxData& shared_data,
+		const StringArray& approx_labels):
+  SurrogatesBaseApprox(model_store, shared_data, approx_labels)
+{ initialize(SpecSource(model_store)); }
+
+
 /** Shared configuration code for the ProblemDescDB and DI constructors. */
 void SurrogatesPythonApprox::initialize(const SpecSource& spec)
 {

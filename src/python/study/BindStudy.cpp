@@ -18,6 +18,9 @@
 #include "DOTOptimizer.hpp"
 #endif
 #include "NestedModel.hpp"
+#ifdef DAKOTA_PYBIND11
+#include "Pybind11Interface.hpp"
+#endif
 #include "SimulationModel.hpp"
 #include "DakotaInterface.hpp"
 #include "DakotaIterator.hpp"
@@ -338,18 +341,40 @@ See :ref:`variables options <variables>`.)doc")
 
 See :ref:`response options <responses>`.)doc")
     .def("interface",
-         [](const Study& study, const py::object& config, py::kwargs kwargs) {
-           return study.interface(
+         [](const Study& study, const py::object& config,
+            const py::object& callback, py::kwargs kwargs) {
+           auto interface = study.interface(
              materialize_interface(normalize_factory_config(config, kwargs, "Study.interface")));
+           if (!callback.is_none()) {
+#ifdef DAKOTA_PYBIND11
+             auto python_interface =
+               std::dynamic_pointer_cast<Pybind11Interface>(interface);
+             if (!python_interface)
+               throw py::type_error(
+                 "Study.interface: callback requires a python interface type");
+             python_interface->register_pybind11_callback_fn(
+               callback.cast<py::function>());
+#else
+             throw py::type_error(
+               "Study.interface: callback requires Dakota built with the "
+               "Python direct interface");
+#endif
+           }
+           return interface;
          },
-         py::arg("config") = py::none(),
+         py::arg("config") = py::none(), py::kw_only(),
+         py::arg("callback") = py::none(),
          R"doc(Construct a simulation interface from an interface fragment.
 
 :param config: An ``InterfaceConfig`` or equivalent dictionary.
+:param callback: For a ``python`` interface, a callable that maps a
+    parameters dictionary to a results dictionary; replaces importing the
+    analysis driver ``module.function``.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: An interface owned by this study.
 :rtype: dakota.study.Interface
-:raises TypeError: If both ``config`` and configuration keywords are supplied.
+:raises TypeError: If both ``config`` and configuration keywords are
+    supplied, or ``callback`` is given for a non-python interface.
 
 See :ref:`interface options <interface>`.)doc")
     .def_property_readonly(

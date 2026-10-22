@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "PluginInterface.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
 
 #include <boost/version.hpp>
@@ -53,6 +54,19 @@ PluginInterface::PluginInterface(const ProblemDescDB& problem_db, ParallelLibrar
   pluginPath(problem_db.get<const String>("interface.plugin_library_path")),
   analysisDrivers(
     problem_db.get<const StringArray>("interface.application.analysis_drivers"))
+{
+  check_plugin_exists();
+}
+
+
+PluginInterface::PluginInterface(const IRStore& interface_store,
+                                 std::shared_ptr<StudyServices> services):
+  ApplicationInterface(interface_store, std::move(services)),
+  pluginPath(interface_store.contains("plugin_library_path") ?
+    interface_store.get<String>("plugin_library_path") : ""),
+  analysisDrivers(interface_store.contains("application.analysis_drivers") ?
+    interface_store.get<StringArray>("application.analysis_drivers") :
+    StringArray())
 {
   check_plugin_exists();
 }

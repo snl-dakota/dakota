@@ -9,6 +9,7 @@
 
 #include "ApproximationFieldInterface.hpp"
 #include "DakotaFieldApproximation.hpp"
+#include "IRStore.hpp"
 
 namespace Dakota {
 
@@ -21,6 +22,37 @@ ApproximationFieldInterface(ProblemDescDB& problem_db, const Variables& am_vars,
                        response.function_labels()),
   activeSurface(-1),
   activeComponent(-1)
+{
+  initialize(response,
+    [&](const String& label)
+    { return Approximation(problem_db, shared_approximation(), label); },
+    [&](const StringArray& labels) -> Approximation
+    { return FieldApproximation(problem_db, shared_approximation(), labels); });
+}
+
+
+ApproximationFieldInterface::
+ApproximationFieldInterface(const IRStore& model_store,
+		       const Variables& am_vars, bool am_cache,
+		       const String& am_interface_id, const Response& response,
+		       short data_order, short output_level):
+  ApproximationInterface(model_store, am_vars, am_cache, am_interface_id,
+                       response.function_labels(), data_order, output_level),
+  activeSurface(-1),
+  activeComponent(-1)
+{
+  initialize(response,
+    [&](const String& label)
+    { return Approximation(model_store, shared_approximation(), label); },
+    [&](const StringArray& labels) -> Approximation
+    { return FieldApproximation(model_store, shared_approximation(), labels); });
+}
+
+
+void ApproximationFieldInterface::
+initialize(const Response& response,
+	   const std::function<Approximation(const String&)>& make_scalar,
+	   const std::function<Approximation(const StringArray&)>& make_field)
 {
   // Create field-based function indices and reconstruct the approximations
 
@@ -88,11 +120,10 @@ ApproximationFieldInterface(ProblemDescDB& problem_db, const Variables& am_vars,
   functionSurfaces.clear();
   functionSurfaces.resize(numScalars+numFields);
   for (int i=0; i<numScalars; ++i)
-    functionSurfaces[all_indices[i]] = Approximation(problem_db, shared_approximation(),
-                                                     response.function_labels()[all_indices[i]]);
+    functionSurfaces[all_indices[i]] =
+      make_scalar(response.function_labels()[all_indices[i]]);
   for (int i=0; i<numFields; ++i)
-    functionSurfaces[numScalars+i] = FieldApproximation(problem_db, shared_approximation(),
-                                                     field_labels[i]);
+    functionSurfaces[numScalars+i] = make_field(field_labels[i]);
 }
 
 

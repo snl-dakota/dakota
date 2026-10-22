@@ -331,12 +331,16 @@ DataFitSurrModel::DataFitSurrModel(
   const bool cache = actualModel && actualModel->evaluation_cache(false) &&
                      !actualModel->derivative_estimation();
   const String interface_id = actualModel ? actualModel->interface_id() : String();
-  if (currentResponse.field_lengths().length())
-    throw std::runtime_error(
-      "DataFitSurrModel DI construction does not yet support field responses.");
-  approxInterface = std::make_shared<ApproximationInterface>(
-    model_store, vars, cache, interface_id,
-    currentResponse.function_labels(), data_order, outputLevel);
+  // as for the ProblemDescDB ctor, field responses use field-based
+  // approximations
+  if (currentResponse.field_lengths().length() == 0)
+    approxInterface = std::make_shared<ApproximationInterface>(
+      model_store, vars, cache, interface_id,
+      currentResponse.function_labels(), data_order, outputLevel);
+  else
+    approxInterface = std::make_shared<ApproximationFieldInterface>(
+      model_store, vars, cache, interface_id, currentResponse, data_order,
+      outputLevel);
 
   if (daceIterator)
     daceIterator->sub_iterator_flag(true);

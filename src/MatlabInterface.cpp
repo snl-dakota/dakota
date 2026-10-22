@@ -40,6 +40,16 @@ const int NUMBER_OF_FIELDS = 23;
 
 MatlabInterface::MatlabInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib)
   : DirectApplicInterface(problem_db, parallel_lib) 
+{ initialize(); }
+
+
+MatlabInterface::MatlabInterface(const IRStore& interface_store,
+                                 std::shared_ptr<StudyServices> services)
+  : DirectApplicInterface(interface_store, std::move(services))
+{ initialize(); }
+
+
+void MatlabInterface::initialize()
 {
   // TODO: this code should be unreachable and can be removed; test.
   if (analysisDrivers.empty()) {

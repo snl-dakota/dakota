@@ -62,6 +62,18 @@ SurrogatesBaseApprox(const IRStore& model_store,
 
 
 SurrogatesBaseApprox::
+SurrogatesBaseApprox(const IRStore& model_store,
+		     const SharedApproxData& shared_data,
+		     const StringArray& approx_labels):
+  FieldApproximation(BaseConstructor(), shared_data, approx_labels)
+{
+  advanced_options_file =
+    SpecSource(model_store).get<const String>("model.advanced_options_file");
+  set_verbosity();
+}
+
+
+SurrogatesBaseApprox::
 SurrogatesBaseApprox(const SharedApproxData& shared_data):
   FieldApproximation(NoDBBaseConstructor(), shared_data)
 { set_verbosity(); }

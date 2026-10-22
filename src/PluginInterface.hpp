@@ -24,6 +24,9 @@ class PluginInterface: public ApplicationInterface
 public:
 
   PluginInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  /// DI constructor using interface IR plus study services
+  PluginInterface(const IRStore& interface_store,
+                  std::shared_ptr<StudyServices> services);
 
   ~PluginInterface() override;
   

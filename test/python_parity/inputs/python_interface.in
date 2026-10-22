@@ -1,0 +1,13 @@
+method
+  list_parameter_study
+    list_of_points 0.0 0.0  0.5 1.5  2.0 -1.0
+variables
+  continuous_design 2
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'driver_text_book.text_book'
+    python
+responses
+  objective_functions 1
+  analytic_gradients
+  no_hessians

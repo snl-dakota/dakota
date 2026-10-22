@@ -2098,5 +2098,103 @@
     "requires_features": [
       "HAVE_SURFPACK"
     ]
+  },
+  {
+    "id": "interface_plugin",
+    "input": "python_parity/inputs/plugin.in",
+    "subtest": 0,
+    "script": "interface_plugin.py",
+    "required_files": [
+      "identity_map"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.centered_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "PluginInterface",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "DAKOTA_PLUGIN_DEMOS"
+    ]
+  },
+  {
+    "id": "interface_python",
+    "input": "python_parity/inputs/python_interface.in",
+    "subtest": 0,
+    "script": "interface_python.py",
+    "required_files": [
+      "driver_text_book.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.list_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "Pybind11Interface",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "DAKOTA_PYTHON_DIRECT_INTERFACE"
+    ]
+  },
+  {
+    "id": "interface_python_callback",
+    "input": "python_parity/inputs/python_interface.in",
+    "subtest": 0,
+    "script": "interface_python_callback.py",
+    "required_files": [
+      "driver_text_book.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.list_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "Pybind11Interface",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "DAKOTA_PYTHON_DIRECT_INTERFACE"
+    ]
+  },
+  {
+    "id": "model_global_field_python",
+    "input": "dakota_python_field_surrogate.in",
+    "subtest": 1,
+    "script": "model_global_field_python.py",
+    "required_files": [
+      "surrogate_polynomial.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.sampling",
+      "ModelFactory.global_surrogate"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NonDLHSSampling",
+      "DataFitSurrModel"
+    ],
+    "requires_features": [
+      "DAKOTA_PYTHON_SURROGATES",
+      "DAKOTA_PYTHON_DIRECT_INTERFACE"
+    ]
   }
 ]

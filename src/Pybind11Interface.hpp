@@ -32,6 +32,9 @@ class Pybind11Interface: public DirectApplicInterface
   public:
 
     Pybind11Interface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib); ///< constructor
+    /// DI constructor using interface IR plus study services
+    Pybind11Interface(const IRStore& interface_store,
+                      std::shared_ptr<StudyServices> services);
     ~Pybind11Interface();                               ///< destructor
 
     /// register a python callback function
@@ -61,6 +64,9 @@ class Pybind11Interface: public DirectApplicInterface
     virtual void test_local_evaluations(PRPQueue& prp_queue);
 
   private: 
+    /// shared constructor code
+    void initialize();
+
     /// direct interface to Pybind11 via API
     int pybind11_run(const String& ac_name);
 

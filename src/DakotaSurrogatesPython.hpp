@@ -40,6 +40,10 @@ public:
   SurrogatesPythonApprox(const IRStore& model_store,
 		         const SharedApproxData& shared_data,
 		         const String& approx_label);
+  /// DI constructor for field surfaces: settings from a model IR store
+  SurrogatesPythonApprox(const IRStore& model_store,
+		         const SharedApproxData& shared_data,
+		         const StringArray& approx_labels);
   /// alternate constructor
   SurrogatesPythonApprox(const SharedApproxData& shared_data);
   /// destructor

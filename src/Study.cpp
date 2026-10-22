@@ -21,6 +21,13 @@
 #include "DakotaResponse.hpp"
 #include "DakotaVariables.hpp"
 #include "SysCallApplicInterface.hpp"
+#include "PluginInterface.hpp"
+#ifdef DAKOTA_PYBIND11
+#include "Pybind11Interface.hpp"
+#endif
+#ifdef DAKOTA_MATLAB
+#include "MatlabInterface.hpp"
+#endif
 #include "TestDriverInterface.hpp"
 #ifndef _WIN32
 #include "ForkApplicInterface.hpp"
@@ -274,9 +281,32 @@ std::shared_ptr<Interface> Study::interface(const IRStore& interface_store) cons
     return std::make_shared<TestDriverInterface>(
       interface_store, studyServices);
 
+  if (interface_type == PLUGIN_INTERFACE)
+    return std::make_shared<PluginInterface>(interface_store, studyServices);
+
+  // mirror the ProblemDescDB dispatch in interface_utils.cpp
+  if (interface_type == PYTHON_INTERFACE) {
+#ifdef DAKOTA_PYBIND11
+    return std::make_shared<Pybind11Interface>(interface_store, studyServices);
+#else
+    throw std::runtime_error(
+      "Python interface requested, but not enabled in this Dakota build.");
+#endif
+  }
+
+  if (interface_type == MATLAB_INTERFACE) {
+#ifdef DAKOTA_MATLAB
+    return std::make_shared<MatlabInterface>(interface_store, studyServices);
+#else
+    throw std::runtime_error(
+      "Direct Matlab interface requested, but not enabled in this Dakota "
+      "build.");
+#endif
+  }
+
   throw std::runtime_error(
-    "Study::interface currently supports only system, fork, and direct "
-    "interfaces.");
+    "Study::interface currently supports only system, fork, direct, plugin, "
+    "python, and matlab interfaces.");
 }
 
 std::shared_ptr<Interface> Study::interface(const nlohmann::json& interface_json) const

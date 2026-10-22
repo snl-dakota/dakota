@@ -47,6 +47,10 @@ public:
   FieldApproximation(ProblemDescDB& problem_db,
                      const SharedApproxData& shared_data,
                      const StringArray& approx_labels);
+  /// DI constructor for envelope: settings from a model IR store
+  FieldApproximation(const IRStore& model_store,
+                     const SharedApproxData& shared_data,
+                     const StringArray& approx_labels);
 
   /// destructor
   virtual ~FieldApproximation();
@@ -88,6 +92,12 @@ private:
   std::shared_ptr<FieldApproximation>
   get_field_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 	           const StringArray& approx_label);
+  /// Used only by the DI envelope constructor to initialize approxRep
+  /// to the appropriate derived type.
+  std::shared_ptr<FieldApproximation>
+  get_field_approx(const IRStore& model_store,
+                   const SharedApproxData& shared_data,
+                   const StringArray& approx_labels);
 };
 
 } // namespace Dakota

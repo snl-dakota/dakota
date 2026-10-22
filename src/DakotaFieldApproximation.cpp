@@ -91,6 +91,45 @@ get_field_approx(ProblemDescDB& problem_db, const SharedApproxData& shared_data,
 }
 
 
+/** DI envelope constructor: mirrors the ProblemDescDB envelope, with
+    approximation settings drawn from the model IR store. */
+FieldApproximation::
+FieldApproximation(const IRStore& model_store,
+                   const SharedApproxData& shared_data,
+                   const StringArray& approx_labels):
+  FieldApproximation(BaseConstructor(), shared_data, approx_labels)
+{
+  if (numComponents == 1)
+    approxRep = get_approx(model_store, shared_data, approx_labels[0]);
+  else
+    approxRep = get_field_approx(model_store, shared_data, approx_labels);
+}
+
+
+/** Used only by the DI envelope constructor to initialize approxRep to the
+    appropriate derived type. */
+std::shared_ptr<FieldApproximation> FieldApproximation::
+get_field_approx(const IRStore& model_store, const SharedApproxData& shared_data,
+                 const StringArray& approx_labels)
+{
+  const String& approx_type = shared_data.data_rep()->approxType;
+
+  Cout << "FieldApproximation::get_field_approx: creating \""
+       << approx_type << "\" for each of these responses:\n";
+  for (auto const & label : approx_labels)
+    Cout << "\t\"" << label << "\"" << std::endl;
+
+  // The only dervived Field approximation at present.
+  std::shared_ptr<FieldApproximation> approx;
+#ifdef HAVE_DAKOTA_PYTHON_SURROGATES
+  approx = std::make_shared<SurrogatesPythonApprox>(model_store, shared_data,
+                                                    approx_labels);
+#endif
+
+  return approx;
+}
+
+
 FieldApproximation::~FieldApproximation()
 { /* empty dtor */ }
 

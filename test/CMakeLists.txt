@@ -95,6 +95,7 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
           --work "${CMAKE_CURRENT_BINARY_DIR}/python_parity/${case_id}"
           --dakota "$<TARGET_FILE:dakota>"
           --driver "$<TARGET_FILE:text_book>"
+          --plugin "${Dakota_BINARY_DIR}/src/plugins/build/libidentity_map${CMAKE_SHARED_LIBRARY_SUFFIX}"
           --python "${Python3_EXECUTABLE}"
           --python-path "${DAKOTA_PYTHON_PATH}"
           --perl "${PERL_EXECUTABLE}"

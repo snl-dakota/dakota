@@ -1,0 +1,16 @@
+method
+  centered_parameter_study
+    step_vector 0.5 1.7
+    steps_per_variable 1
+variables
+  continuous_design 2
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'f_of_x_equals_x'
+    plugin
+      library_path 'libidentity_map.so'
+responses
+  descriptors 'f0' 'f1'
+  response_functions 2
+  analytic_gradients
+  analytic_hessians

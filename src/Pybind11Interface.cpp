@@ -11,6 +11,7 @@
 #include <pybind11/numpy.h>
 
 #include "Pybind11Interface.hpp"
+#include "IRStore.hpp"
 #include "dakota_global_defs.hpp"
 #include "DakotaMethodEnums.hpp"
 #include "ProblemDescDB.hpp"
@@ -25,6 +26,20 @@ Pybind11Interface::Pybind11Interface(const ProblemDescDB& problem_db, ParallelLi
     userNumpyFlag(problem_db.get<bool>("interface.python.numpy")),
     ownPython(false),
     py11Active(false)
+{ initialize(); }
+
+
+Pybind11Interface::Pybind11Interface(const IRStore& interface_store,
+                                     std::shared_ptr<StudyServices> services)
+  : DirectApplicInterface(interface_store, std::move(services)),
+    userNumpyFlag(interface_store.contains("python.numpy") ?
+                  interface_store.get<bool>("python.numpy") : false),
+    ownPython(false),
+    py11Active(false)
+{ initialize(); }
+
+
+void Pybind11Interface::initialize()
 {
   // Only supports bulk synchronous batch evals with a single driver
   if (asynchFlag) {

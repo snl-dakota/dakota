@@ -35,6 +35,9 @@ public:
 
   /// Constructor: start Matlab engine
   MatlabInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
+  /// DI constructor using interface IR plus study services
+  MatlabInterface(const IRStore& interface_store,
+                  std::shared_ptr<StudyServices> services);
 
   /// Destructor: close Matlab engine
   ~MatlabInterface();
@@ -56,6 +59,11 @@ protected:
   /// check that the dakota_matlab strucutre has the specified field_name and
   /// add if necessary; free structure memory in preparation for new alloc
   int matlab_field_prep(mxArray* dakota_matlab, const char* field_name);
+
+private:
+
+  /// shared constructor code
+  void initialize();
 
 }; // class MatlabInterface
 
