@@ -109,4 +109,7 @@ FACTORY_NAMES = (
     "bayes_calibration",
     "surrogate_based_local",
     "surrogate_based_global",
+    "hybrid_sequential",
+    "hybrid_collaborative",
+    "hybrid_embedded",
 )

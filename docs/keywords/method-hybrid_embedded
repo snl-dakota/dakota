@@ -1,7 +1,7 @@
 Blurb::
 A subordinate local method provides periodic refinements to a top-level global method
 Description::
-In the ``embedded`` approach, a tightly-coupled hybrid is employed in
+In the ``hybrid_embedded`` approach, a tightly-coupled hybrid is employed in
 which a subordinate local method provides periodic refinements to a
 top-level global method.
 

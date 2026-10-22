@@ -11,7 +11,10 @@
 
 #include "ActiveSubspaceModel.hpp"
 #include "AdaptedBasisModel.hpp"
+#include "CollabHybridMetaIterator.hpp"
 #include "ConcurrentMetaIterator.hpp"
+#include "EmbedHybridMetaIterator.hpp"
+#include "SeqHybridMetaIterator.hpp"
 #include "DataFitSurrModel.hpp"
 #include "DOTOptimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
@@ -390,6 +393,66 @@ Study::MethodFactory::multi_start(
   return multi_start(
     validate_and_materialize_selected_method(method_json, "multi_start"),
     std::move(sub_iterator));
+}
+
+std::shared_ptr<SeqHybridMetaIterator>
+Study::MethodFactory::hybrid_sequential(
+  const IRStore& method_store,
+  std::vector<std::shared_ptr<Iterator>> methods) const
+{
+  return std::make_shared<SeqHybridMetaIterator>(
+    method_store, std::move(methods), study.services());
+}
+
+std::shared_ptr<SeqHybridMetaIterator>
+Study::MethodFactory::hybrid_sequential(
+  const nlohmann::json& method_json,
+  std::vector<std::shared_ptr<Iterator>> methods) const
+{
+  return hybrid_sequential(
+    validate_and_materialize_selected_method(method_json, "hybrid_sequential"),
+    std::move(methods));
+}
+
+std::shared_ptr<CollabHybridMetaIterator>
+Study::MethodFactory::hybrid_collaborative(
+  const IRStore& method_store,
+  std::vector<std::shared_ptr<Iterator>> methods) const
+{
+  return std::make_shared<CollabHybridMetaIterator>(
+    method_store, std::move(methods), study.services());
+}
+
+std::shared_ptr<CollabHybridMetaIterator>
+Study::MethodFactory::hybrid_collaborative(
+  const nlohmann::json& method_json,
+  std::vector<std::shared_ptr<Iterator>> methods) const
+{
+  return hybrid_collaborative(
+    validate_and_materialize_selected_method(method_json, "hybrid_collaborative"),
+    std::move(methods));
+}
+
+std::shared_ptr<EmbedHybridMetaIterator>
+Study::MethodFactory::hybrid_embedded(
+  const IRStore& method_store,
+  std::shared_ptr<Iterator> global_method,
+  std::shared_ptr<Iterator> local_method) const
+{
+  return std::make_shared<EmbedHybridMetaIterator>(
+    method_store, std::move(global_method), std::move(local_method),
+    study.services());
+}
+
+std::shared_ptr<EmbedHybridMetaIterator>
+Study::MethodFactory::hybrid_embedded(
+  const nlohmann::json& method_json,
+  std::shared_ptr<Iterator> global_method,
+  std::shared_ptr<Iterator> local_method) const
+{
+  return hybrid_embedded(
+    validate_and_materialize_selected_method(method_json, "hybrid_embedded"),
+    std::move(global_method), std::move(local_method));
 }
 
 std::shared_ptr<ParamStudy>

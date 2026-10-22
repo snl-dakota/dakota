@@ -413,53 +413,85 @@ This method is present only when Dakota is built with DOT. See
 
 See :ref:`multi-start options <method-multi_start>`.)doc");
   factory
-    .def("hybrid",
+    .def("hybrid_sequential",
          [](const Study::MethodFactory& factory,
-            std::vector<std::shared_ptr<Iterator>> sub_iterators,
-            const py::object& config, py::kwargs kwargs)
-           -> std::shared_ptr<Iterator> {
-           for (const auto& sub_iterator : sub_iterators)
-             if (!sub_iterator)
+            std::vector<std::shared_ptr<Iterator>> methods,
+            const py::object& config, py::kwargs kwargs) {
+           for (const auto& m : methods)
+             if (!m)
                throw py::type_error(
-                 "MethodFactory.hybrid: sub_iterators must not contain None");
-           const auto store = materialize_method(nlohmann::json{{"hybrid",
-             normalize_factory_config(config, kwargs, "MethodFactory.hybrid")}});
-           // mirror the ProblemDescDB dispatch in iterator_utils.cpp
-           switch (store.get<unsigned short>("sub_method")) {
-           case SUBMETHOD_SEQUENTIAL:
-             return std::make_shared<SeqHybridMetaIterator>(
-               store, std::move(sub_iterators), factory.services());
-           case SUBMETHOD_COLLABORATIVE:
-             return std::make_shared<CollabHybridMetaIterator>(
-               store, std::move(sub_iterators), factory.services());
-           case SUBMETHOD_EMBEDDED:
-             if (sub_iterators.size() != 2)
-               throw py::value_error(
-                 "MethodFactory.hybrid: an embedded hybrid requires exactly "
-                 "two sub_iterators (global, local)");
-             return std::make_shared<EmbedHybridMetaIterator>(
-               store, std::move(sub_iterators[0]), std::move(sub_iterators[1]),
-               factory.services());
-           default:
-             throw py::value_error(
-               "MethodFactory.hybrid: unsupported hybrid strategy");
-           }
+                 "MethodFactory.hybrid_sequential: methods must not contain None");
+           return factory.hybrid_sequential(
+             materialize_method(nlohmann::json{{"hybrid_sequential",
+               normalize_factory_config(config, kwargs,
+                 "MethodFactory.hybrid_sequential")}}),
+             std::move(methods));
          },
-         py::arg("sub_iterators"), py::arg("config") = py::none(),
-         R"doc(Construct a hybrid method around injected sub-iterators.
+         py::arg("methods"), py::arg("config") = py::none(),
+         R"doc(Construct a sequential hybrid meta-iterator.
 
-:param sub_iterators: Methods run by the hybrid, each with its own model. A
-    sequential hybrid runs them in order and a collaborative hybrid runs them
-    together. An embedded hybrid requires exactly two: the global method
-    followed by the local method.
-:type sub_iterators: list[dakota.study.Iterator]
-:param config: A ``HybridConfig`` or equivalent dictionary.
+:param methods: Ordered list of methods to execute in sequence.
+:type methods: list[dakota.study.Iterator]
+:param config: A ``HybridSequentialConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
-:returns: The constructed meta-iterator.
-:rtype: dakota.study.Iterator
+:returns: The constructed sequential hybrid.
+:rtype: dakota.study.SeqHybridMetaIterator
+:raises TypeError: If a method is null or both configuration forms are used.
+
+See :ref:`hybrid_sequential options <method-hybrid_sequential>`.)doc")
+    .def("hybrid_collaborative",
+         [](const Study::MethodFactory& factory,
+            std::vector<std::shared_ptr<Iterator>> methods,
+            const py::object& config, py::kwargs kwargs) {
+           for (const auto& m : methods)
+             if (!m)
+               throw py::type_error(
+                 "MethodFactory.hybrid_collaborative: methods must not contain None");
+           return factory.hybrid_collaborative(
+             materialize_method(nlohmann::json{{"hybrid_collaborative",
+               normalize_factory_config(config, kwargs,
+                 "MethodFactory.hybrid_collaborative")}}),
+             std::move(methods));
+         },
+         py::arg("methods"), py::arg("config") = py::none(),
+         R"doc(Construct a collaborative hybrid meta-iterator.
+
+:param methods: Methods to run concurrently, sharing information.
+:type methods: list[dakota.study.Iterator]
+:param config: A ``HybridCollaborativeConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed collaborative hybrid.
+:rtype: dakota.study.CollabHybridMetaIterator
+:raises TypeError: If a method is null or both configuration forms are used.
+
+See :ref:`hybrid_collaborative options <method-hybrid_collaborative>`.)doc")
+    .def("hybrid_embedded",
+         [](const Study::MethodFactory& factory,
+            std::shared_ptr<Iterator> global_method,
+            std::shared_ptr<Iterator> local_method,
+            const py::object& config, py::kwargs kwargs) {
+           return factory.hybrid_embedded(
+             materialize_method(nlohmann::json{{"hybrid_embedded",
+               normalize_factory_config(config, kwargs,
+                 "MethodFactory.hybrid_embedded")}}),
+             std::move(global_method), std::move(local_method));
+         },
+         py::arg("global_method").none(false),
+         py::arg("local_method").none(false),
+         py::arg("config") = py::none(),
+         R"doc(Construct an embedded hybrid meta-iterator.
+
+:param global_method: Top-level global optimizer.
+:type global_method: dakota.study.Iterator
+:param local_method: Subordinate local method used for periodic refinement.
+:type local_method: dakota.study.Iterator
+:param config: A ``HybridEmbeddedConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed embedded hybrid.
+:rtype: dakota.study.EmbedHybridMetaIterator
 :raises TypeError: If a dependency is null or both configuration forms are used.
 
-See :ref:`hybrid options <method-hybrid>`.)doc");
+See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
 
   bind_method(factory, "vector_parameter_study",
     [](const Study::MethodFactory& f, const IRStore& store,

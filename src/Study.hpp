@@ -27,7 +27,10 @@ namespace Dakota {
  * studies without a complete input file.
  */
 
+class CollabHybridMetaIterator;
 class ConcurrentMetaIterator;
+class EmbedHybridMetaIterator;
+class SeqHybridMetaIterator;
 class ActiveSubspaceModel;
 class AdaptedBasisModel;
 class DataFitSurrModel;
@@ -270,6 +273,35 @@ public:
   std::shared_ptr<ConcurrentMetaIterator>
   multi_start(const nlohmann::json& method_json,
               std::shared_ptr<Iterator> sub_iterator) const;
+
+  /// Construct a sequential hybrid around non-null injected sub-iterators.
+  std::shared_ptr<SeqHybridMetaIterator>
+  hybrid_sequential(const IRStore& method_store,
+                    std::vector<std::shared_ptr<Iterator>> methods) const;
+  /// Validate a hybrid_sequential fragment and construct it.
+  std::shared_ptr<SeqHybridMetaIterator>
+  hybrid_sequential(const nlohmann::json& method_json,
+                    std::vector<std::shared_ptr<Iterator>> methods) const;
+
+  /// Construct a collaborative hybrid around non-null injected sub-iterators.
+  std::shared_ptr<CollabHybridMetaIterator>
+  hybrid_collaborative(const IRStore& method_store,
+                       std::vector<std::shared_ptr<Iterator>> methods) const;
+  /// Validate a hybrid_collaborative fragment and construct it.
+  std::shared_ptr<CollabHybridMetaIterator>
+  hybrid_collaborative(const nlohmann::json& method_json,
+                       std::vector<std::shared_ptr<Iterator>> methods) const;
+
+  /// Construct an embedded hybrid around non-null injected global and local iterators.
+  std::shared_ptr<EmbedHybridMetaIterator>
+  hybrid_embedded(const IRStore& method_store,
+                  std::shared_ptr<Iterator> global_method,
+                  std::shared_ptr<Iterator> local_method) const;
+  /// Validate a hybrid_embedded fragment and construct it.
+  std::shared_ptr<EmbedHybridMetaIterator>
+  hybrid_embedded(const nlohmann::json& method_json,
+                  std::shared_ptr<Iterator> global_method,
+                  std::shared_ptr<Iterator> local_method) const;
 
 private:
   const Study& study;

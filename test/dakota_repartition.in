@@ -20,7 +20,7 @@ environment,
 
 method,
 	id_method = 'HS'
-	hybrid sequential
+	hybrid_sequential
 	method_pointer_list = 'VPS' 'CPS'
 
 method,

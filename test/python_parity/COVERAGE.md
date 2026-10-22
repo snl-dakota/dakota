@@ -35,7 +35,7 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.global_interval_est` | method_global_interval_est |
 | `MethodFactory.global_reliability` | method_global_reliability |
 | `MethodFactory.gpais` | method_gpais |
-| `MethodFactory.hybrid` | method_hybrid_sequential |
+| `MethodFactory.hybrid_sequential` | method_hybrid_sequential |
 | `MethodFactory.import_points` | import_points |
 | `MethodFactory.importance_sampling` | method_importance_sampling |
 | `MethodFactory.list_parameter_study` | pstudy_s3, interface_python, interface_python_callback, interface_python_decorated_callback |

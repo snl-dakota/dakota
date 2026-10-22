@@ -1730,7 +1730,7 @@
       "ModelFactory.simulation",
       "MethodFactory.coliny_ea",
       "MethodFactory.coliny_pattern_search",
-      "MethodFactory.hybrid"
+      "MethodFactory.hybrid_sequential"
     ],
     "classes": [
       "SimulationModel",

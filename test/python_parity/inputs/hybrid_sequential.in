@@ -2,7 +2,7 @@ environment
   method_pointer 'HS'
 method
   id_method 'HS'
-  hybrid sequential
+  hybrid_sequential
     method_pointer_list 'GA' 'PS'
 method
   id_method 'GA'

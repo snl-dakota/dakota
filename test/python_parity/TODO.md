@@ -13,7 +13,7 @@ Native pass status is separate from the inventory in `COVERAGE.md`.
   `EmbedHybridMetaIterator` nor `CollabHybridMetaIterator` defines the
   `initialize_iterator`/`update_local_results` callbacks that
   `schedule_iterators` invokes, so both abort with METHOD_ERROR in the
-  executable (also on `devel`). Their `MethodFactory.hybrid` bindings remain;
+  executable (also on `devel`). Their `MethodFactory.hybrid_embedded` and `MethodFactory.hybrid_collaborative` bindings remain;
   add pairs once the classes are fixed.
 - Add a hierarchical `surrogate_based_local` pair
   (`HierarchSurrBasedLocalMinimizer`) once `ModelFactory.ensemble_surrogate`

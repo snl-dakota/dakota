@@ -37,7 +37,7 @@ environment
 
 method
   id_method = 'HS'
-  hybrid sequential
+  hybrid_sequential
 #    iterator_servers = 3                       #p0,#p1
     method_pointer_list = 'GA' 'PS' 'NLP'       #s0,#s3,#p0
 #    method_pointer_list = 'GA' 'PS' 'PS2'      #s1,#s2

@@ -1731,7 +1731,7 @@ The meta-iterator and nested model specifications
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To specify concurrency in sub-iterator executions within meta-iterators
-(such as :dakkw:`method-hybrid-sequential`) and nested models (such as 
+(such as :dakkw:`method-hybrid_sequential`) and nested models (such as 
 :dakkw:`model-nested-sub_method_pointer`), the ``iterator_servers``,
 ``processors_per_iterator``, and ``iterator_scheduling`` keywords are used to
 override the automatic parallelism configuration. For this level, the available

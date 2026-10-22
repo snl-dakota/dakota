@@ -8508,112 +8508,6 @@
             "title": "ColinySolisWetsSelection",
             "type": "object"
         },
-        "Collaborative": {
-            "additionalProperties": false,
-            "description": "Multiple methods run concurrently and share information",
-            "properties": {
-                "collaborative": {
-                    "$ref": "#/$defs/CollaborativeConfig",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.sub_method",
-                            "ir_value_type": "unsigned short",
-                            "storage_type": "PRESENCE_ENUM",
-                            "stored_value": "SUBMETHOD_COLLABORATIVE"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "collaborative"
-            ],
-            "title": "Collaborative",
-            "type": "object"
-        },
-        "CollaborativeConfig": {
-            "additionalProperties": false,
-            "description": "Multiple methods run concurrently and share information",
-            "properties": {
-                "iterator_servers": {
-                    "anyOf": [
-                        {
-                            "exclusiveMinimum": 0,
-                            "type": "integer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the number of iterator servers when Dakota is run in parallel",
-                    "title": "Iterator Servers",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.iterator_servers",
-                            "ir_value_type": "int",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "iterator_scheduling": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodIteratorServerSchedulingDedicated"
-                        },
-                        {
-                            "$ref": "#/$defs/MethodIteratorServerSchedulingPeer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the scheduling of concurrent iterators when Dakota is run in parallel",
-                    "title": "Iterator Scheduling",
-                    "x-union-pattern": 2
-                },
-                "processors_per_iterator": {
-                    "anyOf": [
-                        {
-                            "exclusiveMinimum": 0,
-                            "type": "integer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the number of processors per iterator server when Dakota is run in parallel",
-                    "title": "Processors Per Iterator",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.processors_per_iterator",
-                            "ir_value_type": "int",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "sub_method": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/CollaborativeMethodNameList"
-                        },
-                        {
-                            "$ref": "#/$defs/CollaborativeMethodPointerList"
-                        }
-                    ],
-                    "description": "Sub-method Selection",
-                    "title": "Sub Method",
-                    "x-union-pattern": 4
-                }
-            },
-            "required": [
-                "sub_method"
-            ],
-            "title": "CollaborativeConfig",
-            "type": "object"
-        },
         "CollaborativeMethodNameList": {
             "additionalProperties": false,
             "description": "List of Dakota methods to sequentially or collaboratively run",
@@ -8680,15 +8574,16 @@
         },
         "CollaborativeMethodPointerList": {
             "additionalProperties": false,
-            "description": "Pointers to methods to execute sequantially or collaboratively",
+            "description": "Pointers to methods to execute collaboratively",
             "properties": {
                 "method_pointer_list": {
-                    "description": "Pointers to methods to execute sequantially or collaboratively",
+                    "description": "Pointers to methods to execute collaboratively",
                     "items": {
                         "type": "string"
                     },
                     "title": "Method Pointer List",
                     "type": "array",
+                    "x-block-pointer": "method",
                     "x-materialization": [
                         {
                             "ir_key": "method.hybrid.method_pointers",
@@ -17820,145 +17715,6 @@
                 }
             },
             "title": "ElBakry",
-            "type": "object"
-        },
-        "Embedded": {
-            "additionalProperties": false,
-            "description": "A subordinate local method provides periodic refinements to a top-level global method",
-            "properties": {
-                "embedded": {
-                    "$ref": "#/$defs/EmbeddedConfig",
-                    "x-aliases": [
-                        "coupled"
-                    ],
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.sub_method",
-                            "ir_value_type": "unsigned short",
-                            "storage_type": "PRESENCE_ENUM",
-                            "stored_value": "SUBMETHOD_EMBEDDED"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "embedded"
-            ],
-            "title": "Embedded",
-            "type": "object"
-        },
-        "EmbeddedConfig": {
-            "additionalProperties": false,
-            "description": "A subordinate local method provides periodic refinements to a top-level global method",
-            "properties": {
-                "iterator_servers": {
-                    "anyOf": [
-                        {
-                            "exclusiveMinimum": 0,
-                            "type": "integer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the number of iterator servers when Dakota is run in parallel",
-                    "title": "Iterator Servers",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.iterator_servers",
-                            "ir_value_type": "int",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "iterator_scheduling": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodIteratorServerSchedulingDedicated"
-                        },
-                        {
-                            "$ref": "#/$defs/MethodIteratorServerSchedulingPeer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the scheduling of concurrent iterators when Dakota is run in parallel",
-                    "title": "Iterator Scheduling",
-                    "x-union-pattern": 2
-                },
-                "processors_per_iterator": {
-                    "anyOf": [
-                        {
-                            "exclusiveMinimum": 0,
-                            "type": "integer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the number of processors per iterator server when Dakota is run in parallel",
-                    "title": "Processors Per Iterator",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.processors_per_iterator",
-                            "ir_value_type": "int",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "sub_method": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/GlobalMethodName"
-                        },
-                        {
-                            "$ref": "#/$defs/GlobalMethodPointer"
-                        }
-                    ],
-                    "description": "Global Sub-method Selection",
-                    "title": "Sub Method",
-                    "x-pointer-union": true,
-                    "x-union-pattern": 4
-                },
-                "local_sub_method": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/LocalMethodName"
-                        },
-                        {
-                            "$ref": "#/$defs/LocalMethodPointer"
-                        }
-                    ],
-                    "description": "Local Sub-method Selection",
-                    "title": "Local Sub Method",
-                    "x-pointer-union": true,
-                    "x-union-pattern": 4
-                },
-                "local_search_probability": {
-                    "default": 0.1,
-                    "description": "Probability of executing local searches",
-                    "title": "Local Search Probability",
-                    "type": "number",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.hybrid.local_search_probability",
-                            "ir_value_type": "Real",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "sub_method",
-                "local_sub_method"
-            ],
-            "title": "EmbeddedConfig",
             "type": "object"
         },
         "EmulatorGP": {
@@ -34867,10 +34623,84 @@
                 }
             ]
         },
-        "HybridConfig": {
+        "HybridCollaborativeConfig": {
             "additionalProperties": false,
-            "description": "Strategy in which a set of methods synergistically seek an optimal design",
+            "description": "Multiple methods run concurrently and share information",
             "properties": {
+                "iterator_servers": {
+                    "anyOf": [
+                        {
+                            "exclusiveMinimum": 0,
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the number of iterator servers when Dakota is run in parallel",
+                    "title": "Iterator Servers",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.iterator_servers",
+                            "ir_value_type": "int",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "iterator_scheduling": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodIteratorServerSchedulingDedicated"
+                        },
+                        {
+                            "$ref": "#/$defs/MethodIteratorServerSchedulingPeer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the scheduling of concurrent iterators when Dakota is run in parallel",
+                    "title": "Iterator Scheduling",
+                    "x-union-pattern": 2
+                },
+                "processors_per_iterator": {
+                    "anyOf": [
+                        {
+                            "exclusiveMinimum": 0,
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the number of processors per iterator server when Dakota is run in parallel",
+                    "title": "Processors Per Iterator",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.processors_per_iterator",
+                            "ir_value_type": "int",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "sub_method": {
+                    "anchor": true,
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/CollaborativeMethodNameList"
+                        },
+                        {
+                            "$ref": "#/$defs/CollaborativeMethodPointerList"
+                        }
+                    ],
+                    "description": "Sub-method Selection",
+                    "title": "Sub Method",
+                    "x-pointer-union": true,
+                    "x-union-pattern": 4
+                },
                 "id_method": {
                     "anyOf": [
                         {
@@ -34927,51 +34757,415 @@
                             "storage_type": "DIRECT_VALUE"
                         }
                     ]
-                },
-                "strategy": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/Sequential"
-                        },
-                        {
-                            "$ref": "#/$defs/Embedded"
-                        },
-                        {
-                            "$ref": "#/$defs/Collaborative"
-                        }
-                    ],
-                    "description": "Hybrid Method Type",
-                    "title": "Strategy",
-                    "x-union-pattern": 4
                 }
             },
             "required": [
-                "strategy"
+                "sub_method"
             ],
-            "title": "HybridConfig",
+            "title": "HybridCollaborativeConfig",
             "type": "object"
         },
-        "HybridSelection": {
+        "HybridCollaborativeSelection": {
             "additionalProperties": false,
-            "description": "Generated model for HybridSelection",
+            "description": "Multiple methods run concurrently and share information",
             "properties": {
-                "hybrid": {
-                    "$ref": "#/$defs/HybridConfig",
+                "hybrid_collaborative": {
+                    "$ref": "#/$defs/HybridCollaborativeConfig",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
                             "ir_value_type": "unsigned short",
                             "storage_type": "PRESENCE_ENUM",
                             "stored_value": "HYBRID"
+                        },
+                        {
+                            "ir_key": "method.sub_method",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "SUBMETHOD_COLLABORATIVE"
                         }
                     ]
                 }
             },
             "required": [
-                "hybrid"
+                "hybrid_collaborative"
             ],
-            "title": "HybridSelection",
+            "title": "HybridCollaborativeSelection",
+            "type": "object"
+        },
+        "HybridEmbeddedConfig": {
+            "additionalProperties": false,
+            "description": "A subordinate local method provides periodic refinements to a top-level global method",
+            "properties": {
+                "iterator_servers": {
+                    "anyOf": [
+                        {
+                            "exclusiveMinimum": 0,
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the number of iterator servers when Dakota is run in parallel",
+                    "title": "Iterator Servers",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.iterator_servers",
+                            "ir_value_type": "int",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "iterator_scheduling": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodIteratorServerSchedulingDedicated"
+                        },
+                        {
+                            "$ref": "#/$defs/MethodIteratorServerSchedulingPeer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the scheduling of concurrent iterators when Dakota is run in parallel",
+                    "title": "Iterator Scheduling",
+                    "x-union-pattern": 2
+                },
+                "processors_per_iterator": {
+                    "anyOf": [
+                        {
+                            "exclusiveMinimum": 0,
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the number of processors per iterator server when Dakota is run in parallel",
+                    "title": "Processors Per Iterator",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.processors_per_iterator",
+                            "ir_value_type": "int",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "sub_method": {
+                    "anchor": true,
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/GlobalMethodName"
+                        },
+                        {
+                            "$ref": "#/$defs/GlobalMethodPointer"
+                        }
+                    ],
+                    "description": "Global Sub-method Selection",
+                    "title": "Sub Method",
+                    "x-pointer-union": true,
+                    "x-union-pattern": 4
+                },
+                "local_sub_method": {
+                    "anchor": true,
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/LocalMethodName"
+                        },
+                        {
+                            "$ref": "#/$defs/LocalMethodPointer"
+                        }
+                    ],
+                    "description": "Local Sub-method Selection",
+                    "title": "Local Sub Method",
+                    "x-pointer-union": true,
+                    "x-union-pattern": 4
+                },
+                "local_search_probability": {
+                    "default": 0.1,
+                    "description": "Probability of executing local searches",
+                    "title": "Local Search Probability",
+                    "type": "number",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.hybrid.local_search_probability",
+                            "ir_value_type": "Real",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "id_method": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Name the method block; helpful when there are multiple",
+                    "title": "Id Method",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.id",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Debug"
+                        },
+                        {
+                            "$ref": "#/$defs/Verbose"
+                        },
+                        {
+                            "$ref": "#/$defs/Normal"
+                        },
+                        {
+                            "$ref": "#/$defs/Quiet"
+                        },
+                        {
+                            "$ref": "#/$defs/Silent"
+                        }
+                    ],
+                    "description": "Control how much method information is written to the screen and output file",
+                    "title": "Output",
+                    "x-model-default": "Normal",
+                    "x-union-pattern": 1
+                },
+                "final_solutions": {
+                    "default": 0,
+                    "description": "Number of designs returned as the best solutions",
+                    "minimum": 0,
+                    "title": "Final Solutions",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.final_solutions",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "sub_method",
+                "local_sub_method"
+            ],
+            "title": "HybridEmbeddedConfig",
+            "type": "object"
+        },
+        "HybridEmbeddedSelection": {
+            "additionalProperties": false,
+            "description": "A subordinate local method provides periodic refinements to a top-level global method",
+            "properties": {
+                "hybrid_embedded": {
+                    "$ref": "#/$defs/HybridEmbeddedConfig",
+                    "x-aliases": [
+                        "hybrid_coupled"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.algorithm",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "HYBRID"
+                        },
+                        {
+                            "ir_key": "method.sub_method",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "SUBMETHOD_EMBEDDED"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "hybrid_embedded"
+            ],
+            "title": "HybridEmbeddedSelection",
+            "type": "object"
+        },
+        "HybridSequentialConfig": {
+            "additionalProperties": false,
+            "description": "Methods are run one at a time, in sequence",
+            "properties": {
+                "iterator_servers": {
+                    "anyOf": [
+                        {
+                            "exclusiveMinimum": 0,
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the number of iterator servers when Dakota is run in parallel",
+                    "title": "Iterator Servers",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.iterator_servers",
+                            "ir_value_type": "int",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "iterator_scheduling": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/MethodIteratorServerSchedulingDedicated"
+                        },
+                        {
+                            "$ref": "#/$defs/MethodIteratorServerSchedulingPeer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the scheduling of concurrent iterators when Dakota is run in parallel",
+                    "title": "Iterator Scheduling",
+                    "x-union-pattern": 2
+                },
+                "processors_per_iterator": {
+                    "anyOf": [
+                        {
+                            "exclusiveMinimum": 0,
+                            "type": "integer"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Specify the number of processors per iterator server when Dakota is run in parallel",
+                    "title": "Processors Per Iterator",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.processors_per_iterator",
+                            "ir_value_type": "int",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "sub_method": {
+                    "anchor": true,
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/SequentialMethodNameList"
+                        },
+                        {
+                            "$ref": "#/$defs/SequentialMethodPointerList"
+                        }
+                    ],
+                    "description": "Sub-method Selection",
+                    "title": "Sub Method",
+                    "x-pointer-union": true,
+                    "x-union-pattern": 4
+                },
+                "id_method": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Name the method block; helpful when there are multiple",
+                    "title": "Id Method",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.id",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                },
+                "output": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/Debug"
+                        },
+                        {
+                            "$ref": "#/$defs/Verbose"
+                        },
+                        {
+                            "$ref": "#/$defs/Normal"
+                        },
+                        {
+                            "$ref": "#/$defs/Quiet"
+                        },
+                        {
+                            "$ref": "#/$defs/Silent"
+                        }
+                    ],
+                    "description": "Control how much method information is written to the screen and output file",
+                    "title": "Output",
+                    "x-model-default": "Normal",
+                    "x-union-pattern": 1
+                },
+                "final_solutions": {
+                    "default": 0,
+                    "description": "Number of designs returned as the best solutions",
+                    "minimum": 0,
+                    "title": "Final Solutions",
+                    "type": "integer",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.final_solutions",
+                            "ir_value_type": "size_t",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "sub_method"
+            ],
+            "title": "HybridSequentialConfig",
+            "type": "object"
+        },
+        "HybridSequentialSelection": {
+            "additionalProperties": false,
+            "description": "Methods are run one at a time, in sequence",
+            "properties": {
+                "hybrid_sequential": {
+                    "$ref": "#/$defs/HybridSequentialConfig",
+                    "x-aliases": [
+                        "hybrid_uncoupled"
+                    ],
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.algorithm",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "HYBRID"
+                        },
+                        {
+                            "ir_key": "method.sub_method",
+                            "ir_value_type": "unsigned short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "SUBMETHOD_SEQUENTIAL"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "hybrid_sequential"
+            ],
+            "title": "HybridSequentialSelection",
             "type": "object"
         },
         "HypergeometricUncertain": {
@@ -74731,115 +74925,6 @@
             "title": "SearchMethodTrustRegion",
             "type": "object"
         },
-        "Sequential": {
-            "additionalProperties": false,
-            "description": "Methods are run one at a time, in sequence",
-            "properties": {
-                "sequential": {
-                    "$ref": "#/$defs/SequentialConfig",
-                    "x-aliases": [
-                        "uncoupled"
-                    ],
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.sub_method",
-                            "ir_value_type": "unsigned short",
-                            "storage_type": "PRESENCE_ENUM",
-                            "stored_value": "SUBMETHOD_SEQUENTIAL"
-                        }
-                    ]
-                }
-            },
-            "required": [
-                "sequential"
-            ],
-            "title": "Sequential",
-            "type": "object"
-        },
-        "SequentialConfig": {
-            "additionalProperties": false,
-            "description": "Methods are run one at a time, in sequence",
-            "properties": {
-                "iterator_servers": {
-                    "anyOf": [
-                        {
-                            "exclusiveMinimum": 0,
-                            "type": "integer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the number of iterator servers when Dakota is run in parallel",
-                    "title": "Iterator Servers",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.iterator_servers",
-                            "ir_value_type": "int",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "iterator_scheduling": {
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/MethodIteratorServerSchedulingDedicated"
-                        },
-                        {
-                            "$ref": "#/$defs/MethodIteratorServerSchedulingPeer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the scheduling of concurrent iterators when Dakota is run in parallel",
-                    "title": "Iterator Scheduling",
-                    "x-union-pattern": 2
-                },
-                "processors_per_iterator": {
-                    "anyOf": [
-                        {
-                            "exclusiveMinimum": 0,
-                            "type": "integer"
-                        },
-                        {
-                            "type": "null"
-                        }
-                    ],
-                    "default": null,
-                    "description": "Specify the number of processors per iterator server when Dakota is run in parallel",
-                    "title": "Processors Per Iterator",
-                    "x-materialization": [
-                        {
-                            "ir_key": "method.processors_per_iterator",
-                            "ir_value_type": "int",
-                            "storage_type": "DIRECT_VALUE"
-                        }
-                    ]
-                },
-                "sub_method": {
-                    "anchor": true,
-                    "anyOf": [
-                        {
-                            "$ref": "#/$defs/SequentialMethodNameList"
-                        },
-                        {
-                            "$ref": "#/$defs/SequentialMethodPointerList"
-                        }
-                    ],
-                    "description": "Sub-method Selection",
-                    "title": "Sub Method",
-                    "x-union-pattern": 4
-                }
-            },
-            "required": [
-                "sub_method"
-            ],
-            "title": "SequentialConfig",
-            "type": "object"
-        },
         "SequentialMethodNameList": {
             "additionalProperties": false,
             "description": "List of Dakota methods to sequentially or collaboratively run",
@@ -74906,15 +74991,16 @@
         },
         "SequentialMethodPointerList": {
             "additionalProperties": false,
-            "description": "Pointers to methods to execute sequantially or collaboratively",
+            "description": "Pointers to methods to execute sequentially or collaboratively",
             "properties": {
                 "method_pointer_list": {
-                    "description": "Pointers to methods to execute sequantially or collaboratively",
+                    "description": "Pointers to methods to execute sequentially or collaboratively",
                     "items": {
                         "type": "string"
                     },
                     "title": "Method Pointer List",
                     "type": "array",
+                    "x-block-pointer": "method",
                     "x-materialization": [
                         {
                             "ir_key": "method.hybrid.method_pointers",
@@ -82397,7 +82483,13 @@
                         "$ref": "#/$defs/GpaisSelection"
                     },
                     {
-                        "$ref": "#/$defs/HybridSelection"
+                        "$ref": "#/$defs/HybridSequentialSelection"
+                    },
+                    {
+                        "$ref": "#/$defs/HybridEmbeddedSelection"
+                    },
+                    {
+                        "$ref": "#/$defs/HybridCollaborativeSelection"
                     },
                     {
                         "$ref": "#/$defs/ImportPointsSelection"

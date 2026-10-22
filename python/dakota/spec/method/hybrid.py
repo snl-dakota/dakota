@@ -1,4 +1,9 @@
-"""Generated Pydantic models for method.hybrid"""
+"""Pydantic models for hybrid meta-iterator methods.
+
+hybrid_sequential, hybrid_embedded, and hybrid_collaborative are first-class
+method types. The old nested ``hybrid / sequential`` / ``hybrid / embedded`` /
+``hybrid / collaborative`` grammar has been replaced.
+"""
 
 from __future__ import annotations
 
@@ -44,18 +49,19 @@ class SequentialMethodNameListConfig(DakotaBaseModel):
 
 
 class SequentialMethodPointerList(DakotaBaseModel):
-    "Pointers to methods to execute sequantially or collaboratively"
+    "Pointers to methods to execute sequentially or collaboratively"
 
     method_pointer_list: list[str] = DakotaField(
-        description="Pointers to methods to execute sequantially or collaboratively",
+        description="Pointers to methods to execute sequentially or collaboratively",
         dakota={
+            "block_pointer": "method",
             "materialization": [
                 {
                     "ir_key": "method.hybrid.method_pointers",
                     "storage_type": "DIRECT_VALUE",
                     "ir_value_type": "StringArray",
                 }
-            ]
+            ],
         },
     )
 
@@ -189,18 +195,19 @@ class CollaborativeMethodNameListConfig(DakotaBaseModel):
 
 
 class CollaborativeMethodPointerList(DakotaBaseModel):
-    "Pointers to methods to execute sequantially or collaboratively"
+    "Pointers to methods to execute collaboratively"
 
     method_pointer_list: list[str] = DakotaField(
-        description="Pointers to methods to execute sequantially or collaboratively",
+        description="Pointers to methods to execute collaboratively",
         dakota={
+            "block_pointer": "method",
             "materialization": [
                 {
                     "ir_key": "method.hybrid.method_pointers",
                     "storage_type": "DIRECT_VALUE",
                     "ir_value_type": "StringArray",
                 }
-            ]
+            ],
         },
     )
 
@@ -251,7 +258,7 @@ class SequentialConfig(MethodIteratorServerSchedulingMixin):
     sub_method: Union[SequentialMethodNameList, SequentialMethodPointerList] = (
         DakotaField(
             description="Sub-method Selection",
-            dakota={"anchor": True, "union_pattern": 4},
+            dakota={"anchor": True, "union_pattern": 4, "pointer_union": True},
         )
     )
 
@@ -288,79 +295,82 @@ class CollaborativeConfig(MethodIteratorServerSchedulingMixin):
     sub_method: Union[CollaborativeMethodNameList, CollaborativeMethodPointerList] = (
         DakotaField(
             description="Sub-method Selection",
-            dakota={"anchor": True, "union_pattern": 4},
+            dakota={"anchor": True, "union_pattern": 4, "pointer_union": True},
         )
     )
 
 
-class Sequential(DakotaBaseModel):
+# ---------------------------------------------------------------------------
+# First-class method selections
+# ---------------------------------------------------------------------------
+
+class HybridSequentialConfig(MethodThreeOptionalKeywordsMixin, SequentialConfig):
     "Methods are run one at a time, in sequence"
 
-    sequential: SequentialConfig = DakotaField(
+
+class HybridSequentialSelection(MethodSelection):
+    "Methods are run one at a time, in sequence"
+
+    hybrid_sequential: HybridSequentialConfig = DakotaField(
         description="Methods are run one at a time, in sequence",
         dakota={
-            "aliases": ["uncoupled"],
+            "aliases": ["hybrid_uncoupled"],
             "materialization": [
+                {
+                    "ir_key": "method.algorithm",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HYBRID",
+                    "ir_value_type": "unsigned short",
+                },
                 {
                     "ir_key": "method.sub_method",
                     "storage_type": "PRESENCE_ENUM",
                     "stored_value": "SUBMETHOD_SEQUENTIAL",
                     "ir_value_type": "unsigned short",
-                }
+                },
             ],
         },
     )
 
 
-class Embedded(DakotaBaseModel):
+class HybridEmbeddedConfig(MethodThreeOptionalKeywordsMixin, EmbeddedConfig):
     "A subordinate local method provides periodic refinements to a top-level global method"
 
-    embedded: EmbeddedConfig = DakotaField(
+
+class HybridEmbeddedSelection(MethodSelection):
+    "A subordinate local method provides periodic refinements to a top-level global method"
+
+    hybrid_embedded: HybridEmbeddedConfig = DakotaField(
         description="A subordinate local method provides periodic refinements to a top-level global method",
         dakota={
-            "aliases": ["coupled"],
+            "aliases": ["hybrid_coupled"],
             "materialization": [
+                {
+                    "ir_key": "method.algorithm",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "HYBRID",
+                    "ir_value_type": "unsigned short",
+                },
                 {
                     "ir_key": "method.sub_method",
                     "storage_type": "PRESENCE_ENUM",
                     "stored_value": "SUBMETHOD_EMBEDDED",
                     "ir_value_type": "unsigned short",
-                }
+                },
             ],
         },
     )
 
 
-class Collaborative(DakotaBaseModel):
+class HybridCollaborativeConfig(MethodThreeOptionalKeywordsMixin, CollaborativeConfig):
     "Multiple methods run concurrently and share information"
 
-    collaborative: CollaborativeConfig = DakotaField(
+
+class HybridCollaborativeSelection(MethodSelection):
+    "Multiple methods run concurrently and share information"
+
+    hybrid_collaborative: HybridCollaborativeConfig = DakotaField(
         description="Multiple methods run concurrently and share information",
-        dakota={
-            "materialization": [
-                {
-                    "ir_key": "method.sub_method",
-                    "storage_type": "PRESENCE_ENUM",
-                    "stored_value": "SUBMETHOD_COLLABORATIVE",
-                    "ir_value_type": "unsigned short",
-                }
-            ]
-        },
-    )
-
-
-class HybridConfig(MethodThreeOptionalKeywordsMixin):
-    "Strategy in which a set of methods synergistically seek an optimal design"
-
-    strategy: Union[Sequential, Embedded, Collaborative] = DakotaField(
-        description="Hybrid Method Type", dakota={"anchor": True, "union_pattern": 4}
-    )
-
-
-class HybridSelection(MethodSelection):
-    "Generated model for HybridSelection"
-
-    hybrid: HybridConfig = DakotaField(
         dakota={
             "materialization": [
                 {
@@ -368,7 +378,13 @@ class HybridSelection(MethodSelection):
                     "storage_type": "PRESENCE_ENUM",
                     "stored_value": "HYBRID",
                     "ir_value_type": "unsigned short",
-                }
-            ]
-        }
+                },
+                {
+                    "ir_key": "method.sub_method",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "SUBMETHOD_COLLABORATIVE",
+                    "ir_value_type": "unsigned short",
+                },
+            ],
+        },
     )
