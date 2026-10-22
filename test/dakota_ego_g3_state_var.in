@@ -1,0 +1,43 @@
+#@ s*: TimeoutDelay=120
+# DAKOTA INPUT FILE: dakota_ego_g3_state_var.in
+#
+# Regression test for EGO bug where post-convergence merit-function updates
+# corrupted best-point selection for constrained problems mixing design and
+# fixed state variables.
+#
+# Problem: G3(n=2), X0 fixed (state) at sqrt(0.5), X1 the sole design
+# variable, subject to X0^2 + X1^2 = 1.  True optimum: X1 = sqrt(0.5).
+#
+# s0: seed = 123456
+# s1: seed = 111111
+# s2: seed = 222222
+# s3: seed = 333333
+
+method,
+    efficient_global
+      seed = 123456                 #s0
+#     seed = 111111                 #s1
+#     seed = 222222                 #s2
+#     seed = 333333                 #s3
+
+variables,
+    continuous_design = 1
+      descriptors      'X1'
+      initial_point     0.0
+      lower_bounds      0.0
+      upper_bounds      1.0
+    continuous_state = 1
+      descriptors      'X0'
+      initial_state     0.7071067811865476
+      lower_bounds      0.0
+      upper_bounds      1.0
+
+interface,
+    fork
+      analysis_driver = 'g3_state_var'
+
+responses,
+    objective_functions = 1
+    nonlinear_equality_constraints = 1
+    no_gradients
+    no_hessians
