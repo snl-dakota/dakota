@@ -412,12 +412,12 @@ bool parse_freeform_document_to_json(Document& doc, json& output,
     return validate_json_document_in_place(output, errors, debug);
 }
 
-// JSON input joins the freeform pipeline at the AST: check its structure,
-// convert it, then validate, resolve aliases and expand defaults as for
-// freeform input.  On success `doc` holds the expanded JSON, not yet checked
+// JSON input joins the freeform pipeline at the AST: check it against the
+// schema, convert it, then validate, resolve aliases and expand defaults as
+// for freeform input.  On success `doc` holds the expanded JSON, not yet checked
 // by validate_json_document.
 bool expand_json_input(json& doc, std::vector<std::string>& errors, bool api_mode) {
-    if (validation_metadata::check_json_structure(doc, errors) > 0) {
+    if (validation_metadata::check_json_structure(doc, errors, api_mode) > 0) {
         return false;
     }
     Document ast;

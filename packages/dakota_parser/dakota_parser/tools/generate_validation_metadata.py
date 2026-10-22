@@ -107,19 +107,20 @@ class ValidationMetadataGenerator:
         if constraints:
             self.numeric_constraints[def_name] = constraints
 
+    _BOUND_OPS = {
+        'minimum': 'GE', 'exclusiveMinimum': 'GT',
+        'maximum': 'LE', 'exclusiveMaximum': 'LT',
+    }
+
     def _get_field_numeric_constraints(self, field_schema: dict) -> List[Tuple[str, float]]:
         results = []
-        constraint_map = {
-            'minimum': 'GE', 'exclusiveMinimum': 'GT',
-            'maximum': 'LE', 'exclusiveMaximum': 'LT',
-        }
-        for json_key, op in constraint_map.items():
+        for json_key, op in self._BOUND_OPS.items():
             if json_key in field_schema:
                 results.append((op, float(field_schema[json_key])))
         for variant in field_schema.get('anyOf', []):
             if variant.get('type') == 'null':
                 continue
-            for json_key, op in constraint_map.items():
+            for json_key, op in self._BOUND_OPS.items():
                 if json_key in variant:
                     results.append((op, float(variant[json_key])))
         return results
@@ -136,13 +137,18 @@ class ValidationMetadataGenerator:
 
     @staticmethod
     def _field_type_variants(field_schema: dict) -> List[dict]:
-        """Type/const specs accepted for one property (one per anyOf branch)."""
+        """Specs accepted for one property, one per anyOf branch: type, const,
+        array item type, numeric bounds ("bounds": [[op, bound], ...]), the
+        definition of a $ref branch ("ref"), and "open" for an object branch
+        with additionalProperties: true (a union given without an alternative).
+        """
         variants: List[dict] = []
         candidates = field_schema.get('anyOf', [field_schema])
         for opt in candidates:
             spec: Dict[str, Any] = {}
             if '$ref' in opt:
                 spec['type'] = 'object'
+                spec['ref'] = su.ref_name(opt['$ref'])
             elif 'type' in opt:
                 spec['type'] = opt['type']
             elif 'const' in opt:
@@ -164,6 +170,12 @@ class ValidationMetadataGenerator:
                 item_type = opt['items'].get('type')
                 if isinstance(item_type, str):
                     spec['items'] = item_type
+            if spec.get('type') == 'object' and opt.get('additionalProperties') is True:
+                spec['open'] = True
+            bounds = [[op, float(opt[key])]
+                      for key, op in ValidationMetadataGenerator._BOUND_OPS.items() if key in opt]
+            if bounds:
+                spec['bounds'] = bounds
             if spec:
                 variants.append(spec)
         return variants
@@ -227,6 +239,7 @@ class ValidationMetadataGenerator:
         synthetic_allowed = set()
         synthetic_specs: Dict[str, List[dict]] = {}
         synthetic_floats: Dict[str, bool] = {}
+        synthetic_bounds: Dict[str, List[Tuple[str, float]]] = {}
         variant_groups: Dict[str, Set[str]] = {}
         for vref, vprop_name, vprop_schema in su.iter_variant_children(self.defs, prop_schema):
             synthetic_allowed.add(vprop_name)
@@ -234,6 +247,12 @@ class ValidationMetadataGenerator:
             field_kind = self._get_float_field_kind(vprop_schema)
             if field_kind is not None:
                 synthetic_floats.setdefault(vprop_name, field_kind == 'array')
+            # All bounds of a field apply, so variants sharing a field name
+            # must agree on them.
+            bounds = self._get_field_numeric_constraints(vprop_schema)
+            if synthetic_bounds.setdefault(vprop_name, bounds) != bounds:
+                raise ValueError(
+                    f"{synthetic_def_key}.{vprop_name}: union variants give different bounds")
             for spec in self._field_type_variants(vprop_schema):
                 if spec not in synthetic_specs.setdefault(vprop_name, []):
                     synthetic_specs[vprop_name].append(spec)
@@ -247,6 +266,10 @@ class ValidationMetadataGenerator:
             self.property_type_specs[synthetic_def_key] = synthetic_specs
         if synthetic_floats:
             self.float_fields[synthetic_def_key] = synthetic_floats
+        bound_list = [(name, op, bound) for name, bounds in synthetic_bounds.items()
+                      for op, bound in bounds]
+        if bound_list:
+            self.numeric_constraints[synthetic_def_key] = bound_list
         # Alternatives: the keys present must all come from one variant.
         if len(variant_groups) > 1:
             self.synthetic_variant_groups[synthetic_def_key] = [
@@ -1011,6 +1034,45 @@ inline void check_single_variant(const json& instance, const std::string& def_na
         "Fields " + keys + " are alternatives; specify only one (in " + def_name + ")");
 }
 
+// Error message if the number `jval` violates `fc`, or an empty string.
+inline std::string numeric_constraint_error(const std::string& field_name, const json& jval,
+                                            const FieldConstraint& fc,
+                                            const std::string& def_name) {
+    double val;
+    if (jval.is_number_integer())
+        val = static_cast<double>(jval.get<int64_t>());
+    else if (jval.is_number_float())
+        val = jval.get<double>();
+    else
+        return "";
+
+    bool ok = true;
+    const char* op_str = "";
+    switch (fc.op) {
+        case FieldConstraint::GE: ok = val >= fc.bound; op_str = ">="; break;
+        case FieldConstraint::GT: ok = val >  fc.bound; op_str = ">";  break;
+        case FieldConstraint::LE: ok = val <= fc.bound; op_str = "<="; break;
+        case FieldConstraint::LT: ok = val <  fc.bound; op_str = "<";  break;
+    }
+    if (ok) return "";
+
+    std::string bound_str;
+    if (fc.bound == static_cast<int64_t>(fc.bound) &&
+        std::abs(fc.bound) < 1e15) {
+        bound_str = std::to_string(static_cast<int64_t>(fc.bound));
+    } else {
+        bound_str = std::to_string(fc.bound);
+    }
+
+    return "Field '" + field_name + "' value " +
+           (jval.is_number_integer()
+               ? std::to_string(jval.get<int64_t>())
+               : std::to_string(val)) +
+           " violates constraint: must be " +
+           op_str + " " + bound_str +
+           " (in " + def_name + ")";
+}
+
 inline void check_numeric_constraints(
     const json& instance,
     const std::string& def_name)
@@ -1022,41 +1084,11 @@ inline void check_numeric_constraints(
         if (!instance.contains(field_name) || instance[field_name].is_null())
             continue;
 
-        const auto& jval = instance[field_name];
-        double val;
-        if (jval.is_number_integer())
-            val = static_cast<double>(jval.get<int64_t>());
-        else if (jval.is_number_float())
-            val = jval.get<double>();
-        else
-            continue;
-
         for (const auto& fc : field_constraints) {
-            bool ok = true;
-            const char* op_str = "";
-            switch (fc.op) {
-                case FieldConstraint::GE: ok = val >= fc.bound; op_str = ">="; break;
-                case FieldConstraint::GT: ok = val >  fc.bound; op_str = ">";  break;
-                case FieldConstraint::LE: ok = val <= fc.bound; op_str = "<="; break;
-                case FieldConstraint::LT: ok = val <  fc.bound; op_str = "<";  break;
-            }
-            if (!ok) {
-                std::string bound_str;
-                if (fc.bound == static_cast<int64_t>(fc.bound) &&
-                    std::abs(fc.bound) < 1e15) {
-                    bound_str = std::to_string(static_cast<int64_t>(fc.bound));
-                } else {
-                    bound_str = std::to_string(fc.bound);
-                }
-
-                throw validation::ValidationError(
-                    "Field '" + field_name + "' value " +
-                    (jval.is_number_integer()
-                        ? std::to_string(jval.get<int64_t>())
-                        : std::to_string(val)) +
-                    " violates constraint: must be " +
-                    op_str + " " + bound_str +
-                    " (in " + def_name + ")");
+            const std::string error =
+                numeric_constraint_error(field_name, instance[field_name], fc, def_name);
+            if (!error.empty()) {
+                throw validation::ValidationError(error);
             }
         }
     }
@@ -1141,34 +1173,43 @@ inline void apply_dotted_mutations(json& target, const json& mutations) {
     }
 }
 
+// Error message for required fields missing from `instance`, or an empty
+// string.  In API mode block pointers are not required.
+inline std::string missing_required_error(const json& instance, const std::string& def_name,
+                                          bool api_mode) {
+    const auto& req_info = get_required_fields(def_name);
+    std::vector<std::string> missing;
+    for (const auto& field : req_info.fields) {
+        if (!instance.contains(field)) {
+            if (api_mode && req_info.pointer_fields.count(field)) {
+                continue;  // skip pointer in API mode
+            }
+            if (api_mode && req_info.pointer_group_fields.count(field)) {
+                continue;  // skip pointer group in API mode
+            }
+            if (api_mode && req_info.pointer_union_fields.count(field)) {
+                continue;  // skip pointer union in API mode
+            }
+            missing.push_back(field);
+        }
+    }
+    if (missing.empty()) return "";
+    std::string msg = "Missing required field(s): ";
+    for (size_t i = 0; i < missing.size(); ++i) {
+        if (i > 0) msg += ", ";
+        msg += "'" + missing[i] + "'";
+    }
+    msg += " (in " + def_name + ")";
+    return msg;
+}
+
 inline json validate_definition(const std::string& def_name, json instance,
                                bool api_mode = false) {
     // 0. Check required fields (before any mutation steps).
     {
-        const auto& req_info = get_required_fields(def_name);
-        std::vector<std::string> missing;
-        for (const auto& field : req_info.fields) {
-            if (!instance.contains(field)) {
-                if (api_mode && req_info.pointer_fields.count(field)) {
-                    continue;  // skip pointer in API mode
-                }
-                if (api_mode && req_info.pointer_group_fields.count(field)) {
-                    continue;  // skip pointer group in API mode
-                }
-                if (api_mode && req_info.pointer_union_fields.count(field)) {
-                    continue;  // skip pointer union in API mode
-                }
-                missing.push_back(field);
-            }
-        }
+        const std::string missing = missing_required_error(instance, def_name, api_mode);
         if (!missing.empty()) {
-            std::string msg = "Missing required field(s): ";
-            for (size_t i = 0; i < missing.size(); ++i) {
-                if (i > 0) msg += ", ";
-                msg += "'" + missing[i] + "'";
-            }
-            msg += " (in " + def_name + ")";
-            throw validation::ValidationError(msg);
+            throw validation::ValidationError(missing);
         }
     }
 
@@ -1400,19 +1441,180 @@ inline void walk_and_validate(
     def _generate_check_json_structure_function(self) -> str:
         return """\
 // ============================================================================
-// Structure check for raw JSON input
+// Schema validation of raw JSON input
 // ============================================================================
 
-// Checks JSON input before it is converted to the parser AST: allowed blocks
-// and properties, property types and consts, and one alternative per union.
-// Required fields, defaults and cross-field rules are not checked here; they
-// run after default expansion (validate_json_document).  The conversion to
-// the AST loses some of what is checked here (e.g. a scalar given where the
-// schema wants an array), so this must run first.  Coerces "inf"/"nan"
-// strings in float fields, as validate_definition does.
-inline void walk_structure(json& instance, const std::string& def_name,
-                           const std::string& path, std::vector<std::string>& errors) {
-    if (!instance.is_object()) return;
+// Checks JSON input against the schema before it is converted to the parser
+// AST.  Implements the part of JSON Schema the Dakota schema uses: type,
+// const, $ref, anyOf, required, additionalProperties: false, array item
+// types and numeric bounds.  Each anyOf branch is checked on its own, and a
+// $ref branch against its own definition.  A union is an anyOf of
+// definitions with one property each, so the key of the value selects the
+// alternative and errors are reported for that alternative; a union value
+// must name one alternative ({} matches only a branch that allows the
+// keyword without one).  Defaults, cross-field rules and computed fields
+// are not applied here; they run after default expansion
+// (validate_json_document).  Coerces "inf"/"nan" strings in float fields,
+// as validate_definition does.
+
+inline void validate_schema_object(json& instance, const std::string& def_name,
+                                   const std::string& path,
+                                   std::vector<std::string>& errors, bool api_mode);
+
+inline FieldConstraint field_constraint_from_spec(const json& bound) {
+    const auto& op = bound[0].get_ref<const std::string&>();
+    const double value = bound[1].get<double>();
+    if (op == "GE") return {FieldConstraint::GE, value};
+    if (op == "GT") return {FieldConstraint::GT, value};
+    if (op == "LE") return {FieldConstraint::LE, value};
+    return {FieldConstraint::LT, value};
+}
+
+inline std::string join_quoted(const std::vector<std::string>& names) {
+    std::string out;
+    for (const auto& name : names) {
+        if (!out.empty()) out += ", ";
+        out += "'" + name + "'";
+    }
+    return out;
+}
+
+// Object value of a property whose branches include $ref or open objects.
+inline void validate_schema_object_property(json& value, const json& specs,
+                                            const std::string& field_name,
+                                            const std::string& def_name,
+                                            const std::string& path,
+                                            std::vector<std::string>& errors,
+                                            bool api_mode) {
+    std::vector<std::string> refs;
+    bool open = false;
+    for (const auto& spec : specs) {
+        if (spec.contains("ref")) refs.push_back(spec["ref"].get<std::string>());
+        if (spec.contains("open")) open = true;
+    }
+    if (open && value.empty()) return;
+
+    // Branches whose definition allows every key of the value.
+    std::vector<std::string> candidates;
+    for (const auto& ref : refs) {
+        const auto& allowed = get_allowed_properties(ref);
+        bool all_in = true;
+        for (const auto& [key, _] : value.items()) {
+            if (!allowed.count(key)) { all_in = false; break; }
+        }
+        if (all_in) candidates.push_back(ref);
+    }
+
+    if (candidates.size() == 1) {
+        validate_schema_object(value, candidates.front(), path, errors, api_mode);
+        return;
+    }
+    if (candidates.empty()) {
+        if (refs.size() == 1) {
+            validate_schema_object(value, refs.front(), path, errors, api_mode);
+            return;
+        }
+        // A union: report unknown keys, else keys from several alternatives.
+        std::vector<std::string> keys;
+        bool unknown = false;
+        for (const auto& [key, _] : value.items()) {
+            keys.push_back(key);
+            bool known = false;
+            for (const auto& ref : refs) {
+                if (get_allowed_properties(ref).count(key)) { known = true; break; }
+            }
+            if (!known) {
+                errors.push_back(path + ": unexpected property '" + key + "'");
+                unknown = true;
+            }
+        }
+        if (!unknown) {
+            errors.push_back(path + ": Fields " + join_quoted(keys) +
+                             " are alternatives; specify only one (in " +
+                             def_name + "__" + field_name + ")");
+        }
+        return;
+    }
+
+    // Several candidates.  An empty value names no alternative.  A non-empty
+    // value has several only if alternatives share a key, which the schema
+    // does not do today; then take the first that validates, as anyOf does.
+    if (!value.empty()) {
+        std::vector<std::string> first_errors;
+        for (size_t i = 0; i < candidates.size(); ++i) {
+            json trial = value;
+            std::vector<std::string> trial_errors;
+            validate_schema_object(trial, candidates[i], path, trial_errors, api_mode);
+            if (trial_errors.empty()) {
+                value = std::move(trial);
+                return;
+            }
+            if (i == 0) first_errors = std::move(trial_errors);
+        }
+        errors.insert(errors.end(), first_errors.begin(), first_errors.end());
+        return;
+    }
+    std::vector<std::string> names;
+    for (const auto& ref : refs) {
+        for (const auto& name : get_allowed_properties(ref)) names.push_back(name);
+    }
+    errors.push_back(path + ": specify one of " + join_quoted(names) +
+                     " (in " + def_name + "__" + field_name + ")");
+}
+
+inline void validate_schema_property(json& value, const json& specs,
+                                     const std::string& field_name,
+                                     const std::string& def_name,
+                                     const std::string& path,
+                                     std::vector<std::string>& errors,
+                                     bool api_mode) {
+    if (value.is_object()) {
+        for (const auto& spec : specs) {
+            if (spec.contains("ref") || spec.contains("open")) {
+                validate_schema_object_property(value, specs, field_name, def_name,
+                                                path + "." + field_name, errors, api_mode);
+                return;
+            }
+        }
+    }
+
+    std::string item_type, bound_error;
+    for (const auto& spec : specs) {
+        if (spec.contains("ref") || spec.contains("open")) continue;
+        if (!value_matches_variant_spec(value, spec)) {
+            if (value.is_array() && spec.contains("items"))
+                item_type = spec["items"].get<std::string>();
+            continue;
+        }
+        std::string error;
+        if (spec.contains("bounds")) {
+            for (const auto& bound : spec["bounds"]) {
+                error = numeric_constraint_error(field_name, value,
+                                                 field_constraint_from_spec(bound), def_name);
+                if (!error.empty()) break;
+            }
+        }
+        if (error.empty()) return;
+        bound_error = error;
+    }
+    if (!bound_error.empty()) {
+        errors.push_back(path + ": " + bound_error);
+    } else if (!item_type.empty()) {
+        errors.push_back(path + ": Field '" + field_name + "' must contain only " + item_type +
+                         " values (in " + def_name + ")");
+    } else {
+        errors.push_back(path + ": Field '" + field_name +
+                         "' does not match schema type/const requirements (in " + def_name + ")");
+    }
+}
+
+inline void validate_schema_object(json& instance, const std::string& def_name,
+                                   const std::string& path,
+                                   std::vector<std::string>& errors, bool api_mode) {
+    if (!instance.is_object()) {
+        errors.push_back(path + ": expected an object");
+        return;
+    }
 
     const auto& allowed_props = get_allowed_properties(def_name);
     for (const auto& [prop_name, _] : instance.items()) {
@@ -1420,29 +1622,22 @@ inline void walk_structure(json& instance, const std::string& def_name,
             errors.push_back(path + ": unexpected property '" + prop_name + "'");
         }
     }
-
-    try {
-        coerce_nonfinite_float_fields(instance, def_name);
-        check_property_type_specs(instance, def_name);
-        check_single_variant(instance, def_name);
-    } catch (const validation::ValidationError& e) {
-        errors.push_back(path + ": " + e.what());
-        return;
+    const std::string missing = missing_required_error(instance, def_name, api_mode);
+    if (!missing.empty()) {
+        errors.push_back(path + ": " + missing);
     }
 
-    const auto& walk_map = get_schema_walk_map();
-    auto it = walk_map.find(def_name);
-    if (it == walk_map.end()) return;
-    for (const auto& [prop_name, child_def] : it->second) {
-        if (!instance.contains(prop_name)) continue;
-        auto& child = instance[prop_name];
-        if (child.is_object()) {
-            walk_structure(child, child_def, path + "." + prop_name, errors);
-        }
+    coerce_nonfinite_float_fields(instance, def_name);
+    const auto& specs = get_property_type_specs(def_name);
+    for (auto& [prop_name, value] : instance.items()) {
+        const auto it = specs.find(prop_name);
+        if (it == specs.end()) continue;
+        validate_schema_property(value, *it, prop_name, def_name, path, errors, api_mode);
     }
 }
 
-inline int check_json_structure(json& doc, std::vector<std::string>& errors) {
+inline int check_json_structure(json& doc, std::vector<std::string>& errors,
+                                bool api_mode = false) {
     const int initial_errors = static_cast<int>(errors.size());
     if (!doc.is_object()) {
         errors.push_back("JSON input must be an object of blocks");
@@ -1467,12 +1662,16 @@ inline int check_json_structure(json& doc, std::vector<std::string>& errors) {
                 return;
             }
             if (!block_def.is_union) {
-                walk_structure(instance, block_def.config_type, path, errors);
+                validate_schema_object(instance, block_def.config_type, path, errors, api_mode);
                 return;
             }
             const std::string multiple = union_selector_error(instance);
             if (!multiple.empty()) {
                 errors.push_back(path + ": " + multiple);
+                return;
+            }
+            if (instance.empty()) {
+                errors.push_back(path + ": no type provided. Must specify exactly one type");
                 return;
             }
             auto sel_map_it = union_selector_map.find(block_name);
@@ -1484,7 +1683,8 @@ inline int check_json_structure(json& doc, std::vector<std::string>& errors) {
                 } else if (!prop_val.is_object()) {
                     errors.push_back(path + "." + prop_name + ": expected an object");
                 } else {
-                    walk_structure(prop_val, child_it->second, path + "." + prop_name, errors);
+                    validate_schema_object(prop_val, child_it->second, path + "." + prop_name,
+                                           errors, api_mode);
                 }
             }
         };

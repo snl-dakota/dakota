@@ -7,6 +7,7 @@
 //   Suite 3 - JsonRequiredFieldsRegression (existing JSON test files still pass)
 //   Suite 4 - JsonPointerGroupUnion        (pointer-group and pointer-union API-mode relaxation)
 //   Suite 5 - JsonStructure                (item types, union consts, one alternative)
+//   Suite 6 - JsonSchema                   (flags, union values, bounds, required fields)
 
 #include <gtest/gtest.h>
 #include <dakota_input_reader.hpp>
@@ -527,4 +528,170 @@ TEST(JsonStructure, UnionMemberNonFiniteFloatsAccepted)
     ASSERT_EQ(recover.size(), 2u);
     EXPECT_TRUE(recover[0].is_number_float() && std::isnan(recover[0].get<double>()));
     EXPECT_TRUE(recover[1].is_number_float() && std::isinf(recover[1].get<double>()));
+}
+
+// ============================================================================
+// Suite 6: JsonSchema
+// JSON input is checked against the schema before default expansion: flags
+// are true, a union value names one alternative, numeric bounds hold for
+// union members too, and required fields are reported with their JSON path.
+// ============================================================================
+
+namespace {
+
+// Free-form input with a Gaussian process surrogate; NUGGET is replaced.
+const std::string k_gp_input = R"(
+environment
+method
+  pof_darts
+    model_pointer = 'SURR'
+    build_samples = 100
+    seed = 8493
+    response_levels = -0.9 -0.8 -0.5
+model
+  id_model = 'SURR'
+  global_surrogate
+    truth_model_pointer = 'TRUTH'
+    reuse_samples all
+    gaussian_process
+      surfpack
+        nugget = NUGGET
+model
+  single
+    id_model = 'TRUTH'
+variables
+  active all
+  uniform_uncertain = 2
+    lower_bounds = -2.0 -2.0
+    upper_bounds = 2.0 2.0
+interface
+  direct
+    analysis_driver = 'smooth_herbie'
+responses
+  objective_functions = 1
+  no_gradients
+  no_hessians
+)";
+
+std::string gp_input(const std::string& nugget) {
+    std::string input = k_gp_input;
+    input.replace(input.find("NUGGET"), 6, nugget);
+    return input;
+}
+
+json gp_model_block(double nugget) {
+    return {{"global_surrogate", {
+        {"type", {{"gaussian_process", {
+            {"gp_implementation", {{"surfpack", {{"nugget", {{"nugget", nugget}}}}}}}}}}},
+        {"build_data", {{"truth_model_pointer", "TRUTH"}}}}}};
+}
+
+} // namespace
+
+// 6.1  A flag is true; {} is rejected, whole-file and per-block.
+TEST(JsonSchema, FlagRejectsEmptyObject)
+{
+    auto doc = base_doc();
+    doc["responses"][0]["gradient_type"]["no_gradients"] = json::object();
+
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_FALSE(dakota::validate_json_input_to_json(doc, output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "Field 'no_gradients'"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    errors.clear();
+    EXPECT_FALSE(dakota::validate_responses_block_json_to_json(doc["responses"][0], output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "Field 'no_gradients'"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 6.2  A union value must name an alternative.
+TEST(JsonSchema, UnionValueNamesAlternative)
+{
+    auto doc = base_doc();
+    doc["responses"][0]["gradient_type"] = json::object();
+
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_FALSE(dakota::validate_json_input_to_json(doc, output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "responses[0].gradient_type: specify one of"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 6.3  A method entry must name a method.
+TEST(JsonSchema, MethodEntryNotEmpty)
+{
+    auto doc = base_doc();
+    doc["method"][0] = json::object();
+
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_FALSE(dakota::validate_json_input_to_json(doc, output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "method[0]: no type provided"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 6.4  Required fields are checked before default expansion and reported
+//      with the block index.
+TEST(JsonSchema, MissingRequiredReportedWithPath)
+{
+    auto doc = base_doc();
+    doc["interface"][0]["analysis_drivers"].erase("drivers");
+
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_FALSE(dakota::validate_json_input_to_json(doc, output, errors));
+    EXPECT_TRUE(any_error_contains(
+        errors, "interface[0].analysis_drivers: Missing required field(s): 'drivers'"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 6.5  The bound of a union member (nugget > 0) holds for JSON input.
+TEST(JsonSchema, UnionMemberBoundCheckedJson)
+{
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_TRUE(dakota::validate_model_block_json_to_json(gp_model_block(0.5), output, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    errors.clear();
+    EXPECT_FALSE(dakota::validate_model_block_json_to_json(gp_model_block(-1.0), output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "'nugget' value -1.000000 violates constraint: must be > 0"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 6.6  The same bound holds for free-form input.
+TEST(JsonSchema, UnionMemberBoundCheckedFreeform)
+{
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_TRUE(dakota::read_freeform_input_string_to_json(gp_input("0.5"), output, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    errors.clear();
+    EXPECT_FALSE(dakota::read_freeform_input_string_to_json(gp_input("-1.0"), output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "'nugget' value -1.000000 violates constraint: must be > 0"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 6.7  A union that also allows the keyword without an alternative
+//      (cross_validation) accepts {} there, and still rejects unknown keys.
+TEST(JsonSchema, OpenUnionAcceptsEmptyObject)
+{
+    auto model = gp_model_block(0.5);
+    model["global_surrogate"]["metrics"] = {
+        {"metrics", json::array({"root_mean_squared"})},
+        {"cross_validation", json::object()}};
+
+    json output;
+    std::vector<std::string> errors;
+    EXPECT_TRUE(dakota::validate_model_block_json_to_json(model, output, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    model["global_surrogate"]["metrics"]["cross_validation"] = {{"bogus", 1}};
+    errors.clear();
+    EXPECT_FALSE(dakota::validate_model_block_json_to_json(model, output, errors));
+    EXPECT_TRUE(any_error_contains(errors, "unexpected property 'bogus'"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
 }
