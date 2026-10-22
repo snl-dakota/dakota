@@ -9,13 +9,16 @@
 // validate_json_document.
 //
 // The input is expected to have passed validation_metadata::
-// check_json_structure(), which rejects shapes the AST cannot represent
-// (a scalar where the schema wants an array, an unknown block, ...).
+// check_json_structure(), which checks it against the schema; the
+// conversion loses some of what is checked there (e.g. a scalar where the
+// schema wants an array).
 //
 // Mapping, per JSON object key:
 //   anchor wrapper (e.g. "gradient_type")  → its children become keywords
-//   true / false                           → flag keyword (false as a value)
-//   {}                                     → flag keyword
+//   true / false                           → flag keyword (false as a value),
+//                                            where the schema wants a boolean
+//   {}                                     → keyword without values, where
+//                                            the schema wants an object
 //   scalar / scalar array                  → keyword with parameter values
 //   object                                 → keyword whose argument field
 //                                            (e.g. "count") or "_value" gives
@@ -94,6 +97,7 @@ inline bool is_anchor_key(const std::string& key, const json& val,
 inline std::shared_ptr<KeywordNode> keyword_from_json(const std::string& key, const json& val,
                                                       const std::string& parent_def,
                                                       const std::string& parent_context,
+                                                      bool boolean_form,
                                                       const std::string& path, Context& ctx);
 
 // Add one child keyword per key of `obj` (looking through anchor wrappers),
@@ -102,22 +106,28 @@ inline void add_children(KeywordNode& node, const json& obj,
                          const std::string& context_def, const std::string& parent_def,
                          const std::string& kw_name, const std::string& skip_key,
                          const std::string& path, Context& ctx) {
-    auto add = [&](const std::string& child, const json& child_val,
+    auto add = [&](const std::string& child, const json& child_val, bool anchored,
                    const std::string& child_path) {
         if (child_val.is_null()) return;
         const auto cfg = lookup_with_fallback(
             ast_metadata::get_child_config_type, context_def, parent_def, child);
+        // Whether convert_keyword() writes this child, given without values,
+        // as a boolean: its child loop tests the direct context_def for
+        // children outside an anchor, then the child's own source_def.
+        const bool boolean_form =
+            is_boolean_in_context(child, cfg.source_def) ||
+            (!anchored && is_boolean_in_context(child, context_def));
         if (auto kw = keyword_from_json(child, child_val, cfg.source_def, kw_name,
-                                        child_path, ctx))
+                                        boolean_form, child_path, ctx))
             node.add_child(child, kw);
     };
     for (const auto& [k, v] : obj.items()) {
         if (k == skip_key) continue;
         if (is_anchor_key(k, v, context_def, parent_def)) {
             for (const auto& [child, child_val] : v.items())
-                add(child, child_val, path + "." + k + "." + child);
+                add(child, child_val, true, path + "." + k + "." + child);
         } else {
-            add(k, v, path + "." + k);
+            add(k, v, false, path + "." + k);
         }
     }
 }
@@ -126,6 +136,7 @@ inline void add_children(KeywordNode& node, const json& obj,
 inline std::shared_ptr<KeywordNode> keyword_from_json(const std::string& key, const json& val,
                                                       const std::string& parent_def,
                                                       const std::string& parent_context,
+                                                      bool boolean_form,
                                                       const std::string& path, Context& ctx) {
     auto node = std::make_shared<KeywordNode>();
     node->name = key;
@@ -136,13 +147,18 @@ inline std::shared_ptr<KeywordNode> keyword_from_json(const std::string& key, co
     if (arg_field.empty() && !ast_metadata::is_scalar_in_definition(parent_def, key))
         arg_field = ast_metadata::get_argument_field(key, parent_context);
 
-    if (val.is_boolean()) {
+    // A boolean keyword and an object keyword given without members are the
+    // same AST node; ast_to_json() writes it as true/false or {} depending on
+    // the schema (`boolean_form`), so accept only the form it writes.
+    if (val.is_boolean() || (val.is_object() && val.empty())) {
+        if (val.is_boolean() != boolean_form) {
+            ctx.errors.push_back(path + (val.is_boolean() ? ": expected an object, got "
+                                                          : ": expected a boolean, got ") +
+                                 val.dump());
+            return nullptr;
+        }
         node->is_flag = true;
-        if (!val.get<bool>()) node->param_values.push_back(false);
-        return node;
-    }
-    if (val.is_object() && val.empty()) {
-        node->is_flag = true;
+        if (val.is_boolean() && !val.get<bool>()) node->param_values.push_back(false);
         return node;
     }
     if (!val.is_object()) {
@@ -176,7 +192,8 @@ inline void block_from_json(const std::string& block_name, const json& obj,
     const std::string config_type = get_config_type(block_name);
     auto add = [&](const std::string& kw, const json& kw_val, const std::string& kw_path) {
         if (kw_val.is_null()) return;
-        if (auto node = keyword_from_json(kw, kw_val, config_type, block_name, kw_path, ctx))
+        if (auto node = keyword_from_json(kw, kw_val, config_type, block_name,
+                                          is_boolean_in_context(kw, config_type), kw_path, ctx))
             block.add_keyword(kw, node);
     };
     for (const auto& [k, v] : obj.items()) {

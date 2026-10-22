@@ -222,3 +222,52 @@ TEST(JsonToAstShape, NullIsAbsent)
         << (errors.empty() ? "" : errors[0]);
     EXPECT_EQ(with_null, absent);
 }
+
+// 2.7  The conversion takes true/false only for a boolean keyword and {}
+//      only for an object keyword, the forms ast_to_json writes.
+TEST(JsonToAstShape, FlagAndEmptyObjectFollowSchema)
+{
+    auto doc = study_json();
+    ASSERT_TRUE(doc["environment"]["tabular_data"].is_object());
+    ASSERT_EQ(doc["responses"][0]["gradient_type"]["no_gradients"], true);
+
+    dakota::Document ast;
+    std::vector<std::string> errors;
+    auto flag_as_object = doc;
+    flag_as_object["responses"][0]["gradient_type"]["no_gradients"] = json::object();
+    EXPECT_FALSE(dakota::json_to_ast(flag_as_object, ast, errors));
+    EXPECT_TRUE(any_error_contains(errors, "responses[0].gradient_type.no_gradients: expected a boolean"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    errors.clear();
+    auto object_as_flag = doc;
+    object_as_flag["environment"]["tabular_data"] = true;
+    EXPECT_FALSE(dakota::json_to_ast(object_as_flag, ast, errors));
+    EXPECT_TRUE(any_error_contains(errors, "environment.tabular_data: expected an object"))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// 2.8  A child that is a boolean where it is written but an object in the
+//      parent's definition (fork/system parameters_format standard) reads
+//      back as written.
+TEST(JsonToAstShape, FlagFollowsWriterContext)
+{
+    for (const std::string driver : {"fork", "system"}) {
+        const std::string input = std::string(k_study).replace(
+            std::string(k_study).find("    direct"), 10,
+            "    " + driver + "\n      parameters_format standard");
+        dakota::Document doc;
+        json j0;
+        ASSERT_TRUE(dakota::parse_dakota_string(input, "<study>", doc));
+        ASSERT_TRUE(unexpanded_json(doc, j0));
+        const auto& format = j0["interface"][0]["analysis_drivers"]["interface_type"][driver]
+                               ["parameters_format"];
+        ASSERT_EQ(format["standard"], true) << format.dump();
+
+        dakota::Document ast;
+        std::vector<std::string> errors;
+        EXPECT_TRUE(dakota::json_to_ast(j0, ast, errors))
+            << driver << ": " << (errors.empty() ? "(none)" : errors[0]);
+        EXPECT_EQ(dakota::ast_to_json(ast), j0) << driver;
+    }
+}
