@@ -877,6 +877,14 @@ class PythonDirectInterfaceTest(unittest.TestCase):
         for e, a in zip(expected_values, actual_values):
             self.assertAlmostEqual(e, a)
 
+    def test_parameters_from_dict_zero_values(self):
+        zero_params = copy.deepcopy(direct_dense_params)
+        zero_params["cv"] = [0.0] * len(zero_params["cv"])
+        zero_params["div"] = [0] * len(zero_params["div"])
+        params, _ = di.interfacing._read_params_from_dict(zero_params)
+        for label in zero_params["cv_labels"] + zero_params["div_labels"]:
+            self.assertEqual(0, params[label])
+
     def test_parameters_from_dict_asv(self):
         _, results = di.interfacing._read_params_from_dict(direct_dense_params)
         def asv_to_int(asv):

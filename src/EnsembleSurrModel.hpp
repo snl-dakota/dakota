@@ -224,6 +224,8 @@ protected:
   /// request fine-grained evaluation reporting within the low and high
   /// fidelity models
   void fine_grained_evaluation_counters() override;
+  /// assign output level to this model and the low and high fidelity models
+  void propagate_output_level(short level) override;
   /// print the evaluation summary for the EnsembleSurrModel
   /// (request forwarded to the low and high fidelity models)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
@@ -1194,6 +1196,15 @@ inline void EnsembleSurrModel::fine_grained_evaluation_counters()
   for (i=0; i<num_approx; ++i)
     approxModels[i]->fine_grained_evaluation_counters();
   truthModel->fine_grained_evaluation_counters();
+}
+
+
+inline void EnsembleSurrModel::propagate_output_level(short level)
+{
+  outputLevel = level;
+  for (auto& approx_model : approxModels)
+    approx_model->propagate_output_level(level);
+  truthModel->propagate_output_level(level);
 }
 
 

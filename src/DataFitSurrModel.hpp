@@ -344,6 +344,9 @@ public:
   /// request fine-grained evaluation reporting within approxInterface
   /// and actualModel
   void fine_grained_evaluation_counters() override;
+  /// assign output level to this model, approxInterface, and actualModel
+  /// (unless actualModel is iterated by daceIterator, which owns its level)
+  void propagate_output_level(short level) override;
   /// print the evaluation summary for the DataFitSurrModel
   /// (request forwarded to approxInterface and actualModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
@@ -1038,6 +1041,20 @@ inline void DataFitSurrModel::fine_grained_evaluation_counters()
 {
   approxInterface->fine_grained_evaluation_counters(numFns);
   if (actualModel)
+    actualModel->fine_grained_evaluation_counters();
+}
+
+
+inline void DataFitSurrModel::propagate_output_level(short level)
+{
+  outputLevel = level;
+  approxInterface->output_level(level);
+  if (!actualModel)
+    return;
+  if (!daceIterator)
+    actualModel->propagate_output_level(level);
+  // as for the ctors: verbose final summaries without verbose dace output
+  else if (outputLevel > NORMAL_OUTPUT)
     actualModel->fine_grained_evaluation_counters();
 }
 

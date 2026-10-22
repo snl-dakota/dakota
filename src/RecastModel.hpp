@@ -436,6 +436,8 @@ public:
   void set_evaluation_reference() override;
   /// request fine-grained evaluation reporting within subModel
   void fine_grained_evaluation_counters() override;
+  /// assign output level to this model and subModel
+  void propagate_output_level(short level) override;
   /// print the evaluation summary for the RecastModel (request
   /// forwarded to subModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
@@ -1180,6 +1182,10 @@ inline void RecastModel::set_evaluation_reference()
 
 inline void RecastModel::fine_grained_evaluation_counters()
 { subModel->fine_grained_evaluation_counters(); }
+
+
+inline void RecastModel::propagate_output_level(short level)
+{ outputLevel = level; subModel->propagate_output_level(level); }
 
 
 inline void RecastModel::update_linear_constraints(const Model& model)

@@ -79,6 +79,8 @@ Analyzer(std::shared_ptr<StudyServices> services,
 
   assign_requested_view(*model, view_req);
   iteratedModel = model;
+  // as for ProblemDescDB models reading method.output
+  iteratedModel->propagate_output_level(outputLevel);
   update_from_model(*iteratedModel);
 
   if (convergenceTol < 0.) convergenceTol = 1.e-4;

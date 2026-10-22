@@ -2172,6 +2172,30 @@
     ]
   },
   {
+    "id": "interface_python_decorated_callback",
+    "input": "python_parity/inputs/python_decorated_callback.in",
+    "subtest": 0,
+    "script": "interface_python_decorated_callback.py",
+    "required_files": [
+      "python_parity/decorated_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.list_parameter_study"
+    ],
+    "classes": [
+      "SimulationModel",
+      "Pybind11Interface",
+      "ParamStudy"
+    ],
+    "requires_features": [
+      "DAKOTA_PYTHON_DIRECT_INTERFACE"
+    ]
+  },
+  {
     "id": "model_global_field_python",
     "input": "dakota_python_field_surrogate.in",
     "subtest": 1,

@@ -230,6 +230,17 @@ Interface::~Interface()
 { /* empty dtor */ }
 
 
+void Interface::output_level(short level)
+{
+#ifndef DEBUG
+  outputLevel = level;
+#endif // DEBUG
+  // counters are sized on first use; never disable once enabled
+  if (outputLevel > NORMAL_OUTPUT)
+    fineGrainEvalCounters = true;
+}
+
+
 void Interface::fine_grained_evaluation_counters(size_t num_fns)
 {
   if (!fineGrainEvalCounters) {

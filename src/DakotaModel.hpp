@@ -255,6 +255,10 @@ public:
   virtual void set_evaluation_reference();
   /// Request fine-grained evaluation reporting within the Model
   virtual void fine_grained_evaluation_counters();
+  /// Assign the output level of the iterating method to this Model and the
+  /// sub-models/interfaces it owns (DI counterpart of reading method.output
+  /// at ProblemDescDB construction); stops at nested iterators
+  virtual void propagate_output_level(short level);
   /// Print an evaluation summary for the Model
   virtual void print_evaluation_summary(std::ostream& s,
 					bool minimal_header = false,

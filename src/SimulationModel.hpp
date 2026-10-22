@@ -164,6 +164,8 @@ protected:
   void set_evaluation_reference() override;
   /// request fine-grained evaluation reporting within the userDefinedInterface
   void fine_grained_evaluation_counters() override;
+  /// assign output level to this model and userDefinedInterface
+  void propagate_output_level(short level) override;
   /// print the evaluation summary for the SimulationModel
   /// (request forwarded to userDefinedInterface)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
@@ -421,6 +423,10 @@ inline void SimulationModel::set_evaluation_reference()
 
 inline void SimulationModel::fine_grained_evaluation_counters()
 { userDefinedInterface->fine_grained_evaluation_counters(numFns); }
+
+
+inline void SimulationModel::propagate_output_level(short level)
+{ outputLevel = level; userDefinedInterface->output_level(level); }
 
 
 inline void SimulationModel::

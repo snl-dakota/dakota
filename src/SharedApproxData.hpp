@@ -194,6 +194,9 @@ public:
   /// return the order of the data used for surrogate construction
   short build_data_order() const;
 
+  /// set the output verbosity level
+  void output_level(short level);
+
   /// query whether the form of an approximation has been updated
   bool formulation_updated() const;
   /// assign the status of approximation formulation updates
@@ -338,6 +341,13 @@ inline short SharedApproxData::discrepancy_emulation_mode() const
 
 inline short SharedApproxData::build_data_order() const
 { return (dataRep) ? dataRep->buildDataOrder : buildDataOrder; }
+
+
+inline void SharedApproxData::output_level(short level)
+{
+  if (dataRep) dataRep->outputLevel = level;
+  else                  outputLevel = level;
+}
 
 
 inline void SharedApproxData::

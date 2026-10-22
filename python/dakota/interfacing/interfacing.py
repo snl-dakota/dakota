@@ -1384,7 +1384,7 @@ def _read_params_from_dict(parameters=None):
         for label in p["variable_labels"]:
             for var_type in ("cv", "div", "dsv", "drv"):
                 var_val = _extract_value(label, p[f"{var_type}_labels"], p[var_type])
-                if var_val:
+                if var_val is not None:
                     break
             variables[label] = var_val
 

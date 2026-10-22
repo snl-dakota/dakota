@@ -11,6 +11,7 @@ variables = study.variables(
     normal_uncertain={"count": 20, "means": [0.5] * 20, "std_deviations": [0.2] * 20}
 )
 interface = study.interface(
+    id_interface="ID_I",
     analysis_drivers={
         "drivers": ["aniso_quad_form"],
         "interface_type": {"direct": {}},

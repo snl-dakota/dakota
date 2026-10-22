@@ -57,6 +57,9 @@ public:
   /// destructor
   ~ApproximationInterface() override;
 
+  /// set outputLevel here and in sharedData (build diagnostics)
+  void output_level(short level) override;
+
 protected:
 
   //
@@ -287,6 +290,10 @@ private:
 
 
 inline ApproximationInterface::~ApproximationInterface() { }
+
+
+inline void ApproximationInterface::output_level(short level)
+{ Interface::output_level(level); sharedData.output_level(outputLevel); }
 
 
 inline Approximation& ApproximationInterface::function_surface(size_t index)

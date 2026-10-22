@@ -119,6 +119,8 @@ Minimizer(std::shared_ptr<StudyServices> services,
 
   assign_requested_view(*model, view_req);
   iteratedModel = model;
+  // as for ProblemDescDB models reading method.output
+  iteratedModel->propagate_output_level(outputLevel);
   update_from_model(*iteratedModel);
 
   if (maxIterations == SZ_MAX)    maxIterations = 100;
@@ -465,8 +467,9 @@ void Minimizer::data_transform_model()
     Cout << "Initializing calibration data transformation" << std::endl;
   
   // TODO: need better validation of these sizes and data with error msgs
-  numExperiments = (&probDescDB == &dummy_db) ? expData.num_experiments() :
-    probDescDB.get<size_t>("responses.num_experiments");
+  numExperiments = (&probDescDB == &dummy_db)
+    ? expData.num_experiments_configured()
+    : probDescDB.get<size_t>("responses.num_experiments");
   if (numExperiments < 1) {
       Cerr << "Error in number of experiments" << std::endl;
       abort_handler(-1);

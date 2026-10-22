@@ -149,11 +149,12 @@ DataFitSurrModel::DataFitSurrModel(ProblemDescDB& problem_db, ParallelLibrary& p
   }
   else if (model_construct)
     problem_db.set_db_model_nodes(model_index);  // restore all model nodes
-  // else global approx. built solely from reuse_points: daceIterator/
-  // actualModel remain empty envelopes.  Verify that there is a data source:
-  // this basic check is augmented with a build_global() check which enforces
-  // that the total points from both sources be >= minimum required.
-  else if ( pointReuse == "none" ) {
+  // else global approx. built solely from reuse_points or an imported
+  // surrogate: daceIterator/actualModel remain empty envelopes.  Verify that
+  // there is a data source: this basic check is augmented with a build_global()
+  // check which enforces that the total points from both sources be >= minimum.
+  else if ( pointReuse == "none" &&
+            !problem_db.get<bool>("model.surrogate.import_surrogate") ) {
     Cerr << "Error: to build a data fit surrogate model, either a global "
 	 << "approximation\n       must be specified with reuse_points or "
 	 << "dace_method_pointer, or a\n       local/multipoint approximation "

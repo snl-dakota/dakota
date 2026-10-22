@@ -5775,6 +5775,10 @@ void Model::fine_grained_evaluation_counters()
 }
 
 
+void Model::propagate_output_level(short level)
+{ outputLevel = level; }
+
+
 void Model::
 print_evaluation_summary(std::ostream& s, bool minimal_header,
 			 bool relative_count) const

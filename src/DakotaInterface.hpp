@@ -301,6 +301,10 @@ public:
   /// returns the value of the (total) evaluation id counter for the interface
   int evaluation_id() const;
 
+  /// set outputLevel after construction (DI), enabling fine-grained
+  /// evaluation counters for verbose levels as in the ProblemDescDB ctor
+  virtual void output_level(short level);
+
   /// set fineGrainEvalCounters to true and initialize counters if needed
   void fine_grained_evaluation_counters(size_t num_fns);
   /// initialize fine grained evaluation counters, sizing if needed

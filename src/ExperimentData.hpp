@@ -110,9 +110,13 @@ public:
   void add_data(const SharedVariablesData& svd,
 		const Variables& one_configvars, const Response& one_response);
 
-  /// retrieve the number of experiments
+  /// retrieve the number of experiments loaded from data files
   size_t num_experiments() const
     { return allExperiments.size(); }
+
+  /// retrieve the configured number of experiments (from spec or IRStore)
+  size_t num_experiments_configured() const
+    { return numExperiments; }
 
   /// retrieve the total number of experimental data points 
   /// over all experiments

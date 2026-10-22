@@ -151,6 +151,9 @@ protected:
   /// request fine-grained evaluation reporting within optionalInterface
   /// and subModel
   void fine_grained_evaluation_counters() override;
+  /// assign output level to this model and optionalInterface; the
+  /// sub-iterator retains its own level
+  void propagate_output_level(short level) override;
   /// print the evaluation summary for the NestedModel
   /// (request forwarded to optionalInterface and subModel)
   void print_evaluation_summary(std::ostream& s, bool minimal_header = false,
@@ -680,6 +683,14 @@ inline void NestedModel::fine_grained_evaluation_counters()
     optionalInterface->fine_grained_evaluation_counters(num_oi_fns);
   }
   subModel->fine_grained_evaluation_counters();
+}
+
+
+inline void NestedModel::propagate_output_level(short level)
+{
+  outputLevel = level;
+  if (optionalInterface)
+    optionalInterface->output_level(level);
 }
 
 

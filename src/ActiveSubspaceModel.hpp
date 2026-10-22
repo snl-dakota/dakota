@@ -119,6 +119,10 @@ protected:
 
   void assign_instance() override;
 
+  /// propagate to subModel and refresh the fullspaceSampler, which
+  /// inherits its level from subModel at construction
+  void propagate_output_level(short level) override;
+
   // ---
   // Construct time convenience functions
   // ---
@@ -326,6 +330,16 @@ protected:
 
 inline void ActiveSubspaceModel::assign_instance()
 { asmInstance = this; SubspaceModel::assign_instance(); }
+
+
+inline void ActiveSubspaceModel::propagate_output_level(short level)
+{
+  SubspaceModel::propagate_output_level(level);
+  if (fullspaceSampler) { // not constructed by the lightweight ctor
+    fullspaceSampler->output_level(subModel->output_level());
+    fullspaceSampler->sub_iterator_flag(true); // refresh summaryOutputFlag
+  }
+}
 
 
 inline unsigned int ActiveSubspaceModel::

@@ -7,6 +7,7 @@ variables = study.variables(
     normal_uncertain={"count": 15, "means": [0.0] * 15, "std_deviations": [1.0] * 15}
 )
 interface = study.interface(
+    id_interface="ID_I",
     analysis_drivers={
         "drivers": ["steady_state_diffusion_1d"],
         "interface_type": {"direct": {}},
