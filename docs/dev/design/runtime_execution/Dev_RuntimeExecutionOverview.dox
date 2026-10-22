@@ -1,0 +1,84 @@
+namespace Dakota {
+
+/** \page RuntimeExecutionDesign Runtime Execution Subsystem Design Intent
+
+\section RuntimeExecutionPurpose Purpose
+
+The runtime execution subsystem exists to separate study semantics from
+study execution mechanics.
+
+Dakota study components such as Models and Iterators define what a study
+means: the variable space, the response space, the algorithm, and the
+relationships between parent and child components. The runtime execution
+subsystem defines how an already-constructed study is executed with a
+particular ParallelLibrary and OutputManager, including communicator
+lifecycle, iterator partitioning, and subordinate iterator orchestration.
+
+This subsystem was introduced as part of the move away from
+IteratorScheduler toward a runtime model that better supports dependency
+injection. The goal is that components can increasingly be constructed as
+semantic objects, while execution placement and MPI-aware orchestration live
+in a shared runtime layer.
+
+\section RuntimeExecutionPieces Major Pieces
+
+Today the subsystem has three primary abstractions.
+
+StudyRuntime is the top-level runtime-facing handle. It gives library-mode
+callers a way to execute a constructed top-level iterator and serves as the
+runtime-side factory for subordinate execution helpers.
+
+IteratorContext is the per-subordinate execution handle stored by
+components such as NestedModel and the meta-iterators. It preserves the
+execution state associated with one child-iterator relationship across the
+communicator lifecycle.
+
+IteratorExecutor is the low-level mechanism object that performs most of
+the concrete iterator execution work, including partition estimation,
+communicator setup/teardown, and scheduled execution behavior.
+
+\section RuntimeExecutionFlow Execution Flow
+
+At top level, a caller constructs semantic Dakota objects and then uses a
+StudyRuntime to initialize communicators, execute the top-level iterator,
+and free communicators.
+
+For subordinate execution, components such as NestedModel create and store
+an IteratorContext. During communicator initialization and execution, that
+component calls methods on the IteratorContext to update runtime state,
+configure the child iterator, partition ranks, initialize the child
+iterator sufficiently to run, and later execute or schedule it. The
+IteratorContext carries the long-lived execution state for that child
+relationship and relies on IteratorExecutor for the detailed mechanics.
+
+\section RuntimeExecutionBoundaries Boundaries And Intent
+
+The main design boundary is this: semantic study objects should not own
+MPI-aware execution policy any more than necessary.
+
+That does not mean Models and Iterators become passive. Components such as
+NestedModel still decide when a child study should run, whether execution is
+synchronous or queued, and how child results map back into parent
+semantics. But the runtime execution subsystem is meant to own the
+mechanics of how those studies are actually launched and coordinated.
+
+\section RuntimeExecutionStability Stable Versus Expected To Change
+
+The intended stable idea is the subsystem boundary itself: construction and
+semantics on one side, runtime execution mechanics on the other.
+
+What is still expected to evolve is the exact distribution of behavior
+between StudyRuntime, IteratorContext, and IteratorExecutor. At present,
+StudyRuntime is intentionally thin, IteratorContext is partly a state
+holder and partly a forwarding surface, and IteratorExecutor still contains
+most of the concrete protocol. Future refactoring may rebalance those roles
+without changing the overall subsystem intent.
+
+\section RuntimeExecutionRelatedPages Related Pages
+
+See \ref StudyRuntimeDesign, \ref IteratorContextDesign, and
+\ref IteratorExecutorDesign for the component-specific design notes.
+
+*/
+
+} // namespace Dakota

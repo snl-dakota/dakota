@@ -5,16 +5,24 @@
 # TODO: Review string quoting conventions and test with spaces in filename
 
 
-execute_process(COMMAND chrpath -v
-                OUTPUT_QUIET
-                ERROR_QUIET
-                RESULT_VARIABLE chrpath_exists_return)
+set(dakota_install_rpath
+    "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../lib64:\$ORIGIN/../bin")
 
-if(chrpath_exists_return EQUAL 0)
+find_program(DAKOTA_PATCHELF_EXECUTABLE NAMES patchelf)
+find_program(DAKOTA_CHRPATH_EXECUTABLE NAMES chrpath)
+
+if(DAKOTA_PATCHELF_EXECUTABLE)
   set(CHANGE_RPATH True)
+  set(DAKOTA_RPATH_TOOL "patchelf")
+  set(DAKOTA_RPATH_COMMAND "${DAKOTA_PATCHELF_EXECUTABLE}" --set-rpath)
+elseif(DAKOTA_CHRPATH_EXECUTABLE)
+  set(CHANGE_RPATH True)
+  set(DAKOTA_RPATH_TOOL "chrpath")
+  set(DAKOTA_RPATH_COMMAND "${DAKOTA_CHRPATH_EXECUTABLE}" -r)
 else()
   set(CHANGE_RPATH False)
-  message(WARNING "Utility chrpath could not be run. Portability of package/install may be reduced.")
+  message(WARNING
+    "Neither patchelf nor chrpath was found. Portability of package/install may be reduced.")
 endif()
 
 # Function to install a single Dakota dll dependency
@@ -29,13 +37,16 @@ function(dakota_install_dll dakota_dll)
     #    file(COPY "${dakota_dll}" DESTINATION "${CMAKE_INSTALL_PREFIX}/bin" FILE_PERMISSIONS
     #  OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE) 
     if(CHANGE_RPATH)
-      execute_process(COMMAND
-          chrpath -r \$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../lib64:\$ORIGIN/../bin ${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}
-          OUTPUT_QUIET
-          RESULT_VARIABLE chrpath_return
+      execute_process(
+        COMMAND ${DAKOTA_RPATH_COMMAND} "${dakota_install_rpath}"
+                "${CMAKE_INSTALL_PREFIX}/bin/${dll_filename}"
+        OUTPUT_QUIET
+        ERROR_QUIET
+        RESULT_VARIABLE rpath_change_return
       )
-      if(NOT chrpath_return EQUAL 0)
-        message(WARNING "chrpath setting for ${dll_filename} failed; portability of install/package may be reduced")
+      if(NOT rpath_change_return EQUAL 0)
+        message(WARNING
+          "${DAKOTA_RPATH_TOOL} failed to set RPATH for ${dll_filename}; portability of install/package may be reduced")
       endif()
     endif()
   else()

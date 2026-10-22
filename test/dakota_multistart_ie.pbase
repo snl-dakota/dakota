@@ -19,7 +19,7 @@ Test Number 1 succeeded
                       2.8257610000e-02
 <<<<< Best evaluation ID: 20
 <<<<< Results summary:
-   set_id          cdv_1         cdv_1*         obj_fn 
+   set_id          cdv_1         cdv_1*       obj_fn_1 
         1             -1          -0.91    13.30863361 
         2           -0.5          -0.41     3.95254161 
         3            0.5           0.59     0.02825761 
@@ -32,7 +32,7 @@ Test Number 2 succeeded
                       1.3308633610e+01
 <<<<< Best evaluation ID: 10
 <<<<< Results summary:
-   set_id          cdv_1         cdv_1*         obj_fn 
+   set_id          cdv_1         cdv_1*       obj_fn_1 
         1             -1          -0.91    13.30863361 
         2           -0.5          -0.41     3.95254161 
         3            0.5           0.59     0.02825761 
@@ -59,7 +59,7 @@ Test Number 5 succeeded
                       1.3308633610e+01
 <<<<< Best evaluation ID: 10
 <<<<< Results summary:
-   set_id          cdv_1         cdv_1*         obj_fn 
+   set_id          cdv_1         cdv_1*       obj_fn_1 
         1             -1          -0.91    13.30863361 
         2           -0.5          -0.41     3.95254161 
         3            0.5           0.59     0.02825761 
@@ -72,7 +72,7 @@ Test Number 6 succeeded
                       1.3308633610e+01
 <<<<< Best evaluation ID: 10
 <<<<< Results summary:
-   set_id          cdv_1         cdv_1*         obj_fn 
+   set_id          cdv_1         cdv_1*       obj_fn_1 
         1             -1          -0.91    13.30863361 
         2           -0.5          -0.41     3.95254161 
         3            0.5           0.59     0.02825761 
@@ -105,7 +105,7 @@ Test Number 9 succeeded
                       5.3084160000e-02
 <<<<< Best evaluation ID: 6
 <<<<< Results summary:
-   set_id          cdv_1         cdv_1*         obj_fn 
+   set_id          cdv_1         cdv_1*       obj_fn_1 
         1             -1          -0.98    15.36953616 
         2           -0.5          -0.48     4.79785216 
         3            0.5           0.52     0.05308416 

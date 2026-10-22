@@ -32,6 +32,9 @@ public:
 
   /// standard constructor
   NonDWASABIBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDWASABIBayesCalibration(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDWASABIBayesCalibration() override;
 

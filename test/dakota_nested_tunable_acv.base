@@ -257,9 +257,9 @@ Test Number 21 succeeded
                       1.1448865853298432e-04
 <<<<< Best evaluation ID: 32
 Test Number 22 succeeded
-<<<<< Function evaluation summary: 391347 total (380543 new, 10804 duplicate)
-<<<<< Function evaluation summary: 391347 total (380543 new, 10804 duplicate)
-<<<<< Function evaluation summary: 391347 total (380543 new, 10804 duplicate)
+<<<<< Function evaluation summary: 391338 total (380534 new, 10804 duplicate)
+<<<<< Function evaluation summary: 391338 total (380534 new, 10804 duplicate)
+<<<<< Function evaluation summary: 391338 total (380534 new, 10804 duplicate)
 <<<<< Best parameters          =
                       1.1499999999999999e+00 outer_theta1
                       5.2359877559830004e-01 outer_theta2

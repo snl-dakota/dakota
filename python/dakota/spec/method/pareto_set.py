@@ -111,7 +111,7 @@ class ParetoSetConfig(
     "Pareto set optimization"
 
     sub_method: Union[ParetoSetMethodName, ParetoSetMethodPointer] = DakotaField(
-        description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4}
+        description="Sub-method Selection", dakota={"anchor": True, "union_pattern": 4, "pointer_union": True}
     )
     random_weight_sets: RandomWeightSets | None = DakotaField(
         default=None,

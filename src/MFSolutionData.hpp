@@ -10,7 +10,7 @@
 #ifndef MF_SOLUTION_DATA_H
 #define MF_SOLUTION_DATA_H
 
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 
 namespace Dakota {

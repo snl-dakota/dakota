@@ -10,7 +10,7 @@
 //#include "ExperimentDataUtils.hpp"
 #include "dakota_global_defs.hpp"
 #include "dakota_linear_algebra.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 #include "DakotaResponse.hpp"
 #include "NonDBayesCalibration.hpp"
 #include <gtest/gtest.h>

@@ -1,17 +1,17 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 16 total (15 new, 1 duplicate)
 <<<<< Best parameters          =
-                      2.0740825416e+00 w
-                      3.9363494725e+00 t
+                      2.0740768966e+00 w
+                      3.9363889877e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      8.1643137186e+00
+                      8.1643734553e+00
 <<<<< Best constraint values   =
-                     -9.0346820336e-02
-                     -3.3142775454e-03
+                     -9.0356955926e-02
+                     -3.3221386687e-03
 <<<<< Best evaluation ID: 14
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 17 total (16 new, 1 duplicate)
@@ -58,32 +58,32 @@ Test Number 3 succeeded
                      -3.8965363712e-03
 <<<<< Best evaluation ID: 16
 Test Number 4 succeeded
-<<<<< Function evaluation summary: 38 total (29 new, 9 duplicate)
+<<<<< Function evaluation summary: 42 total (33 new, 9 duplicate)
 <<<<< Best parameters          =
-                      2.6296380972e+00 w
-                      3.0366898677e+00 t
+                      2.2777608427e+00 w
+                      3.4614896103e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      7.9853953655e+00
+                      7.8844454918e+00
 <<<<< Best constraint values   =
-                     -2.4257137027e-02
-                     -9.6858740411e-04
-<<<<< Best evaluation ID: 31
+                     -3.2766235181e-02
+                     -1.0304539135e-02
+<<<<< Best evaluation ID: 33
 Test Number 5 succeeded
 <<<<< Function evaluation summary: 17 total (15 new, 2 duplicate)
 <<<<< Best parameters          =
                       2.0740768966e+00 w
-                      3.9357962596e+00 t
+                      3.9357680345e+00 t
                       4.0000000000e+04 R
                       2.9000000000e+07 E
                       5.0000000000e+02 X
                       1.0000000000e+03 Y
 <<<<< Best objective function  =
-                      8.1631440917e+00
+                      8.1630855506e+00
 <<<<< Best constraint values   =
-                     -9.0149663799e-02
-                     -3.1012749054e-03
+                     -9.0139790659e-02
+                     -3.0907547201e-03
 <<<<< Best evaluation ID: 15

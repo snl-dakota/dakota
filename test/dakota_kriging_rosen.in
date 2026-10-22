@@ -16,7 +16,7 @@ method,
 
 #model,                                         #s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#!12,#!13,#!14,#!15,#!16
 #        id_model = 'SURR'    			#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#!12,#!13,#!14,#!15,#!16
-#        surrogate global,			#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#!12,#!13,#!14,#!15,#!16
+#        global_surrogate,			#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#!12,#!13,#!14,#!15,#!16
 #          dace_method_pointer = 'DACE'		#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#!12,#!13,#!14,#!15,#!16 
 #          reuse_samples all			#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#!12,#!13,#!14,#!15,#!16
 #          gaussian_process surfpack          	#s2,#s3,#s4,#s5,#s6,#s7,#s8,#s9,#s10,#s11,#!12,#!13,#!14,#!15,#!16	 
@@ -61,4 +61,3 @@ responses,
 	response_functions = 1
 	no_gradients
 	no_hessians
-

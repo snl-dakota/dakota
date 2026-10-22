@@ -10,51 +10,10 @@ Getting Started
 Download Dakota
 ===============
 
-------------------
-Command Line + GUI
-------------------
-
-- **6.23.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
-- **6.22.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
-- **6.21.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
-- **6.20.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
-- **6.19.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
-- **6.18.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
-- **6.17.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
-- **6.16.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ 
-
-.. __: https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-darwin.darwin.arm64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-windows.windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.22.0/dakota-6.22.0-public-darwin.darwin.arm64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.22.0/dakota-6.22.0-public-windows.windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.22.0/dakota-6.22.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-darwin.darwin.arm64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-windows.windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20-public-darwin.darwin.arm64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-windows.windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-windows.Windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-rhel8.Linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-windows.Windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-rhel8.Linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-darwin.Darwin.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-windows.Windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-rhel7.Linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-rhel8.Linux.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
-__ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-windows.Windows.x64-gui_cli.zip
-__ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
-
-
 -----------------
 Command Line Only
 -----------------
+- **6.24.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.23.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.22.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__ 
 - **6.21.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__ 
@@ -64,6 +23,11 @@ Command Line Only
 - **6.17.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.16.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 
+.. __: https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-darwin.Darwin.arm64-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-windows.Windows.x64-cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-rhel8.Linux.x86_64-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-src-cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-src-cli.tar.gz
 .. __: https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-darwin.Darwin.arm64-cli.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-windows.Windows.x64-cli.zip
 __ https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-rhel8.Linux.x86_64-cli.tar.gz
@@ -107,6 +71,49 @@ __ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-
 __ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-rhel7.Linux.x86_64-cli.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-src-cli.zip
 __ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-src-cli.tar.gz
+
+
+------------------
+Command Line + GUI
+------------------
+
+- **6.23.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
+- **6.22.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
+- **6.21.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
+- **6.20.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__
+- **6.19.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
+- **6.18.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
+- **6.17.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__
+- **6.16.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ 
+
+.. __: https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-darwin.darwin.arm64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-windows.windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.23.0/dakota-6.23.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.22.0/dakota-6.22.0-public-darwin.darwin.arm64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.22.0/dakota-6.22.0-public-windows.windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.22.0/dakota-6.22.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-darwin.darwin.arm64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-windows.windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.21.0/dakota-6.21.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20-public-darwin.darwin.arm64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-windows.windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.20.0/dakota-6.20.0-public-rhel8.linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-windows.Windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.19.0/dakota-6.19.0-public-rhel8.Linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-windows.Windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.18.0/dakota-6.18.0-public-rhel8.Linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-darwin.Darwin.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-windows.Windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-rhel7.Linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.17.0/dakota-6.17.0-release-public-rhel8.Linux.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-darwin.Darwin.x86_64-gui_cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-windows.Windows.x64-gui_cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v6.16.0/dakota-6.16.0-public-rhel7.Linux.x86_64-gui_cli.tar.gz
+
 
 --------
 GUI Only
@@ -215,7 +222,7 @@ Set up your platform environment to access the Dakota executable, libraries, and
 Build from Source Code (Advanced)
 ---------------------------------
 
-For custom installations, download and build Dakota from source code.
+For custom installations, :ref:`download and build Dakota from source <compiling-main>`.
 
 .. _setupdakota-environment:
 
@@ -249,6 +256,27 @@ If your PATH variable is NOT set correctly, you will get a message like  the fol
 The following setup will make the dakota command and other helper programs available at the terminal. If you prefer you may refer to the dakota executable using its fully-qualified path. Note, however, that some examples will require modification to work properly if dakota and related helper programs are not on your PATH.
 
 To persist the PATH to Dakota across terminals/sessions, make the following changes to the appropriate shell login script. If you prefer to just test in your current terminal, execute the commands directly in a terminal.
+
+**Alternative: register the Python package automatically (Linux/Mac)**
+
+If you built Dakota from source and want ``import dakota`` to work without
+setting ``PYTHONPATH`` by hand, run the ``install-python`` build target after
+a normal install::
+
+   make install-python
+
+This writes a ``dakota.pth`` file into the site-packages directory of the
+Python interpreter Dakota was configured with (the active venv or conda env if
+one is active, otherwise your user site-packages). The package files stay in
+``$INSTALL_DIR/share/dakota/Python``, so existing RPATHs are preserved.
+To undo the registration run ``make uninstall-python``.
+
+**Note:** ``install-python`` targets the interpreter chosen at CMake configure
+time (``-DPython3_EXECUTABLE=...``). If you later switch environments, re-run
+``make install-python`` from the new environment. Because Dakota's Python
+components are built for a specific major.minor version of Python (e.g. 3.14),
+if the Python version in the new environment differs, a complete re-configure and 
+re-build will be needed, not just a fresh install.
 
 **Make Changes in Bash Shell**
 

@@ -1,0 +1,24 @@
+Blurb::
+Approach for addressing model misordering during numerical solutions.
+
+Description::
+Multifidelity Monte Carlo is a hierarchical sampling method that
+requires an ordered set of model approximations, whether in terms of
+model response correlations (for analytic solutions) or model sample
+allocations (for estimator variance calculations in numerical
+solutions).  In the latter case of numerical solutions, ordering of
+sample allocations can be accomplished using two different approaches,
+either reordering on the fly (:dakkw:`method-multifidelity_sampling-numerical_solve-model_reordering-auto_reorder`) as dictated by a given
+set of allocations or enforcing a prescribed model ordering
+(:dakkw:`method-multifidelity_sampling-numerical_solve-model_reordering-fixed_order`) through additional linear constraints on the
+numerical solution.
+
+Topics::
+
+Examples::
+
+Theory::
+
+Faq::
+
+See_Also::

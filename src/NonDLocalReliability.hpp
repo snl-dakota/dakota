@@ -49,6 +49,9 @@ public:
 
   /// constructor
   NonDLocalReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDLocalReliability(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+                        std::shared_ptr<Model> model);
   /// destructor
   ~NonDLocalReliability() override;
 
@@ -130,6 +133,12 @@ private:
   //
   //- Heading: Convenience functions
   //
+
+  /// common class initialization
+  void initialize(const String& integration_method,
+                  unsigned short opt_subproblem_solver,
+                  const IntVector& refine_samples_spec,
+                  int refine_seed);
 
   /// convenience function for performing the initial limit state
   /// Taylor-series approximation

@@ -1,0 +1,81 @@
+"""""""""""""""""""""""""
+Version 6.24 (2026/05/15)
+"""""""""""""""""""""""""
+
+**Highlight: Sensitivity Analysis Section**
+
+A new section that describes Dakota's sensitivity analysis
+capabilities has been added to the User Manual.
+
+*Enabling / Accessing:* Visit :ref:`sa`.
+
+**Highlight: JSON-format Input Files**
+
+In addition to the existing freeform input file format, Dakota
+now accepts JSON-format input files. The schema and other usage
+tips are described in the :ref:`jsoninput` section. JSON input
+provides a foundation for more structured, tool-friendly workflows,
+and is a stepping stone toward more capable Python bindings.
+
+The capability is experimental, and we appreciate your bug
+reports. To fall back to the old input file reader, run Dakota
+with the ``-parser nidr`` command line argument.
+
+*Enabling / Accessing:* Write a JSON format input file and use the
+``-json`` command line argument (e.g. ``dakota -json dakota_in.json``).
+
+**Highlight: Robustness enhancements for multifidelity sampling**
+
+All multifidelity sampling estimators that involve numerical solutions
+for sample allocations (MFMC, ACV, parameterized ACV, and MLBLUE) now
+include analytic derivatives of all accuracy and cost metrics, rendering
+these allocations more accurate and numerically robust.
+
+*Enabling / Accessing:* no additional specification is required, as
+all numerical solutions have been promoted to analytic gradients.
+
+*Documentation:* multifidelity sampling methods that support/require
+numerical solutions are described at
+:dakkw:`method-multifidelity_sampling`, 
+:dakkw:`method-approximate_control_variate`, and
+:dakkw:`method-multilevel_blue`.
+
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- The `pyprepro` function is now available in the 
+  :ref:`dakota.interfacing <interfaces:dprepro-and-pyprepro>` module.
+
+*UQ Methods*
+
+- Enhancements to numerical solutions within multifidelity Monte Carlo
+  (MFMC) implementation: fix any remaining model order dependencies
+  when using the default reorder-on-the-fly approach
+  (:dakkw:`method-multifidelity_sampling-numerical_solve-model_reordering-auto_reorder`),
+  and add an option to enable solutions for a specified model ordering
+  by enforcing ordered sample allocations through linear constraints
+  (:dakkw:`method-multifidelity_sampling-numerical_solve-model_reordering-fixed_order`).
+
+*Sensitivity Analysis*
+
+- The :dakkw:`method-sampling-variance_based_decomp-vbd_sampling_method-binned` approach 
+  to variance-based decomposition now works with discrete variables.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- Fix issue with trilinos that prevented re-configuration in the same build directory
+
+**Deprecated and Changed**
+
+- Dakota's NIDR (New Input Deck Reader) is being deprecated and replaced with
+  a newly written input parser. For this release, NIDR is available as a fallback.
+  Use the command line argument ``-parser legacy`` to use it.
+
+**Compatibility**
+
+- The schema for JSON input files is defined by Pydantic models, which are
+  located at `python/dakota/spec/` in the source tree. To update Dakota's
+  input grammar, Python >=3.9 and Pydantic >=2.12 are required.
+

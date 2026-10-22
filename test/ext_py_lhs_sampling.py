@@ -9,7 +9,6 @@
 
 from scipy.stats import qmc
 
-import ext_method
 import ext_py_helper
 
 
@@ -33,7 +32,7 @@ class LHSSample:
         u_bounds = self.executor.continuous_upper_bounds()
 
         # Generate samples using LHS from scipy qmc
-        sampler = qmc.LatinHypercube(d=n_vars)
+        sampler = qmc.LatinHypercube(d=n_vars, seed=1337)
 
         # Hard-coded setting that could be configured by user
         samples = sampler.random(n=25)

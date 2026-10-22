@@ -30,19 +30,45 @@ namespace Dakota {
 NonDWASABIBayesCalibration::
 NonDWASABIBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, parallel_lib, model),
-  numPushforwardSamples(probDescDB.get_int("method.nond.pushforward_samples")),
-  dataDistMeans(probDescDB.get_rv("method.nond.data_dist_means")),
-  dataDistCovariance(probDescDB.get_rv("method.nond.data_dist_covariance")),
-  dataDistFilename(probDescDB.get_string("method.nond.data_dist_filename")),
-  dataDistCovType(probDescDB.get_string("method.nond.data_dist_cov_type")),
-  posteriorSamplesImportFile(probDescDB.get_string("method.nond.posterior_samples_import_file")),
+  numPushforwardSamples(probDescDB.get<int>("method.nond.pushforward_samples")),
+  dataDistMeans(probDescDB.get<const RealVector>("method.nond.data_dist_means")),
+  dataDistCovariance(probDescDB.get<const RealVector>("method.nond.data_dist_covariance")),
+  dataDistFilename(probDescDB.get<const String>("method.nond.data_dist_filename")),
+  dataDistCovType(probDescDB.get<const String>("method.nond.data_dist_cov_type")),
+  posteriorSamplesImportFile(probDescDB.get<const String>("method.nond.posterior_samples_import_file")),
   posteriorSamplesImportFormat(0), // not used
-  exportPosteriorDensityFile(probDescDB.get_string("method.nond.posterior_density_export_file")),
-  exportPosteriorSamplesFile(probDescDB.get_string("method.nond.posterior_samples_export_file")),
+  exportPosteriorDensityFile(probDescDB.get<const String>("method.nond.posterior_density_export_file")),
+  exportPosteriorSamplesFile(probDescDB.get<const String>("method.nond.posterior_samples_export_file")),
   exportFileFormat(0), // not used
-  generateRandomPosteriorSamples(probDescDB.get_bool("method.nond.generate_posterior_samples")),
-  evaluatePosteriorDensity(probDescDB.get_bool("method.nond.evaluate_posterior_density"))
+  generateRandomPosteriorSamples(probDescDB.get<bool>("method.nond.generate_posterior_samples")),
+  evaluatePosteriorDensity(probDescDB.get<bool>("method.nond.evaluate_posterior_density"))
 { 
+  // don't use max_function_evaluations, since we have num_samples
+  // consider max_iterations = generations, and adjust as needed?
+
+}
+
+
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDWASABIBayesCalibration::
+NonDWASABIBayesCalibration(std::shared_ptr<StudyServices> services,
+			   const IRStore& method_store,
+			   std::shared_ptr<Model> model):
+  NonDBayesCalibration(std::move(services), method_store, model),
+  numPushforwardSamples(method_store.get<int>("nond.pushforward_samples")),
+  dataDistMeans(method_store.get<RealVector>("nond.data_dist_means")),
+  dataDistCovariance(method_store.get<RealVector>("nond.data_dist_covariance")),
+  dataDistFilename(method_store.get<String>("nond.data_dist_filename")),
+  dataDistCovType(method_store.get<String>("nond.data_dist_cov_type")),
+  posteriorSamplesImportFile(method_store.get<String>("nond.posterior_samples_import_file")),
+  posteriorSamplesImportFormat(0), // not used
+  exportPosteriorDensityFile(method_store.get<String>("nond.posterior_density_export_file")),
+  exportPosteriorSamplesFile(method_store.get<String>("nond.posterior_samples_export_file")),
+  exportFileFormat(0), // not used
+  generateRandomPosteriorSamples(method_store.get<bool>("nond.generate_posterior_samples")),
+  evaluatePosteriorDensity(method_store.get<bool>("nond.evaluate_posterior_density"))
+{
   // don't use max_function_evaluations, since we have num_samples
   // consider max_iterations = generations, and adjust as needed?
 

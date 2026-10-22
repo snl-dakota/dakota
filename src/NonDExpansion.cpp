@@ -40,48 +40,94 @@ NonDExpansion::
 NonDExpansion(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 	      std::shared_ptr<Model> model):
   NonD(problem_db, parallel_lib, model), expansionCoeffsApproach(-1),
-  expansionBasisType(problem_db.get_short("method.nond.expansion_basis_type")),
+  expansionBasisType(problem_db.get<short>("method.nond.expansion_basis_type")),
   statsMetricMode(
-    problem_db.get_short("method.nond.refinement_statistics_mode")),
-  relativeMetric(problem_db.get_short("method.nond.convergence_tolerance_type")
+    problem_db.get<short>("method.nond.refinement_statistics_mode")),
+  relativeMetric(problem_db.get<short>("method.nond.convergence_tolerance_type")
 		 != ABSOLUTE_CONVERGENCE_TOLERANCE), // include DEFAULT,RELATIVE
-  dimPrefSpec(problem_db.get_rv("method.nond.dimension_preference")),
-  collocPtsSeqSpec(problem_db.get_sza("method.nond.collocation_points_sequence")),
-  collocRatio(problem_db.get_real("method.nond.collocation_ratio")),
+  dimPrefSpec(problem_db.get<const RealVector>("method.nond.dimension_preference")),
+  collocPtsSeqSpec(problem_db.get<const SizetArray>("method.nond.collocation_points_sequence")),
+  collocRatio(problem_db.get<const Real>("method.nond.collocation_ratio")),
   termsOrder(1.),
-  tensorRegression(problem_db.get_bool("method.nond.tensor_grid")),
-  randomSeed(problem_db.get_int("method.random_seed")),
-  fixedSeed(problem_db.get_bool("method.fixed_seed")), mlmfIter(0),
+  tensorRegression(problem_db.get<bool>("method.nond.tensor_grid")),
+  randomSeed(problem_db.get<int>("method.random_seed")),
+  fixedSeed(problem_db.get<bool>("method.fixed_seed")), mlmfIter(0),
   multilevAllocControl(
-    problem_db.get_short("method.nond.multilevel_allocation_control")),
+    problem_db.get<short>("method.nond.multilevel_allocation_control")),
   multilevDiscrepEmulation(
-    problem_db.get_short("method.nond.multilevel_discrepancy_emulation")),
+    problem_db.get<short>("method.nond.multilevel_discrepancy_emulation")),
   kappaEstimatorRate(
-    problem_db.get_real("method.nond.multilevel_estimator_rate")),
+    problem_db.get<const Real>("method.nond.multilevel_estimator_rate")),
   gammaEstimatorScale(1.), numSamplesOnModel(0),
-  numSamplesOnExpansion(problem_db.get_int("method.nond.samples_on_emulator")),
+  numSamplesOnExpansion(problem_db.get<int>("method.nond.samples_on_emulator")),
   nestedRules(false),
-  piecewiseBasis(problem_db.get_bool("method.nond.piecewise_basis")),
-  useDerivs(problem_db.get_bool("method.derivative_usage")),
-  refineType(problem_db.get_short("method.nond.expansion_refinement_type")),
+  piecewiseBasis(problem_db.get<bool>("method.nond.piecewise_basis")),
+  useDerivs(problem_db.get<bool>("method.derivative_usage")),
+  refineType(problem_db.get<short>("method.nond.expansion_refinement_type")),
   refineControl(
-    problem_db.get_short("method.nond.expansion_refinement_control")),
+    problem_db.get<short>("method.nond.expansion_refinement_control")),
   refineMetric(
-    problem_db.get_short("method.nond.expansion_refinement_metric")),
-  softConvLimit(problem_db.get_ushort("method.soft_convergence_limit")),
+    problem_db.get<short>("method.nond.expansion_refinement_metric")),
+  softConvLimit(problem_db.get<unsigned short>("method.soft_convergence_limit")),
   numUncertainQuant(0),
   maxRefineIterations(
-    problem_db.get_sizet("method.nond.max_refinement_iterations")),
+    problem_db.get<size_t>("method.nond.max_refinement_iterations")),
   maxSolverIterations(
-    problem_db.get_sizet("method.nond.max_solver_iterations")),
-  ruleNestingOverride(problem_db.get_short("method.nond.nesting_override")),
-  ruleGrowthOverride(problem_db.get_short("method.nond.growth_override")),
+    problem_db.get<size_t>("method.nond.max_solver_iterations")),
+  ruleNestingOverride(problem_db.get<short>("method.nond.nesting_override")),
+  ruleGrowthOverride(problem_db.get<short>("method.nond.growth_override")),
   // Note: minimum VBD order for variance-controlled refinement is enforced
   //       in NonDExpansion::construct_{quadrature,sparse_grid}
-  vbdOrderLimit(problem_db.get_ushort("method.nond.vbd_interaction_order")),
-  covarianceControl(problem_db.get_short("method.nond.covariance_control"))
+  vbdOrderLimit(problem_db.get<unsigned short>("method.nond.vbd_interaction_order")),
+  covarianceControl(problem_db.get<short>("method.nond.covariance_control"))
   // For supporting construct_incremental_lhs():
-  //expansionSampleType(problem_db.get_string("method.expansion_sample_type"))
+  //expansionSampleType(problem_db.get<const String>("method.expansion_sample_type"))
+{
+  check_dimension_preference(dimPrefSpec);
+  initialize_counts();
+  initialize_response_covariance();
+  initialize_final_statistics(); // level mappings are available
+}
+
+
+NonDExpansion::
+NonDExpansion(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	     std::shared_ptr<Model> model):
+  NonD(std::move(services), method_store, model), expansionCoeffsApproach(-1),
+  expansionBasisType(method_store.get<short>("nond.expansion_basis_type")),
+  statsMetricMode(method_store.get<short>("nond.refinement_statistics_mode")),
+  relativeMetric(method_store.get<short>("nond.convergence_tolerance_type")
+                 != ABSOLUTE_CONVERGENCE_TOLERANCE), // include DEFAULT,RELATIVE
+  dimPrefSpec(method_store.get<RealVector>("nond.dimension_preference")),
+  collocPtsSeqSpec(method_store.get<SizetArray>("nond.collocation_points_sequence")),
+  collocRatio(method_store.get<Real>("nond.collocation_ratio")),
+  termsOrder(1.),
+  tensorRegression(method_store.get<bool>("nond.tensor_grid")),
+  randomSeed(method_store.get<int>("random_seed")),
+  fixedSeed(method_store.get<bool>("fixed_seed")), mlmfIter(0),
+  multilevAllocControl(method_store.get<short>("nond.multilevel_allocation_control")),
+  multilevDiscrepEmulation(method_store.get<short>("nond.multilevel_discrepancy_emulation")),
+  kappaEstimatorRate(method_store.get<Real>("nond.multilevel_estimator_rate")),
+  gammaEstimatorScale(1.), numSamplesOnModel(0),
+  numSamplesOnExpansion(method_store.get<int>("nond.samples_on_emulator")),
+  nestedRules(false),
+  piecewiseBasis(method_store.get<bool>("nond.piecewise_basis")),
+  useDerivs(method_store.get<bool>("derivative_usage")),
+  refineType(method_store.get<short>("nond.expansion_refinement_type")),
+  refineControl(method_store.get<short>("nond.expansion_refinement_control")),
+  refineMetric(method_store.get<short>("nond.expansion_refinement_metric")),
+  softConvLimit(method_store.get<unsigned short>("soft_convergence_limit")),
+  numUncertainQuant(0),
+  maxRefineIterations(method_store.get<size_t>("nond.max_refinement_iterations")),
+  maxSolverIterations(method_store.get<size_t>("nond.max_solver_iterations")),
+  ruleNestingOverride(method_store.get<short>("nond.nesting_override")),
+  ruleGrowthOverride(method_store.get<short>("nond.growth_override")),
+  // Note: minimum VBD order for variance-controlled refinement is enforced
+  //       in NonDExpansion::construct_{quadrature,sparse_grid}
+  vbdOrderLimit(method_store.get<unsigned short>("nond.vbd_interaction_order")),
+  covarianceControl(method_store.get<short>("nond.covariance_control"))
+  // For supporting construct_incremental_lhs():
+  //expansionSampleType(problem_db.get<const String>("method.expansion_sample_type"))
 {
   check_dimension_preference(dimPrefSpec);
   initialize_counts();
@@ -767,7 +813,7 @@ void NonDExpansion::core_run()
 
 void NonDExpansion::initialize_expansion()
 {
-  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // IteratorExecutor::run_iterator() + Analyzer::initialize_run() ensure
   // initialization of Model mappings for iteratedModel, but local recursions
   // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
   if (!uSpaceModel->mapping_initialized()) {
@@ -1021,7 +1067,7 @@ void NonDExpansion::refine_expansion()
   // --------------------------------------
   // Uniform/adaptive refinement approaches
   // --------------------------------------
-  // DataMethod default for maxRefineIterations is SZ_MAX, indicating no user
+  // method IR default for maxRefineIterations is SZ_MAX, indicating no user
   // spec.  Iteration counts are unconstrained in this case.
   size_t candidate, iter = 1;
   bool converged = (iter > maxRefineIterations),
@@ -1053,7 +1099,7 @@ void NonDExpansion::finalize_expansion()
 {
   ++numUncertainQuant;
 
-  // IteratorScheduler::run_iterator() + Analyzer::initialize_run() ensure
+  // IteratorExecutor::run_iterator() + Analyzer::initialize_run() ensure
   // finalization of Model mappings for iteratedModel, but local recursions
   // are not visible -> recur DataFitSurr +  ProbabilityTransform if needed.
   if (uSpaceModel->mapping_initialized()) {

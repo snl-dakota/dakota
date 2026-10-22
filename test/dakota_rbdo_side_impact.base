@@ -1,6 +1,6 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 16 total (16 new, 0 duplicate)
-         obj_fn: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 16 val (16 n, 0 d), 16 grad (16 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 15248 total (13488 new, 1760 duplicate)
   response_fn_1: 1220 val (1044 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 1016 val (840 n, 176 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -28,7 +28,7 @@ Test Number 0 succeeded
 <<<<< Best evaluation ID (partial match): 13
 Test Number 1 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 11 total (11 new, 0 duplicate)
-         obj_fn: 11 val (11 n, 0 d), 11 grad (11 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 11 val (11 n, 0 d), 11 grad (11 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 37286 total (36076 new, 1210 duplicate)
   response_fn_1: 3527 val (3406 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 3383 val (3262 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -56,7 +56,7 @@ Test Number 1 succeeded
 <<<<< Best evaluation ID (partial match): 7
 Test Number 2 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
-         obj_fn: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 7536 total (6876 new, 660 duplicate)
   response_fn_1: 426 val (360 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 486 val (420 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -84,7 +84,7 @@ Test Number 2 succeeded
 <<<<< Best evaluation ID (partial match): 6
 Test Number 3 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
-         obj_fn: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
+       obj_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Function evaluation summary (UQ_I): 21924 total (21264 new, 660 duplicate)
   response_fn_1: 1878 val (1812 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 1914 val (1848 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)

@@ -15,7 +15,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.cmake.in
 	       ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
 
 # Doxygen developer dependencies
-file(GLOB dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
+file(GLOB_RECURSE dox_dev_dox RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "Dev_*.dox")
 set(dox_dev_deps ${dox_dev_dox} 
   ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile header-dev.html header-dev.tex)
 

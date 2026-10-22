@@ -37,35 +37,81 @@ NonDMUQBayesCalibration* NonDMUQBayesCalibration::nonDMUQInstance(NULL);
     instantiation.  In this case, set_db_list_nodes has been called and
     probDescDB can be queried for settings from the method specification. */
 NonDMUQBayesCalibration::
-NonDMUQBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
+NonDMUQBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
+			std::shared_ptr<Model> model):
   NonDBayesCalibration(problem_db, parallel_lib, model),
   numBestSamples(1),
-  mcmcType(probDescDB.get_string("method.nond.mcmc_type")),
-  priorPropCovMult(probDescDB.get_real("method.prior_prop_cov_mult")),
-  drNumStages(probDescDB.get_int("method.nond.dr_num_stages")),
-  drScaleType(probDescDB.get_string("method.nond.dr_scale_type")),
-  drScale(probDescDB.get_real("method.nond.dr_scale")),
-  amPeriodNumSteps(probDescDB.get_int("method.nond.am_period_num_steps")),
-  amStartingStep(probDescDB.get_int("method.nond.am_starting_step")),
-  amScale(probDescDB.get_real("method.nond.am_scale")),
-  malaStepSize(probDescDB.get_real("method.nond.mala_step_size")),
-  diliHessianType(probDescDB.get_string("method.nond.dili_hessian_type")),
-  diliAdaptInterval(probDescDB.get_int("method.nond.dili_adapt_interval")),
-  diliAdaptStart(probDescDB.get_int("method.nond.dili_adapt_start")),
-  diliAdaptEnd(probDescDB.get_int("method.nond.dili_adapt_end")),
-  diliInitialWeight(probDescDB.get_int("method.nond.dili_initial_weight")),
-  diliHessTolerance(probDescDB.get_real("method.nond.dili_hess_tolerance")),
-  diliLISTolerance(probDescDB.get_real("method.nond.dili_lis_tolerance")),
-  diliSesNumEigs(probDescDB.get_int("method.nond.dili_ses_num_eigs")),
-  diliSesRelTol(probDescDB.get_real("method.nond.dili_ses_rel_tol")),
-  diliSesAbsTol(probDescDB.get_real("method.nond.dili_ses_abs_tol")),
-  diliSesExpRank(probDescDB.get_int("method.nond.dili_ses_exp_rank")),
-  diliSesOversFactor(probDescDB.get_int("method.nond.dili_ses_overs_factor")),
-  diliSesBlockSize(probDescDB.get_int("method.nond.dili_ses_block_size")),
-  mlmcmcInitialNumSamples(probDescDB.get_int("method.nond.mlmcmc_initial_chain_samples")),
-  mlmcmcTargetVariance(probDescDB.get_real("method.nond.mlmcmc_target_variance")),
-  mlmcmcSubsamplingSteps(probDescDB.get_iv("method.nond.mlmcmc_subsampling_steps")),
-  mlmcmcGreedyResamplingFactor(probDescDB.get_real("method.nond.mlmcmc_greedy_resampling_factor"))
+  mcmcType(probDescDB.get<const String>("method.nond.mcmc_type")),
+  priorPropCovMult(probDescDB.get<const Real>("method.prior_prop_cov_mult")),
+  drNumStages(probDescDB.get<int>("method.nond.dr_num_stages")),
+  drScaleType(probDescDB.get<const String>("method.nond.dr_scale_type")),
+  drScale(probDescDB.get<const Real>("method.nond.dr_scale")),
+  amPeriodNumSteps(probDescDB.get<int>("method.nond.am_period_num_steps")),
+  amStartingStep(probDescDB.get<int>("method.nond.am_starting_step")),
+  amScale(probDescDB.get<const Real>("method.nond.am_scale")),
+  malaStepSize(probDescDB.get<const Real>("method.nond.mala_step_size")),
+  diliHessianType(probDescDB.get<const String>("method.nond.dili_hessian_type")),
+  diliAdaptInterval(probDescDB.get<int>("method.nond.dili_adapt_interval")),
+  diliAdaptStart(probDescDB.get<int>("method.nond.dili_adapt_start")),
+  diliAdaptEnd(probDescDB.get<int>("method.nond.dili_adapt_end")),
+  diliInitialWeight(probDescDB.get<int>("method.nond.dili_initial_weight")),
+  diliHessTolerance(probDescDB.get<const Real>("method.nond.dili_hess_tolerance")),
+  diliLISTolerance(probDescDB.get<const Real>("method.nond.dili_lis_tolerance")),
+  diliSesNumEigs(probDescDB.get<int>("method.nond.dili_ses_num_eigs")),
+  diliSesRelTol(probDescDB.get<const Real>("method.nond.dili_ses_rel_tol")),
+  diliSesAbsTol(probDescDB.get<const Real>("method.nond.dili_ses_abs_tol")),
+  diliSesExpRank(probDescDB.get<int>("method.nond.dili_ses_exp_rank")),
+  diliSesOversFactor(probDescDB.get<int>("method.nond.dili_ses_overs_factor")),
+  diliSesBlockSize(probDescDB.get<int>("method.nond.dili_ses_block_size")),
+  mlmcmcInitialNumSamples(probDescDB.get<int>("method.nond.mlmcmc_initial_chain_samples")),
+  mlmcmcTargetVariance(probDescDB.get<const Real>("method.nond.mlmcmc_target_variance")),
+  mlmcmcSubsamplingSteps(probDescDB.get<const IntVector>("method.nond.mlmcmc_subsampling_steps")),
+  mlmcmcGreedyResamplingFactor(probDescDB.get<const Real>("method.nond.mlmcmc_greedy_resampling_factor"))
+{
+  initialize();
+}
+
+
+/** This constructor obtains method specification settings from an
+    IRStore object. */
+NonDMUQBayesCalibration::
+NonDMUQBayesCalibration(std::shared_ptr<StudyServices> services,
+			const IRStore& method_store,
+			std::shared_ptr<Model> model):
+  NonDBayesCalibration(std::move(services), method_store, model),
+  numBestSamples(1),
+  mcmcType(method_store.get<String>("nond.mcmc_type")),
+  priorPropCovMult(method_store.get<Real>("prior_prop_cov_mult")),
+  drNumStages(method_store.get<int>("nond.dr_num_stages")),
+  drScaleType(method_store.get<String>("nond.dr_scale_type")),
+  drScale(method_store.get<Real>("nond.dr_scale")),
+  amPeriodNumSteps(method_store.get<int>("nond.am_period_num_steps")),
+  amStartingStep(method_store.get<int>("nond.am_starting_step")),
+  amScale(method_store.get<Real>("nond.am_scale")),
+  malaStepSize(method_store.get<Real>("nond.mala_step_size")),
+  diliHessianType(method_store.get<String>("nond.dili_hessian_type")),
+  diliAdaptInterval(method_store.get<int>("nond.dili_adapt_interval")),
+  diliAdaptStart(method_store.get<int>("nond.dili_adapt_start")),
+  diliAdaptEnd(method_store.get<int>("nond.dili_adapt_end")),
+  diliInitialWeight(method_store.get<int>("nond.dili_initial_weight")),
+  diliHessTolerance(method_store.get<Real>("nond.dili_hess_tolerance")),
+  diliLISTolerance(method_store.get<Real>("nond.dili_lis_tolerance")),
+  diliSesNumEigs(method_store.get<int>("nond.dili_ses_num_eigs")),
+  diliSesRelTol(method_store.get<Real>("nond.dili_ses_rel_tol")),
+  diliSesAbsTol(method_store.get<Real>("nond.dili_ses_abs_tol")),
+  diliSesExpRank(method_store.get<int>("nond.dili_ses_exp_rank")),
+  diliSesOversFactor(method_store.get<int>("nond.dili_ses_overs_factor")),
+  diliSesBlockSize(method_store.get<int>("nond.dili_ses_block_size")),
+  mlmcmcInitialNumSamples(method_store.get<int>("nond.mlmcmc_initial_chain_samples")),
+  mlmcmcTargetVariance(method_store.get<Real>("nond.mlmcmc_target_variance")),
+  mlmcmcSubsamplingSteps(method_store.get<IntVector>("nond.mlmcmc_subsampling_steps")),
+  mlmcmcGreedyResamplingFactor(method_store.get<Real>("nond.mlmcmc_greedy_resampling_factor"))
+{
+  initialize();
+}
+
+
+void NonDMUQBayesCalibration::initialize()
 {
   // MUQ does not yet support hyper-parameter multiplier calibration
   if(numHyperparams != 0) {
@@ -150,6 +196,7 @@ NonDMUQBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib
     mlmcmcNumLevels = numSolutionLevels;
   }
 }
+
 
 NonDMUQBayesCalibration::~NonDMUQBayesCalibration()
 { }
@@ -832,7 +879,7 @@ void NonDMUQBayesCalibration::cache_chain()
 
       }
       // surrogate needs u-space variables for eval
-      if (mcmcModel->model_type() == "surrogate")
+      if (ModelUtils::is_surrogate_model(*mcmcModel))
         lookup_vars.continuous_variables(u_rv);
       else
         lookup_vars.continuous_variables(x_rv);

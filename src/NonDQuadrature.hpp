@@ -100,6 +100,9 @@ protected:
 
   NonDQuadrature(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
 
+  /// DI constructor
+  NonDQuadrature(std::shared_ptr<StudyServices> services, const IRStore& method_store, std::shared_ptr<Model> model);
+
   //
   //- Heading: Virtual function redefinitions
   //

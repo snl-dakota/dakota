@@ -114,7 +114,7 @@ derived_map_asynch(const Dakota::ParamResponsePair& pair)
 
 /** For use by ApplicationInterface::serve_evaluations_asynch(), which can
     provide a batch processing capability within message passing schedulers
-    (called using chain IteratorScheduler::run_iterator() --> Model::serve()
+    (called using chain IteratorExecutor::run_iterator() --> Model::serve()
     --> ApplicationInterface::serve_evaluations()
     --> ApplicationInterface::serve_evaluations_asynch()). */
 inline void SoleilDirectApplicInterface::

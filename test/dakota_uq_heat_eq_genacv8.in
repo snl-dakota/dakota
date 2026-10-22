@@ -26,7 +26,7 @@ method,
 model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'HF_VARS'
-	surrogate ensemble
+	ensemble_surrogate
 # TO DO: allow either model listing approach to be augmented by resolutions
 	  ordered_model_fidelities = 'LF' 'HF'
 #	  truth_model = 'HF' # includes 4 resolutions: separate truth resolution or infer it?

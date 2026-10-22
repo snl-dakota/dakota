@@ -43,7 +43,7 @@ specification can be used to augment these scalar specifications.
 
 Multifidelity UQ using SC requires that the model selected for
 iteration by the method specification is an ensemble surrogate model
-(see :dakkw:`model-surrogate-ensemble`), which defines an an ordered
+(see :dakkw:`model-ensemble_surrogate`), which defines an an ordered
 sequence of model fidelities or resolutions.  Two types of hierarchies
 are supported: (i) a hierarchy of model forms composed from more than
 one model within the ``ordered_model_fidelities`` specification, or
@@ -103,7 +103,7 @@ Examples::
     
     model,
      id_model = 'HIERARCH'
-     surrogate ensemble
+     ensemble_surrogate
        ordered_model_fidelities = 'LF' 'MF' 'HF'
        correction additive zeroth_order
 

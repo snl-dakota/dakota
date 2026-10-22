@@ -108,15 +108,13 @@ add_subdirectory(dakota_json_utils)
 
 add_subdirectory(dakota_instruction_materializer)
 
+add_subdirectory(dakota_di_construction)
+
 add_subdirectory(dakota_problem_desc_db_dump)
 
 # Copy needed unit test auxiliary data files
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/expt_data_test_files"
   "${CMAKE_CURRENT_BINARY_DIR}/expt_data_test_files"
-  dakota_unit_test_copied_files
-  )
-dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_opt_tpl_rol_textbook/opt_tpl_test_files"
-  "${CMAKE_CURRENT_BINARY_DIR}/dakota_opt_tpl_rol_textbook/opt_tpl_test_files"
   dakota_unit_test_copied_files
   )
 dakota_copy_test_file("${CMAKE_CURRENT_SOURCE_DIR}/dakota_stat_utils/stat_util_test_files"
@@ -157,14 +155,8 @@ endif()
 
 
 if (HAVE_ROL)
-  add_subdirectory(dakota_opt_tpl_rol_textbook)
-
-  add_subdirectory(dakota_opt_tpl_rol_pbs)
-
-  add_subdirectory(dakota_rol_adapters)
-
-  add_subdirectory(dakota_rol_integration)
-endif (HAVE_ROL)
+  add_subdirectory(dakota_rol)
+endif ()
 
 
 if (DAKOTA_MODULE_SURROGATES)
@@ -228,6 +220,68 @@ if(DAKOTA_PYTHON_WRAPPER)
       ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
   else()
     set_property(TEST dakota_python_env PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+endif()
+
+if(DAKOTA_PYTHON_STUDY)
+  add_test(NAME dakota_python_study
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test_dakota_python_study.py
+    )
+  set_property(TEST dakota_python_study PROPERTY LABELS Unit)
+  if(WIN32)
+    set_property(TEST dakota_python_study PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_study PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+
+  add_test(NAME dakota_python_study_factories
+    COMMAND ${Python3_EXECUTABLE} -B -m unittest discover
+            -s "${CMAKE_CURRENT_SOURCE_DIR}" -p "test_study_*.py" -v
+  )
+  set_property(TEST dakota_python_study_factories PROPERTY LABELS Unit Python)
+  if(WIN32)
+    set_property(TEST dakota_python_study_factories PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_study_factories PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+  set_property(TEST dakota_python_study_factories APPEND PROPERTY
+    ENVIRONMENT "DAKOTA_REQUIRE_STUDY=1")
+endif()
+
+if(DAKOTA_PYTHON_STUDY)
+  add_test(NAME dakota_python_spec_pointer_relaxation
+    COMMAND ${Python3_EXECUTABLE} -m unittest
+            test_api_mode_pointer_relaxation -v
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  set_property(TEST dakota_python_spec_pointer_relaxation PROPERTY LABELS Unit)
+  if(WIN32)
+    set_property(TEST dakota_python_spec_pointer_relaxation PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_spec_pointer_relaxation PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+endif()
+
+
+if(DAKOTA_PYTHON_STUDY)
+  add_test(NAME dakota_python_spec_pointer_group_union
+    COMMAND ${Python3_EXECUTABLE} -m unittest
+            test_pointer_group_union -v
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  set_property(TEST dakota_python_spec_pointer_group_union PROPERTY LABELS Unit)
+  if(WIN32)
+    set_property(TEST dakota_python_spec_pointer_group_union PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_spec_pointer_group_union PROPERTY
       ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
   endif()
 endif()

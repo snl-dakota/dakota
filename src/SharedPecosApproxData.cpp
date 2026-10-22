@@ -9,12 +9,32 @@
 
 #include "SharedPecosApproxData.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "NonDIntegration.hpp"
 
 //#define DEBUG
 
 
 namespace Dakota {
+
+SharedPecosApproxData::
+SharedPecosApproxData(const IRStore& model_store,
+                      const UShortArray& approx_order, size_t num_vars,
+                      short data_order, short output_level):
+  SharedApproxData(NoDBBaseConstructor(), model_store, num_vars, data_order,
+                   output_level)
+{
+  short basis_type; approx_type_to_basis_type(approxType, basis_type);
+  Pecos::ExpansionConfigOptions  ec_options;
+  Pecos::BasisConfigOptions      bc_options;
+  Pecos::RegressionConfigOptions rc_options;
+  ec_options.outputLevel = outputLevel;
+  bc_options.useDerivs = (buildDataOrder > 1);
+  pecosSharedData = Pecos::SharedBasisApproxData(
+    basis_type, approx_order, numVars, ec_options, bc_options, rc_options);
+  pecosSharedDataRep = std::static_pointer_cast<Pecos::SharedPolyApproxData>
+    (pecosSharedData.data_rep());
+}
 
 SharedPecosApproxData::
 SharedPecosApproxData(const String& approx_type,
@@ -49,7 +69,7 @@ SharedPecosApproxData(ProblemDescDB& problem_db, size_t num_vars):
   short basis_type; approx_type_to_basis_type(approxType, basis_type);
   UShortArray approx_order;
   if (basis_type == Pecos::GLOBAL_ORTHOGONAL_POLYNOMIAL)
-    approx_order = problem_db.get_usa("method.nond.expansion_order_sequence");
+    approx_order = problem_db.get<const UShortArray>("method.nond.expansion_order_sequence");
 
   // override selected ConfigOptions defaults, as supported by SharedApproxData
   // API.  All options are updated later in NonD*::initialize_u_space_model(),

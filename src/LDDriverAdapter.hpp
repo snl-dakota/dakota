@@ -15,6 +15,7 @@
 #include "LDDriver.hpp"
 #include "LowDiscrepancySequence.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "SamplerDriver.hpp"
 
 namespace Dakota {
@@ -28,6 +29,7 @@ private:
 public:
     // Constructor
     LDDriverAdapter(ProblemDescDB& problem_db);
+    LDDriverAdapter(const IRStore& method_store);
 
     // Override methods from SamplerAdapter
     void generate_uniform_samples(

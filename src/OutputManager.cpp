@@ -8,13 +8,17 @@
     _______________________________________________________________________ */
 
 #include <memory>
+#include <set>
+#include <stdexcept>
 #include <utility>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/regex.hpp>
 #include "dakota_global_defs.hpp"
 #include "OutputManager.hpp"
+#include "StudyConfig.hpp"
 #include "ProgramOptions.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "ParamResponsePair.hpp"
 #include "PRPMultiIndex.hpp"
 #include "DakotaGraphics.hpp"
@@ -31,11 +35,36 @@
 //#define OUTMGR_DEBUG 1
 
 namespace Dakota {
+namespace {
+
+std::set<OutputManager*>& live_output_managers()
+{
+  static std::set<OutputManager*> managers;
+  return managers;
+}
+
+const String& default_results_output_file()
+{
+  static const String default_name("dakota_results");
+  return default_name;
+}
+
+size_t& default_results_output_file_counter()
+{
+  static size_t counter = 0;
+  return counter;
+}
+
+std::set<String>& active_results_output_files()
+{
+  static std::set<String> active_files;
+  return active_files;
+}
+
+} // namespace
 
 // Note: MSVC requires these externs defined outside any function
 extern PRPCache data_pairs;
-extern ResultsManager iterator_results_db;
-extern EvaluationStore evaluation_store_db;
 
 // BMA TODO: consider removing or reimplementing
 /** Heartbeat function provided by dakota_filesystem_utils; pass
@@ -51,7 +80,9 @@ OutputManager::OutputManager():
   tabularFormat(TABULAR_ANNOTATED),
   graphicsCntr(1), tabularCntrLabel("eval_id"),
   tabularInterfLabel("interface"), outputLevel(NORMAL_OUTPUT)
-{  /* empty ctor */  }
+{
+  live_output_managers().insert(this);
+}
 
 
 /// Only get minimal information off ProgramOptions as may be updated
@@ -66,6 +97,8 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
   graphicsCntr(1), tabularCntrLabel("eval_id"),
   tabularInterfLabel("interface"), outputLevel(NORMAL_OUTPUT)
 {
+  live_output_managers().insert(this);
+
   // This call will redirect based on command-line options
   initial_redirects(prog_opts);
 
@@ -78,8 +111,16 @@ OutputManager(const ProgramOptions& prog_opts, int dakota_world_rank,
 
 OutputManager::~OutputManager()
 {
+  close_results_db();
   close_streams();
+  if (!resolvedResultsOutputFile.empty())
+    active_results_output_files().erase(resolvedResultsOutputFile);
+  live_output_managers().erase(this);
 }
+
+
+int OutputManager::write_precision() const
+{ return Dakota::write_precision; }
 
 
 void OutputManager::initial_redirects(const ProgramOptions& prog_opts)
@@ -247,27 +288,85 @@ void OutputManager::parse(const ProgramOptions& prog_opts,
 {
   initial_redirects(prog_opts);
 
-  graph2DFlag = problem_db.get_bool("environment.graphics");
-  tabularDataFlag = problem_db.get_bool("environment.tabular_graphics_data");
-  tabularDataFile = problem_db.get_string("environment.tabular_graphics_file");
-  resultsOutputFlag = problem_db.get_bool("environment.results_output");
-  resultsOutputFile = problem_db.get_string("environment.results_output_file");
-  modelEvalsSelection = problem_db.get_ushort("environment.model_evals_selection");
-  interfEvalsSelection = problem_db.get_ushort("environment.interface_evals_selection");
-  tabularFormat = problem_db.get_ushort("environment.tabular_format");
-  resultsOutputFormat = problem_db.get_ushort("environment.results_output_format");
+  graph2DFlag = problem_db.get<bool>("environment.graphics");
+  tabularDataFlag = problem_db.get<bool>("environment.tabular_graphics_data");
+  tabularDataFile = problem_db.get<const String>("environment.tabular_graphics_file");
+  resultsOutputFlag = problem_db.get<bool>("environment.results_output");
+  resultsOutputFile = problem_db.get<const String>("environment.results_output_file");
+  modelEvalsSelection = problem_db.get<unsigned short>("environment.model_evals_selection");
+  interfEvalsSelection = problem_db.get<unsigned short>("environment.interface_evals_selection");
+  tabularFormat = problem_db.get<unsigned short>("environment.tabular_format");
+  resultsOutputFormat = problem_db.get<unsigned short>("environment.results_output_format");
   if(resultsOutputFlag && resultsOutputFormat == 0)
     resultsOutputFormat = RESULTS_OUTPUT_TEXT;
   
-  int db_write_precision = problem_db.get_int("environment.output_precision");
+  int db_write_precision = problem_db.get<int>("environment.output_precision");
   if (db_write_precision > 0) {  // assign global write_precision
     if (db_write_precision > 16) {
       std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
 		<< "internal precision;\n         resetting to 16."<< std::endl;
-      write_precision = 16;
+      Dakota::write_precision = 16;
     }
     else
-      write_precision = db_write_precision;
+      Dakota::write_precision = db_write_precision;
+  }
+}
+
+
+void OutputManager::parse(const ProgramOptions& prog_opts,
+                          const IRStore& environment_store)
+{
+  initial_redirects(prog_opts);
+
+  graph2DFlag = environment_store.get<bool>("graphics");
+  tabularDataFlag = environment_store.get<bool>("tabular_graphics_data");
+  tabularDataFile = environment_store.get<String>("tabular_graphics_file");
+  resultsOutputFlag = environment_store.get<bool>("results_output");
+  resultsOutputFile = environment_store.get<String>("results_output_file");
+  modelEvalsSelection = environment_store.get<unsigned short>("model_evals_selection");
+  interfEvalsSelection = environment_store.get<unsigned short>("interface_evals_selection");
+  tabularFormat = environment_store.get<unsigned short>("tabular_format");
+  resultsOutputFormat = environment_store.get<unsigned short>("results_output_format");
+  if (resultsOutputFlag && resultsOutputFormat == 0)
+    resultsOutputFormat = RESULTS_OUTPUT_TEXT;
+
+  int env_write_precision = environment_store.get<int>("output_precision");
+  if (env_write_precision > 0) {
+    if (env_write_precision > 16) {
+      std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
+                << "internal precision;\n         resetting to 16."
+                << std::endl;
+      Dakota::write_precision = 16;
+    }
+    else
+      Dakota::write_precision = env_write_precision;
+  }
+}
+
+
+void OutputManager::apply(const StudyOutputConfig& output_config)
+{
+  graph2DFlag = output_config.graphics;
+  tabularDataFlag = output_config.tabularGraphicsData;
+  tabularDataFile = output_config.tabularGraphicsFile;
+  resultsOutputFlag = output_config.resultsOutput;
+  resultsOutputFile = output_config.resultsOutputFile;
+  modelEvalsSelection = output_config.modelEvalsSelection;
+  interfEvalsSelection = output_config.interfaceEvalsSelection;
+  tabularFormat = output_config.tabularFormat;
+  resultsOutputFormat = output_config.resultsOutputFormat;
+  if (resultsOutputFlag && resultsOutputFormat == 0)
+    resultsOutputFormat = RESULTS_OUTPUT_TEXT;
+
+  if (output_config.precision > 0) {
+    if (output_config.precision > 16) {
+      std::cout << "\nWarning: requested output_precision exceeds DAKOTA's "
+                << "internal precision;\n         resetting to 16."
+                << std::endl;
+      Dakota::write_precision = 16;
+    }
+    else
+      Dakota::write_precision = output_config.precision;
   }
 }
 
@@ -640,47 +739,94 @@ int OutputManager::graphics_counter() const
 { return graphicsCntr; }
 
 
+String OutputManager::resolved_results_output_file()
+{
+  if (!resolvedResultsOutputFile.empty())
+    return resolvedResultsOutputFile;
+
+  std::set<String>& active_files = active_results_output_files();
+
+  if (resultsOutputFile != default_results_output_file()) {
+    if (active_files.count(resultsOutputFile))
+      throw std::runtime_error("Duplicate results_output_file for active studies: " +
+                               resultsOutputFile);
+
+    resolvedResultsOutputFile = resultsOutputFile;
+    active_files.insert(resolvedResultsOutputFile);
+    return resolvedResultsOutputFile;
+  }
+
+  size_t& counter = default_results_output_file_counter();
+  while (resolvedResultsOutputFile.empty()) {
+    ++counter;
+    String candidate = (counter == 1)
+      ? default_results_output_file()
+      : default_results_output_file() + "." + std::to_string(counter);
+
+    if (active_files.insert(candidate).second)
+      resolvedResultsOutputFile = candidate;
+  }
+
+  return resolvedResultsOutputFile;
+}
+
 void OutputManager::init_results_db()
 {
   String file_tag;
   if (mpirunFlag)
     file_tag = "." + std::to_string(worldRank + 1);
 
-  String filename = resultsOutputFile+file_tag;
+  String filename = resolved_results_output_file() + file_tag;
 
-  iterator_results_db.clear_databases();
-  if(resultsOutputFormat & RESULTS_OUTPUT_TEXT) {
+  close_results_db();
+  resultsDB.clear_databases();
+  evaluationsDB.clear();
+
+  if (resultsOutputFormat & RESULTS_OUTPUT_TEXT) {
     std::unique_ptr<ResultsDBAny> db_ptr(new ResultsDBAny(filename + ".txt"));
-    iterator_results_db.add_database(std::move(db_ptr));
+    resultsDB.add_database(std::move(db_ptr));
   }
-  if(resultsOutputFormat & RESULTS_OUTPUT_HDF5) {
+  if (resultsOutputFormat & RESULTS_OUTPUT_HDF5) {
   #ifdef DAKOTA_HAVE_HDF5
-    // HDF5IOHelper object shared by ResultsManager and EvaluationStore
-    std::shared_ptr<HDF5IOHelper> hdf5_helper_ptr(new HDF5IOHelper(filename + ".h5", true /* overwrite */));
-    // 
-    std::unique_ptr<ResultsDBHDF5> db_ptr(new ResultsDBHDF5(false /* in_core = false */, hdf5_helper_ptr));
-    iterator_results_db.add_database(std::move(db_ptr));
-    // initialize EvaluationStore
-    evaluation_store_db.set_database(hdf5_helper_ptr);
-    evaluation_store_db.model_selection(modelEvalsSelection);
-    evaluation_store_db.interface_selection(interfEvalsSelection);
+    // Share one helper between iterator results and evaluation storage.
+    std::shared_ptr<HDF5IOHelper> hdf5_helper_ptr(
+      new HDF5IOHelper(filename + ".h5", true /* overwrite */));
+    std::unique_ptr<ResultsDBHDF5> db_ptr(
+      new ResultsDBHDF5(false /* in_core = false */, hdf5_helper_ptr));
+    resultsDB.add_database(std::move(db_ptr));
+    evaluationsDB.set_database(hdf5_helper_ptr);
+    evaluationsDB.model_selection(modelEvalsSelection);
+    evaluationsDB.interface_selection(interfEvalsSelection);
   #else
     Cerr << "WARNING: HDF5 results output was requested, but is not available in this build.\n";
   #endif
   }
 }
 
+void OutputManager::close_results_db()
+{
+  resultsDB.close();
+  evaluationsDB.clear();
+}
+
+void OutputManager::close_all_results_db()
+{
+  for (auto* mgr : live_output_managers())
+    if (mgr)
+      mgr->close_results_db();
+}
+
 void OutputManager::archive_input(const ProgramOptions &prog_opts) const {
   // Not strictly necessary to check, but it avoids potentially reading the
   // input file into memory needlessly.
-  if(!iterator_results_db.active()) return;
+  if (!resultsDB.active()) return;
   const String& dakota_input_file = prog_opts.input_file();
   const String& dakota_input_string = prog_opts.input_string();
   AttributeArray input_attr;
 
   if(!dakota_input_string.empty()) {
     input_attr.push_back(ResultAttribute<String>("input", dakota_input_string));
-    iterator_results_db.add_metadata_to_study(input_attr);
+    resultsDB.add_metadata_to_study(input_attr);
   } else if(!dakota_input_file.empty()) {
       std::ifstream inputstream(dakota_input_file.c_str());
       if (!inputstream.good()) {
@@ -691,7 +837,7 @@ void OutputManager::archive_input(const ProgramOptions &prog_opts) const {
       std::stringstream input_sstr;
       input_sstr << inputstream.rdbuf();
       input_attr.push_back(ResultAttribute<String>("input", input_sstr.str()));
-      iterator_results_db.add_metadata_to_study(input_attr);
+      resultsDB.add_metadata_to_study(input_attr);
   } 
 }
 

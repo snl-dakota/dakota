@@ -17,7 +17,7 @@ method
 
 model
   id_model 'surr'
-  surrogate global
+  global_surrogate
   mars                                                          #s0,#s1,#s2,#s3
 # gaussian_process surfpack                                     #s4,#s5
 #  import_build_points_file 'dakota_surrogate_refine.dat'       #s3

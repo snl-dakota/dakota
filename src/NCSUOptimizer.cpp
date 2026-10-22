@@ -47,9 +47,22 @@ NCSUOptimizer* NCSUOptimizer::ncsudirectInstance(NULL);
 NCSUOptimizer::NCSUOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   Optimizer(problem_db, parallel_lib, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
   setUpType(SETUP_MODEL),
-  minBoxSize(probDescDB.get_real("method.min_boxsize_limit")), 
-  volBoxSize(probDescDB.get_real("method.volume_boxsize_limit")),
-  solutionTarget(probDescDB.get_real("method.solution_target")),
+  minBoxSize(probDescDB.get<const Real>("method.min_boxsize_limit")), 
+  volBoxSize(probDescDB.get<const Real>("method.volume_boxsize_limit")),
+  solutionTarget(probDescDB.get<const Real>("method.solution_target")),
+  userObjectiveEval(NULL)
+{
+  check_inputs();
+}
+
+
+/** This is DI constructor using method IR plus optional runtime services. */ 
+NCSUOptimizer::NCSUOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new NCSUTraits())),
+  setUpType(SETUP_MODEL),
+  minBoxSize(method_store.get<Real>("min_boxsize_limit")), 
+  volBoxSize(method_store.get<Real>("volume_boxsize_limit")),
+  solutionTarget(method_store.get<Real>("solution_target")),
   userObjectiveEval(NULL)
 {
   check_inputs();

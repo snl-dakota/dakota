@@ -1179,11 +1179,7 @@ recover_submodel_responses(std::ostream& s,
     if (cache_it == data_pairs.get<hashed>().end()) {
 
       // If model is a data fit surrogate, re-evaluate it if needed.
-      // Didn't use != "ensemble" in case other surrogate types are added.
-      if ( subModel->model_type() == "surrogate" &&
-           (strbegins(subModel->surrogate_type(), "global_") ||
-            strbegins(subModel->surrogate_type(), "local_") ||
-            strbegins(subModel->surrogate_type(), "multipoint_")) ) {
+      if (ModelUtils::is_datafit_surrogate_model(*subModel)) {
         // TODO: Want to make this a quiet evaluation, but not easy to
         // propagate to the interface?!?
         //subModel->ouput_level(SILENT_OUTPUT); // and need restore
@@ -1321,11 +1317,7 @@ archive_submodel_responses(const ResultsManager &results_db,
     if (cache_it == data_pairs.get<hashed>().end()) {
 
       // If model is a data fit surrogate, re-evaluate it if needed.
-      // Didn't use != "ensemble" in case other surrogate types are added.
-      if ( subModel->model_type() == "surrogate" &&
-           (strbegins(subModel->surrogate_type(), "global_") ||
-            strbegins(subModel->surrogate_type(), "local_") ||
-            strbegins(subModel->surrogate_type(), "multipoint_")) ) {
+      if (ModelUtils::is_datafit_surrogate_model(*subModel)) {
         // TODO: Want to make this a quiet evaluation, but not easy to
         // propagate to the interface?!?
         //subModel->ouput_level(SILENT_OUTPUT); // and need restore

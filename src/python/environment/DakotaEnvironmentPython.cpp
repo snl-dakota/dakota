@@ -1,0 +1,381 @@
+/*  _______________________________________________________________________
+
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2025
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+
+/** \file
+    Python module wrapping top-level Dakota
+ */
+
+
+#include "ExecutableEnvironment.hpp"
+#include "LibraryEnvironment.hpp"
+#include "DakotaBuildInfo.hpp"
+#include "Pybind11Interface.hpp"
+
+#include "dakota_data_types.hpp"
+
+//#include "Eigen/Dense"
+
+//#include <pybind11/eigen.h>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <pybind11_json/pybind11_json.hpp>
+
+#ifdef DAKOTA_PYTHON_NUMPY
+#include <pybind11/numpy.h>
+#endif
+
+namespace py = pybind11;
+
+namespace Dakota {
+
+namespace python {
+
+  // demonstrate a little wrapper to get Dakota version info without
+  // making an Environment
+  void print_version(const String& query) {
+    OutputManager out_mgr;
+    out_mgr.output_version(query);
+  }
+
+  // Eigen::VectorXd final_response(const Environment& dakenv) {
+  // const Response& resp = dakenv.response_results();
+  // size_t num_fns = resp.num_functions();
+  // return Eigen::Map<Eigen::VectorXd>(resp.function_values().values(), num_fns);
+  // }
+
+  std::vector<double> get_variables_values(const Dakota::LibraryEnvironment & env)
+  {
+    const Variables& vars = env.variables_results();
+    const RealVector& var_vals = vars.continuous_variables();
+    std::vector<double> values;
+    copy_data(var_vals, values);
+    return values;
+  }
+
+
+#ifdef DAKOTA_PYTHON_NUMPY
+  // This version requires numpy
+  py::array_t<double> get_variables_values_numpy(const Dakota::LibraryEnvironment & env)
+  {
+    const Variables& vars = env.variables_results();
+    const RealVector& var_vals = vars.continuous_variables();
+
+    auto result = py::array(py::buffer_info(
+          nullptr,                              /* Pointer to data (nullptr -> ask NumPy to allocate!) */
+          sizeof(double),                       /* Size of one item */
+          py::format_descriptor<double>::value, /* Buffer format */
+          1,                                    /* How many dimensions? */
+          { vars.cv() },                        /* Number of elements for each dimension */
+          { sizeof(double) }                    /* Strides for each dimension */
+          ));
+
+    auto buffer = result.request();
+
+    double *ptr = (double *) buffer.ptr;
+
+    // Could consider using either copy_data or an adapter - RWH
+    for (size_t i=0; i<buffer.shape[0]; ++i)
+      ptr[i] = var_vals[i];
+
+    return result;
+  }
+#endif
+
+
+  Real get_response_fn_val(const Dakota::LibraryEnvironment & env) {
+    // retrieve the final response values
+    const Response& resp  = env.response_results();
+    return resp.function_value(0);
+  }
+  
+  Dakota::LibraryEnvironment* create_libEnv( const std::string& input_string,
+                                            const std::string& read_restart) {
+
+      assert(!input_string.empty());
+
+      Dakota::ProgramOptions opts;
+      opts.echo_input(false);
+      // avoid calling std::exit and taking down the Python instance too
+      opts.exit_mode("throw");
+      opts.input_string(input_string);
+      if (!read_restart.empty())
+      {
+        opts.read_restart_file(read_restart);
+      };
+
+      auto p_libEnv = new Dakota::LibraryEnvironment(opts);
+
+      return p_libEnv;
+    }
+
+  Dakota::LibraryEnvironment* create_libEnv(const nlohmann::json& input_json) {
+
+      assert(!input_json.is_null());
+
+      return new Dakota::LibraryEnvironment(input_json);
+    }
+}
+}
+
+
+/// Define a Python module that wraps a few top-level dakota functions
+/// Module name is really generic due to overly simple Python
+///  packaging scheme we're using
+PYBIND11_MODULE(environment, m) {
+
+  // demo a module-level function
+  m.def("print_version",
+  py::overload_cast<const Dakota::String&>(&Dakota::python::print_version),
+  "Print Dakota version to console",
+  py::arg("query") = ""
+  );
+
+  m.def("version",
+  &Dakota::DakotaBuildInfo::get_release_num,
+  "Return Dakota version as string"
+  );
+
+  m.def("revision",
+  &Dakota::DakotaBuildInfo::get_rev_number,
+  "Return Dakota repository revision number as string"
+  );
+
+  m.def("build_info",
+  py::overload_cast<std::string>(&Dakota::DakotaBuildInfo::get_build_config),
+  "Return build information related to `query' as a string",
+  py::arg("query") = "CXX"
+  );
+
+  // demo a Dakota command-line wrapper
+  // probably don't need this at all, but demoing...
+  py::class_<Dakota::ExecutableEnvironment>(m, "CommandLine")
+    .def(py::init
+	 ([](const std::string& input_filename)
+	  {
+	    int argc = 2;
+            std::string infile_copy(input_filename);
+	    char* argv[] = { "dakota",
+			     const_cast<char*>(infile_copy.data()),
+			     NULL
+	    };
+            return new Dakota::ExecutableEnvironment(argc, argv);
+	  })
+	 )
+
+    .def("execute", &Dakota::ExecutableEnvironment::execute)
+    ;
+
+  // demo a Variables wrapper
+  py::class_<Dakota::Variables>(m, "Variables")
+    .def(py::init
+	 ([]()
+	  {
+	    return new Dakota::Variables();
+	  }))
+
+    .def("num_active_cv", &Dakota::Variables::cv
+         , "Return number of active continuous vars"
+         )
+    ;
+
+  // demo a Response wrapper
+  py::class_<Dakota::Response>(m, "Response")
+    .def(py::init
+	 ([]()
+	  {
+	    return new Dakota::Response();
+	  }))
+
+    .def("function_value", static_cast<const Dakota::Real & (Dakota::Response::*)(size_t) const>(&Dakota::Response::function_value)
+         , "Return function value by index"
+         , py::arg("i"))
+    ;
+
+  // demo a library environment that models opt_tpl_test semantics
+  py::class_<Dakota::LibraryEnvironment>(m, "study")
+    .def(py::init
+	 ([](py::object callback,
+	     const std::string& input_string,
+       const std::string& read_restart = "")
+	  {
+	    assert(!input_string.empty());
+            auto p_libEnv = Dakota::python::create_libEnv(input_string, read_restart);
+
+            // Associate the single python callback with all Pybind11Interface interfaces
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                interface);
+
+              if( py11_int )
+                py11_int->register_pybind11_callback_fn(callback);
+            }
+
+	    return p_libEnv;
+	  })
+	 , py::arg("callback"), py::arg("input_string"), py::arg("read_restart") = "")
+
+    .def(py::init
+	 ([]( py::dict callbacks,
+	     const std::string& input_string,
+         const std::string& read_restart = "")
+	  {
+	    assert(!input_string.empty());
+            auto p_libEnv = Dakota::python::create_libEnv(input_string, read_restart);
+
+            // Associate callbacks with interface specs
+            auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                interface);
+              if( py11_int )
+              {
+                for( auto const & idrv : interface->analysis_drivers() )
+                {
+                  if( callbacks_map.count(idrv) > 0 )
+                    py11_int->register_pybind11_callback_fn(callbacks_map[idrv]);
+                  else {
+                    Cout << "Warning: Could not find a pybind11 callback \"" << idrv << "\" needed "
+                            "by Dakota interface \"" << interface->interface_id() << "\".\n"
+                            "... will try to use module:function interface specification.\n";
+                  }
+                }
+              }
+            }
+
+	    return p_libEnv;
+	  })
+	 , py::arg("callbacks"), py::arg("input_string"), py::arg("read_restart") = "")
+
+    .def(py::init
+	 ([](py::object callback,
+	     const nlohmann::json& input_json)
+	  {
+	    assert(!input_json.is_null());
+            auto p_libEnv = Dakota::python::create_libEnv(input_json);
+
+            // Associate the single python callback with all Pybind11Interface interfaces
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                interface);
+
+              if( py11_int )
+                py11_int->register_pybind11_callback_fn(callback);
+            }
+
+	    return p_libEnv;
+	  })
+	 , py::arg("callback"), py::arg("input_json"))
+
+    .def(py::init
+	 ([]( py::dict callbacks,
+	     const nlohmann::json& input_json)
+	  {
+	    assert(!input_json.is_null());
+            auto p_libEnv = Dakota::python::create_libEnv(input_json);
+
+            // Associate callbacks with interface specs
+            auto callbacks_map = callbacks.cast< std::map<std::string,py::function> >();
+            const auto & interfaces = Dakota::Interface::interface_cache(p_libEnv->problem_description_db());
+            for( auto & [_, interface] : interfaces )
+            {
+              auto py11_int = std::dynamic_pointer_cast<Dakota::Pybind11Interface>(
+                                interface);
+              if( py11_int )
+              {
+                for( auto const & idrv : interface->analysis_drivers() )
+                {
+                  if( callbacks_map.count(idrv) > 0 )
+                    py11_int->register_pybind11_callback_fn(callbacks_map[idrv]);
+                  else {
+                    Cout << "Warning: Could not find a pybind11 callback \"" << idrv << "\" needed "
+                            "by Dakota interface \"" << interface->interface_id() << "\".\n"
+                            "... will try to use module:function interface specification.\n";
+                  }
+                }
+              }
+            }
+
+	    return p_libEnv;
+	  })
+	 , py::arg("callbacks"), py::arg("input_json"))
+
+    .def("execute", &Dakota::LibraryEnvironment::execute)
+    .def("variables_results", &Dakota::LibraryEnvironment::variables_results)
+    .def("response_results", &Dakota::LibraryEnvironment::response_results)
+
+    // Explicitly flush and close the HDF5 results file.
+    //
+    // Dakota holds the HDF5 file open through OutputManager::resultsDB and
+    // evaluationsDB until ~OutputManager() runs.  In a normal Dakota process
+    // that happens at process exit, which is fine.  When the environment is
+    // used from Python (this module), the LibraryEnvironment object is on the
+    // Python heap and CPython's garbage collector does not guarantee *when*
+    // it collects it — even an explicit `del env` may not trigger the C++
+    // destructor immediately.  The result is a still-open HDF5 file after
+    // the study finishes, which prevents tools like h5py from reading the
+    // file in the same Python session.
+    //
+    // close() calls OutputManager::close_results_db(), which is exactly what
+    // ~OutputManager() would call, but does so deterministically.  It is safe
+    // to call more than once (the second call is a no-op because the databases
+    // list is already empty).
+    .def("close",
+         [](Dakota::LibraryEnvironment& env) {
+           env.output_manager().close_results_db();
+         },
+         "Flush and close the HDF5 results file.\n\n"
+         "Call this after execute() when you need to read the HDF5 file in\n"
+         "the same Python session.  Also called automatically by __exit__\n"
+         "when the environment is used as a context manager.")
+
+    // Context-manager support so users can write:
+    //   with dakota.environment.study(...) as s:
+    //       s.execute()
+    //   # HDF5 file is closed here
+    .def("__enter__",
+         [](Dakota::LibraryEnvironment& env) -> Dakota::LibraryEnvironment& {
+           return env;
+         },
+         py::return_value_policy::reference)
+    .def("__exit__",
+         [](Dakota::LibraryEnvironment& env,
+            py::object /*exc_type*/,
+            py::object /*exc_val*/,
+            py::object /*exc_tb*/) {
+           env.output_manager().close_results_db();
+           return false;  // do not suppress exceptions
+         })
+    ;
+
+#ifdef DAKOTA_PYTHON_NUMPY
+  m.def("get_variable_values_np",
+        &Dakota::python::get_variables_values_numpy,
+	"Get active continuous Variable values"
+	);
+#endif
+
+  m.def("get_variable_values",
+        &Dakota::python::get_variables_values,
+	"Get active continuous Variable values"
+	);
+
+  m.def("get_response_fn_val",
+        &Dakota::python::get_response_fn_val,
+	"Get final Response function value"
+	);
+
+}

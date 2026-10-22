@@ -7,7 +7,10 @@ from typing import Literal, Union
 from .base import DBL_EPSILON
 from typing import ClassVar, List
 from .validation import ValidationRule
-from .validation.rules import CheckAnalysisDrivers, CheckInterfaceBlock
+from .validation.rules import (
+    CheckAnalysisDrivers,
+    CheckInterfaceBlock,
+)
 
 
 class SystemParametersFormatStandard(DakotaBaseModel):

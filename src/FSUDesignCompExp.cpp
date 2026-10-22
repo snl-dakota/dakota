@@ -26,20 +26,20 @@ namespace Dakota {
     probDescDB. */
 FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model):
   PStudyDACE(problem_db, parallel_lib, model),
-  samplesSpec(probDescDB.get_int("method.samples")), numSamples(samplesSpec),
+  samplesSpec(probDescDB.get<int>("method.samples")), numSamples(samplesSpec),
   allDataFlag(false), numDACERuns(0),
-  latinizeFlag(probDescDB.get_bool("method.latinize"))
+  latinizeFlag(probDescDB.get<bool>("method.latinize"))
 {
   switch (methodName) {
   case FSU_CVT: {
     // CVT inputs
-    randomSeed   = seedSpec =  probDescDB.get_int("method.random_seed");
+    randomSeed   = seedSpec =  probDescDB.get<int>("method.random_seed");
     rng.seed(randomSeed);
-    varyPattern  = !probDescDB.get_bool("method.fixed_seed");
-    numCVTTrials =  probDescDB.get_int("method.fsu_cvt.num_trials");
+    varyPattern  = !probDescDB.get<bool>("method.fixed_seed");
+    numCVTTrials =  probDescDB.get<int>("method.fsu_cvt.num_trials");
 
     // Map sample_type string to trialType integer
-    const String& trial_type = probDescDB.get_string("method.trial_type");
+    const String& trial_type = probDescDB.get<const String>("method.trial_type");
     if (trial_type == "grid")
       trialType = 2;
     else if (trial_type == "halton")
@@ -50,10 +50,10 @@ FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& p
   }
   case FSU_HALTON: case FSU_HAMMERSLEY: {
     // QMC inputs
-    sequenceStart =  probDescDB.get_iv("method.fsu_quasi_mc.sequenceStart");
-    sequenceLeap  =  probDescDB.get_iv("method.fsu_quasi_mc.sequenceLeap");
-    primeBase     =  probDescDB.get_iv("method.fsu_quasi_mc.primeBase");
-    varyPattern   = !probDescDB.get_bool("method.fsu_quasi_mc.fixed_sequence");
+    sequenceStart =  probDescDB.get<const IntVector>("method.fsu_quasi_mc.sequenceStart");
+    sequenceLeap  =  probDescDB.get<const IntVector>("method.fsu_quasi_mc.sequenceLeap");
+    primeBase     =  probDescDB.get<const IntVector>("method.fsu_quasi_mc.primeBase");
+    varyPattern   = !probDescDB.get<bool>("method.fsu_quasi_mc.fixed_sequence");
     // perform error checks and initialize defaults
     if (sequenceStart.empty()) {
       sequenceStart.resize(numContinuousVars);
@@ -109,6 +109,105 @@ FSUDesignCompExp::FSUDesignCompExp(ProblemDescDB& problem_db, ParallelLibrary& p
   }
 
   if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 || 
+      numDiscreteRealVars > 0) {
+    Cerr << "\nError: fsu_* methods do not support discrete variables.\n";
+    abort_handler(-1);
+  }
+
+  if (numSamples) // samples is optional (default = 0)
+    maxEvalConcurrency *= numSamples;
+}
+
+
+/** This constructor is called for a standard iterator built with data from
+    the IRStore. */
+FSUDesignCompExp::
+FSUDesignCompExp(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+		 std::shared_ptr<Model> model):
+  PStudyDACE(std::move(services), method_store, model),
+  samplesSpec(method_store.get<int>("samples")), numSamples(samplesSpec),
+  allDataFlag(false), numDACERuns(0),
+  latinizeFlag(method_store.get<bool>("latinize"))
+{
+  switch (methodName) {
+  case FSU_CVT: {
+    // CVT inputs
+    randomSeed   = seedSpec =  method_store.get<int>("random_seed");
+    rng.seed(randomSeed);
+    varyPattern  = !method_store.get<bool>("fixed_seed");
+    numCVTTrials =  method_store.get<int>("fsu_cvt.num_trials");
+
+    // Map sample_type string to trialType integer
+    const String& trial_type = method_store.get<String>("trial_type");
+    if (trial_type == "grid")
+      trialType = 2;
+    else if (trial_type == "halton")
+      trialType = 1;
+    else
+      trialType = -1; // default is "random"
+    break;
+  }
+  case FSU_HALTON: case FSU_HAMMERSLEY: {
+    // QMC inputs
+    sequenceStart =  method_store.get<IntVector>("fsu_quasi_mc.sequenceStart");
+    sequenceLeap  =  method_store.get<IntVector>("fsu_quasi_mc.sequenceLeap");
+    primeBase     =  method_store.get<IntVector>("fsu_quasi_mc.primeBase");
+    varyPattern   = !method_store.get<bool>("fsu_quasi_mc.fixed_sequence");
+    // perform error checks and initialize defaults
+    if (sequenceStart.empty()) {
+      sequenceStart.resize(numContinuousVars);
+      sequenceStart = 0;
+    }
+    else if (sequenceStart.length() != numContinuousVars) {
+      Cerr << "\nError: wrong number of sequence_start inputs.\n";
+      abort_handler(-1);
+    }
+    if (sequenceLeap.empty()) {
+      sequenceLeap.resize(numContinuousVars);
+      sequenceLeap = 1;
+    }
+    else if (sequenceLeap.length() != numContinuousVars) {
+      Cerr << "\nError: wrong number of sequence_leap inputs.\n";
+      abort_handler(-1);
+    }
+    if (primeBase.empty()) {
+      primeBase.resize(numContinuousVars);
+      if (methodName == FSU_HALTON)
+        for (size_t i=0; i<numContinuousVars; i++)
+          primeBase[i] = prime(i+1);
+      else { // fsu_hammersley
+        primeBase[0] = -numSamples;
+        for (size_t i=1; i<numContinuousVars; i++)
+          primeBase[i] = prime(i);
+      }
+    }
+    else if (methodName == FSU_HALTON) {
+      if (primeBase.length() != numContinuousVars) {
+        Cerr << "\nError: wrong number of prime_base inputs.\n";
+        abort_handler(-1);
+      }
+    }
+    else { // fsu_hammersley
+      if (primeBase.length() != numContinuousVars-1) {
+        Cerr << "\nError: wrong number of prime_base inputs.\n";
+        abort_handler(-1);
+      }
+      // modify user input
+      primeBase.resize(numContinuousVars);
+      for (size_t i=numContinuousVars-1; i>0; i--)
+        primeBase[i] = primeBase[i-1]; // move each input back one position
+      primeBase[0] = -numSamples;
+      //Cout << primeBase;
+    }
+    break;
+  }
+  default:
+    Cerr << "Error: FSU DACE method \"" << methodName << "\" is not an option."
+         << std::endl;
+    abort_handler(-1);
+  }
+
+  if (numDiscreteIntVars > 0 || numDiscreteStringVars > 0 ||
       numDiscreteRealVars > 0) {
     Cerr << "\nError: fsu_* methods do not support discrete variables.\n";
     abort_handler(-1);
@@ -333,7 +432,7 @@ get_parameter_sets(std::shared_ptr<Model> model, const size_t num_samples,
     if (numCVTTrials < num_samples)
       numCVTTrials = num_samples *10;
 
-    // assign default maxIterations (DataMethod default is SZ_MAX)
+    // assign default maxIterations (generated method default is SZ_MAX)
     if (maxIterations == SZ_MAX)
       maxIterations = 25;
 

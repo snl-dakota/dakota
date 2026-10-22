@@ -24,6 +24,7 @@ template<class T> class OptppArray;
 
 namespace Dakota {
 
+class IRStore;
 class Minimizer;
 class ProblemDescDB;
 /// enumeration for the type of evaluator function
@@ -47,6 +48,7 @@ public:
 
   SNLLBase();                          ///< default constructor
   SNLLBase(ProblemDescDB& problem_db); ///< standard constructor
+  SNLLBase(const IRStore& method_store); ///< IRStore constructor
   ~SNLLBase();                         ///< destructor
 
 protected:

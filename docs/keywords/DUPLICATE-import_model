@@ -19,7 +19,7 @@ or a design of experiments method specified through
 *Usage Tips*
 
 When importing a surrogate model, *it is crucial* that the
-:dakkw:`model-surrogate-global` surrogate model part of the Dakota input file
+:dakkw:`model-global_surrogate` surrogate model part of the Dakota input file
 be identical for export and import, except for changing
 ``export_model`` and its child keywords to those needed for
 ``import_model``. Any other keywords such as specifying a dace_iterator or
@@ -58,7 +58,7 @@ The following model block exports a Gaussian process after it's built:
 
     model
       id_model = 'SURR_M'
-      surrogate global
+      global_surrogate
         dace_method_pointer = 'DACE'
         experimental_gaussian_process
           metrics 'root_mean_squared'
@@ -78,7 +78,7 @@ specification:
 
     model
       id_model = 'SURR_M'
-      surrogate global
+      global_surrogate
         dace_method_pointer = 'DACE'
         experimental_gaussian_process
           metrics 'root_mean_squared'

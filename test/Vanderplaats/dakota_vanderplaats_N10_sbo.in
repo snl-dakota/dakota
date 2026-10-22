@@ -49,8 +49,8 @@ method,
 model,
 	id_model = 'SURROGATE'
 	responses_pointer = 'SURROGATE_RESP'
- 	surrogate local taylor_series					#s0
-# 	surrogate multipoint tana						#s1
+ 	local_surrogate taylor_series					#s0
+# 	multipoint_surrogate tana						#s1
 	  truth_model_pointer = 'TRUTH'
 
 model,

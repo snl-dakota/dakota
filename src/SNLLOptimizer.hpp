@@ -115,6 +115,9 @@ public:
   /// standard constructor
   SNLLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model>);
 
+  /// DI constructor using method IR plus optional runtime services
+  SNLLOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services);
+
   /// alternate constructor for instantiations "on the fly"
   SNLLOptimizer(const String& method_string, std::shared_ptr<Model>);
 

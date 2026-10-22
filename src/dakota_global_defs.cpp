@@ -27,11 +27,11 @@
 //#define MPI_DEBUG
 
 #if defined(MPI_DEBUG) && defined(MPICH_NAME)
-#include <sys/types.h> 
-#include <sys/stat.h> 
-#include <fcntl.h> 
-#include <unistd.h> 
-#endif 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#endif
 
 
 static const char rcsId[]="@(#) $Id: dakota_global_defs.cpp 6716 2010-04-03 18:35:08Z wjbohnh $";
@@ -47,7 +47,7 @@ double PI = boost::math::constants::pi<double>();
 double HALF_LOG_2PI = std::log(2.0*PI)/2.0;
 
 /// by default Dakota exits or calls MPI_Abort on errors
-short abort_mode = ABORT_EXITS; 
+short abort_mode = ABORT_EXITS;
 
 std::ostream* dakota_cout = &std::cout; ///< DAKOTA stdout initially points to
   ///< std::cout, but may be redirected to a tagged ofstream if there are
@@ -56,11 +56,6 @@ std::ostream* dakota_cerr = &std::cerr; ///< DAKOTA stderr initially points to
   ///< std::cerr, but may be redirected to a tagged ofstream if there are
   ///< concurrent iterators.
 PRPCache data_pairs;          ///< contains all parameter/response pairs.
-
-/// Global results database for iterator results
-ResultsManager iterator_results_db;
-/// Global database for evaluation storage
-EvaluationStore evaluation_store_db;
 
 
 int write_precision = 10;     ///< used in ostream data output functions
@@ -100,7 +95,7 @@ void abort_handler(int code)
   // Clean up
   Cout << std::flush; // flush cout or ofstream redirection
   Cerr << std::flush; // flush cerr or ofstream redirection
-  iterator_results_db.close(); // flush output files/databases 
+  OutputManager::close_all_results_db(); // flush study output files/databases
 
   if (Dak_pddb) {
     // cleanup parameters/results files

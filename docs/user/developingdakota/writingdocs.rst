@@ -22,7 +22,11 @@ A representative way to install the tools:
 	pip install --user -U myst-parser
 	pip install --user -U sphinx-rtd-theme
 	pip install --user -U sphinxcontrib-bibtex
-	
+
+The user manual imports the compiled ``dakota.study`` module to build the
+Python library API reference. Install Sphinx and its extensions into the same
+Python interpreter used to build Dakota. Configure Dakota with both
+``DAKOTA_PYTHON=ON`` and ``DAKOTA_PYTHON_STUDY=ON``.
 
 .. note::	
 
@@ -37,14 +41,18 @@ Interactive Documentation Build
 Bare Sphinx Build
 -----------------
 
-A bare ``sphinx-build`` command will build almost all of the documentation, except for keyword reference pages and sample Dakota input files.
+A bare Sphinx command will build almost all of the documentation, except for
+keyword reference pages and sample Dakota input files. The Python Study
+extension must already be built, and the package root that contains
+``dakota/study/_study`` must be on ``PYTHONPATH``. Use Sphinx through the same
+Python interpreter that was used to compile the extension.
 
 .. code-block::
 
    cd <dakota checkout>/docs/user
-   sphinx-build -b html <source dir> <build dir>
+   PYTHONPATH=<dakota build>/python python -m sphinx -b html <source dir> <build dir>
    # to speed up build using all available cores (may suppress some cross reference and other warnings/errors):
-   sphinx-build -b html -j auto <source dir> <build dir>
+   PYTHONPATH=<dakota build>/python python -m sphinx -b html -j auto <source dir> <build dir>
 
 ------------------------------
 CMake-based Build on Mac/Linux
@@ -54,8 +62,12 @@ This build process is more similar to historical documentation build using the r
 
 **Prerequisites**
 
-- Python and the Sphinx Python tools specified above, with the
-  sphinx-build executable on your PATH.
+- Python and the Sphinx Python tools specified above, installed for the same
+  Python interpreter used to build Dakota.
+
+- The Dakota Python Study API, enabled with
+  ``DAKOTA_PYTHON_STUDY:BOOL=ON``. The documentation target builds the native
+  extension before invoking Sphinx.
 
 - Java JDK 11 or newer. For example on RHEL7 install
   java-11-openjdk-devel from EPEL and specify

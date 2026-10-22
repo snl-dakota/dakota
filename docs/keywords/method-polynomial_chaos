@@ -148,7 +148,7 @@ rate.
 
 For incremental studies, approaches 4 and 5 support reuse of previous
 samples through the :dakkw:`method-sampling-sample_type-incremental_lhs`
-and :dakkw:`model-surrogate-global-reuse_points`
+and :dakkw:`model-global_surrogate-reuse_points`
 specifications, respectively.
 
 In the quadrature and sparse grid cases, growth rates for nested and

@@ -4,7 +4,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  6.0371517997e+04  3.0085825243e+05  1.2386715612e+01  1.9282232756e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  3.8045378278e+04  8.2697657716e+04  2.8588122789e+05  3.1750372114e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -50,7 +50,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  8.7936397258e+04  5.2533545086e+05  1.2192849450e+01  1.7959271169e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  3.6297832140e+04  1.3957496238e+05  4.9127914479e+05  5.6450396470e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -94,7 +94,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  7.5292534705e+04  4.3618557274e+05  1.4285308680e+01  2.5336445734e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.0320397534e+04  1.1026467188e+05  4.1282403736e+05  4.6237088720e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -138,7 +138,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  9.4810854046e+04  5.8346299845e+05  1.1917260529e+01  1.6227600469e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.1513133876e+04  1.3810857422e+05  5.5441762716e+05  6.1574403115e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -184,7 +184,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  8.7936397258e+04  5.2533545086e+05  1.2192849450e+01  1.7959271169e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  3.6297832140e+04  1.3957496238e+05  4.9127914479e+05  5.6450396470e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -230,7 +230,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  8.7936397258e+04  5.2533545086e+05  1.2192849450e+01  1.7959271169e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  3.6297832140e+04  1.3957496238e+05  4.9127914479e+05  5.6450396470e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -274,7 +274,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  7.5292534705e+04  4.3618557274e+05  1.4285308680e+01  2.5336445734e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  4.0320397534e+04  1.1026467188e+05  4.1282403736e+05  4.6237088720e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------
@@ -318,7 +318,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  9.4810854046e+04  5.8346299845e+05  1.1917260529e+01  1.6227600469e+02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.1513133876e+04  1.3810857422e+05  5.5441762716e+05  6.1574403115e+05
      Response Level  Probability Level  Reliability Index  General Rel Index
      --------------  -----------------  -----------------  -----------------

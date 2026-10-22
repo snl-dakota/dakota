@@ -44,6 +44,11 @@ NLPQLPOptimizer::NLPQLPOptimizer(ProblemDescDB& problem_db, ParallelLibrary& par
 { initialize(); }
 
 
+NLPQLPOptimizer::NLPQLPOptimizer (const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new NLPQLPTraits()))
+{ initialize(); }
+
+
 NLPQLPOptimizer::NLPQLPOptimizer(std::shared_ptr<Model> model): 
   Optimizer(NLPQL_SQP, model, std::shared_ptr<TraitsBase>(new NLPQLPTraits()))
 { initialize(); }

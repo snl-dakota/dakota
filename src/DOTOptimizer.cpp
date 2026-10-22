@@ -10,7 +10,9 @@
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "DOTOptimizer.hpp"
+#include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 
 static const char rcsId[]="@(#) $Id: DOTOptimizer.cpp 7029 2010-10-22 00:17:02Z mseldre $";
 
@@ -55,6 +57,33 @@ DOTOptimizer::DOTOptimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
   initialize(); // convenience fn for shared ctor code
 }
+
+
+DOTOptimizer::DOTOptimizer(const IRStore& method_store,
+                           std::shared_ptr<Model> model,
+                           std::shared_ptr<StudyServices> services):
+  Optimizer(std::move(services), method_store,
+            model, std::shared_ptr<TraitsBase>(new DOTTraits())),
+  realCntlParmArray(20, 0.0),
+  intCntlParmArray(20, 0)
+{
+  if (speculativeFlag && vendorNumericalGradFlag)
+    Cerr << "\nWarning: speculative method specification is ignored for"
+         << "\n         vendor numerical gradients.\n\n";
+
+  if (outputLevel > NORMAL_OUTPUT) {
+    printControl = 7;
+    Cout << "DOT print control = " << printControl << std::endl;
+  }
+  else
+    printControl = 3;
+
+  initialize();
+}
+
+
+
+
 
 
 DOTOptimizer::DOTOptimizer(const String& method_string, std::shared_ptr<Model> model):
@@ -106,7 +135,7 @@ void DOTOptimizer::initialize()
   }
 
   // convergenceTol is an optional parameter in dakota.input.nspec, but
-  // defining our own default (in the DataMethod constructor) and
+  // defining our own default (in the generated method defaults) and
   // always assigning it applies some consistency across methods.
   // Therefore, the DOT default is not used.
   realCntlParmArray[2] = convergenceTol; // RPRM(3) =DABOBJ=MAX(0.0001*ABS(F0),1.E-20)

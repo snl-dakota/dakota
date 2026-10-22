@@ -342,7 +342,10 @@ TEST(MyValidator, ThrowsWhenBelowThreshold) {
 Add tests to `test/test_validation.py`:
 
 ```python
-class TestMyValidator:
+import unittest
+
+
+class TestMyValidator(unittest.TestCase):
     def test_passes_when_above_threshold(self):
         rule = MyValidator(context="test", target_field="temp", threshold=0.0)
         instance = SomeModel(temp=25.0)
@@ -351,7 +354,7 @@ class TestMyValidator:
     def test_raises_when_below_threshold(self):
         rule = MyValidator(context="test", target_field="temp", threshold=0.0)
         instance = SomeModel(temp=-10.0)
-        with pytest.raises(ValueError):
+        with self.assertRaises(ValueError):
             rule(instance)
 ```
 

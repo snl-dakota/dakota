@@ -17,7 +17,7 @@ method,
 
  model,                                         
         id_model = 'SURR'    			 
-        surrogate global,			 
+        global_surrogate,			 
           dace_method_pointer = 'DACE'		 
           reuse_samples all			 
 	  polynomial quadratic

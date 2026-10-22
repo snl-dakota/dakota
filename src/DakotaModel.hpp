@@ -11,6 +11,7 @@
 #define DAKOTA_MODEL_H
 
 #include "dakota_data_types.hpp"
+#include "DakotaModelEnums.hpp"
 #include "model_utils.hpp"
 #include "MPIManager.hpp"
 #include "DakotaVariables.hpp"
@@ -19,6 +20,7 @@
 #include "DakotaResponse.hpp"
 #include "MultivariateDistribution.hpp"
 #include "ScalingOptions.hpp"
+#include <unordered_map>
 
 namespace Pecos { /* forward declarations */
 class SurrogateData;
@@ -27,6 +29,12 @@ class ActiveKey;
 }
 
 namespace Dakota {
+
+class OutputManager;
+class StudyRuntime;
+class ParallelLibrary;
+class RunOptions;
+class StudyServices;
 
 // define special values for serve_init_mapping()
 #define FREE_COMMS 1
@@ -38,6 +46,7 @@ namespace Dakota {
 class Iterator;
 class ParallelLibrary;
 class ProblemDescDB;
+class IRStore;
 class Approximation;
 class SharedApproxData;
 class DiscrepancyCorrection;
@@ -70,16 +79,16 @@ public:
   static std::shared_ptr<Model> get_model(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib);
 
   /// @brief return the model cache for the study
-  /// @param problem_db 
+  /// @param problem_db
   /// @return model cache
-  static std::list<std::shared_ptr<Model>>& model_cache(ProblemDescDB& problem_db);
+  static const std::unordered_map<std::string, std::shared_ptr<Model>>& model_cache(ProblemDescDB& problem_db);
 
   /// @brief remove a cached Model for the study
   static void remove_cached_model(const ProblemDescDB& problem_db);
 
 private:
   /// @brief Cache of Models created for each study
-  static std::map<const ProblemDescDB*, std::list<std::shared_ptr<Model>>> modelCache;
+  static std::unordered_map<const ProblemDescDB*, ModelUtils::ModelRegistry> modelCache;
 
 public:
 
@@ -126,7 +135,7 @@ public:
 
   /// set the relative weightings for multiple objective functions or least
   /// squares terms
-  virtual void primary_response_fn_weights(const RealVector& wts, 
+  virtual void primary_response_fn_weights(const RealVector& wts,
 					   bool recurse_flag = true);
 
   /// Perform any global updates prior to individual evaluate() calls;
@@ -136,17 +145,17 @@ public:
   /// returns true if the variables size has changed
   virtual bool finalize_mapping();
 
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_mapping() on other iteratorComm processors
   virtual void stop_init_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_init_mapping(ParLevLIter pl_iter);
 
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank 0 to
   /// terminate serve_finalize_mapping() on other iteratorComm processors
   virtual void stop_finalize_mapping(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::run_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::run_iterator() for iteratorComm rank != 0
   /// to balance resize() calls on iteratorComm rank 0
   virtual int serve_finalize_mapping(ParLevLIter pl_iter);
 
@@ -210,6 +219,28 @@ public:
   /// update the Model's inactive view based on a higher level context
   virtual void inactive_view(short view, bool recurse_flag = true);
 
+  /// Return whether the active view has been pinned by inference or user spec
+  bool active_view_assigned() const;
+
+  /** Assign an inferred active view to this model (and its children, for
+   *  composite models that override this virtual function).
+   *
+   *  If the view has already been assigned and the new view differs, throws
+   *  std::runtime_error with a message naming the method, the model id, both
+   *  views, and how to resolve the conflict.
+   *
+   *  When the user's explicit view (stored in variables_store_ptr) is not
+   *  DEFAULT_VIEW it takes precedence, so the function just marks the model
+   *  as assigned without changing the view.
+   *
+   *  method_label is the human-readable method name (for error messages). */
+  virtual void assign_inferred_view(short view, const String& method_label);
+
+  /** Mark this model's active view as already assigned (non-recursive).
+   *  Call this when the user provided an explicit active= setting so a later
+   *  inferred view from a second iterator does not overwrite it. */
+  void mark_active_view_assigned();
+
   /// return the interface identifier
   virtual const String& interface_id() const;
   /// Return the value of the evaluation id counter for the Model
@@ -235,7 +266,7 @@ public:
   /// search the eval database (during derivative estimation); derived
   /// may need to reimplement due to problem transformations
   /// (RecastModel); return true if found in DB
-  virtual bool db_lookup(const Variables& search_vars, 
+  virtual bool db_lookup(const Variables& search_vars,
 			 const ActiveSet& search_set, Response& found_resp);
 
   /// set the warm start flag (warmStartFlag)
@@ -399,7 +430,7 @@ public:
   /// based on data updates propagated elsewhere
   virtual void update_approximation(bool rebuild_flag);
   /// replace the anchor point data within an existing surrogate
-  virtual void update_approximation(const Variables& vars, 
+  virtual void update_approximation(const Variables& vars,
 				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// replace the data points within an existing surrogate
@@ -415,7 +446,7 @@ public:
   /// based on data updates propagated elsewhere
   virtual void append_approximation(bool rebuild_flag);
   /// append a single point to an existing surrogate's data
-  virtual void append_approximation(const Variables& vars, 
+  virtual void append_approximation(const Variables& vars,
 				    const IntResponsePair& response_pr,
 				    bool rebuild_flag);
   /// append multiple points to an existing surrogate's data
@@ -537,7 +568,7 @@ public:
   /// an EnsembleSurrModel
   virtual void single_apply(const Variables& vars, Response& resp,
 			    const Pecos::ActiveKey& paired_key);
-  /// apply a sequence of DiscrepancyCorrections to recursively correct an 
+  /// apply a sequence of DiscrepancyCorrections to recursively correct an
   /// approximation within an EnsembleSurrModel
   virtual void recursive_apply(const Variables& vars, Response& resp);
 
@@ -610,10 +641,10 @@ public:
   /// Compute the Response at currentVariables (specified ActiveSet).
   void evaluate(const ActiveSet& set);
 
-  /// Spawn an asynchronous job (or jobs) that computes the value of the 
+  /// Spawn an asynchronous job (or jobs) that computes the value of the
   /// Response at currentVariables (default ActiveSet).
   void evaluate_nowait();
-  /// Spawn an asynchronous job (or jobs) that computes the value of the 
+  /// Spawn an asynchronous job (or jobs) that computes the value of the
   /// Response at currentVariables (specified ActiveSet).
   void evaluate_nowait(const ActiveSet& set);
 
@@ -649,14 +680,14 @@ public:
   void free_communicators(ParLevLIter pl_iter, int max_eval_concurrency,
 			  bool recurse_flag = true);
 
-  /// retrieve the MPI communicator on which this model is configured to 
+  /// retrieve the MPI communicator on which this model is configured to
   /// conduct function evaluation analyses (provided for library clients)
   MPI_Comm analysis_comm() const;
 
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank 0 to
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank 0 to
   /// terminate serve_init_communicators() on other iteratorComm processors
   void stop_init_communicators(ParLevLIter pl_iter);
-  /// called from IteratorScheduler::init_iterator() for iteratorComm rank != 0
+  /// called from IteratorExecutor::init_iterator() for iteratorComm rank != 0
   /// to balance init_communicators() calls on iteratorComm rank 0
   int serve_init_communicators(ParLevLIter pl_iter);
 
@@ -684,7 +715,7 @@ public:
   void iterator_space_to_user_space(const Variables& iter_vars,
 				    const Response&  iter_resp,
 				    Variables& user_vars, Response& user_resp);
- 
+
   /// return mvDist
   Pecos::MultivariateDistribution& multivariate_distribution();
   /// return mvDist
@@ -842,7 +873,14 @@ public:
   static void evaluate(const VariablesArray& sample_vars,
 		       Model& model, RealMatrix& resp_matrix);
 
-  /// Return the model ID of the "innermost" model. 
+  ParallelLibrary* parallel_library_ptr() const;
+  OutputManager* output_manager_ptr() const;
+  RunOptions* run_options_ptr() const;
+  StudyServices* study_services_ptr() const;
+  std::shared_ptr<StudyServices> study_services() const;
+  StudyRuntime study_runtime() const;
+
+  /// Return the model ID of the "innermost" model.
   /// For all derived Models except RecastModels, return modelId.
   /// The RecastModel override returns the root_model_id() of the subModel.
   virtual String root_model_id();
@@ -850,6 +888,13 @@ public:
   virtual ActiveSet default_active_set();
 
 protected:
+
+  /// DI constructor using injected variables/response and study services.
+  Model(std::shared_ptr<StudyServices> services,
+        const IRStore& model_store,
+	const Variables& variables,
+	const Response& response);
+
 
   //
   //- Heading: Constructors
@@ -943,7 +988,7 @@ protected:
   /// Initialize data needed for computing finite differences
   /// (active/inactive, center point, and bounds)
   SizetMultiArrayConstView
-  initialize_x0_bounds(const SizetArray& original_dvv, bool& active_derivs, 
+  initialize_x0_bounds(const SizetArray& original_dvv, bool& active_derivs,
                        bool& inactive_derivs, RealVector& x0, RealVector& fd_lb,
                        RealVector& fd_ub) const;
 
@@ -1049,11 +1094,11 @@ protected:
   /// absolute - step length is what is specified
   /// bounds   - step length is relative to range of x
   String fdGradStepType;
-  /// relative finite difference step size for numerical Hessians estimated 
+  /// relative finite difference step size for numerical Hessians estimated
   /// using first-order differences of gradients
   /** For vendor numerical Hessian algorithms, a scalar value is used. */
   RealVector fdHessByGradStepSize;
-  /// relative finite difference step size for numerical Hessians estimated 
+  /// relative finite difference step size for numerical Hessians estimated
   /// using second-order differences of function values
   /** For vendor numerical Hessian algorithms, a scalar value is used. */
   RealVector fdHessByFnStepSize;
@@ -1092,6 +1137,9 @@ protected:
   /// track use of initialize_mapping() and finalize_mapping()
   bool mappingInitialized;
 
+  /// shared runtime services for DI/library-mode construction
+  std::shared_ptr<StudyServices> sharedStudyServices;
+
   /// class member reference to the problem description database
   /** Iterator and Model cannot use a shallow copy of ProblemDescDB
       due to circular destruction dependency (reference counts can't
@@ -1100,6 +1148,9 @@ protected:
 
   /// class member reference to the parallel library
   ParallelLibrary& parallelLib;
+
+  /// run-phase options inherited from the resolved study services
+  RunOptions& runOptions;
 
   /// the ParallelConfiguration node used by this Model instance
   ParConfigLIter modelPCIter;
@@ -1153,6 +1204,11 @@ protected:
   /// whether to perform hierarchical evalID tagging of params/results
   bool hierarchicalTagging;
 
+  /** True once assign_inferred_view() or mark_active_view_assigned() has been
+   *  called on this model.  Prevents a second iterator from silently
+   *  overwriting the active view already established by the first. */
+  bool activeViewAssigned = false;
+
   /// user-provided scaling data from the problem DB, possibly
   /// modified by Recasting
   ScalingOptions scalingOpts;
@@ -1160,11 +1216,11 @@ protected:
   /// cached evalTag Prefix from parents to use at evaluate time
   String evalTagPrefix;
 
-  /// reference to the global evaluation database
+  /// reference to the study-specific evaluation database
   EvaluationStore &evaluationsDB;
 
 private:
- 
+
   //
   //- Heading: Member functions
   //
@@ -1184,7 +1240,7 @@ private:
   /// combine results from an array of finite difference response
   /// objects (fd_grad_responses) into a single response (new_response)
   void synchronize_derivatives(const Variables& vars,
-			       const IntResponseMap& fd_responses, 
+			       const IntResponseMap& fd_responses,
 			       Response& new_response,
 			       const ShortArray& fd_grad_asv,
 			       const ShortArray& fd_hess_asv,
@@ -1206,7 +1262,7 @@ private:
 			     const ActiveSet& original_set);
 
   /// Coordinates usage of estimate_derivatives() calls based on asv_in
-  bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out, 
+  bool manage_asv(const ActiveSet& original_set, ShortArray& map_asv_out,
 		  ShortArray& fd_grad_asv_out, ShortArray& fd_hess_asv_out,
 		  ShortArray& quasi_hess_asv_out);
 
@@ -1241,7 +1297,7 @@ private:
   std::map<SizetIntPair, ParConfigLIter> modelPCIterMap;
 
   /// flag for determining need to bcast the max concurrency from
-  /// init_communicators(); set from IteratorScheduler::init_iterator()
+  /// init_communicators(); set from IteratorExecutor::init_iterator()
   bool initCommsBcastFlag;
 
   /// flag for posting of graphics data within evaluate()
@@ -1380,7 +1436,7 @@ inline const String& Model::model_id() const
 inline size_t Model::num_secondary_fns() const
 {
   return
-    ModelUtils::num_nonlinear_ineq_constraints(*this) + 
+    ModelUtils::num_nonlinear_ineq_constraints(*this) +
     ModelUtils::num_nonlinear_eq_constraints(*this);
 }
 
@@ -1479,9 +1535,9 @@ inline const ScalingOptions& Model::scaling_options() const
 
 
 inline short Model::primary_fn_type() const
-{ 
+{
   return
-    currentResponse.shared_data().primary_fn_type(); 
+    currentResponse.shared_data().primary_fn_type();
 }
 
 inline void Model::primary_fn_type(short type)
@@ -1505,7 +1561,7 @@ inline void Model::supports_derivative_estimation(bool sed_flag)
 }
 
 
-inline void Model::init_comms_bcast_flag(bool icb_flag) 
+inline void Model::init_comms_bcast_flag(bool icb_flag)
 {
   initCommsBcastFlag = icb_flag;
 }
@@ -1615,7 +1671,7 @@ rekey_response_map(const IntResponseMap& resp_map, IntIntMap& id_map,
       cached_resp_map[r_cit->first] = r_cit->second;
       // Approach 2: virtual fn approach could accomplish a migration and
       // avoid duplication, but it lacks level clarity (SimulationModel:
-      // augment its own cache or delegate to userDefinedInterface?) 
+      // augment its own cache or delegate to userDefinedInterface?)
       //cache_unmatched_response(r_cit->first); // virtual fn
       // Approach 3: resolve level clarity by passing a meta-object in a
       // template.  Consistency: use meta-object to synchronize and cache,
@@ -1655,7 +1711,7 @@ rekey_response_map(MetaType& meta_object, IntIntMapArray& id_maps,
 	if (evaluations_db_state(meta_object) == EvaluationsDBState::ACTIVE)
 	  asynch_eval_store(meta_object, id_it->first, resp);
 	id_map.erase(id_it++);      // postfix increment
-	orig_resp_map.erase(r_it++);// postfix increment 
+	orig_resp_map.erase(r_it++);// postfix increment
 	found = true;
       }
       //if (found) break;// interferes with active_id_maps and only defers ++it

@@ -50,6 +50,21 @@ void EvaluationStore::set_database(std::shared_ptr<HDF5IOHelper> db_ptr) {
 }
 #endif
 
+void EvaluationStore::clear() {
+#ifdef DAKOTA_HAVE_HDF5
+  hdf5Stream.reset();
+#endif
+  allocatedModels.clear();
+  allocatedInterfaces.clear();
+  modelDefaultSets.clear();
+  interfaceDefaultSets.clear();
+  modelResponseIndexCache.clear();
+  interfaceResponseIndexCache.clear();
+  sourceModels.clear();
+  resizedModels.clear();
+  topLevelMethodId.clear();
+}
+
 bool EvaluationStore::active() {
   #ifdef DAKOTA_HAVE_HDF5
   return bool(hdf5Stream);

@@ -1,24 +1,24 @@
 Test Number 0 succeeded
-<<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
+<<<<< Function evaluation summary (UQ_I): 12500 total (12500 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.2183264524e+00 w
-                      3.5608309920e+00 t
+                      2.3717622782e+00 w
+                      3.3152663933e+00 t
 <<<<< Best objective function  =
-                      7.8990856519e+00
+                      7.8630237266e+00
 <<<<< Best constraint values   =
-                     -3.5677159630e-02
-                      8.3410647586e-03
+                     -2.0659345234e-02
+                     -3.4389026218e-05
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
+<<<<< Function evaluation summary (UQ_I): 12500 total (12500 new, 0 duplicate)
 <<<<< Best parameters          =
-                      2.4421846645e+00 w
-                      3.8484138130e+00 t
+                      2.4441456451e+00 w
+                      3.8459094250e+00 t
 <<<<< Best objective function  =
-                      9.3985373909e+00
+                      9.3999629770e+00
 <<<<< Best constraint values   =
-                     -3.7430791025e-04
-                     -1.0245218606e-02
+                     -5.1976876035e-04
+                     -9.1775375433e-03
 <<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
@@ -26,10 +26,10 @@ Test Number 2 succeeded
                       1.0000000000e+01 w
                       1.0000000000e+01 t
 <<<<< Best objective function  =
-                      6.1346344929e-01
+                      6.1346352354e-01
 <<<<< Best constraint values   =
-                     -9.7743942788e-01
-                     -9.9310212402e-01
+                     -9.7743942890e-01
+                     -9.9310212433e-01
 <<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 12450 total (12450 new, 0 duplicate)
@@ -37,8 +37,8 @@ Test Number 3 succeeded
                       1.0000000000e+01 w
                       1.0000000000e+01 t
 <<<<< Best objective function  =
-                      6.1346349480e-06
+                      6.1346335033e-06
 <<<<< Best constraint values   =
-                     -9.7743941882e-01
-                     -9.9310211900e-01
+                     -9.7743942791e-01
+                     -9.9310212444e-01
 <<<<< Best evaluation ID not available

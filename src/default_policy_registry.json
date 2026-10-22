@@ -159,10 +159,6 @@
         "key": "method.digital_net",
         "value_type": "bool"
       },
-      "dl_solver.dlDetails": {
-        "key": "method.dl_solver.dlDetails",
-        "value_type": "String"
-      },
       "evidence_samples": {
         "key": "method.evidence_samples",
         "value_type": "int"

@@ -27,7 +27,7 @@ method
 
 #model                              #s4
 #  id_model = 'SURR'                #s4
-#  surrogate global			 	          #s4
+#  global_surrogate			 	          #s4
 #    dace_method_pointer = 'DACE'		#s4
 #    reuse_points all			 	        #s4
 ##    polynomial quadratic          #s4

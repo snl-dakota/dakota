@@ -32,8 +32,8 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
     int start = 0;
     // Helper: copy bounds from explicit keys into concatenated arrays
     auto copy_cv = [&](const String& lb_key, const String& ub_key) {
-      const RealVector& lb = problem_db.get_rv(lb_key);
-      const RealVector& ub = problem_db.get_rv(ub_key);
+      const RealVector& lb = problem_db.get<const RealVector>(lb_key);
+      const RealVector& ub = problem_db.get<const RealVector>(ub_key);
       copy_data_partial(lb, allContinuousLowerBnds, start);
       copy_data_partial(ub, allContinuousUpperBnds, start);
       start += lb.length();
@@ -92,8 +92,8 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
       "variables.discrete_state_set_int"
     };
     for (const char* base : div_keys) {
-      const IntVector& lb = problem_db.get_iv(String(base)+".lower_bounds");
-      const IntVector& ub = problem_db.get_iv(String(base)+".upper_bounds");
+      const IntVector& lb = problem_db.get<const IntVector>(String(base)+".lower_bounds");
+      const IntVector& ub = problem_db.get<const IntVector>(String(base)+".upper_bounds");
       copy_data_partial(lb, allDiscreteIntLowerBnds, start);
       copy_data_partial(ub, allDiscreteIntUpperBnds, start);
       start += lb.length();
@@ -116,8 +116,8 @@ MixedVarConstraints(const ProblemDescDB& problem_db,
       "variables.discrete_state_set_real"
     };
     for (const char* base : drv_keys) {
-      const RealVector& lb = problem_db.get_rv(String(base)+".lower_bounds");
-      const RealVector& ub = problem_db.get_rv(String(base)+".upper_bounds");
+      const RealVector& lb = problem_db.get<const RealVector>(String(base)+".lower_bounds");
+      const RealVector& ub = problem_db.get<const RealVector>(String(base)+".upper_bounds");
       copy_data_partial(lb, allDiscreteRealLowerBnds, start);
       copy_data_partial(ub, allDiscreteRealUpperBnds, start);
       start += lb.length();

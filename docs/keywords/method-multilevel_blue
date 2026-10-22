@@ -116,7 +116,7 @@ here defined by a set of 3 discretization levels:
     model,
 	id_model = 'HIERARCH'
 	variables_pointer = 'HF_VARS'
-	surrogate ensemble
+	ensemble_surrogate
 	  truth_model = 'HF'
 
     model,

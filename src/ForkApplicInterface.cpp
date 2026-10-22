@@ -9,6 +9,7 @@
 
 #include "DakotaResponse.hpp"
 #include "ParamResponsePair.hpp"
+#include "LibraryRuntimeSupport.hpp"
 #include "ForkApplicInterface.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -23,6 +24,13 @@ namespace Dakota {
 ForkApplicInterface::
 ForkApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   ProcessHandleApplicInterface(problem_db, parallel_lib)
+{ }
+
+
+ForkApplicInterface::
+ForkApplicInterface(const IRStore& interface_store,
+                   std::shared_ptr<StudyServices> services):
+  ProcessHandleApplicInterface(interface_store, std::move(services))
 { }
 
 

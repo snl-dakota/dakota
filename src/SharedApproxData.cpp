@@ -9,6 +9,7 @@
 
 #include "SharedApproxData.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "SharedPecosApproxData.hpp"
 #ifdef HAVE_C3
 #include "SharedC3ApproxData.hpp"
@@ -34,29 +35,29 @@ SharedApproxData::
 SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
   // See base constructor in DakotaIterator.cpp for full discussion of output
   // verbosity.  For approximations, verbose adds quad poly coeff reporting.
-  numVars(num_vars), approxType(problem_db.get_string("model.surrogate.type")),
-  buildDataOrder(1), outputLevel(problem_db.get_short("method.output")),
+  numVars(num_vars), approxType(problem_db.get<const String>("model.surrogate.type")),
+  buildDataOrder(1), outputLevel(problem_db.get<short>("method.output")),
   modelExportPrefix(
-    problem_db.get_string("model.surrogate.model_export_prefix")),
+    problem_db.get<const String>("model.surrogate.model_export_prefix")),
   modelExportFormat(
-    problem_db.get_ushort("model.surrogate.model_export_format"))
+    problem_db.get<unsigned short>("model.surrogate.model_export_format"))
 {
   // increment the buildDataOrder based on derivative usage and response
   // gradient/Hessian specifications and approximation type support.  The
   // converse of enforcing minimal data requirements (e.g., TANA) is
   // enforced in the derived classes.
   bool global_approx = strbegins(approxType, "global_"),
-    use_derivs = problem_db.get_bool("model.surrogate.derivative_usage");
+    use_derivs = problem_db.get<bool>("model.surrogate.derivative_usage");
   buildDataOrder = 1;
   if ( !global_approx || (global_approx && use_derivs) ) {
 
     // retrieve actual_model_pointer specification and set the DB
     const String& actual_model_ptr
-      = problem_db.get_string("model.surrogate.truth_model_pointer");
+      = problem_db.get<const String>("model.surrogate.truth_model_pointer");
     size_t model_index = problem_db.get_db_model_node(); // for restoration
     problem_db.set_db_model_nodes(actual_model_ptr);
 
-    if (problem_db.get_string("responses.gradient_type") != "none") {
+    if (problem_db.get<const String>("responses.gradient_type") != "none") {
       if (!global_approx || approxType == "global_polynomial"      ||
 	  approxType == "global_regression_orthogonal_polynomial"  ||
 #ifdef ALLOW_GLOBAL_HERMITE_INTERPOLATION
@@ -71,7 +72,7 @@ SharedApproxData(BaseConstructor, ProblemDescDB& problem_db, size_t num_vars):
 	Cerr << "Warning: use_derivatives is not currently supported by "
 	     << approxType << " for gradient incorporation.\n\n";
     }
-    if (problem_db.get_string("responses.hessian_type")  != "none") {
+    if (problem_db.get<const String>("responses.hessian_type")  != "none") {
       if (approxType == "local_taylor" || approxType == "global_polynomial")
 	buildDataOrder |= 4;
       else
@@ -125,6 +126,20 @@ SharedApproxData(NoDBBaseConstructor, const String& approx_type,
 }
 
 
+SharedApproxData::
+SharedApproxData(NoDBBaseConstructor, const IRStore& model_store,
+                 size_t num_vars, short data_order, short output_level):
+  SharedApproxData(NoDBBaseConstructor(),
+                   model_store.get<String>("surrogate.type"), num_vars,
+                   data_order, output_level)
+{
+  modelExportPrefix =
+    model_store.get<String>("surrogate.model_export_prefix");
+  modelExportFormat =
+    model_store.get<unsigned short>("surrogate.model_export_format");
+}
+
+
 /** For the default constructor, dataRep is NULL. */
 SharedApproxData::SharedApproxData() //:
   //buildDataOrder(1), outputLevel(NORMAL_OUTPUT),
@@ -144,12 +159,23 @@ SharedApproxData::SharedApproxData(ProblemDescDB& problem_db, size_t num_vars):
 }
 
 
+SharedApproxData::
+SharedApproxData(const IRStore& model_store, const UShortArray& approx_order,
+                 size_t num_vars, short data_order, short output_level):
+  dataRep(get_shared_data(model_store, approx_order, num_vars, data_order,
+                          output_level))
+{
+  if (!dataRep)
+    abort_handler(APPROX_ERROR);
+}
+
+
 /** Used only by the envelope constructor to initialize dataRep to the 
     appropriate derived type. */
 std::shared_ptr<SharedApproxData> SharedApproxData::
 get_shared_data(ProblemDescDB& problem_db, size_t num_vars)
 {
-  const String& approx_type = problem_db.get_string("model.surrogate.type");
+  const String& approx_type = problem_db.get<const String>("model.surrogate.type");
   //if (approx_type == "local_taylor")
   //  return new SharedTaylorApproxData(problem_db, num_vars);
   //else if (approx_type == "multipoint_tana")
@@ -247,6 +273,41 @@ get_shared_data(const String& approx_type, const UShortArray& approx_order,
 			    data_order, output_level));
   }
   return std::shared_ptr<SharedApproxData>();
+}
+
+
+std::shared_ptr<SharedApproxData> SharedApproxData::
+get_shared_data(const IRStore& model_store, const UShortArray& approx_order,
+                size_t num_vars, short data_order, short output_level)
+{
+  const String& approx_type = model_store.get<String>("surrogate.type");
+  if (strends(approx_type, "_orthogonal_polynomial") ||
+      strends(approx_type, "_interpolation_polynomial"))
+    return std::make_shared<SharedPecosApproxData>
+      (model_store, approx_order, num_vars, data_order, output_level);
+#ifdef HAVE_C3
+  else if (approx_type == "global_function_train")
+    return std::make_shared<SharedC3ApproxData>
+      (model_store, approx_order, num_vars, data_order, output_level);
+#endif
+#ifdef HAVE_SURFPACK
+  else if (approx_type == "global_polynomial"     ||
+           approx_type == "global_kriging"        ||
+           approx_type == "global_neural_network" ||
+           approx_type == "global_radial_basis"   ||
+           approx_type == "global_mars"           ||
+           approx_type == "global_moving_least_squares" ||
+           approx_type == "global_voronoi_surrogate" ||
+           approx_type == "global_exp_gauss_proc" ||
+           approx_type == "global_exp_poly"       ||
+           approx_type == "global_exp_python")
+    return std::make_shared<SharedSurfpackApproxData>
+      (model_store, approx_order, num_vars, data_order, output_level);
+#endif
+  else
+    return std::shared_ptr<SharedApproxData>
+      (new SharedApproxData(NoDBBaseConstructor(), model_store, num_vars,
+                            data_order, output_level));
 }
 
 

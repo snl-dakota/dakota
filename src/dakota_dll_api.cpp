@@ -105,7 +105,7 @@ public:
 
     if (!dakotaEnv)
       throw std::logic_error("DakotaRunner: could not instantiate LibraryEnvironment");
-      
+
     // initialize variable and response names
     initialize_names();
   }
@@ -122,13 +122,13 @@ public:
     // overly cautious check for non-empty labels (shouldn't they have
     // defaults?)
     numVars = 0;
-    for (const auto& v : vlist) 
-      numVars += v.all_continuous_variable_labels().size() + 
-      v.all_discrete_int_variable_labels().size() + 
+    for (const auto& v : vlist)
+      numVars += v.all_continuous_variable_labels().size() +
+      v.all_discrete_int_variable_labels().size() +
       v.all_discrete_real_variable_labels().size();
     // if appropriate, populate name array
     if (numVars > 0) {
-      varNames = new char* [numVars]; 
+      varNames = new char* [numVars];
       size_t j, idx = 0;
       for (const auto& v : vlist) {
         auto acv_labels = v.all_continuous_variable_labels();
@@ -152,7 +152,7 @@ public:
       numResp += r.function_labels().size();
     // if appropriate, populate name array
     if (numResp > 0) {
-      respNames = new char* [numResp]; 
+      respNames = new char* [numResp];
       size_t j, idx = 0;
       for (const auto& r : rlist) {
 	      const StringArray& fn_labels = r.function_labels();
@@ -171,7 +171,7 @@ public:
   char** varNames;   ///< array of strings of variable names
   int numResp;       ///< number of responses active in DAKOTA
   char** respNames;  ///< array of strings of response names
-  
+
   static int id_ctr; ///< counter for next instance ID to return
 
 private:
@@ -195,9 +195,9 @@ void DakotaRunner::start()
   // Refer to the library mode documentation in the Developers Manual.
   ProblemDescDB& problem_db = dakotaEnv->problem_description_db();
   ParallelLibrary& parallel_lib = dakotaEnv->parallel_library();
-  ModelList& models = Model::model_cache(problem_db);
+  auto& models = Model::model_cache(problem_db);
   size_t model_index = problem_db.get_db_model_node(); // for restoration
-  for (auto& m : models) {
+  for (auto& [_, m] : models) {
     std::shared_ptr<Interface> model_interface = m->derived_interface();
     if ( (model_interface->interface_type() & DIRECT_INTERFACE_BIT) &&
 	 contains(model_interface->analysis_drivers(), "plugin_rosenbrock") ) {
@@ -230,7 +230,7 @@ std::map<int ,DakotaRunner*> runners;
 } // end global namespace
 
 extern "C" void DAKOTA_DLL_FN dakota_create(int* dakota_ptr_int, const char* logname)
-{ 
+{
   // logname is the base filename for output and error to .log and .err
   std::string str_logname = logname ? logname : "dakota_dll";
   DakotaRunner* pDakota = new DakotaRunner(str_logname);
@@ -241,7 +241,7 @@ extern "C" void DAKOTA_DLL_FN dakota_create(int* dakota_ptr_int, const char* log
 }
 
 extern "C" int DAKOTA_DLL_FN dakota_readInput(int id, const char* dakotaInput)
-{ 
+{
   try {
     runners[id]->read_input(dakotaInput);
   }
@@ -252,9 +252,9 @@ extern "C" int DAKOTA_DLL_FN dakota_readInput(int id, const char* dakotaInput)
   return(0);
 }
 
-extern "C" void DAKOTA_DLL_FN 
+extern "C" void DAKOTA_DLL_FN
 dakota_get_variable_info(int id,
-			 char*** pVarNames, int* pNumVarNames, 
+			 char*** pVarNames, int* pNumVarNames,
 			 char*** pRespNames, int* pNumRespNames)
 {
   *pNumVarNames = runners[id]->numVars;
@@ -277,7 +277,7 @@ extern "C" int DAKOTA_DLL_FN dakota_start(int id)
 }
 
 extern "C" void DAKOTA_DLL_FN dakota_destroy (int id)
-{ 
+{
   delete runners[id];
   runners.erase(id);
 }

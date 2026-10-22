@@ -57,6 +57,9 @@ public:
 
   /// standard constructor
   NonDQUESOBayesCalibration(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDQUESOBayesCalibration(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDQUESOBayesCalibration();
 
@@ -70,6 +73,7 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
+  void initialize();
   void calibrate() override;
   void print_results(std::ostream& s, short 
       results_state = FINAL_RESULTS) override;

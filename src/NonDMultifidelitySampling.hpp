@@ -11,7 +11,7 @@
 #define NOND_MULTIFIDELITY_SAMPLING_H
 
 #include "NonDNumericAllocSampling.hpp"
-//#include "DataMethod.hpp"
+//#include "DakotaMethodEnums.hpp"
 
 
 namespace Dakota {
@@ -33,8 +33,10 @@ public:
 
   /// standard constructor
   NonDMultifidelitySampling(ProblemDescDB& problem_db,
-          ParallelLibrary& parallel_lib, 
-			    std::shared_ptr<Model> model);
+          ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDMultifidelitySampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultifidelitySampling() override;
 

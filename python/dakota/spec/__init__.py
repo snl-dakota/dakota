@@ -6,7 +6,7 @@ For the top-level study model, import directly:
 This avoids circular import issues that arise from eager imports.
 """
 
-from .base import DakotaBaseModel, DakotaField
+from .base import DakotaBaseModel, DakotaField, POINTER_SENTINEL, input_file_mode
 
 
 # Lazy import for DakotaStudy to avoid circular imports
@@ -18,4 +18,4 @@ def __getattr__(name):
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
-__all__ = ["DakotaStudy", "DakotaBaseModel"]
+__all__ = ["DakotaStudy", "DakotaBaseModel", "DakotaField", "POINTER_SENTINEL", "input_file_mode"]

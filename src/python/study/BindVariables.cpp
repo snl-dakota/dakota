@@ -1,0 +1,28 @@
+/*  _______________________________________________________________________
+
+    Dakota: Explore and predict with confidence.
+    Copyright 2014-2025
+    National Technology & Engineering Solutions of Sandia, LLC (NTESS).
+    This software is distributed under the GNU Lesser General Public License.
+    For more information, see the README file in the top Dakota directory.
+    _______________________________________________________________________ */
+
+#include "DakotaStudyPython.hpp"
+
+#include "DakotaVariables.hpp"
+
+namespace Dakota::python {
+
+void bind_variables(py::module_& m)
+{
+  py::class_<Variables>(
+    m, "Variables", py::module_local(),
+    "Variables handle returned by Study.variables().")
+    .def("num_active_cv", &Variables::cv,
+         R"doc(Return the number of active continuous variables.
+
+:returns: Number of active continuous variables.
+:rtype: int)doc");
+}
+
+} // namespace Dakota::python

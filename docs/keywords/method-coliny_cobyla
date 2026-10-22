@@ -15,16 +15,19 @@ competitors is that it treats each constraint individually when
 calculating a change to the variables, instead of lumping the
 constraints together into a single penalty function.
 
-*See the page :ref:`topic-package_scolib` for important information
-regarding all SCOLIB methods*
+.. note::
+
+  See the page :ref:`topic-package_scolib` for important information
+  regarding all SCOLIB methods
 
 ``coliny_cobyla`` is inherently serial.
 
 *Stopping Critieria*
 
 COBYLA currently only supports termination based on
- \li :dakkw:`method-coliny_cobyla-max_function_evaluations`
- \li :dakkw:`method-coliny_cobyla-solution_target`
+ 
+* :dakkw:`method-coliny_cobyla-max_function_evaluations`
+* :dakkw:`method-coliny_cobyla-solution_target`
 
 Other method-independent stopping criteria ( ``max_iterations`` and
 ``convergence_tolerance``) will be ignored if set.

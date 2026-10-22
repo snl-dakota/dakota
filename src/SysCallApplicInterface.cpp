@@ -24,6 +24,13 @@ SysCallApplicInterface(const ProblemDescDB& problem_db, ParallelLibrary& paralle
 { }
 
 
+SysCallApplicInterface::
+SysCallApplicInterface(const IRStore& interface_store,
+                      std::shared_ptr<StudyServices> services):
+  ProcessApplicInterface(interface_store, std::move(services))
+{ }
+
+
 void SysCallApplicInterface::map_bookkeeping(pid_t pid, int fn_eval_id)
 { sysCallSet.insert(fn_eval_id); } // ignores pid
 

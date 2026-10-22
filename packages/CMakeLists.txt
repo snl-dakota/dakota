@@ -17,8 +17,6 @@ ManageRelocatablePackage(CONMIN external/CONMIN)
 ManageRelocatablePackage(NCSUOPT external/NCSUOpt)
 
 
-add_subdirectory(external/nidr)
-
 set(NLOHMANN_JSON_ROOT "${PROJECT_SOURCE_DIR}/packages/external/json" CACHE PATH
         "Path to the nlohmann json library" FORCE)
 set(PEGTL_ROOT_DIR "${PROJECT_SOURCE_DIR}/packages/external/pegtl" CACHE PATH

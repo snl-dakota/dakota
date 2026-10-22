@@ -10,7 +10,10 @@
 #include "dakota_system_defs.hpp"
 #include "ApplicationInterface.hpp"
 //#include "ParamResponsePair.hpp"
+#include "IRStore.hpp"
 #include "ProblemDescDB.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include "StudyServices.hpp"
 #include <thread>
 
 //#define DEBUG
@@ -19,59 +22,114 @@
 
 namespace Dakota {
 
+extern ParallelLibrary dummy_lib;
+
+namespace {
+
+String to_legacy_string(Response::GradientType value)
+{
+  switch (value) {
+  case Response::GradientType::None:      return "none";
+  case Response::GradientType::Analytic:  return "analytic";
+  case Response::GradientType::Numerical: return "numerical";
+  case Response::GradientType::Mixed:     return "mixed";
+  }
+  return "none";
+}
+
+String to_legacy_string(Response::HessianType value)
+{
+  switch (value) {
+  case Response::HessianType::None:      return "none";
+  case Response::HessianType::Analytic:  return "analytic";
+  case Response::HessianType::Numerical: return "numerical";
+  case Response::HessianType::Mixed:     return "mixed";
+  case Response::HessianType::Quasi:     return "quasi";
+  }
+  return "none";
+}
+
+ShortArray build_default_asv(const Response& response)
+{
+  const size_t num_fns = response.num_functions();
+  ShortArray default_asv(num_fns, 1);
+
+  const auto& grad_cfg = response.gradient_config();
+  if (grad_cfg.type == Response::GradientType::Analytic) {
+    for (size_t i = 0; i < num_fns; ++i)
+      default_asv[i] |= 2;
+  }
+  else if (grad_cfg.type == Response::GradientType::Mixed) {
+    for (int fn_id : grad_cfg.id_analytic)
+      if (fn_id > 0 && static_cast<size_t>(fn_id) <= num_fns)
+        default_asv[fn_id - 1] |= 2;
+  }
+
+  const auto& hess_cfg = response.hessian_config();
+  if (hess_cfg.type == Response::HessianType::Analytic) {
+    for (size_t i = 0; i < num_fns; ++i)
+      default_asv[i] |= 4;
+  }
+  else if (hess_cfg.type == Response::HessianType::Mixed) {
+    for (int fn_id : hess_cfg.id_analytic)
+      if (fn_id > 0 && static_cast<size_t>(fn_id) <= num_fns)
+        default_asv[fn_id - 1] |= 4;
+  }
+
+  return default_asv;
+}
+
+} // namespace
+
 extern PRPCache data_pairs;
 
 ApplicationInterface::
 ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Interface(problem_db),
-  parallelLib(parallel_lib), 
-  batchEval(problem_db.get_bool("interface.batch")),
-  asynchFlag(problem_db.get_bool("interface.asynch")), batchIdCntr(0),
+  parallelLib(parallel_lib),
+  runOptions(const_cast<RunOptions&>(parallelLib.user_modes())),
+  batchEval(problem_db.get<bool>("interface.batch")),
+  asynchFlag(problem_db.get<bool>("interface.asynch")), batchIdCntr(0),
   suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
   eaDedSchedFlag(false), analysisCommSize(1), analysisCommRank(0),
-  analysisServerId(1), multiProcAnalysisFlag(false),
-  asynchLocalAnalysisFlag(false),
+  analysisServerId(1), numAnalysisServers(1), multiProcAnalysisFlag(false),
+  asynchLocalEvalFlag(false), asynchLocalAnalysisFlag(false),
+  asynchLocalEvalConcurrency(1), asynchLocalAnalysisConcurrency(1),
   asynchLocalEvalConcSpec(
-    problem_db.get_int("interface.asynch_local_evaluation_concurrency")),
+    problem_db.get<int>("interface.asynch_local_evaluation_concurrency")),
   asynchLocalAnalysisConcSpec(
-    problem_db.get_int("interface.asynch_local_analysis_concurrency")),
+    problem_db.get<int>("interface.asynch_local_analysis_concurrency")),
   numAnalysisDrivers(
-    problem_db.get_sa("interface.application.analysis_drivers").size()),
+    problem_db.get<const StringArray>("interface.application.analysis_drivers").size()),
   failureMessage("Failure captured"),
   worldSize(parallelLib.world_size()), worldRank(parallelLib.world_rank()),
   iteratorCommSize(1), iteratorCommRank(0), ieMessagePass(false),
-  numEvalServersSpec(problem_db.get_int("interface.evaluation_servers")),
-  procsPerEvalSpec(problem_db.get_int("interface.processors_per_evaluation")),
+  numEvalServers(1),
+  numEvalServersSpec(problem_db.get<int>("interface.evaluation_servers")),
+  procsPerEvalSpec(problem_db.get<int>("interface.processors_per_evaluation")),
   eaMessagePass(false), 
-  numAnalysisServersSpec(problem_db.get_int("interface.analysis_servers")),
+  numAnalysisServersSpec(problem_db.get<int>("interface.analysis_servers")),
   procsPerAnalysisSpec(
-    problem_db.get_int("interface.direct.processors_per_analysis")),
+    problem_db.get<int>("interface.direct.processors_per_analysis")),
   lenVarsMessage(0), lenVarsActSetMessage(0), lenResponseMessage(0),
   lenPRPairMessage(0),
-  evalScheduling(problem_db.get_short("interface.evaluation_scheduling")),
-  analysisScheduling(problem_db.get_short("interface.analysis_scheduling")),
+  evalScheduling(problem_db.get<short>("interface.evaluation_scheduling")),
+  analysisScheduling(problem_db.get<short>("interface.analysis_scheduling")),
   asynchLocalEvalStatic(
-    problem_db.get_short("interface.local_evaluation_scheduling") ==
+    problem_db.get<short>("interface.local_evaluation_scheduling") ==
     STATIC_SCHEDULING),
   serializeThreshold(1), headerFlag(true),
-  asvControlFlag(problem_db.get_bool("interface.active_set_vector")),
-  evalCacheFlag(problem_db.get_bool("interface.evaluation_cache")),
+  asvControlFlag(problem_db.get<bool>("interface.active_set_vector")),
+  evalCacheFlag(problem_db.get<bool>("interface.evaluation_cache")),
   nearbyDuplicateDetect(
-    problem_db.get_bool("interface.nearby_evaluation_cache")),
+    problem_db.get<bool>("interface.nearby_evaluation_cache")),
   nearbyTolerance(
-    problem_db.get_real("interface.nearby_evaluation_cache_tolerance")),
-  restartFileFlag(problem_db.get_bool("interface.restart_file")),
-  sharedRespData(SharedResponseData(problem_db)),
-  gradientType(problem_db.get_string("responses.gradient_type")),
-  hessianType(problem_db.get_string("responses.hessian_type")),
-  gradMixedAnalyticIds(
-    problem_db.get_is("responses.gradients.mixed.id_analytic")),
-  hessMixedAnalyticIds(
-    problem_db.get_is("responses.hessians.mixed.id_analytic")),
-  failAction(problem_db.get_string("interface.failure_capture.action")),
-  failRetryLimit(problem_db.get_int("interface.failure_capture.retry_limit")),
+    problem_db.get<const Real>("interface.nearby_evaluation_cache_tolerance")),
+  restartFileFlag(problem_db.get<bool>("interface.restart_file")),
+  failAction(problem_db.get<const String>("interface.failure_capture.action")),
+  failRetryLimit(problem_db.get<int>("interface.failure_capture.retry_limit")),
   failRecoveryFnVals(
-    problem_db.get_rv("interface.failure_capture.recovery_fn_vals"))
+    problem_db.get<const RealVector>("interface.failure_capture.recovery_fn_vals"))
 {
   // set coreMappings flag based on presence of analysis_drivers specification
   coreMappings = (numAnalysisDrivers > 0);
@@ -85,6 +143,120 @@ ApplicationInterface(const ProblemDescDB& problem_db, ParallelLibrary& parallel_
 
 ApplicationInterface::~ApplicationInterface() 
 { }
+ParallelLibrary* ApplicationInterface::parallel_library_ptr() const
+{
+  return (&parallelLib == &dummy_lib) ? nullptr : &parallelLib;
+}
+
+
+OutputManager* ApplicationInterface::output_manager_ptr() const
+{
+  ParallelLibrary* parallel_lib = parallel_library_ptr();
+  return parallel_lib ? &parallel_lib->output_manager() : nullptr;
+}
+
+RunOptions* ApplicationInterface::run_options_ptr() const
+{
+  return &runOptions;
+}
+
+
+StudyServices* ApplicationInterface::study_services_ptr() const
+{
+  return sharedStudyServices.get();
+}
+
+
+std::shared_ptr<StudyServices> ApplicationInterface::study_services() const
+{
+  return sharedStudyServices;
+}
+
+
+
+
+ApplicationInterface::
+ApplicationInterface(const IRStore& interface_store,
+                     std::shared_ptr<StudyServices> services):
+  Interface(interface_store),
+  sharedStudyServices(detail::require_services("ApplicationInterface", std::move(services))),
+  parallelLib(*sharedStudyServices->parallel_library_ptr()),
+  runOptions(*sharedStudyServices->run_options_ptr()),
+  batchEval(interface_store.get<bool>("batch")),
+  asynchFlag(interface_store.get<bool>("asynch")),
+  batchIdCntr(0),
+  suppressOutput(false), evalCommSize(1), evalCommRank(0), evalServerId(1),
+  eaDedSchedFlag(false), analysisCommSize(1), analysisCommRank(0),
+  analysisServerId(1), numAnalysisServers(1), multiProcAnalysisFlag(false),
+  asynchLocalEvalFlag(false), asynchLocalAnalysisFlag(false),
+  asynchLocalEvalConcurrency(1), asynchLocalAnalysisConcurrency(1),
+  asynchLocalEvalConcSpec(
+    interface_store.get<int>("asynch_local_evaluation_concurrency")),
+  asynchLocalAnalysisConcSpec(
+    interface_store.get<int>("asynch_local_analysis_concurrency")),
+  numAnalysisDrivers(
+    interface_store.get<StringArray>("application.analysis_drivers").size()),
+  failureMessage("Failure captured"),
+  worldSize(parallelLib.world_size()), worldRank(parallelLib.world_rank()),
+  iteratorCommSize(1), iteratorCommRank(0), ieMessagePass(false),
+  numEvalServers(1),
+  numEvalServersSpec(interface_store.get<int>("evaluation_servers")),
+  procsPerEvalSpec(interface_store.get<int>("processors_per_evaluation")),
+  eaMessagePass(false),
+  numAnalysisServersSpec(interface_store.get<int>("analysis_servers")),
+  procsPerAnalysisSpec(
+    interface_store.get<int>("direct.processors_per_analysis")),
+  lenVarsMessage(0), lenVarsActSetMessage(0), lenResponseMessage(0),
+  lenPRPairMessage(0),
+  evalScheduling(interface_store.get<short>("evaluation_scheduling")),
+  analysisScheduling(interface_store.get<short>("analysis_scheduling")),
+  asynchLocalEvalStatic(
+    interface_store.get<short>("local_evaluation_scheduling") ==
+    STATIC_SCHEDULING),
+  serializeThreshold(1), headerFlag(true),
+  asvControlFlag(interface_store.get<bool>("active_set_vector")),
+  evalCacheFlag(interface_store.get<bool>("evaluation_cache")),
+  nearbyDuplicateDetect(interface_store.get<bool>("nearby_evaluation_cache")),
+  nearbyTolerance(
+    interface_store.get<Real>("nearby_evaluation_cache_tolerance")),
+  restartFileFlag(interface_store.get<bool>("restart_file")),
+  failAction(interface_store.get<String>("failure_capture.action")),
+  failRetryLimit(interface_store.get<int>("failure_capture.retry_limit")),
+  failRecoveryFnVals(
+    interface_store.get<RealVector>("failure_capture.recovery_fn_vals"))
+{
+  coreMappings = (numAnalysisDrivers > 0);
+  if (!coreMappings && !algebraicMappings && interfaceType > DEFAULT_INTERFACE) {
+    Cerr << "\nError: no parameter to response mapping defined in "
+         << "ApplicationInterface.\n" << std::endl;
+    abort_handler(-1);
+  }
+}
+
+
+IntIntPair ApplicationInterface::
+estimate_partition_bounds(int max_eval_concurrency) const
+{
+  int min_ea = ProblemDescDB::min_procs_per_level(
+    1, procsPerAnalysisSpec, numAnalysisServersSpec);
+
+  int max_ppa = (interfaceType & DIRECT_INTERFACE_BIT) ? worldSize : 1;
+  int max_ea = ProblemDescDB::max_procs_per_level(
+    max_ppa, procsPerAnalysisSpec, numAnalysisServersSpec,
+    analysisScheduling, asynchLocalAnalysisConcSpec,
+    false, std::max(1, numAnalysisDrivers));
+
+  int max_pps = (procsPerEvalSpec) ? procsPerEvalSpec : max_ea;
+  bool peer_dynamic_avail = (!asynchLocalEvalStatic && max_pps == 1);
+
+  return IntIntPair(
+    ProblemDescDB::min_procs_per_level(
+      min_ea, procsPerEvalSpec, numEvalServersSpec),
+    ProblemDescDB::max_procs_per_level(
+      max_ea, procsPerEvalSpec, numEvalServersSpec,
+      evalScheduling, asynchLocalEvalConcSpec,
+      peer_dynamic_avail, max_eval_concurrency));
+}
 
 
 void ApplicationInterface::
@@ -169,7 +341,7 @@ set_evaluation_communicators(const IntArray& message_lengths)
   // Buffer sizes for function evaluation message transfers are estimated in 
   // Model::init_communicators() so that hard-coded MPIUnpackBuffer
   // lengths can be avoided.  This estimation is reperformed on every call to
-  // IteratorScheduler::run_iterator().  A Bcast is not currently needed since
+  // IteratorExecutor::run_iterator().  A Bcast is not currently needed since
   // every processor performs the estimation.
   //MPI_Bcast(message_lengths.data(), 4, MPI_INT, 0, iteratorComm);
   lenVarsMessage       = message_lengths[0];
@@ -428,7 +600,7 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
     // requested set and response.
     ActiveSet algebraic_set;
     asv_mapping(set, algebraic_set, core_set);
-    algebraic_resp = Response(sharedRespData, algebraic_set);
+    algebraic_resp = Response(response.shared_data().copy(), algebraic_set);
     if (asynch_flag) {
       ParamResponsePair prp(vars, interfaceId, algebraic_resp, evalIdCntr);
       beforeSynchAlgPRPQueue.insert(prp);
@@ -468,9 +640,8 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       // For new evaluations, manage the user's active_set_vector specification.
       //    on: asv seen by user's interface may change on each eval (default)
       //   off: asv seen by user's interface is constant for all evals
-      if (!asvControlFlag) { // set ASV's to defaultASV for the mapping
-	init_default_asv(num_fns);  // initialize if not already done
-	core_set.request_vector(defaultASV); // DVV assigned above
+      if (!asvControlFlag) { // set ASV from the current response for the mapping
+	core_set.request_vector(build_default_asv(core_resp)); // DVV assigned above
 	core_resp.active_set(core_set);
       }
 
@@ -485,8 +656,10 @@ void ApplicationInterface::map(const Variables& vars, const ActiveSet& set,
       else { // local synchronous evaluation
 
 	// bcast the job to other processors within peer 1 (if required)
-	if (multiProcEvalFlag)
-	  broadcast_evaluation(evalIdCntr, vars, core_set);
+	if (multiProcEvalFlag) {
+          ParamResponsePair prp(vars, interfaceId, core_resp, evalIdCntr, false);
+	  broadcast_evaluation(prp);
+        }
 
 	//common_input_filtering(vars);
 
@@ -643,37 +816,6 @@ duplication_detect(const Variables& vars, Response& response, bool asynch_flag)
   return false; // Duplication not detected
 }
 
-/** If the user has specified active_set_vector as off, then map()
-    uses a default ASV which is constant for all function evaluations
-    (so that the user need not check the content of the ASV on each
-    evaluation).  Only initialized if needed and not already sized. */
-void ApplicationInterface::init_default_asv(size_t num_fns) {
-  if (!asvControlFlag && defaultASV.size() != num_fns) {
-    short asv_value = 1;
-    if (gradientType == "analytic")
-      asv_value |= 2;
-    if (hessianType == "analytic")
-      asv_value |= 4;
-    defaultASV.assign(num_fns, asv_value);
-    // TODO: the mixed ID sizes from the problem DB may not be
-    // commensurate with num_fns due to Recast transformations (MO
-    // reduce or experiment data); consider managing this in Model
-    if (gradientType == "mixed") {
-      ISCIter cit = gradMixedAnalyticIds.begin();
-      ISCIter cend = gradMixedAnalyticIds.end();
-      for ( ; cit != cend; ++cit)
-        defaultASV[*cit - 1] |= 2;
-    }
-    if (hessianType == "mixed") {
-      ISCIter cit = hessMixedAnalyticIds.begin();
-      ISCIter cend = hessMixedAnalyticIds.end();
-      for ( ; cit != cend; ++cit)
-        defaultASV[*cit - 1] |= 4;
-    }
-  }
-}
-
-
 /** This function provides blocking synchronization for all cases of
     asynchronous evaluations, including the local asynchronous case
     (background system call, nonblocking fork, & multithreads), the
@@ -778,7 +920,7 @@ const IntResponseMap& ApplicationInterface::synchronize()
 	// doesn't have a valid Response to update
 	ActiveSet total_set(alg_prp_it->active_set());
 	asv_mapping(alg_prp_it->active_set(), total_set);
-	Response total_response = Response(sharedRespData, total_set);
+	Response total_response = Response(alg_response.shared_data(), total_set);
 	response_mapping(alg_response, total_response, total_response);
 	rawResponseMap[alg_prp_it->eval_id()] = total_response;
       }
@@ -918,7 +1060,7 @@ const IntResponseMap& ApplicationInterface::synchronize_nowait()
       // valid Response to update
       ActiveSet total_set(alg_prp_it->active_set());
       asv_mapping(alg_prp_it->active_set(), total_set);
-      Response total_response = Response(sharedRespData, total_set);
+      Response total_response = Response(algebraic_resp.shared_data(), total_set);
       response_mapping(algebraic_resp, total_response, total_response);
       rawResponseMap[alg_prp_it->eval_id()] = total_response;
     }
@@ -2163,34 +2305,16 @@ void ApplicationInterface::launch_asynch_local(PRPQueueIter& prp_it)
 
 
 void ApplicationInterface::
-broadcast_evaluation(int fn_eval_id, const Variables& vars,
-		     const ActiveSet& set)
-{
-  // match bcast_e()'s in serve_evaluations_{synch,asynch,peer}
-  parallelLib.bcast_e(fn_eval_id);
-  MPIPackBuffer send_buffer(lenVarsActSetMessage);
-  send_buffer << vars << set;
-
-#ifdef MPI_DEBUG
-  Cout << "broadcast_evaluation() for eval " << fn_eval_id
-       << " with send_buffer size = " << send_buffer.size()
-       << " and ActiveSet:\n" << set << std::endl;
-#endif // MPI_DEBUG
-
-  parallelLib.bcast_e(send_buffer);
-}
-
-void ApplicationInterface::
 send_evaluation(PRPQueueIter& prp_it, size_t buff_index, int server_id,
 		bool peer_flag)
 {
   if (sendBuffers[buff_index].size()) // reuse of existing send/recv buffers
     { sendBuffers[buff_index].reset(); recvBuffers[buff_index].reset(); }
   else {                              // freshly allocated send/recv buffers
-    //sendBuffers[buff_index].resize(lenVarsActSetMessage); // protected
+    //sendBuffers[buff_index].resize(lenPRPairMessage); // protected
     recvBuffers[buff_index].resize(lenResponseMessage);
   }
-  sendBuffers[buff_index] << prp_it->variables() << prp_it->active_set();
+  sendBuffers[buff_index] << *prp_it;
 
   int fn_eval_id = prp_it->eval_id();
   if (outputLevel > SILENT_OUTPUT) {
@@ -2228,13 +2352,9 @@ launch_asynch_local(MPIUnpackBuffer& recv_buffer, int fn_eval_id)
 {
   if (multiProcEvalFlag)
     parallelLib.bcast_e(recv_buffer);
-  // unpack
-  Variables vars; ActiveSet set;
-  recv_buffer >> vars >> set;
+  ParamResponsePair prp;
+  recv_buffer >> prp;
   recv_buffer.reset();
-  Response local_response(sharedRespData, set); // special ctor
-  ParamResponsePair
-    prp(vars, interfaceId, local_response, fn_eval_id, false); // shallow copy
   asynchLocalActivePRPQueue.insert(prp);
   // execute
   derived_map_asynch(prp);
@@ -2286,7 +2406,7 @@ void ApplicationInterface::serve_evaluations_synch()
   MPI_Request request = MPI_REQUEST_NULL; // bypass MPI_Wait on first pass
   MPIPackBuffer send_buffer(lenResponseMessage); // prevent dealloc @loop end
   while (currEvalId) {
-    MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+    MPIUnpackBuffer recv_buffer(lenPRPairMessage);
     // blocking receive of x & set
     if (evalCommRank == 0) { // 1-level or local comm. leader in 2-level
       parallelLib.recv_ie(recv_buffer, 0, MPI_ANY_TAG, status);
@@ -2300,21 +2420,22 @@ void ApplicationInterface::serve_evaluations_synch()
 
     if (currEvalId) { // currEvalId = 0 is the termination signal
 
-      // could server's Model::currentVariables be used instead?
-      // (would remove need to pass vars flags in MPI buffers)
-      Variables vars; ActiveSet set;
-      recv_buffer >> vars >> set;
+      ParamResponsePair prp;
+      recv_buffer >> prp;
 
 #ifdef MPI_DEBUG
-      Cout << "Server receives vars/set buffer which unpacks to:\n" << vars 
+      Cout << "Server receives PRP buffer which unpacks to:\n"
+           << prp.variables()
            << "Active set vector = { ";
-      array_write_annotated(Cout, set.request_vector(), false);
+      array_write_annotated(Cout, prp.active_set().request_vector(), false);
       Cout << "} Deriv values vector = { ";
-      array_write_annotated(Cout, set.derivative_vector(), false);
+      array_write_annotated(Cout, prp.active_set().derivative_vector(), false);
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(sharedRespData, set); // special constructor
+      const Variables& vars = prp.variables();
+      const ActiveSet& set = prp.active_set();
+      Response local_response = prp.response();
 
       // servers invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } // synch local
@@ -2362,22 +2483,25 @@ void ApplicationInterface::serve_evaluations_synch_peer()
 
     if (currEvalId) { // currEvalId = 0 is the termination signal
 
-      MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+      MPIUnpackBuffer recv_buffer(lenPRPairMessage);
       parallelLib.bcast_e(recv_buffer); // incoming from iterator
 
-      Variables vars; ActiveSet set;
-      recv_buffer >> vars >> set;
+      ParamResponsePair prp;
+      recv_buffer >> prp;
 
 #ifdef MPI_DEBUG
-      Cout << "Peer receives vars/set buffer which unpacks to:\n" << vars 
+      Cout << "Peer receives PRP buffer which unpacks to:\n"
+           << prp.variables()
            << "Active set vector = { ";
-      array_write_annotated(Cout, set.request_vector(), false);
+      array_write_annotated(Cout, prp.active_set().request_vector(), false);
       Cout << "} Deriv values vector = { ";
-      array_write_annotated(Cout, set.derivative_vector(), false);
+      array_write_annotated(Cout, prp.active_set().derivative_vector(), false);
       Cout << '}' << std::endl;
 #endif // MPI_DEBUG
 
-      Response local_response(sharedRespData, set); // special constructor
+      const Variables& vars = prp.variables();
+      const ActiveSet& set = prp.active_set();
+      Response local_response = prp.response();
 
       // servers invoke derived_map to avoid repeating overhead of map fn.
       try { derived_map(vars, set, local_response, currEvalId); } //synch local
@@ -2419,7 +2543,7 @@ void ApplicationInterface::serve_evaluations_asynch()
   // ----------------------------------------------------------
   // Step 1: block on first message before entering while loops
   // ----------------------------------------------------------
-  MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+  MPIUnpackBuffer recv_buffer(lenPRPairMessage);
   MPI_Status status; // holds MPI_SOURCE, MPI_TAG, & MPI_ERROR
   int fn_eval_id = 1, num_active = 0;
   MPI_Request recv_request = MPI_REQUEST_NULL; // bypass MPI_Test on first pass
@@ -2504,7 +2628,7 @@ void ApplicationInterface::serve_evaluations_asynch()
     ApplicationInterface::asynchronous_local_evaluations(). */
 void ApplicationInterface::serve_evaluations_asynch_peer()
 {
-  MPIUnpackBuffer recv_buffer(lenVarsActSetMessage);
+  MPIUnpackBuffer recv_buffer(lenPRPairMessage);
   int fn_eval_id = 1, num_jobs;
   size_t num_active = 0, num_launch = 0, num_completed;
 

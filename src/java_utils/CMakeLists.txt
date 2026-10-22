@@ -13,14 +13,6 @@
 
 set(DAKOTA_JAVA_UTIL_DIR "src/gov/sandia/dart/dakota")
 
-# Translates dakota.xml to dakota.input.nspec
-if (ENABLE_SPEC_MAINT)
-  add_jar(xml2nidr
-    ${DAKOTA_JAVA_UTIL_DIR}/xml/XMLToNIDRTranslator.java
-    ${DAKOTA_JAVA_UTIL_DIR}/Indenter.java
-    )
-endif()
-
 # The genrefman Java tool takes dakota.xml together with reference
 # metadata files in KeywordMetadata to generate reference manual RST files.
 if (ENABLE_DAKOTA_DOCS)

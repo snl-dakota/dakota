@@ -60,3 +60,25 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/dakota/"
   PATTERN "*.py[cdo]" EXCLUDE
   PATTERN "environment/__init__.py" EXCLUDE
 )
+
+set(_dakota_python_install_root "${CMAKE_INSTALL_PREFIX}/share/dakota/Python")
+
+add_custom_target(install-python
+  COMMAND ${CMAKE_COMMAND} --build "${Dakota_BINARY_DIR}" --target install
+          --config $<CONFIG>
+  COMMAND ${CMAKE_COMMAND}
+          -DACTION=install
+          "-DPython3_EXECUTABLE=${Python3_EXECUTABLE}"
+          "-DDAKOTA_PYTHON_ROOT=${_dakota_python_install_root}"
+          -P "${Dakota_SOURCE_DIR}/cmake/DakotaInstallPythonPth.cmake"
+  COMMENT "Installing Dakota and registering its Python package with ${Python3_EXECUTABLE}"
+  USES_TERMINAL VERBATIM)
+
+add_custom_target(uninstall-python
+  COMMAND ${CMAKE_COMMAND}
+          -DACTION=uninstall
+          "-DPython3_EXECUTABLE=${Python3_EXECUTABLE}"
+          "-DDAKOTA_PYTHON_ROOT=${_dakota_python_install_root}"
+          -P "${Dakota_SOURCE_DIR}/cmake/DakotaInstallPythonPth.cmake"
+  COMMENT "Removing dakota.pth for ${Python3_EXECUTABLE}"
+  USES_TERMINAL VERBATIM)

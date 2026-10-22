@@ -31,24 +31,24 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
   SurrBasedLocalMinimizer(problem_db, parallel_lib, model,
     std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
   multiLayerBypassFlag(false),
-  useDerivsFlag(probDescDB.get_bool("model.surrogate.derivative_usage"))
+  useDerivsFlag(probDescDB.get<bool>("model.surrogate.derivative_usage"))
 {
   // If (and only if) the user has requested a surrogate bypass, test sub-models
   // to verify that there there is an additional approx layer to bypass.  The
   // surrogate bypass allows for rigorous evaluation of responseCenterTruth
   // and responseStarTruth (which would otherwise involve an approximation).
-  if ( probDescDB.get_bool("method.sbl.truth_surrogate_bypass") == true ) {
+  if ( probDescDB.get<bool>("method.sbl.truth_surrogate_bypass") == true ) {
     Model& truth_model = *model->truth_model();
-    if (truth_model.model_type() == "surrogate")
+    if (ModelUtils::is_surrogate_model(truth_model))
       multiLayerBypassFlag = true;
     ModelList& ml = truth_model.subordinate_models();
     for (auto& m : ml)
-      if (m->model_type() == "surrogate")
+	if (ModelUtils::is_surrogate_model(*m))
 	multiLayerBypassFlag = true;
   }
 
   // Initialize method/interface dependent settings
-  initialize_trust_region_data(probDescDB.get_string("model.surrogate.type"),
+  initialize_trust_region_data(probDescDB.get<const String>("model.surrogate.type"),
 			       model->correction_order());
 }
 

@@ -15,14 +15,7 @@ cmake_minimum_required(VERSION 3.17)
 
 # TODO: make documentation build cross-platform
 
-# TODO: Should this specify COMPONENTS Development?
-find_package(Java 11 REQUIRED)
-if (NOT Java_FOUND)
-  message(SEND_ERROR "Dakota docs-sphinx requires JDK 11.")
-endif()
-include(UseJava)
-
-find_package(Python REQUIRED)
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 # Required for generated included input files
 find_package(Perl REQUIRED)
@@ -31,9 +24,13 @@ find_package(Perl REQUIRED)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/DakotaDefs.tex.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/DakotaDefs.tex)
 
-find_program(_dakota_sphinx_exe NAMES sphinx-build sphinx-build.exe)
-if(NOT _dakota_sphinx_exe)
-  message(FATAL_ERROR "Dakota docs require sphinx-build executable")
+execute_process(
+  COMMAND "${Python3_EXECUTABLE}" -c "import sphinx"
+  RESULT_VARIABLE _dakota_sphinx_import_result
+  ERROR_QUIET)
+if(NOT _dakota_sphinx_import_result EQUAL 0)
+  message(FATAL_ERROR
+    "Dakota docs require Sphinx in ${Python3_EXECUTABLE}; install it for the Python interpreter used to build Dakota")
 endif()
 
 # Duplicate build of java utils
@@ -42,6 +39,36 @@ endif()
 if( NOT Dakota_SOURCE_DIR)
   get_filename_component(Dakota_SOURCE_DIR ".." ABSOLUTE) 
 endif()
+
+# Sphinx imports the compiled dakota.study extension.  In a normal top-level
+# Dakota build, DAKOTA_PYTHON_PATH names the assembled build-tree package.  A
+# standalone docs build must point this variable at a compatible build or
+# installation.
+if(NOT DAKOTA_PYTHON_PATH)
+  set(DAKOTA_PYTHON_PATH "" CACHE PATH
+    "Python package root containing a built dakota.study extension")
+endif()
+if(NOT TARGET _study AND NOT DAKOTA_PYTHON_PATH)
+  message(FATAL_ERROR
+    "Standalone Dakota docs require -DDAKOTA_PYTHON_PATH=<package-root> containing a compatible built dakota.study module")
+endif()
+if(NOT TARGET _study)
+  execute_process(
+    COMMAND "${CMAKE_COMMAND}" -E env
+      "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}"
+      "${Python3_EXECUTABLE}" -c "import dakota.study"
+    RESULT_VARIABLE _dakota_study_import_result
+    ERROR_VARIABLE _dakota_study_import_error)
+  if(NOT _dakota_study_import_result EQUAL 0)
+    message(FATAL_ERROR
+      "DAKOTA_PYTHON_PATH does not provide a compatible dakota.study module:\n${_dakota_study_import_error}")
+  endif()
+endif()
+
+set(_dakota_sphinx_command
+  "${CMAKE_COMMAND}" -E env
+  "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}"
+  "${Python3_EXECUTABLE}" -m sphinx)
 
 set(CMAKE_MODULE_PATH 
   "${Dakota_SOURCE_DIR}"
@@ -56,47 +83,6 @@ include(DakotaUsersExamples)
 
 dakota_version_set_helper_vars()
 
-set(DAKOTA_JAVA_UTIL_DIR
-  "${Dakota_SOURCE_DIR}/src/java_utils/src/gov/sandia/dart/dakota")
-
-set(CMAKE_JAVA_INCLUDE_PATH 
-  "${Dakota_SOURCE_DIR}/src/java_utils/antlr-runtime-4.1.jar")
-set(NIDRANTLR_DIR "${DAKOTA_JAVA_UTIL_DIR}/nidr/antlr")
-add_jar(docs_genrefman
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManGenerator.java
-  # don't currently neeed .nspec to .dox translation, but need to compile
-  ${DAKOTA_JAVA_UTIL_DIR}/nidr/NIDRToRefManSpec.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManMetaData.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/RefManInputSpec.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/metadata/InputSpecKeywordMetaData.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/metadata/RefManKeywordMetaData.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/DoxygenToRSTConverter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPageRSTPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPageRSTTablePrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/KeywordPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/TableKeyword.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellFormatter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellPayload.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/CellUtil.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericCell.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericRow.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/GenericTable.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstDividerPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstRowPrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/RstTablePrinter.java
-  ${DAKOTA_JAVA_UTIL_DIR}/refman/print/rst/table/SpanHoldCell.java
-  ${DAKOTA_JAVA_UTIL_DIR}/xml/XMLToRefManSpec.java
-  # Would prefer to put these all on classpath, can't figure out how
-  ${NIDRANTLR_DIR}/NIDRBaseListener.java
-  ${NIDRANTLR_DIR}/NIDRBaseVisitor.java  # may not need
-  ${NIDRANTLR_DIR}/NIDRLexer.java
-#  ${NIDRANTLR_DIR}/NIDRLexer.tokens      # may not need
-  ${NIDRANTLR_DIR}/NIDRListener.java
-  ${NIDRANTLR_DIR}/NIDRParser.java
-#  ${NIDRANTLR_DIR}/NIDR.tokens           # may not need
-  ${NIDRANTLR_DIR}/NIDRVisitor.java
-  )
-
 # Keyword reference dependencies
 file(GLOB ref_kw_md "keywords/*")
 list_filter_emacs_backups(ref_kw_md)
@@ -104,21 +90,19 @@ list_filter_emacs_backups(ref_kw_md)
 # TODO: Generate all reference manual to build tree
 
 # Generate the ultimate RST files for ref man keywords, specifying
-# only required dependencies.  The genrefman Java tool takes
-# dakota.xml together with reference metadata files to create
-# reference manual keyword pages.
-get_target_property(docs_genrefman_jar docs_genrefman JAR_FILE)
+# only required dependencies. The Python generator takes dakota.json
+# together with reference metadata files to create reference manual
+# keyword pages.
 add_custom_command( 
   OUTPUT ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference/environment.rst
-  DEPENDS docs_genrefman
-          ${Dakota_SOURCE_DIR}/src/dakota.xml
+  DEPENDS ${Dakota_SOURCE_DIR}/src/dakota.json
+          ${DakotaDocs_SOURCE_DIR}/generate_keyword_reference.py
 	  ${ref_kw_md}
   COMMAND ${CMAKE_COMMAND}
   ARGS -E make_directory ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference
-  COMMAND ${Java_JAVA_EXECUTABLE} 
-  ARGS -classpath ${docs_genrefman_jar} 
-    gov.sandia.dart.dakota.refman.RefManGenerator
-    ${Dakota_SOURCE_DIR}/src/dakota.xml
+  COMMAND ${Python3_EXECUTABLE}
+  ARGS ${DakotaDocs_SOURCE_DIR}/generate_keyword_reference.py
+    ${Dakota_SOURCE_DIR}/src/dakota.json
     ${DakotaDocs_SOURCE_DIR}/keywords
     ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference
   COMMENT "Generating keyword reference RST files to ${DakotaDocs_SOURCE_DIR}/user/usingdakota/reference/"
@@ -161,27 +145,33 @@ insert_dakota_version("${DakotaDocs_SOURCE_DIR}/user/conf.py")
 
 # Serial build assuming all files are stale
 add_custom_target(docs-user
-  COMMAND "${_dakota_sphinx_exe}" -a -E -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND ${_dakota_sphinx_command} -a -E -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:
-  ${_dakota_sphinx_exe} -a -E -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${Python3_EXECUTABLE} -m sphinx -a -E -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
 add_dependencies(docs-user docs-keywords docs-user-samples)
 
 # Parallel build assuming all files are stale
 add_custom_target(docs-user-fast
-  COMMAND "${_dakota_sphinx_exe}" -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND ${_dakota_sphinx_command} -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx (full rebuild):
-  ${_dakota_sphinx_exe} -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${Python3_EXECUTABLE} -m sphinx -a -E -b html -j auto ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
 add_dependencies(docs-user-fast docs-keywords docs-user-samples)
 
 # Serial build of only changed files
 add_custom_target(docs-user-increm
-  COMMAND "${_dakota_sphinx_exe}" -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  COMMAND ${_dakota_sphinx_command} -b html ${DAKOTA_SPHINX_DEFS} "${DakotaDocs_SOURCE_DIR}/user" "${CMAKE_CURRENT_BINARY_DIR}/user-html"
   COMMENT "Generating user-html with Sphinx:
-  ${_dakota_sphinx_exe} -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
+  ${Python3_EXECUTABLE} -m sphinx -b html ${DAKOTA_SPHINX_DEFS} ${DakotaDocs_SOURCE_DIR}/user ${CMAKE_CURRENT_BINARY_DIR}/user-html"
 )
 add_dependencies(docs-user-increm docs-keywords docs-user-samples)
+
+if(TARGET _study)
+  add_dependencies(docs-user _study dakota_python_package)
+  add_dependencies(docs-user-fast _study dakota_python_package)
+  add_dependencies(docs-user-increm _study dakota_python_package)
+endif()
 
 
 add_custom_target(docs-user-clean
@@ -233,6 +223,16 @@ add_custom_target(package_docs
   COMMENT "Packaging docs"
   )
 add_dependencies(package_docs docs ) #docs-pdf
+
+# Preserve the historical Jenkins artifact location for top-level builds.
+# A standalone docs build already writes the archive to CMAKE_BINARY_DIR.
+if(NOT CMAKE_CURRENT_BINARY_DIR STREQUAL CMAKE_BINARY_DIR)
+  add_custom_command(TARGET package_docs POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_BINARY_DIR}/dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz"
+      "${CMAKE_BINARY_DIR}/dakota-${Dakota_FINAL_PACKAGE_LABEL}-docs.tar.gz"
+    COMMENT "Copying the documentation archive to the top-level build directory")
+endif()
 
 
 if(DAKOTA_DOCS_LEGACY)

@@ -122,6 +122,99 @@ SNLLLeastSq::SNLLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
 }
 
 
+SNLLLeastSq::
+SNLLLeastSq(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+	    std::shared_ptr<Model> model):
+  LeastSq(std::move(services), method_store, model,
+	  std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
+  SNLLBase(method_store), nlfObjective(NULL),
+  nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
+{
+  // historical default convergence tolerance
+  if (convergenceTol < 0.0) convergenceTol = 1.0e-4;
+
+  // convenience function from SNLLBase
+  snll_pre_instantiate(boundConstraintFlag, numConstraints);
+
+  // Instantiate NLF & Optimizer objects based on method & gradient selections
+
+  // Gauss-Newton: unconstrained, bound-constrained, & nonlinear interior-point
+  if (methodName != OPTPP_G_NEWTON) {
+    Cerr << "Method name " << method_enum_to_string(methodName)
+         << " currently unavailable within\nDAKOTA's SNLLLeastSq "
+         << "implementation of OPT++." << std::endl;
+    abort_handler(-1);
+  }
+
+  // Gauss-Newton uses the full Newton optimizer with the addition of
+  // code which computes f, df/dx, and d^2f/dx^2 as a function of the least
+  // squares residuals and their Jacobian matrix (see nlf2_evaluator_gn).
+  // In order to support the finer granularity of data needed to exploit the
+  // problem structure, Response is made up of numLeastSqTerms
+  // and constraints, rather than objective function(s) and constraints.
+
+  if (vendorNumericalGradFlag) {
+    Cerr << "Gauss-Newton does not support vendor numerical gradients.\n"
+         << "Select dakota as method_source instead." << std::endl;
+    abort_handler(-1);
+  }
+
+  nlf2 = new OPTPP::NLF2(numContinuousVars, nlf2_evaluator_gn, init_fn);
+  nlfObjective = nlf2;
+  nlfObjective->setModeOverride(true);
+  if (numConstraints) { // nonlinear interior-point
+    // **********************************************************************
+    // NOTE: The combination of nlf2_evaluator_gn() with
+    //       constraint1_evaluator_gn() has consistent derivative levels.
+    //       OPT++ supports a mixed mode in which
+    //       the optimization Hessian uses the Gauss-Newton approximation
+    //       (full Newton optimizer) and the constraint Hessians use a
+    //       quasi-Newton approximation (quasi-Newton optimizer).
+    // **********************************************************************
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptDHNIPS optimizer with NLF2 Gauss-Newton "
+           << "evaluator.\n";
+    optdhnips = new OPTPP::OptDHNIPS(nlf2);
+    //optdhnips->setSearchStrategy(searchStrat); // not supported
+    optdhnips->setMeritFcn(meritFn);
+    optdhnips->setStepLengthToBdry(stepLenToBndry);
+    optdhnips->setCenteringParameter(centeringParam);
+    theOptimizer = optdhnips;
+
+    nlf1Con = new OPTPP::NLF1(numContinuousVars, numNonlinearConstraints,
+                              constraint1_evaluator_gn, init_fn);
+    nlfConstraint = nlf1Con;
+    nlpConstraint = new OPTPP::NLP(nlf1Con);
+  }
+  else if (boundConstraintFlag) { // bound-constrained
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptBCNewton optimizer with NLF2 Gauss-Newton "
+           << "evaluator.\n";
+    optbcnewton = new OPTPP::OptBCNewton(nlf2);
+    optbcnewton->setSearchStrategy(searchStrat);
+    if (searchStrat == OPTPP::TrustRegion) optbcnewton->setTRSize(maxStep);
+    theOptimizer = optbcnewton;
+  }
+  else { // unconstrained
+    if (outputLevel == DEBUG_OUTPUT)
+      Cout << "Instantiating OptNewton optimizer with NLF2 Gauss-Newton "
+           << "evaluator.\n";
+    optnewton = new OPTPP::OptNewton(nlf2);
+    optnewton->setSearchStrategy(searchStrat);
+    if (searchStrat == OPTPP::TrustRegion) optnewton->setTRSize(maxStep);
+    theOptimizer = optnewton;
+  }
+
+  // convenience function from SNLLBase
+  snll_post_instantiate(numContinuousVars, vendorNumericalGradFlag,
+                        iteratedModel->interval_type(),
+                        iteratedModel->fd_gradient_step_size(), maxIterations,
+                        maxFunctionEvals, convergenceTol, gradientTol, maxStep,
+                        boundConstraintFlag, numConstraints, outputLevel,
+                        theOptimizer, nlfObjective, NULL, NULL);
+}
+
+
 SNLLLeastSq::SNLLLeastSq(const String& method_name, std::shared_ptr<Model> model):
   LeastSq(OPTPP_G_NEWTON, model, std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())), // use default SNLLBase ctor
   nlfObjective(NULL), nlfConstraint(NULL), nlpConstraint(NULL),

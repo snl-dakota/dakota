@@ -12,7 +12,7 @@
 
 #include "NonDMultilevelSampling.hpp"
 //#include "NonDMultifidelitySampling.hpp"
-#include "DataMethod.hpp"
+#include "DakotaMethodEnums.hpp"
 
 namespace Dakota {
 
@@ -34,6 +34,9 @@ public:
 
   /// standard constructor
   NonDMultilevControlVarSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
+  /// DI constructor
+  NonDMultilevControlVarSampling(std::shared_ptr<StudyServices> services,
+             const IRStore& method_store, std::shared_ptr<Model> model);
   /// destructor
   ~NonDMultilevControlVarSampling() override;
 

@@ -4,7 +4,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  7.3265854807e+09  2.1533305797e+09  6.2425531206e-01  2.4120410483e-02
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  6.8993179768e+09  7.7538529845e+09  1.8906389894e+09  2.5014708509e+09
 Simple Correlation Matrix among all inputs and outputs:
                     nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 
@@ -70,7 +70,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  9.0160429216e+05  1.8372733573e+06  4.8644891771e+00  2.6176488020e+01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  5.3704939814e+05  1.2661591862e+06  1.6131385846e+06  2.1343149964e+06
 Simple Correlation Matrix among all inputs and outputs:
                     puv_1       biuv_1       nbuv_1       geuv_1       hguv_1      hpiuv_1      hpsuv_1      hpruv_1 response_fn_1 
@@ -120,7 +120,7 @@ Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
  response_fn_1  8.3519191138e+09  2.5048499045e+09  1.1028068369e-01 -6.7158460767e-01
 95% confidence intervals for each response function:
-                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev    UpperCI_StdDev
+                    LowerCI_Mean      UpperCI_Mean    LowerCI_StdDev     UpperCI_StdDev
  response_fn_1  7.1796132726e+09  9.5242249550e+09  1.9049142916e+09  3.6585127232e+09
 Simple Correlation Matrix among all inputs and outputs:
                     nuv_1       lnuv_1        uuv_1       luuv_1        tuv_1        euv_1       beuv_1       gauv_1       guuv_1        fuv_1        wuv_1       hbuv_1 response_fn_1 

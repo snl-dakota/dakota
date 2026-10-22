@@ -13,6 +13,7 @@
 #include "LDDriver.hpp"
 #include "ProbabilityTransformModel.hpp"
 #include "ProblemDescDB.hpp"
+#include "IRStore.hpp"
 #include "RandomVariable.hpp"
 #include "Rank1Lattice.hpp"
 
@@ -21,9 +22,20 @@ namespace Dakota {
 // Default constructor
 LDDriver::LDDriver(ProblemDescDB& problem_db) :
     sequence_(
-        problem_db.get_bool("method.rank_1_lattice") ? 
+        problem_db.get<bool>("method.rank_1_lattice") ? 
             static_cast<LowDiscrepancySequence*>(new Rank1Lattice(problem_db)) :
             static_cast<LowDiscrepancySequence*>(new DigitalNet(problem_db))
+    ),
+    numSamples_(0)
+{
+
+}
+
+LDDriver::LDDriver(const IRStore& method_store) :
+    sequence_(
+        method_store.get<bool>("rank_1_lattice") ?
+            static_cast<LowDiscrepancySequence*>(new Rank1Lattice(method_store)) :
+            static_cast<LowDiscrepancySequence*>(new DigitalNet(method_store))
     ),
     numSamples_(0)
 {

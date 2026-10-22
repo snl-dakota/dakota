@@ -63,7 +63,7 @@ if(DAKOTA_PYTHON_SURROGATES)
     "${Teuchos_INCLUDE_DIRS}"
     "${CMAKE_CURRENT_SOURCE_DIR}/.."
     "${pybind11_INCLUDE_DIRS}")
-  target_link_libraries(surrogates_python_pybind11 pybind11::embed)
+  target_link_libraries(surrogates_python_pybind11 PRIVATE pybind11::embed)
 
 endif()
 

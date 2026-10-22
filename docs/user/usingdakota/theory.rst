@@ -14,6 +14,7 @@ Dakota Theory
    theory/stochastic
    theory/epistemic
    theory/bayesian
+   theory/nlsconfidenceintervals
    theory/surrogates
    theory/surrogatebasedoptimization
    theory/surrogatebasedglobaloptimization

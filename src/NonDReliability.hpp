@@ -34,6 +34,8 @@ protected:
   //
 
   NonDReliability(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model); ///< constructor
+  NonDReliability(std::shared_ptr<StudyServices> services, const IRStore& method_store,
+                        std::shared_ptr<Model> model); ///< DI constructor
   ~NonDReliability() override;                                       ///< destructor
 
   //

@@ -374,6 +374,63 @@ TEST(instruction_materializer_tests, int_set_collects_unique_integer_values)
   EXPECT_EQ(store.get<IntSet>("int_values"), IntSet({1, 3}));
 }
 
+TEST(instruction_materializer_tests, materialize_block_matches_full_study_store_contents)
+{
+  const json study_json = {
+    {"environment", {{"output_precision", 6}}},
+    {"method", json::array({{
+      {"sampling", {
+        {"sample_type", {{"lhs", true}}},
+        {"samples", 10},
+        {"seed", 99}
+      }}
+    }})},
+    {"model", json::array({json::object()})},
+    {"variables", json::array({{
+      {"active", {{"all", true}}},
+      {"uniform_uncertain", {
+        {"count", 2},
+        {"descriptors", {"x1", "x2"}},
+        {"lower_bounds", {0.0, 0.0}},
+        {"upper_bounds", {1.0, 1.0}}
+      }}
+    }})},
+    {"interface", json::array({{
+      {"analysis_drivers", {
+        {"drivers", {"text_book"}},
+        {"interface_type", {{"fork", json::object()}}}
+      }}
+    }})},
+    {"responses", json::array({{
+      {"response_type", {{"response_functions", {{"count", 1}}}}},
+      {"gradient_type", {{"no_gradients", true}}},
+      {"hessian_type", {{"no_hessians", true}}}
+    }})}
+  };
+
+  InstructionMaterializer materializer;
+  const IRState state = materializer.materialize(study_json);
+
+  EXPECT_EQ(materializer.materialize_block(
+              study_json.at("environment"), irgen::BlockType::Environment).values(),
+            state.environment.values());
+  EXPECT_EQ(materializer.materialize_block(
+              study_json.at("method").at(0), irgen::BlockType::Method).values(),
+            state.method.at(0).values());
+  EXPECT_EQ(materializer.materialize_block(
+              study_json.at("model").at(0), irgen::BlockType::Model).values(),
+            state.model.at(0).values());
+  EXPECT_EQ(materializer.materialize_block(
+              study_json.at("variables").at(0), irgen::BlockType::Variables).values(),
+            state.variables.at(0).values());
+  EXPECT_EQ(materializer.materialize_block(
+              study_json.at("interface").at(0), irgen::BlockType::Interface).values(),
+            state.interface.at(0).values());
+  EXPECT_EQ(materializer.materialize_block(
+              study_json.at("responses").at(0), irgen::BlockType::Responses).values(),
+            state.responses.at(0).values());
+}
+
 int main(int argc, char** argv)
 {
   testing::InitGoogleTest(&argc, argv);

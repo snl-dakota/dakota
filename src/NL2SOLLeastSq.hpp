@@ -58,6 +58,9 @@ public:
 
   /// standard constructor
   NL2SOLLeastSq(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,  std::shared_ptr<Model> model);
+  /// DI constructor
+  NL2SOLLeastSq(const IRStore& method_store, std::shared_ptr<Model> model,
+                std::shared_ptr<StudyServices> services);
   /// alternate constructor
   NL2SOLLeastSq(std::shared_ptr<Model> model);
   /// destructor
@@ -70,6 +73,9 @@ public:
   void core_run() override;
 
 private:
+
+  void initialize_model_mode_options();
+
 
   //
   //- Heading: Static member functions passed by pointer to NL2SOL

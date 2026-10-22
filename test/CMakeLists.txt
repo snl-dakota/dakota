@@ -31,6 +31,10 @@ include_directories(
   ${Teuchos_INCLUDE_DIRS}
 )
 
+if(HAVE_ROL)  
+  add_definitions("-DHAVE_ROL")
+endif()
+
 remove_definitions("-DHAVE_CONFIG_H")
 
 # Generate regression tests for all dakota_*.in and dakota_*.json in
@@ -41,9 +45,6 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
     set(DAKOTA_PYTHON_PATH "${Dakota_BINARY_DIR}/python")
   endif()
 
-  if(HAVE_EXT_PYTHON_METHOD)
-    set(DAKOTA_PYTHON_PATH "$<TARGET_FILE_DIR:ext_method>:${DAKOTA_PYTHON_PATH}")
-  endif()
 
   # list of all destination files copied into test/ or subdirs test/dakota_*
   # so we can have a custom target depend on them
@@ -61,6 +62,48 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
   add_file_copy_command(${CMAKE_CURRENT_SOURCE_DIR}/dakota_diff.perl
       ${CMAKE_CURRENT_BINARY_DIR}/dakota_diff.perl)
   list(APPEND copied_test_files_abs "${CMAKE_CURRENT_BINARY_DIR}/dakota_diff.perl")
+
+  if(DAKOTA_PYTHON_STUDY)
+    # Keep registration tied to the explicit paired-case manifest.
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+      "${CMAKE_CURRENT_SOURCE_DIR}/python_parity/cases.json")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/python_parity/cases.json" python_cases)
+    string(JSON python_case_count LENGTH "${python_cases}")
+    math(EXPR python_case_last "${python_case_count} - 1")
+    foreach(index RANGE ${python_case_last})
+      string(JSON case_id GET "${python_cases}" ${index} id)
+      string(JSON feature_count ERROR_VARIABLE feature_error
+        LENGTH "${python_cases}" ${index} requires_features)
+      set(case_enabled TRUE)
+      if(NOT feature_error AND feature_count GREATER 0)
+        math(EXPR feature_last "${feature_count} - 1")
+        foreach(feature_index RANGE ${feature_last})
+          string(JSON feature GET "${python_cases}" ${index} requires_features ${feature_index})
+          if(NOT ${feature})
+            set(case_enabled FALSE)
+          endif()
+        endforeach()
+      endif()
+      if(NOT case_enabled)
+        continue()
+      endif()
+      add_test(NAME python_parity_${case_id}
+        COMMAND "${Python3_EXECUTABLE}"
+          "${CMAKE_CURRENT_SOURCE_DIR}/python_parity/run_pair.py"
+          --case "${case_id}"
+          --source "${CMAKE_CURRENT_SOURCE_DIR}"
+          --work "${CMAKE_CURRENT_BINARY_DIR}/python_parity/${case_id}"
+          --dakota "$<TARGET_FILE:dakota>"
+          --driver "$<TARGET_FILE:text_book>"
+          --python "${Python3_EXECUTABLE}"
+          --python-path "${DAKOTA_PYTHON_PATH}"
+          --perl "${PERL_EXECUTABLE}"
+          --runner "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl"
+          --diff "${CMAKE_CURRENT_SOURCE_DIR}/dakota_diff.perl")
+      set_tests_properties(python_parity_${case_id} PROPERTIES
+        LABELS "PythonParity;SerialTest" TIMEOUT 120)
+    endforeach()
+  endif()
 
   # Create one CTest per Dakota input file, each in a protected subdirectory
 

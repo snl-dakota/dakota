@@ -87,137 +87,52 @@ These communicators can then be used for initializing parallel simulation instan
 Configuring Dakota operation
 ============================
 
-This section describes several alternate ways to initially set and later manipulate Dakota's configuration, including alternatives to using a text-based input file. The algorithm configuration for a particular Dakota analysis run is managed in its ProblemDescDB, which can be populated via an input file, string literal, or C++ API, and later modified through Dakota's C++ API. All Dakota objects then draw information from this database upon instantiation.
+Library clients can construct a study from a complete Dakota input file, an
+input string, or the JSON representation accepted by ``LibraryEnvironment``.
+The parsed input is stored in Dakota's intermediate representation and exposed
+to existing Dakota components through ``ProblemDescDB``. Client code should
+treat this database as read-only study configuration after parsing.
 
 Input data parsing
 ------------------
 
-The simplest way for an application to configure a Dakota analysis problem is to use Dakota's normal input parsing system to populate its problem database (ProblemDescDB). This is done by providing standard Dakota input file syntax through the library interface, via either a file name or string literal. An advantage is that native Dakota syntax can be used, but disadvantages include the requirement for an additional input file beyond those already required by the parent application and that application users also need to know Dakota syntax.
-
-The two ways to configure Dakota via input parsing are shown near the beginning of run_dakota_mixed() in library_mode.cpp. Here the ProgramOptions are set to either parse from a named file:
-
-.. code-block:: cpp
-
-	Dakota::ProgramOptions opts;
-	opts.input_file(dakota_input_file);
-
-or from a string literal provided by the wrapping application:
+The ``run_dakota_parse()`` example in ``library_mode.cpp`` shows the supported
+file-based workflow:
 
 .. code-block:: cpp
 
-	string serial_input = "% Dakota input file ...";
-	opts.input_string(serial_input);
+   Dakota::ProgramOptions opts;
+   opts.input_file(dakota_input_file);
+   Dakota::LibraryEnvironment env(opts);
 
-This library approach is coarse-grained in that input is parsed, objects constructed, and the environment is immediately ready to run. The next approaches are more modular.
+The input file must contain a complete, valid study. To parse an in-memory
+input instead, call ``opts.input_string(input_text)`` before constructing the
+environment. Applications that build studies through the C++ dependency
+injection API can instead use the JSON ``LibraryEnvironment`` constructor.
 
-Problem database insertion
---------------------------
+Interface injection after parsing
+---------------------------------
 
-A second approach to configuring Dakota's operation is to bypass parsing phases and directly populate the ProblemDescDB with information on the methods, variables, interface, responses, etc., that define the Dakota analysis problem. This approach requires more interaction with Dakota classes and data structures. However, it can offer usability benefit when the integrating application does not want their users to interact with the full Dakota syntax, or efficiency benefit when for example there are a large number of variables to configure.
-
-In the direct database population approach, Dakota DataMethod, DataModel, DataVariables, DataInterface, and DataResponses objects are instantiated and populated with the desired problem data. These objects are then published to the problem database using insert_nodes() . An example of this approach is available in run_dakota_data() in library_mode.cpp, where the OPT++ Quasi-Newton method is configured to work on a plugin version of text_book or rosenbrock. The data objects are populated with their default values upon instantiation and are often sufficient for basic Dakota studies. Only the non-default values need to be specified. Moreover the default Dakota Model is a SingleModel, so this object need not be configured unless tailoring its configuration or using a more advanced model type. Refer to the DataMethod, DataModel, DataVariables, DataInterface, and DataResponses class documentation and source code for lists of attributes and their defaults. Here is an excerpt of run_dakota_data() that specifies the OPT++ solver after default construction of DataMethod:
-
-.. code-block:: cpp
-
-	Dakota::DataMethod   dme;
-	Dakota::DataMethodRep* dmr = dme.data_rep();
-	dmr->methodName = Dakota::OPTPP_Q_NEWTON;
-
-When using direct database population, it is critical to leave the database in an open, accessible state after initial construction. In this run_dakota_data() example, a flag check_bcast_construct is passed into the LibraryEnvironment constructor, indicating that it should not finalize the database and construct Dakota objects. Moreover, it is only necessary to populate the database on rank 0 of the MPI Comm on which Dakota is running. After database objects are inserted or adjusted, the LibraryEnvironment::done_modifying_db() function must be called before proceeding to execute. This synchronizes problem data across all ranks and constructs Dakota objects needed to run the specified analysis.
+An application may parse a full input file and then replace its function
+evaluator with an in-process implementation. This updates the constructed
+runtime ``Interface`` object; it does not mutate schema keys or write directly
+to the input intermediate representation.
 
 .. code-block:: cpp
 
-	bool check_bcast_construct = false;
-	Dakota::LibraryEnvironment env(MPI_COMM_WORLD, opts, check_bcast_construct);
-	if (rank == 0)
-	  // insert/modify DB, then lock and proceed:
-	env.done_modifying_db();
-	env.execute();
+   auto plugin = std::make_shared<MyDirectApplicInterface>(
+       env.problem_description_db(), env.parallel_library());
+   bool installed = env.plugin_interface(
+       "", "direct", "plugin_rosenbrock", plugin);
+   if (!installed)
+     throw std::runtime_error("matching interface was not found");
+   env.execute();
 
-Mixed mode, callbacks, and late updates
----------------------------------------
-
-The LibraryEnvironment API also supports mixed approaches that combine the parsing of a Dakota input file (or input string literal) with direct database updates. This approach is motivated by large-scale applications where large vectors are cumbersome to specify in a Dakota input file or where later updates to an input template are needed. The example run_dakota_mixed() in library_mode.cpp demonstrates the combination of these more advanced approaches: (1) input text parsing, (2) database updates via a callback, (3) database updates via direct manipulation, and (4) further runtime updates to the Model before running.
-
-First, a ProgramOptions class is instantiated and configured to parse either an input file or input string literal (as in earlier examples). The passed input data must contain all required inputs so the parser can validate them. Since vector data like variable values/bounds/tags, linear/nonlinear constraint coefficients/bounds, etc., are optional, these potentially large vector specifications can be omitted from the input file and updated later through the database API. Only the variable/response counts necessary for sizing, e.g.:
-
-.. code-block::
-
-	method
-	  linear_inequality_constraints = 500
-
-	variables
-	  continuous_design = 1000
-
-	responses
-	  objective_functions = 1
-	  nonlinear_inequality_constraints = 100000
-
-and not the lists of values are required in this case. To update or add data after this initial parse, we use the ProblemDescDB::set() family of overloaded functions, e.g.
-
-.. code-block:: cpp
-
-	Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
-	problem_db.set("variables.continuous_design.initial_point", drv);
-
-where the string identifiers are the same identifiers used when pulling information from the database using one of the get_<datatype>() functions (refer to ProblemDescDB for a full list). However, the supported ProblemDescDB::set() options are a restricted subset of the database attributes, focused on vector inputs that can be large scale.
-
-Second, the example demonstrates a user-provided callback function which Dakota will invoke after input parsing to update ProblemDescDB. In library_mode.cpp, callback_function() is a user-provided post-parse callback that implements the type Dakota::DbCallbackFunction.
-
-.. code-block:: cpp
-
-	static void callback_function(Dakota::ProblemDescDB* db, void *ptr);
-
-When Dakota calls this function it will pass back pointers to the ProblemDescDB instance and to user-provided data, so the application may convey its settings by calling methods on the ProblemDescDB, optionally using the provided data. An example of a user data structure is demonstrated in callback_data. In this case, when the LibraryEnvironment is constructed, it is constructed with the input data to initially parse, the callback function, and to leave it unlocked for further updates:
-
-.. code-block:: cpp
-
-	bool done_with_db = false;
-	Dakota::LibraryEnvironment env(opts, done_with_db, callback_function, &data);
-
-Third, the example demonstrates changes to the database after parsing and callback-based updates. Again, these only need happen on Dakota's rank 0 before finalizing the DB with LibraryEnvironment::done_modifying_db(). The example demonstrates:
-
-1. Getting access to the database through env.problem_description_db()
-2. Setting the database nodes to the appropriate method through problem_db.resolve_top_method()
-3. Getting data from the DB with a get string array function: problem_db.get_sa("interface.application.analysis_drivers")
-4. Setting update data with problem_db.set("variables.continuous_design.initial_point", ip);
-
-After any of these three types updates, calling LibraryEnvironment::done_modifying_db() will broadcast any updates (including potentially large vector data and post-process specification data to fill in any vector defaults that have not yet been provided through either file parsing or direct updates. (Note: scalar defaults are handled in the Data class constructors.)
-
-Fourth and finally, run_dakota_mixed() demonstrates modifying a Model's data after database operations and interface plugin are complete. This involves finding the right Model (or other class) instance to modify, and directly adjusting its data through the public API. Since the database is finalized, any updates must be performed through direct set operations on the constructed objects. For example, to update other data such as variable values/bounds/tags or response bounds/targets/tags, refer to the set functions documented in Iterator and Model. As an example, the following code updates the active continuous variable values, which will be employed as the initial guess for certain classes of Iterators:
-
-.. code-block:: cpp
-
-	ModelList& all_models  = problem_db.model_list();
-	Model&     first_model = *all_models.begin();
-	Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
-	first_model.continuous_variables(drv);
-
-**Remarks**
-
-If performing such data updates within the constructor of a DirectApplicInterface extension/derivation (see Creating a simulator plugin interface), then this code is sufficient since the database is unlocked, the active list nodes of the ProblemDescDB have been set for you, and the correct method/model/variables/interface/responses specification instance will get updated. The difficulty in this case stems from the order of instantiation. Since the Variables and Response instances are constructed in the base Model class, prior to construction of Interface instances in derived Model classes, database information related to Variables and Response objects will have already been extracted by the time the Interface constructor is invoked and the database update will not propagate.
-
-Therefore, it is preferred to perform these database set operations at a higher level (e.g., within your main program), prior to allowing Environment to broadcast, construct, and execute, such that instantiation order is not an issue. However, in this case, it is necessary to explicitly manage the list nodes of the ProblemDescDB using a specification instance identifier that corresponds to an identifier from the input file, e.g.:
-
-.. code-block:: cpp
-
-	problem_db.set_db_variables_node("MY_VARIABLES_ID");
-	Dakota::RealVector drv(1000, 1.); // vector of length 1000, values initialized to 1.
-	problem_db.set("variables.continuous_design.initial_point", drv);
-
-Alternatively, rather than setting just a single data node, all data nodes may be set using a method specification identifier:
-
-.. code-block:: cpp
-
-	problem_db.set_db_list_nodes("MY_METHOD_ID"); 
-
-since the method specification is responsible for identifying a model specification, which in turn identifies variables, interface, and responses specifications. If hard-wiring specification identifiers is undesirable, then
-
-.. code-block:: cpp
-
-	problem_db.resolve_top_method(); 
-
-can also be used to deduce the active method specification and set all list nodes based on it. This is most appropriate in the case where only single specifications exist for method/model/variables/interface/responses. This is the approach demonstrated in run_dakota_mixed(). In each of these cases, setting list nodes unlocks the corresponding portions of the database, allowing set/get operations.
+The input must declare a matching interface type and analysis driver. Empty
+filter strings match any value. For parallel plugins that need an analysis
+communicator, use ``filtered_model_list()`` and install the interface on each
+matching model, as demonstrated by ``parallel_interface_plugin()`` in
+``library_mode.cpp``.
 
 =====================================
 Creating a simulator plugin interface
