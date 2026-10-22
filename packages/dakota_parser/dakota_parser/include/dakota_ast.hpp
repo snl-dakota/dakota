@@ -81,6 +81,7 @@ struct ParserState {
     Block* current_block = nullptr;
     std::shared_ptr<KeywordNode> current_keyword = nullptr;
     std::vector<std::shared_ptr<KeywordNode>> keyword_stack;  // For nested keywords
+    std::vector<std::shared_ptr<KeywordNode>> parse_order;    // Keywords in input order
     bool in_param_value = false;
     std::string current_block_name;
 };

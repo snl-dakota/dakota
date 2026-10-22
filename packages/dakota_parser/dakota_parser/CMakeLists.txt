@@ -230,6 +230,17 @@ if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
         DAKOTA_TEST_INPUT_DIR="${Dakota_SOURCE_DIR}/test")
     add_test(NAME test_json_to_ast COMMAND test_json_to_ast)
     set_tests_properties(test_json_to_ast PROPERTIES LABELS Unit)
+
+    # C++ unit tests for parser state across documents
+    add_executable(test_parser_state
+        test/test_parser_state.cpp
+    )
+    target_link_libraries(test_parser_state PRIVATE
+        dakota_parser_lib
+        GTest::gtest_main
+    )
+    add_test(NAME test_parser_state COMMAND test_parser_state)
+    set_tests_properties(test_parser_state PROPERTIES LABELS Unit)
     
     file(GLOB SOURCE_TEST_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.in")
     list(APPEND DAKOTA_TEST_INPUT_FILES ${SOURCE_TEST_FILES})
