@@ -1020,12 +1020,16 @@ json check_interface_block(
 
         // failure_capture is a Union - only one mode active at a time.
         // In batch mode, only 'abort' and 'recover' are permitted.
-        json fc_copy(instance["failure_capture"]);
-        fc_copy.erase("abort");
-        fc_copy.erase("recover");
-        if (!fc_copy.empty()) {
-            auto disallowed = fc_copy.items().begin();
-            throw ValidationError("failure_capture mode '" + disallowed.key() + "' disallowed in 'batch' mode");
+        // Absent (defaults not expanded) means the default, 'abort'.
+        const json* fc = resolve_path(instance, "failure_capture");
+        if (fc != nullptr) {
+            json fc_copy(*fc);
+            fc_copy.erase("abort");
+            fc_copy.erase("recover");
+            if (!fc_copy.empty()) {
+                auto disallowed = fc_copy.items().begin();
+                throw ValidationError("failure_capture mode '" + disallowed.key() + "' disallowed in 'batch' mode");
+            }
         }
     }
     bool algebraic_mappings = path_exists(instance, "algebraic_mappings");
