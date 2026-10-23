@@ -8,6 +8,7 @@
 //   Suite 4 - JsonPointerGroupUnion        (pointer-group and pointer-union API-mode relaxation)
 //   Suite 5 - JsonStructure                (item types, union consts, one alternative)
 //   Suite 6 - JsonSchema                   (flags, union values, bounds, required fields)
+//   Suite 7 - IntegerValues                (whole-number floats in integer fields, both inputs)
 
 #include <gtest/gtest.h>
 #include <dakota_input_reader.hpp>
@@ -694,4 +695,177 @@ TEST(JsonSchema, OpenUnionAcceptsEmptyObject)
     EXPECT_FALSE(dakota::validate_model_block_json_to_json(model, output, errors));
     EXPECT_TRUE(any_error_contains(errors, "unexpected property 'bogus'"))
         << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+}
+
+// ============================================================================
+// Suite 7: IntegerValues
+// An integer field takes a number exactly when it is a whole number in the
+// int64 range, in JSON and free-form input alike; it is stored as an integer.
+// ============================================================================
+
+namespace {
+
+json polynomial_model_block(const json& basis_order) {
+    return {{"global_surrogate", {
+        {"type", {{"polynomial", {{"order", {{"basis_order", basis_order}}}}}}},
+        {"build_data", {{"truth_model_pointer", "TRUTH"}}}}}};
+}
+
+std::string gp_input_with_build_samples(const std::string& value) {
+    std::string input = gp_input("0.5");
+    const std::string from = "build_samples = 100";
+    input.replace(input.find(from), from.size(), "build_samples = " + value);
+    return input;
+}
+
+} // namespace
+
+// 7.1  JSON: a whole-number float is accepted and stored as an integer.
+TEST(IntegerValues, JsonWholeNumberFloatAccepted)
+{
+    json expected;
+    std::vector<std::string> errors;
+    ASSERT_TRUE(dakota::validate_json_input_to_json(base_doc(), expected, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    for (const json& samples : {json(100.0), json(1e2)}) {
+        auto doc = base_doc();
+        doc["method"][0]["sampling"]["samples"] = samples;
+        json output;
+        errors.clear();
+        ASSERT_TRUE(dakota::validate_json_input_to_json(doc, output, errors))
+            << samples.dump() << ": " << (errors.empty() ? "(none)" : errors[0]);
+        EXPECT_TRUE(output["method"][0]["sampling"]["samples"].is_number_integer());
+        EXPECT_EQ(output, expected) << samples.dump();
+    }
+
+    json integer_member, float_member;
+    errors.clear();
+    ASSERT_TRUE(dakota::validate_model_block_json_to_json(polynomial_model_block(2),
+                                                          integer_member, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+    ASSERT_TRUE(dakota::validate_model_block_json_to_json(polynomial_model_block(2.0),
+                                                          float_member, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+    EXPECT_EQ(float_member, integer_member);
+}
+
+// 7.2  JSON: a number that is not a whole number in the int64 range is
+//      rejected.
+TEST(IntegerValues, JsonNonIntegerRejected)
+{
+    for (const json& samples : {json(100.5), json(1e19), json("inf"), json("nan")}) {
+        auto doc = base_doc();
+        doc["method"][0]["sampling"]["samples"] = samples;
+        json output;
+        std::vector<std::string> errors;
+        EXPECT_FALSE(dakota::validate_json_input_to_json(doc, output, errors)) << samples.dump();
+        EXPECT_TRUE(any_error_contains(errors, "'samples'"))
+            << samples.dump() << ": " << (errors.empty() ? "(none)" : errors[0]);
+    }
+}
+
+// 7.3  Free-form: a whole number written as a real keeps its value; any
+//      other real is rejected rather than truncated.
+TEST(IntegerValues, FreeformRealForIntegerField)
+{
+    json expected;
+    std::vector<std::string> errors;
+    ASSERT_TRUE(dakota::read_freeform_input_string_to_json(gp_input_with_build_samples("100"),
+                                                           expected, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    for (const std::string value : {"100.0", "1e2", "1.E2"}) {
+        json output;
+        errors.clear();
+        EXPECT_TRUE(dakota::read_freeform_input_string_to_json(
+            gp_input_with_build_samples(value), output, errors))
+            << value << ": " << (errors.empty() ? "(none)" : errors[0]);
+        EXPECT_EQ(output, expected) << value;
+    }
+    for (const std::string value : {"100.5", "2.999", "-0.5", "1e20"}) {
+        json output;
+        errors.clear();
+        EXPECT_FALSE(dakota::read_freeform_input_string_to_json(
+            gp_input_with_build_samples(value), output, errors))
+            << value << " was accepted as " << output["method"][0]["pof_darts"]["build_samples"];
+        EXPECT_TRUE(any_error_contains(errors, "build_samples"))
+            << value << ": " << (errors.empty() ? "(none)" : errors[0]);
+    }
+}
+
+// 7.4  JSON: integer array elements follow the same rule; whole-number
+//      floats become integers, others (including values beyond int64) are
+//      rejected.
+TEST(IntegerValues, JsonIntegerArrayElements)
+{
+    json expected;
+    std::vector<std::string> errors;
+    ASSERT_TRUE(dakota::validate_json_input_to_json(base_doc(), expected, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+
+    auto doc = base_doc();
+    doc["variables"][0]["histogram_bin_uncertain"]["pairs_per_variable"] = json::array({3.0, 4});
+    json output;
+    errors.clear();
+    ASSERT_TRUE(dakota::validate_json_input_to_json(doc, output, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+    EXPECT_TRUE(output["variables"][0]["histogram_bin_uncertain"]["pairs_per_variable"][0]
+                    .is_number_integer());
+    EXPECT_EQ(output, expected);
+
+    for (const json& bad : {json(3.5), json(1e20), json(9223372036854775808.0)}) {
+        doc = base_doc();
+        doc["variables"][0]["histogram_bin_uncertain"]["pairs_per_variable"] =
+            json::array({3, bad});
+        errors.clear();
+        EXPECT_FALSE(dakota::validate_json_input_to_json(doc, output, errors)) << bad.dump();
+        EXPECT_TRUE(any_error_contains(errors, "'pairs_per_variable' must contain only integer values"))
+            << bad.dump() << ": " << (errors.empty() ? "(none)" : errors[0]);
+    }
+}
+
+// 7.5  Free-form: integer lists follow the same rule.
+TEST(IntegerValues, FreeformRealInIntegerList)
+{
+    const std::string input = R"(
+environment
+method
+  sampling
+    samples = 10
+variables
+  discrete_design_set
+    integer = 2
+      elements_per_variable = PER_VARIABLE
+      elements = 1 2 3 4
+interface
+  analysis_drivers = 'text_book'
+    direct
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+)";
+    auto with = [&](const std::string& value) {
+        std::string text = input;
+        text.replace(text.find("PER_VARIABLE"), 12, value);
+        return text;
+    };
+
+    json expected, output;
+    std::vector<std::string> errors;
+    ASSERT_TRUE(dakota::read_freeform_input_string_to_json(with("2 2"), expected, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+    errors.clear();
+    EXPECT_TRUE(dakota::read_freeform_input_string_to_json(with("2.0 2"), output, errors))
+        << "Errors: " << (errors.empty() ? "(none)" : errors[0]);
+    EXPECT_EQ(output, expected);
+
+    for (const std::string value : {"1.5 2.5", "2*1.5"}) {
+        errors.clear();
+        EXPECT_FALSE(dakota::read_freeform_input_string_to_json(with(value), output, errors))
+            << value;
+        EXPECT_TRUE(any_error_contains(errors, "'elements_per_variable' must contain only integer values"))
+            << value << ": " << (errors.empty() ? "(none)" : errors[0]);
+    }
 }

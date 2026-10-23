@@ -943,13 +943,27 @@ inline bool value_matches_type_name(const json& value, const std::string& type_n
     return true;
 }
 
+// A double is an integer value when it is finite, whole and inside the
+// int64 range (JSON Schema "integer"; Pydantic takes the same range); stores
+// it in `out`.  Keep in sync with whole_number_as_int64 in
+// dakota_actions_common.hpp (free-form reader).
+inline bool whole_number_as_int64(double v, int64_t& out) {
+    // -2^63 converts to double exactly; INT64_MAX (2^63 - 1) does not.
+    constexpr double lowest = static_cast<double>(std::numeric_limits<int64_t>::min());
+    if (!std::isfinite(v) || v != std::floor(v) || v < lowest || v >= -lowest) {
+        return false;
+    }
+    out = static_cast<int64_t>(v);
+    return true;
+}
+
 // Array element check.  An integer element may be a whole-number double: the
 // free-form reader stores "0." as 0.0, and validate_definition coerces such
 // values to integers after this check.
 inline bool value_matches_item_type(const json& item, const std::string& type_name) {
     if (type_name == "integer" && item.is_number_float()) {
-        const double v = item.get<double>();
-        return std::isfinite(v) && v == std::floor(v);
+        int64_t unused;
+        return whole_number_as_int64(item.get<double>(), unused);
     }
     return value_matches_type_name(item, type_name);
 }
@@ -1349,12 +1363,9 @@ inline json validate_definition(const std::string& def_name, json instance,
         for (const auto& field_name : int_fields) {
             if (!instance.contains(field_name) || !instance[field_name].is_array()) continue;
             for (auto& elem : instance[field_name]) {
-                if (elem.is_number_float()) {
-                    double v = elem.get<double>();
-                    auto iv = static_cast<int64_t>(v);
-                    if (static_cast<double>(iv) == v) {
-                        elem = iv;
-                    }
+                int64_t iv;
+                if (elem.is_number_float() && whole_number_as_int64(elem.get<double>(), iv)) {
+                    elem = iv;
                 }
             }
         }
@@ -1562,12 +1573,33 @@ inline void validate_schema_object_property(json& value, const json& specs,
                      " (in " + def_name + "__" + field_name + ")");
 }
 
+// Where the schema wants an integer, store a whole-number double as one
+// (10.0 → 10), so the rest of the pipeline sees an integer.  No property
+// allows both integer and number; if one did, a whole double meant as a
+// number would become an integer here.
+inline void coerce_whole_numbers(json& value, const json& specs) {
+    bool scalar = false, items = false;
+    for (const auto& spec : specs) {
+        if (spec.value("type", "") == "integer") scalar = true;
+        if (spec.value("items", "") == "integer") items = true;
+    }
+    int64_t iv;
+    if (scalar && value.is_number_float() && whole_number_as_int64(value.get<double>(), iv)) {
+        value = iv;
+    } else if (items && value.is_array()) {
+        for (auto& item : value) {
+            if (item.is_number_float() && whole_number_as_int64(item.get<double>(), iv)) item = iv;
+        }
+    }
+}
+
 inline void validate_schema_property(json& value, const json& specs,
                                      const std::string& field_name,
                                      const std::string& def_name,
                                      const std::string& path,
                                      std::vector<std::string>& errors,
                                      bool api_mode) {
+    coerce_whole_numbers(value, specs);
     if (value.is_object()) {
         for (const auto& spec : specs) {
             if (spec.contains("ref") || spec.contains("open")) {
