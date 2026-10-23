@@ -8510,7 +8510,7 @@
         },
         "CollaborativeMethodNameList": {
             "additionalProperties": false,
-            "description": "List of Dakota methods to sequentially or collaboratively run",
+            "description": "List of Dakota methods to collaboratively run",
             "properties": {
                 "method_name_list": {
                     "$ref": "#/$defs/CollaborativeMethodNameListConfig",
@@ -8525,10 +8525,10 @@
         },
         "CollaborativeMethodNameListConfig": {
             "additionalProperties": false,
-            "description": "List of Dakota methods to sequentially or collaboratively run",
+            "description": "List of Dakota methods to collaboratively run",
             "properties": {
                 "method_name_list": {
-                    "description": "List of Dakota methods to sequentially or collaboratively run",
+                    "description": "List of Dakota methods to collaboratively run",
                     "items": {
                         "type": "string"
                     },
@@ -74927,7 +74927,7 @@
         },
         "SequentialMethodNameList": {
             "additionalProperties": false,
-            "description": "List of Dakota methods to sequentially or collaboratively run",
+            "description": "List of Dakota methods to sequentially run",
             "properties": {
                 "method_name_list": {
                     "$ref": "#/$defs/SequentialMethodNameListConfig",
@@ -74942,10 +74942,10 @@
         },
         "SequentialMethodNameListConfig": {
             "additionalProperties": false,
-            "description": "List of Dakota methods to sequentially or collaboratively run",
+            "description": "List of Dakota methods to sequentially run",
             "properties": {
                 "method_name_list": {
-                    "description": "List of Dakota methods to sequentially or collaboratively run",
+                    "description": "List of Dakota methods to sequentially run",
                     "items": {
                         "type": "string"
                     },
@@ -74991,10 +74991,10 @@
         },
         "SequentialMethodPointerList": {
             "additionalProperties": false,
-            "description": "Pointers to methods to execute sequentially or collaboratively",
+            "description": "Pointers to methods to execute sequentially",
             "properties": {
                 "method_pointer_list": {
-                    "description": "Pointers to methods to execute sequentially or collaboratively",
+                    "description": "Pointers to methods to execute sequentially",
                     "items": {
                         "type": "string"
                     },
