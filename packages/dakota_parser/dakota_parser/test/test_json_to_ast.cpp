@@ -90,9 +90,8 @@ bool any_error_contains(const std::vector<std::string>& errors,
 TEST(JsonToAstRoundTrip, RegressionInputs)
 {
     const std::filesystem::path dir = DAKOTA_TEST_INPUT_DIR;
-    if (!std::filesystem::is_directory(dir)) {
-        GTEST_SKIP() << "No Dakota test inputs at " << dir;
-    }
+    // Fail rather than skip: ctest reports a skipped gtest as passed.
+    ASSERT_TRUE(std::filesystem::is_directory(dir)) << "No Dakota test inputs at " << dir;
     std::vector<std::filesystem::path> files;
     for (const auto& entry : std::filesystem::directory_iterator(dir)) {
         if (entry.path().extension() == ".in") files.push_back(entry.path());

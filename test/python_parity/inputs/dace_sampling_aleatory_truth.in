@@ -8,7 +8,6 @@ method
 model
   id_model 'surr'
   global_surrogate polynomial quadratic
-    truth_model_pointer 'truth'
     dace_method_pointer 'dace'
 method
   id_method 'dace'
