@@ -1642,6 +1642,26 @@ TEST(CheckInterfaceBlock, BatchAllowsLargerSize) {
     EXPECT_TRUE(mutations.empty());
 }
 
+TEST(CheckInterfaceBlock, BatchAllowsAbsentFailureCapture) {
+    // Without default expansion (--no-expand), failure_capture may be absent
+    json instance = {
+        {"analysis_drivers", {
+            {"drivers", {"simulator.py"}}
+        }},
+        {"concurrency", {
+            {"batch", {{"size", 10}}}
+        }}
+    };
+
+    json mutations = check_interface_block(
+        instance,
+        {},
+        json::array(),
+        "test"
+    );
+    EXPECT_TRUE(mutations.empty());
+}
+
 TEST(CheckInterfaceBlock, BatchRejectsDisallowedFailureCapture) {
     json instance = {
         {"analysis_drivers", {

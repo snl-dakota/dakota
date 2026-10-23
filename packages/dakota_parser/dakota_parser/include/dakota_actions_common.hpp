@@ -80,6 +80,20 @@ inline std::optional<std::string> unquote_and_trim(const std::string &text) {
   return std::nullopt;  // Not quoted
 }
 
+// A real is an integer value when it is finite, whole and inside the int64
+// range (as for JSON Schema "integer"); stores it in `out`.  1.E5 qualifies,
+// 2.5 and 1e20 do not.  Keep in sync with whole_number_as_int64 in the
+// generated validation metadata (generate_validation_metadata.py).
+inline bool whole_number_as_int64(double v, int64_t &out) {
+  // -2^63 converts to double exactly; INT64_MAX (2^63 - 1) does not.
+  constexpr double lowest = static_cast<double>(std::numeric_limits<int64_t>::min());
+  if (!std::isfinite(v) || v != std::floor(v) || v < lowest || v >= -lowest) {
+    return false;
+  }
+  out = static_cast<int64_t>(v);
+  return true;
+}
+
 // Parse a text token into a Value (string, int, or double).
 // Quoted strings are unquoted+trimmed; bare text is tried as int then double.
 inline Value parse_text_to_value(const std::string &text) {
