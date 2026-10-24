@@ -36,17 +36,16 @@ SharedSurfpackApproxData(const IRStore& model_store,
   percentFold(model_store.get<Real>("surrogate.percent")),
   pressFlag(model_store.get<bool>("surrogate.press"))
 {
-  if (approx_order.empty())
+  // Match the ProblemDescDB ctor: Surfpack uses one scalar order taken from
+  // the spec. approx_order is sized by continuous vars only, so it cannot be
+  // checked against num_vars (which includes discrete vars).
+  if (approxType == "global_polynomial")
+    approxOrder = model_store.get<short>("surrogate.polynomial_order");
+  else if (!approx_order.empty())
+    approxOrder = *std::max_element(approx_order.begin(), approx_order.end());
+  else
     approxOrder = 2;
-  else {
-    approxOrder = approx_order[0];
-    if (approx_order.size() != num_vars)
-      abort_handler(-1);
-    for (size_t i = 1; i < num_vars; ++i)
-      approxOrder = std::max(approx_order[i], approxOrder);
-  }
 
-  // As for the ProblemDescDB ctor, the Kriging trend sets its order
   if (approxType == "global_kriging") {
     const String& trend_string = model_store.get<String>("surrogate.trend_order");
     if (trend_string == "constant")    approxOrder = 0;

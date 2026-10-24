@@ -80,9 +80,17 @@ Partial Rank Correlation Matrix between input and output:
           x2 -9.99971e-01 
 Test Number 2 succeeded
 Surrogate quality metrics at build (training) points for response_fn_1:
-         sum_squared  2.94208e+07
+         sum_squared  2.9420807959e+07
+   root_mean_squared  5.4240951281e+02
+            mean_abs  4.0984582761e+02
+             max_abs  2.1102236746e+03
+            rsquared  3.0538478952e-01
 Surrogate quality metrics at challenge (test) points for response_fn_1:
-         sum_squared  2.94208e+07
+         sum_squared  2.9420807959e+07
+   root_mean_squared  5.4240951281e+02
+            mean_abs  4.0984582761e+02
+             max_abs  2.1102236746e+03
+            rsquared  3.0538478952e-01
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 10000 total (10000 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
@@ -123,9 +131,17 @@ Partial Rank Correlation Matrix between input and output:
           x2 -9.99971e-01 
 Test Number 3 succeeded
 Surrogate quality metrics at build (training) points for response_fn_1:
-         sum_squared  2.94208e+07
+         sum_squared  2.9420807959e+07
+   root_mean_squared  5.4240951281e+02
+            mean_abs  4.0984582761e+02
+             max_abs  2.1102236746e+03
+            rsquared  3.0538478952e-01
 Surrogate quality metrics at challenge (test) points for response_fn_1:
-         sum_squared  2.94208e+07
+         sum_squared  2.9420807959e+07
+   root_mean_squared  5.4240951281e+02
+            mean_abs  4.0984582761e+02
+             max_abs  2.1102236746e+03
+            rsquared  3.0538478952e-01
 <<<<< Function evaluation summary (APPROX_INTERFACE_1): 10000 total (10000 new, 0 duplicate)
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis

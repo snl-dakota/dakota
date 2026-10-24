@@ -722,7 +722,8 @@ Real SurfpackApproximation::diagnostic(const String& metric_type,
     abort_handler(-1);
   }
 
-  Cout << std::setw(20) << metric_type << "  " << approx_diag << '\n';
+  Cout << std::setw(20) << metric_type << "  " << std::scientific
+       << std::setprecision(write_precision) << approx_diag << '\n';
   return approx_diag;
 }
 
@@ -755,6 +756,7 @@ void SurfpackApproximation::primary_diagnostics(size_t fn_index)
       Cout << "\nSurrogate quality metrics (" << num_folds << "-fold CV) for " 
            << func_description << ":\n";
       RealArray cv_metrics = cv_diagnostic(diag_set, num_folds);
+      Cout << std::scientific << std::setprecision(write_precision);
       for (int j = 0; j < diag_set.size(); ++j) {
         const String& metric_type = diag_set[j];
         if (metric_type == "rsquared")
@@ -772,6 +774,7 @@ void SurfpackApproximation::primary_diagnostics(size_t fn_index)
            << func_description << ":\n";
       // perform press as CV with N folds
       RealArray cv_metrics = cv_diagnostic(diag_set, surfData->size());
+      Cout << std::scientific << std::setprecision(write_precision);
       for (int j = 0; j < diag_set.size(); ++j) {
         const String& metric_type = diag_set[j];
         if (metric_type == "rsquared")

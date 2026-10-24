@@ -92,7 +92,8 @@ Real SurrogatesBaseApprox::diagnostic(const String& metric_type)
   StringArray diag_set(1, metric_type);
   auto metric_vals = model->evaluate_metrics(diag_set, vars, resp);
 
-  Cout << std::setw(20) << diag_set[0] << "  " << metric_vals[0] << '\n';
+  Cout << std::setw(20) << diag_set[0] << "  " << std::scientific
+       << std::setprecision(write_precision) << metric_vals[0] << '\n';
 
   return metric_vals[0];
 }
@@ -134,7 +135,8 @@ void SurrogatesBaseApprox::primary_diagnostics(size_t fn_index)
 
     auto metric_vals = model->evaluate_metrics(diag_set, vars, resp);
 
-    Cout << "\nSurrogate quality metrics at build (training) points for "
+    Cout << std::scientific << std::setprecision(write_precision)
+	 << "\nSurrogate quality metrics at build (training) points for "
 	 << func_description << ":\n";
     for (size_t i=0; i<diag_set.size(); ++i)
       Cout << std::setw(20) << diag_set[i] << "  " << metric_vals[i] << '\n';
@@ -142,7 +144,8 @@ void SurrogatesBaseApprox::primary_diagnostics(size_t fn_index)
     if (shared_surf_data_rep->crossValidateFlag) {
       size_t num_folds = shared_surf_data_rep->numFolds;
       RealArray cv_metrics = cv_diagnostic(diag_set, num_folds);
-      Cout << "\nSurrogate quality metrics (" << num_folds << "-fold CV) for "
+      Cout << std::scientific << std::setprecision(write_precision)
+           << "\nSurrogate quality metrics (" << num_folds << "-fold CV) for "
            << func_description << ":\n";
       for (size_t i=0; i<diag_set.size(); ++i)
 	Cout << std::setw(20) << diag_set[i] << "  " << cv_metrics[i] << '\n';
@@ -150,7 +153,8 @@ void SurrogatesBaseApprox::primary_diagnostics(size_t fn_index)
 
     if (shared_surf_data_rep->pressFlag) {
       RealArray cv_metrics = cv_diagnostic(diag_set, vars.rows());
-      Cout << "\nSurrogate quality metrics (PRESS/leave-one-out) for "
+      Cout << std::scientific << std::setprecision(write_precision)
+           << "\nSurrogate quality metrics (PRESS/leave-one-out) for "
            << func_description << ":\n";
       for (size_t i=0; i<diag_set.size(); ++i)
 	Cout << std::setw(20) << diag_set[i] << "  " << cv_metrics[i] << '\n';
@@ -184,7 +188,8 @@ challenge_diagnostics(size_t fn_index, const RealMatrix& challenge_points,
 
     auto metric_vals = model->evaluate_metrics(diag_set, vars, resp);
 
-    Cout << "\nSurrogate quality metrics at challenge (test) points for "
+    Cout << std::scientific << std::setprecision(write_precision)
+	 << "\nSurrogate quality metrics at challenge (test) points for "
 	 << func_description << ":\n";
     for (size_t i=0; i<diag_set.size(); ++i)
       Cout << std::setw(20) << diag_set[i] << "  " << metric_vals[i] << '\n';
