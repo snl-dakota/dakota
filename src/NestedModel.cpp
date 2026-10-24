@@ -29,6 +29,33 @@ static const char rcsId[]="@(#) $Id: NestedModel.cpp 7024 2010-10-16 01:24:42Z m
 
 namespace Dakota {
 
+namespace {
+
+String to_legacy_string(Response::GradientType value)
+{
+  switch (value) {
+  case Response::GradientType::None:      return "none";
+  case Response::GradientType::Analytic:  return "analytic";
+  case Response::GradientType::Numerical: return "numerical";
+  case Response::GradientType::Mixed:     return "mixed";
+  }
+  throw std::runtime_error("Unhandled Response::GradientType");
+}
+
+String to_legacy_string(Response::HessianType value)
+{
+  switch (value) {
+  case Response::HessianType::None:      return "none";
+  case Response::HessianType::Analytic:  return "analytic";
+  case Response::HessianType::Numerical: return "numerical";
+  case Response::HessianType::Mixed:     return "mixed";
+  case Response::HessianType::Quasi:     return "quasi";
+  }
+  throw std::runtime_error("Unhandled Response::HessianType");
+}
+
+} // namespace
+
 NestedModel::NestedModel(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib):
   Model(problem_db, parallel_lib),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
@@ -86,7 +113,8 @@ NestedModel::NestedModel(const IRStore& model_store,
                          std::shared_ptr<Interface> optional_interface,
                          const Variables& variables,
                          const Response& response,
-                         std::shared_ptr<StudyServices> services):
+                         std::shared_ptr<StudyServices> services,
+                         const Response& optional_interface_responses):
   Model(std::move(services), model_store, variables, response),
   nestedModelEvalCntr(0), firstUpdate(true), outerMIPLIndex(0),
   subIteratorSched(study_runtime().create_iterator_context(true)),
@@ -116,7 +144,8 @@ NestedModel::NestedModel(const IRStore& model_store,
     model_store.get<RealVector>("nested.primary_response_mapping"),
     model_store.get<RealVector>("nested.secondary_response_mapping"));
   initialize_optional_interface_state(
-    model_store.get<String>("optional_interface_responses_pointer"));
+    model_store.get<String>("optional_interface_responses_pointer"),
+    optional_interface_responses);
   initialize_subordinate_study_state(
     std::move(sub_iterator), nullptr,
     model_store.get<String>("nested.sub_method_pointer"));
@@ -140,7 +169,9 @@ void NestedModel::initialize_runtime_execution_context(int iterator_servers,
 }
 
 
-void NestedModel::initialize_optional_interface_state(const String& oi_resp_ptr)
+void NestedModel::
+initialize_optional_interface_state(const String& oi_resp_ptr,
+                                    const Response& oi_responses)
 {
   if (!optionalInterface) {
     numOptInterfPrimary = numOptInterfIneqCon = numOptInterfEqCon = 0;
@@ -191,12 +222,55 @@ void NestedModel::initialize_optional_interface_state(const String& oi_resp_ptr)
              << std::endl;
     }
   }
+  else if (!oi_responses.is_null()) {
+    const Response::GradientConfig& grad = oi_responses.gradient_config();
+    const Response::HessianConfig&  hess = oi_responses.hessian_config();
+    optInterfGradientType = to_legacy_string(grad.type);
+    optInterfHessianType  = to_legacy_string(hess.type);
+    optInterfGradIdAnalytic = grad.id_analytic;
+    optInterfHessIdAnalytic = hess.id_analytic;
+
+    const std::shared_ptr<IRStore>& oi_store = oi_responses.responses_store_ptr();
+    if (!oi_store)
+      throw std::runtime_error("NestedModel DI construction requires "
+        "optional_interface_responses built from a responses specification.");
+    numOptInterfIneqCon =
+      oi_store->get<size_t>("num_nonlinear_inequality_constraints");
+    numOptInterfEqCon =
+      oi_store->get<size_t>("num_nonlinear_equality_constraints");
+    optInterfaceResponse = oi_responses.copy();
+    optInterfaceResponse.reset();
+    size_t num_fns = optInterfaceResponse.num_functions();
+    numOptInterfPrimary = num_fns - numOptInterfIneqCon - numOptInterfEqCon;
+
+    const RealVector& interf_ineq_l_bnds =
+      oi_store->get<RealVector>("nonlinear_inequality_lower_bounds");
+    const RealVector& interf_ineq_u_bnds =
+      oi_store->get<RealVector>("nonlinear_inequality_upper_bounds");
+    const RealVector& interf_eq_targets =
+      oi_store->get<RealVector>("nonlinear_equality_targets");
+    bool warning_flag = false;
+    Real dbl_inf = std::numeric_limits<Real>::infinity();
+    for (size_t i=0; i<(size_t)interf_ineq_l_bnds.length(); ++i)
+      if (interf_ineq_l_bnds[i] > -dbl_inf)
+        warning_flag = true;
+    for (size_t i=0; i<(size_t)interf_ineq_u_bnds.length(); ++i)
+      if (interf_ineq_u_bnds[i] != 0.)
+        warning_flag = true;
+    for (size_t i=0; i<(size_t)interf_eq_targets.length(); ++i)
+      if (interf_eq_targets[i] != 0.)
+        warning_flag = true;
+    if (warning_flag)
+      Cerr << "Warning: nonlinear constraint bounds and targets in nested "
+           << "model optional interfaces\n         are superceded by "
+           << "composite response constraint bounds and targets."
+           << std::endl;
+  }
   else {
     if (!oi_resp_ptr.empty()) {
       throw std::runtime_error(
-        "NestedModel DI construction does not yet support "
-        "optional_interface_responses_pointer. Inject an optional interface "
-        "that reuses the top-level response specification.");
+        "NestedModel DI construction with optional_interface_responses_pointer "
+        "requires injected optional_interface_responses.");
     }
 
     optInterfGradientType = gradientType;

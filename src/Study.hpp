@@ -346,11 +346,25 @@ public:
   nested(const IRStore& model_store, std::shared_ptr<Iterator> sub_iterator,
          std::shared_ptr<Interface> optional_interface,
          const Variables& variables, const Response& response) const;
+  /// Construct a nested model whose optional interface returns a distinct
+  /// response set (optional_interface_responses_pointer).
+  std::shared_ptr<NestedModel>
+  nested(const IRStore& model_store, std::shared_ptr<Iterator> sub_iterator,
+         std::shared_ptr<Interface> optional_interface,
+         const Variables& variables, const Response& response,
+         const Response& optional_interface_responses) const;
   /// Validate a model-nested fragment and construct a nested model.
   std::shared_ptr<NestedModel>
   nested(const nlohmann::json& model_json, std::shared_ptr<Iterator> sub_iterator,
          std::shared_ptr<Interface> optional_interface,
          const Variables& variables, const Response& response) const;
+  /// Validate a model-nested fragment and construct a nested model whose
+  /// optional interface returns a distinct response set.
+  std::shared_ptr<NestedModel>
+  nested(const nlohmann::json& model_json, std::shared_ptr<Iterator> sub_iterator,
+         std::shared_ptr<Interface> optional_interface,
+         const Variables& variables, const Response& response,
+         const Response& optional_interface_responses) const;
 
   /// Construct an ensemble from a truth model and approximation models.
   std::shared_ptr<EnsembleSurrModel>

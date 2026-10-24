@@ -705,9 +705,21 @@ Study::ModelFactory::nested(const IRStore& model_store,
                             const Variables& variables,
                             const Response& response) const
 {
+  return nested(model_store, std::move(sub_iterator),
+                std::move(optional_interface), variables, response, Response());
+}
+
+std::shared_ptr<NestedModel>
+Study::ModelFactory::nested(const IRStore& model_store,
+                            std::shared_ptr<Iterator> sub_iterator,
+                            std::shared_ptr<Interface> optional_interface,
+                            const Variables& variables,
+                            const Response& response,
+                            const Response& optional_interface_responses) const
+{
   return std::make_shared<NestedModel>(
     model_store, std::move(sub_iterator), std::move(optional_interface),
-    variables, response, study.services());
+    variables, response, study.services(), optional_interface_responses);
 }
 
 std::shared_ptr<NestedModel>
@@ -717,9 +729,21 @@ Study::ModelFactory::nested(const nlohmann::json& model_json,
                             const Variables& variables,
                             const Response& response) const
 {
+  return nested(model_json, std::move(sub_iterator),
+                std::move(optional_interface), variables, response, Response());
+}
+
+std::shared_ptr<NestedModel>
+Study::ModelFactory::nested(const nlohmann::json& model_json,
+                            std::shared_ptr<Iterator> sub_iterator,
+                            std::shared_ptr<Interface> optional_interface,
+                            const Variables& variables,
+                            const Response& response,
+                            const Response& optional_interface_responses) const
+{
   return nested(validate_and_materialize_selected_model(model_json, "nested"),
                 std::move(sub_iterator), std::move(optional_interface),
-                variables, response);
+                variables, response, optional_interface_responses);
 }
 
 std::shared_ptr<EnsembleSurrModel>

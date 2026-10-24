@@ -98,17 +98,20 @@ See :ref:`single-model options <model-single>`.)doc")
             std::shared_ptr<Iterator> sub_iterator, const Variables& variables,
             const Response& response,
             std::shared_ptr<Interface> optional_interface,
-            const py::object& config, py::kwargs kwargs) {
+            const py::object& config,
+            std::optional<Response> optional_interface_responses,
+            py::kwargs kwargs) {
            return factory.nested(
              materialize_model(nlohmann::json{{"nested",
                normalize_factory_config(config, kwargs, "ModelFactory.nested")}}),
              std::move(sub_iterator), std::move(optional_interface), variables,
-             response);
+             response, optional_interface_responses.value_or(Response()));
          },
          py::arg("sub_iterator").none(false), py::arg("variables").none(false),
          py::arg("response").none(false),
          py::arg("optional_interface") = py::none(),
-         py::arg("config") = py::none(),
+         py::arg("config") = py::none(), py::kw_only(),
+         py::arg("optional_interface_responses") = py::none(),
          R"doc(Construct a nested model from an injected sub-iterator.
 
 :param sub_iterator: Method executed by the nested model.
@@ -119,6 +122,10 @@ See :ref:`single-model options <model-single>`.)doc")
 :type response: dakota.study.Response
 :param optional_interface: Optional interface for non-nested responses.
 :type optional_interface: dakota.study.Interface or None
+:param optional_interface_responses: Response definition returned by the
+    optional interface; required when ``optional_interface_responses_pointer``
+    is set.
+:type optional_interface_responses: dakota.study.Response or None
 :param config: A ``NestedConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: The constructed nested model.

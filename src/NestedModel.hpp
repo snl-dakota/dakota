@@ -58,7 +58,8 @@ public:
               std::shared_ptr<Interface> optional_interface,
               const Variables& variables,
               const Response& response,
-              std::shared_ptr<StudyServices> services);
+              std::shared_ptr<StudyServices> services,
+              const Response& optional_interface_responses = Response());
 
   void declare_sources() override;
 
@@ -195,7 +196,9 @@ private:
   void initialize_runtime_execution_context(int iterator_servers,
                                             int processors_per_iterator,
                                             short iterator_scheduling);
-  void initialize_optional_interface_state(const String& oi_resp_ptr);
+  void initialize_optional_interface_state(
+    const String& oi_resp_ptr,
+    const Response& oi_responses = Response());
   void initialize_subordinate_study_state(std::shared_ptr<Iterator> sub_iterator,
                                           std::shared_ptr<Model> sub_model,
                                           const String& sub_method_pointer);
