@@ -133,11 +133,10 @@ void EnsembleSurrModel::initialize_subordinate_models()
     if (!approximation_model)
       throw std::runtime_error(
         "EnsembleSurrModel requires non-null approximation models in DI construction.");
-    check_submodel_compatibility(*approximation_model);
     approximation_model->serialize_threshold(0);
   }
-
-  check_submodel_compatibility(*truthModel);
+  // No compatibility check here: DI models are still in their default view.
+  // assign_inferred_view() checks once the method's view is applied.
   truthModel->serialize_threshold(0);
 
   responseMode = AGGREGATED_MODELS;
