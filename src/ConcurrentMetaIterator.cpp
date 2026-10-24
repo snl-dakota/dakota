@@ -8,6 +8,7 @@
     _______________________________________________________________________ */
 
 #include "ConcurrentMetaIterator.hpp"
+#include "DakotaMinimizer.hpp"
 #include "StudyServices.hpp"
 #include "ProblemDescDB.hpp"
 #include "ParallelLibrary.hpp"
@@ -142,20 +143,32 @@ ConcurrentMetaIterator(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 }
 
 
+/** A constructed sub-minimizer may already have wrapped its model in
+    RecastModels (e.g., multi-objective scalarization).  Recover the model it
+    was passed, matching the model the ProblemDescDB ctor iterates on. */
+static std::shared_ptr<Model>
+user_model(const std::shared_ptr<Iterator>& sub_iterator)
+{
+  if (!sub_iterator)
+    return nullptr;
+  if (auto minimizer = std::dynamic_pointer_cast<Minimizer>(sub_iterator))
+    return minimizer->original_model();
+  return sub_iterator->iterated_model();
+}
+
+
 ConcurrentMetaIterator::
 ConcurrentMetaIterator(const IRStore& method_store,
                        std::shared_ptr<Iterator> sub_iterator,
                        std::shared_ptr<StudyServices> services):
-  MetaIterator(std::move(services), method_store,
-               sub_iterator ? sub_iterator->iterated_model() : nullptr),
+  MetaIterator(std::move(services), method_store, user_model(sub_iterator)),
   numRandomJobs(method_store.get<int>("concurrent.random_jobs")),
   randomSeed(method_store.get<int>("random_seed"))
 {
   detail::validate_services(
     "ConcurrentMetaIterator", study_services(),
     {detail::runtime_dependency("Iterator", sub_iterator),
-     detail::runtime_dependency("Model",
-                                sub_iterator ? sub_iterator->iterated_model() : nullptr)});
+     detail::runtime_dependency("Model", iteratedModel)});
 
   if (!sub_iterator)
     throw std::runtime_error(

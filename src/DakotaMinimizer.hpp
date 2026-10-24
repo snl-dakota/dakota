@@ -80,6 +80,10 @@ public:
   std::shared_ptr<TPLDataTransfer> get_data_transfer_helper() const
     { return dataTransferHandler; }
 
+  /// Return a shallow copy of the original model this Iterator was
+  /// originally passed, optionally leaving recasts_left on top of it
+  std::shared_ptr<Model> original_model(unsigned short recasts_left = 0) const;
+
   //
   //- Heading: Virtual member function redefinitions
   //
@@ -162,10 +166,6 @@ protected:
   //
   //- Heading: Convenience/Helper functions
   //
-
-  /// Return a shallow copy of the original model this Iterator was
-  /// originally passed, optionally leaving recasts_left on top of it
-  std::shared_ptr<Model> original_model(unsigned short recasts_left = 0) const; 
 
   /// Wrap iteratedModel in a RecastModel that subtracts provided
   /// observed data from the primary response functions (variables and

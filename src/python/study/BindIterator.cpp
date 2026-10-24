@@ -103,7 +103,32 @@
 #endif
 
 #ifdef HAVE_OPTPP
+#include "SNLLLeastSq.hpp"
 #include "SNLLOptimizer.hpp"
+#endif
+
+#ifdef HAVE_NPSOL
+#include "NLSSOLLeastSq.hpp"
+#endif
+
+#ifdef HAVE_DDACE
+#include "DDACEDesignCompExp.hpp"
+#endif
+
+#ifdef HAVE_FSUDACE
+#include "FSUDesignCompExp.hpp"
+#endif
+
+#ifdef HAVE_PSUADE
+#include "PSUADEDesignCompExp.hpp"
+#endif
+
+#ifdef HAVE_ROL
+#include "DakotaROLOptimizer.hpp"
+#endif
+
+#ifdef HAVE_EXT_PYTHON_METHOD
+#include "DakotaExtPythonMethod.hpp"
 #endif
 
 #ifdef HAVE_ACRO
@@ -303,6 +328,25 @@ void bind_iterators(py::module_& m)
 #endif
 #ifdef HAVE_OPTPP
   register_iterator<SNLLOptimizer>(m, "SNLLOptimizer");
+  register_iterator<SNLLLeastSq>(m, "SNLLLeastSq");
+#endif
+#ifdef HAVE_NPSOL
+  register_iterator<NLSSOLLeastSq>(m, "NLSSOLLeastSq");
+#endif
+#ifdef HAVE_DDACE
+  register_iterator<DDACEDesignCompExp>(m, "DDACEDesignCompExp");
+#endif
+#ifdef HAVE_FSUDACE
+  register_iterator<FSUDesignCompExp>(m, "FSUDesignCompExp");
+#endif
+#ifdef HAVE_PSUADE
+  register_iterator<PSUADEDesignCompExp>(m, "PSUADEDesignCompExp");
+#endif
+#ifdef HAVE_ROL
+  register_iterator<ROLOptimizer>(m, "ROLOptimizer");
+#endif
+#ifdef HAVE_EXT_PYTHON_METHOD
+  register_iterator<ExtPythonMethod>(m, "ExtPythonMethod");
 #endif
 #ifdef HAVE_ACRO
   register_iterator<COLINOptimizer>(m, "COLINOptimizer");
@@ -412,6 +456,28 @@ This method is present only when Dakota is built with DOT. See
 :raises TypeError: If the dependency is null or both configuration forms are used.
 
 See :ref:`multi-start options <method-multi_start>`.)doc");
+  factory
+    .def("pareto_set",
+         [](const Study::MethodFactory& factory,
+            std::shared_ptr<Iterator> sub_iterator,
+            const py::object& config, py::kwargs kwargs) {
+           return factory.pareto_set(
+             materialize_method(nlohmann::json{{"pareto_set",
+               normalize_factory_config(config, kwargs, "MethodFactory.pareto_set")}}),
+             std::move(sub_iterator));
+         },
+         py::arg("sub_iterator").none(false), py::arg("config") = py::none(),
+         R"doc(Construct a Pareto-set meta-iterator around an injected sub-iterator.
+
+:param sub_iterator: Optimizer run for each weight combination.
+:type sub_iterator: dakota.study.Iterator
+:param config: A ``ParetoSetConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed meta-iterator.
+:rtype: dakota.study.ConcurrentMetaIterator
+:raises TypeError: If the dependency is null or both configuration forms are used.
+
+See :ref:`pareto_set options <method-pareto_set>`.)doc");
   factory
     .def("hybrid_sequential",
          [](const Study::MethodFactory& factory,
@@ -635,6 +701,28 @@ See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
 #ifdef HAVE_OPTPP
   bind_method(factory, "optpp_pds", &construct<SNLLOptimizer>);
 #endif
+#ifdef HAVE_OPTPP
+  bind_method(factory, "optpp_g_newton", &construct<SNLLLeastSq>);
+#endif
+#ifdef HAVE_NPSOL
+  bind_method(factory, "nlssol_sqp", &construct<NLSSOLLeastSq>);
+#endif
+#ifdef HAVE_DDACE
+  bind_method(factory, "dace", &construct<DDACEDesignCompExp>);
+#endif
+#ifdef HAVE_FSUDACE
+  bind_method(factory, "fsu_quasi_mc", &construct<FSUDesignCompExp>);
+  bind_method(factory, "fsu_cvt", &construct<FSUDesignCompExp>);
+#endif
+#ifdef HAVE_PSUADE
+  bind_method(factory, "psuade_moat", &construct<PSUADEDesignCompExp>);
+#endif
+#ifdef HAVE_ROL
+  bind_method(factory, "rol", &construct<ROLOptimizer>);
+#endif
+#ifdef HAVE_EXT_PYTHON_METHOD
+  bind_method(factory, "external_python", &construct<ExtPythonMethod>);
+#endif
 #ifdef HAVE_ACRO
   bind_method(factory, "coliny_beta", &construct<COLINOptimizer>);
 #endif
@@ -654,7 +742,38 @@ See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
   bind_method(factory, "coliny_solis_wets", &construct<COLINOptimizer>);
 #endif
 #ifdef HAVE_ACRO
-  bind_method(factory, "branch_and_bound", &construct<PebbldMinimizer>);
+  factory
+    .def("branch_and_bound",
+         [](const Study::MethodFactory& factory,
+            std::shared_ptr<Model> model, std::shared_ptr<Iterator> method,
+            const py::object& config, py::kwargs kwargs) {
+           return std::make_shared<PebbldMinimizer>(
+             materialize_method(nlohmann::json{{"branch_and_bound",
+               normalize_factory_config(config, kwargs,
+                 "MethodFactory.branch_and_bound")}}),
+             std::move(model), std::move(method), factory.services());
+         },
+         py::arg("model") = py::none(), py::arg("method") = py::none(),
+         py::arg("config") = py::none(),
+         R"doc(Construct a branch-and-bound minimizer.
+
+:param model: Model with relaxed discrete variables to branch on. Required
+    with ``method_name``; with ``method_pointer`` it defaults to the model of
+    ``method`` and, if given, must be that model.
+:type model: dakota.study.Model or None
+:param method: Sub-problem minimizer; required with ``method_pointer`` and
+    omitted with ``method_name``.
+:type method: dakota.study.Iterator or None
+:param config: A ``BranchAndBoundConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed minimizer.
+:rtype: dakota.study.PebbldMinimizer
+:raises TypeError: If both configuration forms are used.
+:raises RuntimeError: If ``model`` or ``method`` is missing or unexpected for
+    the selected sub-method, or ``method`` iterates on a different model.
+
+This method is present only when Dakota is built with ACRO. See
+:ref:`branch_and_bound options <method-branch_and_bound>`.)doc");
 #endif
 #ifdef HAVE_JEGA
   bind_method(factory, "moga", &construct<JEGAOptimizer>);

@@ -1,0 +1,16 @@
+method
+  psuade_moat
+    samples 12
+    partitions 3 3
+    seed 500
+variables
+  continuous_design 2
+    lower_bounds 0.0 0.0
+    upper_bounds 1.0 1.0
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'text_book' fork
+responses
+  objective_functions 1
+  no_gradients
+  no_hessians

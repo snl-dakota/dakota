@@ -1,0 +1,27 @@
+environment
+  top_method_pointer 'PS'
+method
+  id_method 'PS'
+  pareto_set
+    method_pointer 'NLP'
+    weight_sets
+      1.0 0.0
+      0.0 1.0
+      0.5 0.5
+method
+  id_method 'NLP'
+  optpp_q_newton
+    max_iterations 10
+    max_function_evaluations 50
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    lower_bounds  0.5 0.5
+    upper_bounds  1.5 1.5
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'text_book' fork
+responses
+  objective_functions 2
+  analytic_gradients
+  no_hessians

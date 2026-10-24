@@ -395,6 +395,23 @@ Study::MethodFactory::multi_start(
     std::move(sub_iterator));
 }
 
+std::shared_ptr<ConcurrentMetaIterator>
+Study::MethodFactory::pareto_set(
+  const IRStore& method_store, std::shared_ptr<Iterator> sub_iterator) const
+{
+  return std::make_shared<ConcurrentMetaIterator>(
+    method_store, std::move(sub_iterator), study.services());
+}
+
+std::shared_ptr<ConcurrentMetaIterator>
+Study::MethodFactory::pareto_set(
+  const nlohmann::json& method_json, std::shared_ptr<Iterator> sub_iterator) const
+{
+  return pareto_set(
+    validate_and_materialize_selected_method(method_json, "pareto_set"),
+    std::move(sub_iterator));
+}
+
 std::shared_ptr<SeqHybridMetaIterator>
 Study::MethodFactory::hybrid_sequential(
   const IRStore& method_store,

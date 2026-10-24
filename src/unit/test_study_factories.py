@@ -303,6 +303,51 @@ class FactoryTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     factory(self.model, not_a_dakota_option=True)
 
+    def test_branch_and_bound_model_and_method(self):
+        if not hasattr(self.study.method, "branch_and_bound"):
+            self.skipTest("Dakota was built without ACRO")
+        if not hasattr(self.study.method, "optpp_q_newton"):
+            self.skipTest("Dakota was built without OPT++")
+        # The shared fixture is a UQ model; optimizers need design variables,
+        # an objective, and gradients.
+        variables = self.study.variables(continuous_design={
+            "count": 2, "initial_point": [0.9, 1.1],
+            "lower_bounds": [0.5, 0.5], "upper_bounds": [1.5, 1.5]})
+        response = self.study.responses(variables, {
+            "response_type": {"objective_functions": {"count": 1}},
+            "gradient_type": {"analytic_gradients": True},
+            "hessian_type": {"no_hessians": True}})
+        model = self.study.model.simulation(variables, self.interface, response)
+        other_model = self.study.model.simulation(
+            variables, self.interface, response)
+        factory = self.study.method.branch_and_bound
+        by_name = {"sub_method": {"method_name": {"name": "optpp_q_newton"}}}
+        by_pointer = {"sub_method": {"method_pointer": "NLP"}}
+        method = self.study.method.optpp_q_newton(model, id_method="NLP")
+
+        # method_name requires a model and builds the sub-method on it
+        self.assertIsInstance(factory(model, config=by_name),
+                              ds.PebbldMinimizer)
+        with self.assertRaises(RuntimeError):
+            factory(config=by_name)
+        with self.assertRaises(RuntimeError):
+            factory(model, method, config=by_name)
+
+        # method_pointer requires a method; model defaults to or must match it
+        self.assertIsInstance(factory(method=method, config=by_pointer),
+                              ds.PebbldMinimizer)
+        self.assertIsInstance(factory(model, method, config=by_pointer),
+                              ds.PebbldMinimizer)
+        with self.assertRaises(RuntimeError):
+            factory(model, config=by_pointer)
+        with self.assertRaises(RuntimeError):
+            factory(other_model, method, config=by_pointer)
+
+        with self.assertRaisesRegex(TypeError, "pass config"):
+            factory(model, config=by_name, unexpected=True)
+        with self.assertRaises(ValueError):
+            factory(model, not_a_dakota_option=True)
+
     def test_import_points_construction(self):
         from dakota.spec.method import ImportPointsConfig
         data = {"import_points_file": {"filename": "points.dat"}}

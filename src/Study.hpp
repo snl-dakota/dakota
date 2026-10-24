@@ -274,6 +274,15 @@ public:
   multi_start(const nlohmann::json& method_json,
               std::shared_ptr<Iterator> sub_iterator) const;
 
+  /// Construct pareto_set around a non-null injected sub-iterator.
+  std::shared_ptr<ConcurrentMetaIterator>
+  pareto_set(const IRStore& method_store,
+             std::shared_ptr<Iterator> sub_iterator) const;
+  /// Validate a pareto_set fragment and construct it around sub_iterator.
+  std::shared_ptr<ConcurrentMetaIterator>
+  pareto_set(const nlohmann::json& method_json,
+             std::shared_ptr<Iterator> sub_iterator) const;
+
   /// Construct a sequential hybrid around non-null injected sub-iterators.
   std::shared_ptr<SeqHybridMetaIterator>
   hybrid_sequential(const IRStore& method_store,

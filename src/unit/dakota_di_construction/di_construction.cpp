@@ -48,8 +48,23 @@
 #endif
 #include "OptDartsOptimizer.hpp"
 #ifdef HAVE_OPTPP
+#include "SNLLLeastSq.hpp"
 #include "SNLLOptimizer.hpp"
 #endif
+#ifdef HAVE_NPSOL
+#include "NLSSOLLeastSq.hpp"
+#endif
+#ifdef HAVE_DDACE
+#include "DDACEDesignCompExp.hpp"
+#endif
+#ifdef HAVE_FSUDACE
+#include "FSUDesignCompExp.hpp"
+#endif
+#ifdef HAVE_PSUADE
+#include "PSUADEDesignCompExp.hpp"
+#endif
+// ExtPythonMethod include not needed for di_construction tests.
+// See NOTE near end of file for explanation.
 #include "ConcurrentMetaIterator.hpp"
 #include "DataFitSurrModel.hpp"
 #include "EnsembleSurrModel.hpp"
@@ -916,7 +931,7 @@ struct PebblTestTraits {
   static IRStore make_method_store(InstructionMaterializer& materializer) {
     const json method_json = {
       {"branch_and_bound", {
-        {"sub_method_pointer", "empty"}
+        {"sub_method", {{"method_pointer", "NLP"}}}
       }}
     };
 
@@ -1147,7 +1162,6 @@ using OptimizerTraits =
 #endif
 #ifdef HAVE_ACRO
                 COLINTestTraits,
-                PebblTestTraits,
 #endif
 #ifdef HAVE_CONMIN
                 CONMINTestTraits,
@@ -1210,6 +1224,62 @@ TYPED_TEST(di_construction_tests_typed, can_construct_optimizer_from_irstore)
   EXPECT_EQ(optimizer.output_manager_ptr(), runtime.outputManager.get());
   EXPECT_EQ(optimizer.iterated_model().get(), simulation_model.get());
 }
+
+#if defined(HAVE_ACRO) && defined(HAVE_OPTPP)
+TEST(di_construction_tests, pebbl_minimizer_uses_injected_method)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  method_store = PebblTestTraits::make_method_store(materializer);
+  const IRStore sub_store = SNLLTestTraits::make_method_store(materializer);
+  const IRStore name_store = materializer.materialize_block(
+    json{{"branch_and_bound",
+          {{"sub_method", {{"method_name", {{"name", "optpp_q_newton"}}}}}}}},
+    irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+  ExplicitRuntime other_runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+  auto other_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+  auto method = std::make_shared<SNLLOptimizer>(
+    sub_store, simulation_model, runtime.services);
+
+  PebbldMinimizer minimizer(method_store, simulation_model, method,
+                            runtime.services);
+  EXPECT_EQ(minimizer.iterated_model().get(), simulation_model.get());
+
+  // method_pointer without a model takes the method's model
+  PebbldMinimizer defaulted(method_store, nullptr, method, runtime.services);
+  EXPECT_EQ(defaulted.iterated_model().get(), simulation_model.get());
+
+  // method_pointer requires a method on the same model and services
+  EXPECT_THROW(PebbldMinimizer(method_store, simulation_model, nullptr,
+                               runtime.services), std::runtime_error);
+  EXPECT_THROW(PebbldMinimizer(method_store, simulation_model,
+                               std::make_shared<SNLLOptimizer>(
+                                 sub_store, other_model, runtime.services),
+                               runtime.services), std::runtime_error);
+  EXPECT_THROW(PebbldMinimizer(method_store, simulation_model, method,
+                               other_runtime.services), std::runtime_error);
+
+  // method_name builds the sub-problem minimizer and rejects an injected one
+  EXPECT_NO_THROW(PebbldMinimizer(name_store, simulation_model, nullptr,
+                                  runtime.services));
+  EXPECT_THROW(PebbldMinimizer(name_store, simulation_model, method,
+                               runtime.services), std::runtime_error);
+  EXPECT_THROW(PebbldMinimizer(name_store, nullptr, nullptr,
+                               runtime.services), std::runtime_error);
+}
+#endif
 
 #ifdef HAVE_NPSOL
 TEST(di_construction_tests, npsol_optimizer_throws_on_inconsistent_runtime_services)
@@ -2299,6 +2369,209 @@ TEST(di_construction_tests, lhs_on_design_only_keeps_all_view)
   EXPECT_NO_THROW(
     NonDLHSSampling sampler(make_lhs_store(11), model, runtime.services));
   EXPECT_EQ(model->current_variables().view().first, MIXED_ALL);
+}
+
+#ifdef HAVE_OPTPP
+TEST(di_construction_tests, can_construct_snll_leastsq_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"optpp_g_newton", {
+      {"max_iterations", 5},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_lsq_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  SNLLLeastSq solver(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(solver.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(solver.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(solver.iterated_model().get(), simulation_model.get());
+}
+#endif
+
+#ifdef HAVE_NPSOL
+TEST(di_construction_tests, can_construct_nlssol_leastsq_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"nlssol_sqp", {
+      {"max_iterations", 5},
+      {"convergence_tolerance", 1.e-4}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_lsq_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  NLSSOLLeastSq solver(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(solver.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(solver.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(solver.iterated_model().get(), simulation_model.get());
+}
+#endif
+
+#ifdef HAVE_DDACE
+TEST(di_construction_tests, can_construct_ddace_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"dace", {
+      {"sub_method", {{"lhs", true}}},
+      {"samples", 25},
+      {"seed", 5}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  DDACEDesignCompExp iterator(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(iterator.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(iterator.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(iterator.iterated_model().get(), simulation_model.get());
+}
+#endif
+
+#ifdef HAVE_FSUDACE
+TEST(di_construction_tests, can_construct_fsu_design_comp_exp_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"fsu_quasi_mc", {
+      {"sequence", {{"halton", true}}},
+      {"samples", 25}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  FSUDesignCompExp iterator(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(iterator.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(iterator.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(iterator.iterated_model().get(), simulation_model.get());
+}
+#endif
+
+#ifdef HAVE_PSUADE
+TEST(di_construction_tests, can_construct_psuade_moat_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore method_store, variables_store, responses_store, interface_store, model_store;
+
+  const json method_json = {
+    {"psuade_moat", {
+      {"samples", 12},
+      {"partitions", {3, 3}},
+      {"seed", 500}
+    }}
+  };
+  method_store = materializer.materialize_block(method_json, irgen::BlockType::Method);
+  materialize_default_opt_blocks(materializer, variables_store,
+                                 responses_store, interface_store, model_store);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+
+  PSUADEDesignCompExp iterator(runtime.services, method_store, simulation_model);
+
+  EXPECT_EQ(iterator.parallel_library_ptr(), runtime.parallelLibrary.get());
+  EXPECT_EQ(iterator.output_manager_ptr(), runtime.outputManager.get());
+  EXPECT_EQ(iterator.iterated_model().get(), simulation_model.get());
+}
+#endif
+
+// NOTE: ExtPythonMethod DI construction test is not added here.
+// The constructor calls initialize_python() which immediately tries to import
+// dakota.ext_method. Without setting PYTHONPATH in the di_construction test
+// environment, this aborts. The parity test method_external_python covers
+// the binding end-to-end when HAVE_EXT_PYTHON_METHOD is enabled.
+
+TEST(di_construction_tests, can_construct_concurrent_pareto_set_from_irstore)
+{
+  InstructionMaterializer materializer;
+  IRStore sampling_method_store, variables_store, responses_store, interface_store, model_store;
+  materialize_pilot_blocks(materializer, sampling_method_store, variables_store,
+                           responses_store, interface_store, model_store);
+
+  const json pareto_method_json = {
+    {"pareto_set", {
+      {"sub_method", {{"method_pointer", "NLP"}}},
+      {"weight_sets", {1.0, 0.0, 0.0, 1.0}}
+    }}
+  };
+  IRStore pareto_method_store = materializer.materialize_block(
+    pareto_method_json, irgen::BlockType::Method);
+
+  ExplicitRuntime runtime;
+
+  Variables variables(variables_store);
+  Response response(responses_store, variables);
+  auto interface = make_test_interface(
+    interface_store, runtime.services);
+  auto simulation_model = std::make_shared<SimulationModel>(
+    model_store, variables, interface, response, runtime.services);
+  auto sub_iterator = std::make_shared<NonDLHSSampling>(
+    sampling_method_store, simulation_model, runtime.services);
+
+  ConcurrentMetaIterator pareto_iterator(
+    pareto_method_store, sub_iterator, runtime.services);
+
+  EXPECT_EQ(pareto_iterator.parallel_library_ptr(),
+            runtime.parallelLibrary.get());
+  EXPECT_EQ(pareto_iterator.iterated_model().get(), simulation_model.get());
 }
 
 } // namespace

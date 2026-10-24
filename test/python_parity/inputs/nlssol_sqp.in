@@ -1,0 +1,14 @@
+method
+  nlssol_sqp
+    max_iterations 5
+    max_function_evaluations 20
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'python3 response_driver.py least_squares' fork
+responses
+  calibration_terms 2
+  analytic_gradients
+  no_hessians

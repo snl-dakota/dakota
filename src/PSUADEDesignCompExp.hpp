@@ -84,7 +84,7 @@ private:
   /// current number of samples to be evaluated
   size_t numSamples;
   /// number of partitions in each variable direction
-  const UShortArray& varPartitionsSpec;
+  UShortArray varPartitionsSpec;
   /// number of partitions to pass to PSUADE (levels = partitions + 1)
   int numPartitions;
   /// flag which triggers the update of allVars/allResponses for use by

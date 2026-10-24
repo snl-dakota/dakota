@@ -50,6 +50,13 @@ ITERATOR_TYPES = (
     "DataFitSurrBasedLocalMinimizer",
     "HierarchSurrBasedLocalMinimizer",
     "SurrBasedGlobalMinimizer",
+    "DDACEDesignCompExp",
+    "FSUDesignCompExp",
+    "PSUADEDesignCompExp",
+    "ROLOptimizer",
+    "SNLLLeastSq",
+    "NLSSOLLeastSq",
+    "ExtPythonMethod",
 )
 
 FACTORY_NAMES = (
@@ -99,7 +106,6 @@ FACTORY_NAMES = (
     "coliny_ea",
     "coliny_pattern_search",
     "coliny_solis_wets",
-    "branch_and_bound",
     "moga",
     "soga",
     "global_evidence",
@@ -109,4 +115,12 @@ FACTORY_NAMES = (
     "bayes_calibration",
     "surrogate_based_local",
     "surrogate_based_global",
+    "dace",
+    "fsu_quasi_mc",
+    "fsu_cvt",
+    "psuade_moat",
+    "rol",
+    "optpp_g_newton",
+    "nlssol_sqp",
+    "external_python",
 )

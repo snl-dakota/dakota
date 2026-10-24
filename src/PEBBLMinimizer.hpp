@@ -51,8 +51,11 @@ class PebbldMinimizer : public Minimizer
 public:
         /// standard constructor
         PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, std::shared_ptr<Model> model);
-        /// DI constructor using method IR plus optional runtime services
+        /// DI constructor; method is the injected sub-problem minimizer
+        /// (required for method_pointer, null for method_name).  model is
+        /// required for method_name and otherwise defaults to method's.
         PebbldMinimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                        std::shared_ptr<Iterator> method,
                         std::shared_ptr<StudyServices> services);
 	/// Constructor
 	/** PebbldMinimizer Constructor

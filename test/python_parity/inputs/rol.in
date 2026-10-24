@@ -1,0 +1,18 @@
+method
+  rol
+    gradient_tolerance   1.0e-3
+    constraint_tolerance 1.0e-3
+    variable_tolerance   1.0e-3
+    max_iterations       10
+variables
+  continuous_design 2
+    initial_point 0.9 1.1
+    lower_bounds  0.5 0.5
+    upper_bounds  1.5 1.5
+    descriptors 'x1' 'x2'
+interface
+  analysis_drivers 'text_book' fork
+responses
+  objective_functions 1
+  analytic_gradients
+  no_hessians

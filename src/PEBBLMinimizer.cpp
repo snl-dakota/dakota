@@ -11,6 +11,8 @@
 #include "PRPMultiIndex.hpp"
 #include "dakota_data_io.hpp"
 #include "ProblemDescDB.hpp"
+#include "LibraryRuntimeSupport.hpp"
+#include <stdexcept>
 
 namespace Dakota 
 {
@@ -57,49 +59,67 @@ PebbldMinimizer::PebbldMinimizer(ProblemDescDB& problem_db, ParallelLibrary& par
   branchAndBound->setIterator(subProbMinimizer);
 }
 
+/** Branching updates bounds on the model that the sub-problem minimizer
+    evaluates, so both must share one model.  With method_name, model is
+    required and the minimizer is built on it; with method_pointer, the
+    injected method supplies the model, and an explicit model must match. */
+static std::shared_ptr<Model>
+bandb_model(const IRStore& method_store, const std::shared_ptr<Model>& model,
+            const std::shared_ptr<Iterator>& method)
+{
+  if (method_store.get<String>("sub_method_pointer").empty()) {
+    if (method)
+      throw std::runtime_error(
+        "PebbldMinimizer DI construction accepts an injected method only "
+        "with method_pointer.");
+    if (!model)
+      throw std::runtime_error(
+        "PebbldMinimizer DI construction requires a model for method_name.");
+    return model;
+  }
+
+  if (!method)
+    throw std::runtime_error(
+      "PebbldMinimizer DI construction requires an injected method for "
+      "method_pointer.");
+  auto minimizer = std::dynamic_pointer_cast<Minimizer>(method);
+  if (!minimizer)
+    throw std::runtime_error(
+      "PebbldMinimizer DI construction requires a minimizer method.");
+  auto method_model = minimizer->original_model();
+  if (model && model != method_model)
+    throw std::runtime_error(
+      "PebbldMinimizer DI construction requires the method to iterate on the "
+      "branch_and_bound model.");
+  return method_model;
+}
+
+
 PebbldMinimizer::PebbldMinimizer(const IRStore& method_store, std::shared_ptr<Model> model,
+                        std::shared_ptr<Iterator> method,
                         std::shared_ptr<StudyServices> services):
-  Minimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new PebbldTraits()))
+  Minimizer(std::move(services), method_store,
+            bandb_model(method_store, model, method),
+            std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(
     iteratedModel->current_variables().copy());
 
-  // Instantiate the approximate sub-problem minimizer
-  const String& subprob_method_ptr
-    = method_store.get<String>("sub_method_pointer");
-  const String& subprob_method_name
-    = method_store.get<String>("sub_method_name");
-
-  if (!subprob_method_ptr.empty()) {
-    // Approach 1: method spec support for subProbMinimizer
-    const String& model_ptr = method_store.get<String>("model_pointer");
-    // Do these need to be supported by IRStore? - RWH
-    size_t method_index = probDescDB.get_db_method_node(); // for restoration
-    probDescDB.set_db_method_node(subprob_method_ptr); // method only
-    // sub-problem minimizer will use shallow copy of iteratedModel
-    // (from Model::get_model(problem_db)
-    // TODO: fix this to use IRStore - RWH
-    /* --- FIX --- */ //subProbMinimizer = Iterator::get_iterator(method_store, parallelLib);//(iteratedModel);
-    // suppress DB ctor default and don't output summary info
+  if (method) { // method_pointer
+    detail::validate_services("PebbldMinimizer", study_services(),
+      {detail::runtime_dependency("Iterator", method)});
+    subProbMinimizer = std::move(method);
+    // don't output summary info
     subProbMinimizer->summary_output(false);
-    // verify method's modelPointer is empty or consistent
-    const String& am_model_ptr = method_store.get<String>("model_pointer");
-    if (!am_model_ptr.empty() && am_model_ptr != model_ptr)
-      Cerr << "Warning: BandB method_pointer specification includes an\n"
-	   << "         inconsistent model_pointer that will be ignored."
-	   << std::endl;
-    // Does this need to be supported by IRStore? - RWH
-    probDescDB.set_db_method_node(method_index); // restore method only
   }
-  else if (!subprob_method_name.empty())
-    // Approach 2: instantiate on-the-fly w/o method spec support
-    subProbMinimizer
-      = Iterator::get_iterator(subprob_method_name, iteratedModel);
+  else // method_name: instantiate on-the-fly, as in the ProblemDescDB ctor
+    subProbMinimizer = Iterator::get_iterator(
+      method_store.get<String>("sub_method_name"), iteratedModel);
 
   branchAndBound = new PebbldBranching();
-  branchAndBound->setModel(model);
+  branchAndBound->setModel(original_model());
   branchAndBound->setIterator(subProbMinimizer);
 }
 
