@@ -309,7 +309,8 @@ DataFitSurrModel::DataFitSurrModel(
 
   if (actualModel) {
     mvDist = actualModel->multivariate_distribution().copy();
-    update_from_model(actualModel);
+    // As in the ProblemDescDB ctor, the surrogate keeps its own variables and
+    // response spec (e.g., nonlinear constraint bounds); only check consistency.
     check_submodel_compatibility(*actualModel);
   }
 

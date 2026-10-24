@@ -350,9 +350,18 @@ initialize_sub_minimizer(const IRStore& method_store,
     initialize_sub_minimizer(method_store);
     return;
   }
-  // method_pointer path: the user pre-built an optimizer; redirect it to run
-  // on approxSubProbModel (which may be a RecastModel wrapping iteratedModel).
-  method->iterated_model(approxSubProbModel);
+  // method_pointer path: the user pre-built an optimizer on iteratedModel.  Its
+  // own recasts (e.g., scaling) wrap that model, so keep them when
+  // approxSubProbModel is iteratedModel.  Otherwise approxSubProbModel is a
+  // RecastModel of iteratedModel; redirect only an unwrapped optimizer.
+  if (approxSubProbModel != iteratedModel) {
+    if (method->iterated_model() != iteratedModel)
+      throw std::runtime_error(
+        "SurrBasedLocalMinimizer DI construction cannot apply a recast "
+        "approx_subproblem formulation to an injected method that wraps its "
+        "model (e.g., with scaling).");
+    method->iterated_model(approxSubProbModel);
+  }
   method->summary_output(false);
   approxSubProbMinimizer = std::move(method);
   if (constraintTol <= 0.)
