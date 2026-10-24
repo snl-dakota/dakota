@@ -52,6 +52,8 @@ public:
   void constraint_tolerance(Real constr_tol);
   /// return the method constraint tolerance (constraintTol)
   Real constraint_tolerance() const;
+  /// true if construction added a scaling or data-transform recast layer
+  bool has_transform_layers() const;
 
   /// return weighted sum of squared residuals
   static Real sum_squared_residuals(size_t num_pri_fns,
@@ -352,6 +354,10 @@ inline Minimizer::~Minimizer() { }
 
 inline void Minimizer::constraint_tolerance(Real constr_tol)
 { constraintTol = constr_tol; }
+
+
+inline bool Minimizer::has_transform_layers() const
+{ return scalingModel || dataTransformModel; }
 
 
 inline Real Minimizer::constraint_tolerance() const

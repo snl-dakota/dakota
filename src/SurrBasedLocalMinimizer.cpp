@@ -353,13 +353,17 @@ initialize_sub_minimizer(const IRStore& method_store,
   // method_pointer path: the user pre-built an optimizer on iteratedModel.  Its
   // own recasts (e.g., scaling) wrap that model, so keep them when
   // approxSubProbModel is iteratedModel.  Otherwise approxSubProbModel is a
-  // RecastModel of iteratedModel; redirect only an unwrapped optimizer.
+  // RecastModel of iteratedModel and the optimizer is redirected onto it.
+  // That drops the optimizer's own layers: fine for a least-squares reduction
+  // (the recast already provides one), but scaling/data transforms would be
+  // lost silently.
   if (approxSubProbModel != iteratedModel) {
-    if (method->iterated_model() != iteratedModel)
+    auto minimizer = std::dynamic_pointer_cast<Minimizer>(method);
+    if (minimizer && minimizer->has_transform_layers())
       throw std::runtime_error(
         "SurrBasedLocalMinimizer DI construction cannot apply a recast "
-        "approx_subproblem formulation to an injected method that wraps its "
-        "model (e.g., with scaling).");
+        "approx_subproblem formulation to an injected method with scaling "
+        "or calibration data transforms.");
     method->iterated_model(approxSubProbModel);
   }
   method->summary_output(false);
