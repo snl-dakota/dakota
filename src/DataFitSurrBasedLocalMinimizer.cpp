@@ -58,7 +58,8 @@ DataFitSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& paral
 DataFitSurrBasedLocalMinimizer::
 DataFitSurrBasedLocalMinimizer(const IRStore& method_store,
                                std::shared_ptr<Model> model,
-                               std::shared_ptr<StudyServices> services):
+                               std::shared_ptr<StudyServices> services,
+                               std::shared_ptr<Iterator> method):
   SurrBasedLocalMinimizer(std::move(services), method_store, model,
     std::shared_ptr<TraitsBase>(new DataFitSurrBasedLocalTraits())),
   multiLayerBypassFlag(false), useDerivsFlag(false)
@@ -82,7 +83,7 @@ DataFitSurrBasedLocalMinimizer(const IRStore& method_store,
 
   // Initialize method/interface dependent settings
   initialize_trust_region_data(approx_type, model->correction_order(),
-                               &method_store);
+                               &method_store, std::move(method));
 }
 
 
@@ -104,7 +105,8 @@ DataFitSurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn, sho
 
 void DataFitSurrBasedLocalMinimizer::
 initialize_trust_region_data(const String& approx_type, short corr_order,
-			     const IRStore* method_store)
+			     const IRStore* method_store,
+                             std::shared_ptr<Iterator> method)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel->surrogate_type() == "ensemble") {
@@ -166,7 +168,7 @@ initialize_trust_region_data(const String& approx_type, short corr_order,
 
   // Instantiate the Model and Minimizer for the approximate sub-problem
   initialize_sub_model();
-  if (method_store) initialize_sub_minimizer(*method_store);
+  if (method_store) initialize_sub_minimizer(*method_store, std::move(method));
   else              initialize_sub_minimizer();
   // Initialize any Lagrange multiplier arrays
   initialize_multipliers();

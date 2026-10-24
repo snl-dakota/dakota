@@ -17,6 +17,8 @@
 #include "EvaluationStore.hpp"
 #include "StudyRuntime.hpp"
 #include "LibraryRuntimeSupport.hpp"
+#include "DakotaAnalyzer.hpp"
+#include "DakotaMinimizer.hpp"
 
 #include <stdexcept>
 
@@ -663,8 +665,17 @@ void NestedModel::initialize_variable_mappings(
   // subModel view updating must be performed before subIterator instantiation
   // since any model recastings will pick up the inactive view (and inactive
   // view differences cause problems with recursion updating).
-  if (inactive_sm_view != EMPTY_VIEW)
+  if (inactive_sm_view != EMPTY_VIEW) {
     subModel->inactive_view(inactive_sm_view); // recurse
+    // DI path: subIterator was injected pre-built, so its internal recastings
+    // (e.g., ProbabilityTransformModel) already exist and must be updated.
+    if (subIterator && (std::dynamic_pointer_cast<Analyzer>(subIterator) ||
+                        std::dynamic_pointer_cast<Minimizer>(subIterator))) {
+      std::shared_ptr<Model> alg_model = subIterator->algorithm_space_model();
+      if (alg_model && alg_model != subModel)
+        alg_model->inactive_view(inactive_sm_view); // recurse
+    }
+  }
 
   currentResponse.reshape_metadata(0);
 }

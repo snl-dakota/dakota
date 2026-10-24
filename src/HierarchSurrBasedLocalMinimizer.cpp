@@ -36,15 +36,17 @@ HierarchSurrBasedLocalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& para
 HierarchSurrBasedLocalMinimizer::
 HierarchSurrBasedLocalMinimizer(const IRStore& method_store,
                                 std::shared_ptr<Model> model,
-                                std::shared_ptr<StudyServices> services):
+                                std::shared_ptr<StudyServices> services,
+                                std::shared_ptr<Iterator> method):
   SurrBasedLocalMinimizer(std::move(services), method_store, model,
     std::shared_ptr<TraitsBase>(new HierarchSurrBasedLocalTraits())),
   minimizeIndex(0), nestedTrustRegions(true), multiLev(false)
-{ initialize_hierarchy(&method_store); }
+{ initialize_hierarchy(&method_store, std::move(method)); }
 
 
 void HierarchSurrBasedLocalMinimizer::
-initialize_hierarchy(const IRStore* method_store)
+initialize_hierarchy(const IRStore* method_store,
+                     std::shared_ptr<Iterator> method)
 {
   // check iteratedModel for model form hierarchy and/or discretization levels
   if (iteratedModel->surrogate_type() == "ensemble")
@@ -118,7 +120,7 @@ initialize_hierarchy(const IRStore* method_store)
 
   // Instantiate the Model and Minimizer for the approximate sub-problem
   initialize_sub_model();
-  if (method_store) initialize_sub_minimizer(*method_store);
+  if (method_store) initialize_sub_minimizer(*method_store, std::move(method));
   else              initialize_sub_minimizer();
   // Initialize any Lagrange multiplier arrays
   initialize_multipliers();

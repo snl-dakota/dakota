@@ -320,28 +320,46 @@ void SurrBasedLocalMinimizer::initialize_sub_minimizer()
 void SurrBasedLocalMinimizer::
 initialize_sub_minimizer(const IRStore& method_store)
 {
-  // The approximate subproblem model (or a recasting of iteratedModel) is
-  // created internally, so a sub-method pointer cannot be resolved without
-  // ProblemDescDB.  Only on-the-fly instantiation by name is supported.
-  if (!method_store.get<String>("sub_method_pointer").empty())
-    throw std::runtime_error(
-      "SurrBasedLocalMinimizer DI construction does not yet support "
-      "approx_method_pointer; use approx_method_name instead.");
-
   const String& approx_method_name
     = method_store.get<String>("sub_method_name");
-  if (!approx_method_name.empty()) {
-    approxSubProbMinimizer
-      = Iterator::get_iterator(approx_method_name, approxSubProbModel);
-    if (constraintTol <= 0.) // not specified in SBLM method spec
-      constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
-    std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
-      (approxSubProbMinimizer);
-    aspm->constraint_tolerance(constraintTol);
-  }
-  else
+  if (approx_method_name.empty()) {
+    if (!method_store.get<String>("sub_method_pointer").empty())
+      throw std::runtime_error(
+        "SurrBasedLocalMinimizer DI construction with approx_method_pointer "
+        "requires an injected method; pass it as the 'method' argument to "
+        "MethodFactory.surrogate_based_local.");
     throw std::runtime_error(
-      "SurrBasedLocalMinimizer DI construction requires approx_method_name.");
+      "SurrBasedLocalMinimizer DI construction requires approx_method_name "
+      "or an injected method via approx_method_pointer.");
+  }
+  approxSubProbMinimizer
+    = Iterator::get_iterator(approx_method_name, approxSubProbModel);
+  if (constraintTol <= 0.) // not specified in SBLM method spec
+    constraintTol = 1.e-4; // compromise value among NPSOL/DOT/CONMIN
+  std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
+    (approxSubProbMinimizer);
+  aspm->constraint_tolerance(constraintTol);
+}
+
+
+void SurrBasedLocalMinimizer::
+initialize_sub_minimizer(const IRStore& method_store,
+                         std::shared_ptr<Iterator> method)
+{
+  if (!method) {
+    initialize_sub_minimizer(method_store);
+    return;
+  }
+  // method_pointer path: the user pre-built an optimizer; redirect it to run
+  // on approxSubProbModel (which may be a RecastModel wrapping iteratedModel).
+  method->iterated_model(approxSubProbModel);
+  method->summary_output(false);
+  approxSubProbMinimizer = std::move(method);
+  if (constraintTol <= 0.)
+    constraintTol = 1.e-4;
+  std::shared_ptr<Minimizer> aspm = std::static_pointer_cast<Minimizer>
+    (approxSubProbMinimizer);
+  aspm->constraint_tolerance(constraintTol);
 }
 
 

@@ -5699,6 +5699,12 @@ void Model::assign_inferred_view(short view, const String& method_label)
   if (cur_view != view) {
     // Refresh mvDist active mask when we change the view.
     active_view(view, false); // base Model: updates vars, constraints, numDerivVars
+    // On the DI path the Response is constructed before the method sets the
+    // view (Variables start with MIXED_ALL).  Sync the derivative variables
+    // vector so it matches the now-active continuous variable IDs.
+    ActiveSet new_set = currentResponse.active_set();
+    new_set.derivative_vector(currentVariables.continuous_variable_ids());
+    currentResponse.active_set(new_set);
     if (mvDist.multivar_dist_rep())
       initialize_active_types(mvDist);
   }

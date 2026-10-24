@@ -101,6 +101,9 @@ protected:
   void initialize_sub_minimizer();
   /// construct and initialize approxSubProbMinimizer from IR data
   void initialize_sub_minimizer(const IRStore& method_store);
+  /// construct approxSubProbMinimizer from an injected iterator (DI method_pointer)
+  void initialize_sub_minimizer(const IRStore& method_store,
+                                std::shared_ptr<Iterator> method);
   /// initialize lagrangeMult and augLagrangeMult
   void initialize_multipliers();
 

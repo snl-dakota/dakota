@@ -609,14 +609,39 @@ See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
        std::shared_ptr<Model> model) {
       return f.nl2sol(store, std::move(model));
     });
-  bind_method(factory, "surrogate_based_local",
-    [](const Study::MethodFactory& self, const IRStore& store,
-       std::shared_ptr<Model> model) {
-      // mirror the ProblemDescDB dispatch in iterator_utils.cpp
+  factory.def("surrogate_based_local",
+    [](const Study::MethodFactory& self, std::shared_ptr<Model> model,
+       std::shared_ptr<Iterator> method,
+       const py::object& config, py::kwargs kwargs) {
+      const auto store = materialize_method(nlohmann::json{{"surrogate_based_local",
+        normalize_factory_config(config, kwargs,
+          "MethodFactory.surrogate_based_local")}});
       if (model->surrogate_type() == "ensemble")
-        return construct<HierarchSurrBasedLocalMinimizer>(self, store, std::move(model));
-      return construct<DataFitSurrBasedLocalMinimizer>(self, store, std::move(model));
-    });
+        return std::static_pointer_cast<Iterator>(
+          std::make_shared<HierarchSurrBasedLocalMinimizer>(
+            store, std::move(model), self.services(), std::move(method)));
+      return std::static_pointer_cast<Iterator>(
+        std::make_shared<DataFitSurrBasedLocalMinimizer>(
+          store, std::move(model), self.services(), std::move(method)));
+    },
+    py::arg("model").none(false), py::arg("method") = py::none(),
+    py::arg("config") = py::none(),
+    R"doc(Construct a surrogate-based local minimizer.
+
+:param model: Surrogate model iterated by the outer trust-region loop.
+:type model: dakota.study.Model
+:param method: Sub-problem optimizer applied to the approximate sub-problem.
+    Required when ``sub_method = method_pointer`` is used; omitted when
+    ``sub_method_name`` is used (the optimizer is built on-the-fly).
+:type method: dakota.study.Iterator or None
+:param config: A ``SurrBasedLocalConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed minimizer.
+:rtype: dakota.study.Iterator
+:raises RuntimeError: If ``method`` is missing when ``method_pointer`` is
+    specified, or if the supplied model is not a surrogate model.
+
+See :ref:`surrogate_based_local options <method-surrogate_based_local>`.)doc");
   bind_method(factory, "surrogate_based_global", &construct<SurrBasedGlobalMinimizer>);
 
   bind_method(factory, "local_reliability", &construct<NonDLocalReliability>);

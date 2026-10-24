@@ -691,6 +691,8 @@ inline void NestedModel::propagate_output_level(short level)
   outputLevel = level;
   if (optionalInterface)
     optionalInterface->output_level(level);
+  if (level > NORMAL_OUTPUT && subModel)
+    subModel->fine_grained_evaluation_counters();
 }
 
 

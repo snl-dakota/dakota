@@ -72,7 +72,8 @@ public:
   /// DI constructor using method IR plus study services
   HierarchSurrBasedLocalMinimizer(const IRStore& method_store,
                                   std::shared_ptr<Model> model,
-                                  std::shared_ptr<StudyServices> services);
+                                  std::shared_ptr<StudyServices> services,
+                                  std::shared_ptr<Iterator> method = nullptr);
   /// destructor
   ~HierarchSurrBasedLocalMinimizer() override;
 
@@ -102,7 +103,8 @@ private:
   //
 
   /// helper for shared ctor code
-  void initialize_hierarchy(const IRStore* method_store = nullptr);
+  void initialize_hierarchy(const IRStore* method_store = nullptr,
+                            std::shared_ptr<Iterator> method = nullptr);
 
   /// build the hierarchical approximation for a particular level by
   /// computing center truth within the EnsembleSurrModel

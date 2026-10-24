@@ -74,7 +74,8 @@ public:
   /// DI constructor using method IR plus study services
   DataFitSurrBasedLocalMinimizer(const IRStore& method_store,
                                  std::shared_ptr<Model> model,
-                                 std::shared_ptr<StudyServices> services);
+                                 std::shared_ptr<StudyServices> services,
+                                 std::shared_ptr<Iterator> method = nullptr);
   /// alternate constructor for instantiations "on the fly"
   DataFitSurrBasedLocalMinimizer(std::shared_ptr<Model> model, short merit_fn,
 				 short accept_logic, short constr_relax,
@@ -120,7 +121,8 @@ protected:
   /// helper for shared ctor code
   void initialize_trust_region_data(const String& approx_type,
 				    short corr_order,
-				    const IRStore* method_store = nullptr);
+				    const IRStore* method_store = nullptr,
+                                    std::shared_ptr<Iterator> method = nullptr);
 
   /// retrieve responseCenterTruth if possible, evaluate it if not
   void find_center_truth();
