@@ -78,7 +78,8 @@ public:
   /// DI constructor using method IR plus study services
   SurrBasedGlobalMinimizer(const IRStore& method_store,
                            std::shared_ptr<Model> model,
-                           std::shared_ptr<StudyServices> services);
+                           std::shared_ptr<StudyServices> services,
+                           std::shared_ptr<Iterator> method = nullptr);
   /// destructor
   ~SurrBasedGlobalMinimizer() override;
 

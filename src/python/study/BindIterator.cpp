@@ -634,7 +634,7 @@ See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
     Required when ``sub_method = method_pointer`` is used; omitted when
     ``sub_method_name`` is used (the optimizer is built on-the-fly).
 :type method: dakota.study.Iterator or None
-:param config: A ``SurrBasedLocalConfig`` or equivalent dictionary.
+:param config: A ``SurrogateBasedLocalConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: The constructed minimizer.
 :rtype: dakota.study.Iterator
@@ -642,7 +642,36 @@ See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
     specified, or if the supplied model is not a surrogate model.
 
 See :ref:`surrogate_based_local options <method-surrogate_based_local>`.)doc");
-  bind_method(factory, "surrogate_based_global", &construct<SurrBasedGlobalMinimizer>);
+  factory.def("surrogate_based_global",
+    [](const Study::MethodFactory& self, std::shared_ptr<Model> model,
+       std::shared_ptr<Iterator> method,
+       const py::object& config, py::kwargs kwargs) {
+      const auto store = materialize_method(nlohmann::json{{"surrogate_based_global",
+        normalize_factory_config(config, kwargs,
+          "MethodFactory.surrogate_based_global")}});
+      return std::static_pointer_cast<Iterator>(
+        std::make_shared<SurrBasedGlobalMinimizer>(
+          store, std::move(model), self.services(), std::move(method)));
+    },
+    py::arg("model").none(false), py::arg("method") = py::none(),
+    py::arg("config") = py::none(),
+    R"doc(Construct a surrogate-based global minimizer.
+
+:param model: Surrogate model iterated by the outer loop.
+:type model: dakota.study.Model
+:param method: Sub-problem optimizer applied to the surrogate. Required
+    with ``method_pointer``; omitted with ``method_name`` (built on the fly).
+    If built on a different model, it is redirected to ``model``.
+:type method: dakota.study.Iterator or None
+:param config: A ``SurrogateBasedGlobalConfig`` or equivalent dictionary.
+:param kwargs: Configuration fields used instead of ``config``.
+:returns: The constructed minimizer.
+:rtype: dakota.study.Iterator
+:raises RuntimeError: If ``method`` is missing when ``method_pointer`` is
+    specified, if ``method`` has scaling or calibration data transforms and
+    was built on a different model, or if ``model`` is not a surrogate model.
+
+See :ref:`surrogate_based_global options <method-surrogate_based_global>`.)doc");
 
   bind_method(factory, "local_reliability", &construct<NonDLocalReliability>);
   bind_method(factory, "global_reliability", &construct<NonDGlobalReliability>);

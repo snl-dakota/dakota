@@ -66,27 +66,53 @@ SurrBasedGlobalMinimizer(ProblemDescDB& problem_db, ParallelLibrary& parallel_li
 SurrBasedGlobalMinimizer::
 SurrBasedGlobalMinimizer(const IRStore& method_store,
                          std::shared_ptr<Model> model,
-                         std::shared_ptr<StudyServices> services):
+                         std::shared_ptr<StudyServices> services,
+                         std::shared_ptr<Iterator> method):
   SurrBasedMinimizer(std::move(services), method_store, model,
                      std::shared_ptr<TraitsBase>(new SurrBasedGlobalTraits())),
   replacePoints(method_store.get<bool>("sbg.replace_points"))
 {
   initialize_model();
 
-  // A sub-method pointer requires ProblemDescDB to resolve the method spec;
-  // only on-the-fly instantiation by name is supported.
-  if (!method_store.get<String>("sub_method_pointer").empty())
-    throw std::runtime_error(
-      "SurrBasedGlobalMinimizer DI construction does not yet support "
-      "approx_method_pointer; use approx_method_name instead.");
-
   const String& approx_method_name
     = method_store.get<String>("sub_method_name");
-  if (approx_method_name.empty())
+
+  if (method) {
+    // The sub-optimizer iterates on iteratedModel (the global surrogate); as on
+    // the ProblemDescDB path, the model it was built on is otherwise ignored.
+    // Redirecting drops its own recasts, so reject scaling/data transforms.
+    auto minimizer = std::dynamic_pointer_cast<Minimizer>(method);
+    auto built_on  = minimizer ? minimizer->original_model()
+                               : method->iterated_model();
+    if (built_on != iteratedModel) {
+      if (minimizer && minimizer->has_transform_layers())
+        throw std::runtime_error(
+          "SurrBasedGlobalMinimizer DI construction requires an injected "
+          "method with scaling or calibration data transforms to be built on "
+          "the surrogate_based_global model.");
+      Cerr << "Warning: surrogate_based_global injected sub-method was built "
+           << "on a different model;\n         it will iterate on the "
+           << "surrogate_based_global model instead." << std::endl;
+      method->iterated_model(iteratedModel);
+    }
+    iteratedModel->propagate_output_level(outputLevel);
+    method->summary_output(false);
+    approxSubProbMinimizer = std::move(method);
+  }
+  else if (!approx_method_name.empty()) {
+    // Name-based on-the-fly instantiation (original DI path).
+    approxSubProbMinimizer
+      = Iterator::get_iterator(approx_method_name, iteratedModel);
+  }
+  else if (!method_store.get<String>("sub_method_pointer").empty())
     throw std::runtime_error(
-      "SurrBasedGlobalMinimizer DI construction requires approx_method_name.");
-  approxSubProbMinimizer
-    = Iterator::get_iterator(approx_method_name, iteratedModel);
+      "SurrBasedGlobalMinimizer DI construction with approx_method_pointer "
+      "requires an injected method; pass it as the 'method' argument to "
+      "MethodFactory.surrogate_based_global.");
+  else
+    throw std::runtime_error(
+      "SurrBasedGlobalMinimizer DI construction requires approx_method_name "
+      "or an injected method.");
 }
 
 
