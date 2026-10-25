@@ -366,6 +366,10 @@ initialize_sub_minimizer(const IRStore& method_store,
         "with scaling or calibration data transforms to be built on the "
         "surrogate_based_local model, and cannot apply a recast "
         "approx_subproblem formulation to it.");
+    if (built_on != iteratedModel)
+      Cerr << "Warning: SBLM injected sub-method was built on a model other "
+           << "than the surrogate_based_local\n         model; it will iterate "
+           << "on the surrogate_based_local model instead." << std::endl;
     method->iterated_model(approxSubProbModel);
   }
   method->summary_output(false);
