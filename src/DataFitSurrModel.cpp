@@ -1529,11 +1529,11 @@ void DataFitSurrModel::run_dace()
   }
 
   // run the iterator
+  // Run directly, as on the ProblemDescDB path. IteratorExecutor::run_iterator()
+  // would initialize/finalize the DACE model's mapping around each build,
+  // re-running offline phases of recast truth models (e.g., subspace builds).
   ParLevLIter pl_iter = modelPCIter->mi_parallel_level_iterator(miPLIndex);
-  if (study_services())
-    study_runtime().execute_iterator(*daceIterator, pl_iter);
-  else
-    daceIterator->run(pl_iter);
+  daceIterator->run(pl_iter);
 }
 
 
