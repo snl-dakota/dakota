@@ -87,10 +87,10 @@ NonD::NonD(std::shared_ptr<StudyServices> services,
   finalMomentsType(method_store.get<short>("nond.final_moments"))
 {
   initialize_counts();
-  distribute_levels(requestedRespLevels);
-  distribute_levels(requestedProbLevels);
-  distribute_levels(requestedRelLevels);
-  distribute_levels(requestedGenRelLevels);
+  distribute_levels(requestedRespLevels);             // always ascending
+  distribute_levels(requestedProbLevels,    cdfFlag); // ascending if cumulative
+  distribute_levels(requestedRelLevels,    !cdfFlag);// descending if cumulative
+  distribute_levels(requestedGenRelLevels, !cdfFlag);// descending if cumulative
 
   for (size_t i=0; i<numFunctions; i++)
     totalLevelRequests += requestedRespLevels[i].length() +
