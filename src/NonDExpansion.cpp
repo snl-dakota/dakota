@@ -1539,7 +1539,7 @@ void NonDExpansion::multifidelity_reference_expansion()
     }
   }
   if (online_cost_recovery)
-    average_online_cost(accum_cost, num_cost, sequenceCost);
+    average_online_cost(accum_cost, num_cost, secondaryIndex, sequenceCost);
 
   // now aggregate expansions and report COMBINED_EXPANSION_STATS for cases
   // where the run will continue (individual/integrated refinement).
@@ -1804,7 +1804,7 @@ void NonDExpansion::multilevel_regression()
     }
   }
   if (online_cost_recovery)
-    average_online_cost(accum_cost, num_cost, sequenceCost);
+    average_online_cost(accum_cost, num_cost, secondaryIndex, sequenceCost);
 
   switch (multilevAllocControl) {
   case ESTIMATOR_VARIANCE:

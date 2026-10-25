@@ -748,6 +748,33 @@ average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
 
 
 void NonD::
+average_online_cost(const RealVector& accum_cost, const SizetArray& num_cost,
+		    size_t fixed_form, RealVector& seq_cost)
+{
+  // Finalize the average cost for the ensemble
+  size_t step, num_steps = accum_cost.length(), mf;
+  //if (num_cost.size() != num_steps) { } // not possible in recover_online_cost
+  if (seq_cost.length() != num_steps) seq_cost.sizeUninitialized(num_steps);
+  // The active model key at this point belongs to the last step and holds
+  // only its 1-2 active models, so map each step to its model form from the
+  // 1D sequence instead (cf. NonDExpansion::configure_indices()).
+  bool multilev = (sequenceType == Pecos::RESOLUTION_LEVEL_1D_SEQUENCE);
+
+  for (step=0; step<num_steps; ++step) {
+    mf = (multilev) ? fixed_form : step;
+    if (costMetadataIndices[mf].first != SZ_MAX)
+      seq_cost[step] = (num_cost[step]) ?
+	accum_cost[step] / num_cost[step] : 0.;
+    // else cost to be provided from metadata
+  }
+
+  if (outputLevel >= DEBUG_OUTPUT)
+    Cout << "Online cost: accum_cost:\n" << accum_cost << "num_cost:\n"
+	 << num_cost << "seq_cost:\n" << seq_cost << std::endl;
+}
+
+
+void NonD::
 load_pilot_sample(const SizetArray& pilot_spec, size_t num_groups,
 		  SizetArray& delta_N_l)
 {

@@ -138,9 +138,16 @@ protected:
   //- Heading: Utility routines
   //
 
-  /// convert cost accumulations to averages
+  /// convert cost accumulations to averages, with one step per model in the
+  /// active (aggregated) model key
   void average_online_cost(const RealVector& accum_cost,
 			   const SizetArray& num_cost, RealVector& seq_cost);
+  /// convert cost accumulations to averages for a 1D model-form or
+  /// resolution-level sequence; fixed_form is the model form of a
+  /// resolution-level sequence
+  void average_online_cost(const RealVector& accum_cost,
+			   const SizetArray& num_cost, size_t fixed_form,
+			   RealVector& seq_cost);
 
   /// concatenate computed{Resp,Prob,Rel,GenRel}Levels into level_maps
   void pull_level_mappings(RealVector& level_maps, size_t offset);
