@@ -350,20 +350,22 @@ initialize_sub_minimizer(const IRStore& method_store,
     initialize_sub_minimizer(method_store);
     return;
   }
-  // method_pointer path: the user pre-built an optimizer on iteratedModel.  Its
-  // own recasts (e.g., scaling) wrap that model, so keep them when
-  // approxSubProbModel is iteratedModel.  Otherwise approxSubProbModel is a
-  // RecastModel of iteratedModel and the optimizer is redirected onto it.
-  // That drops the optimizer's own layers: fine for a least-squares reduction
-  // (the recast already provides one), but scaling/data transforms would be
-  // lost silently.
-  if (approxSubProbModel != iteratedModel) {
-    auto minimizer = std::dynamic_pointer_cast<Minimizer>(method);
+  // method_pointer path: the sub-optimizer must iterate on approxSubProbModel
+  // (iteratedModel or its recast); as on the ProblemDescDB path, the model the
+  // sub-method was built on is otherwise ignored.  If it was built on
+  // approxSubProbModel, keep it with its own recasts (e.g., scaling).
+  // Otherwise redirect it, which drops those recasts: fine for a least-squares
+  // reduction (a single_objective recast provides one), but scaling/data
+  // transforms would be lost silently.
+  auto minimizer = std::dynamic_pointer_cast<Minimizer>(method);
+  auto built_on = minimizer ? minimizer->original_model() : method->iterated_model();
+  if (built_on != approxSubProbModel) {
     if (minimizer && minimizer->has_transform_layers())
       throw std::runtime_error(
-        "SurrBasedLocalMinimizer DI construction cannot apply a recast "
-        "approx_subproblem formulation to an injected method with scaling "
-        "or calibration data transforms.");
+        "SurrBasedLocalMinimizer DI construction requires an injected method "
+        "with scaling or calibration data transforms to be built on the "
+        "surrogate_based_local model, and cannot apply a recast "
+        "approx_subproblem formulation to it.");
     method->iterated_model(approxSubProbModel);
   }
   method->summary_output(false);
