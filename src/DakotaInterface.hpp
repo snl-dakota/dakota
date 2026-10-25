@@ -406,6 +406,9 @@ protected:
 
   /// controls use of fn val/grad/hess counters for detailed evaluation report
   bool fineGrainEvalCounters;
+  /// counters requested via fine_grained_evaluation_counters(), independent
+  /// of outputLevel
+  bool explicitEvalCounters = false;
   int evalIdCntr;     ///< total interface evaluation counter
   int newEvalIdCntr;  ///< new (non-duplicate) interface evaluation counter
   int evalIdRefPt;    ///< iteration reference point for evalIdCntr

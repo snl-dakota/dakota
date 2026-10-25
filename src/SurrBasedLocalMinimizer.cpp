@@ -372,6 +372,9 @@ initialize_sub_minimizer(const IRStore& method_store,
            << "on the surrogate_based_local model instead." << std::endl;
     method->iterated_model(approxSubProbModel);
   }
+  // The injected method propagated its own output level into the shared model
+  // at construction; as on the ProblemDescDB path, the SBLM owns that level.
+  iteratedModel->propagate_output_level(outputLevel);
   method->summary_output(false);
   approxSubProbMinimizer = std::move(method);
   if (constraintTol <= 0.)

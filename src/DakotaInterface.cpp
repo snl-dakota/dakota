@@ -235,14 +235,16 @@ void Interface::output_level(short level)
 #ifndef DEBUG
   outputLevel = level;
 #endif // DEBUG
-  // counters are sized on first use; never disable once enabled
-  if (outputLevel > NORMAL_OUTPUT)
-    fineGrainEvalCounters = true;
+  // Counters are sized on first use.  Follow the level (in DI, a later owner
+  // may lower a level an earlier sub-method raised), but keep counters that
+  // were requested explicitly.
+  fineGrainEvalCounters = explicitEvalCounters || outputLevel > NORMAL_OUTPUT;
 }
 
 
 void Interface::fine_grained_evaluation_counters(size_t num_fns)
 {
+  explicitEvalCounters = true;
   if (!fineGrainEvalCounters) {
     init_evaluation_counters(num_fns);
     fineGrainEvalCounters = true;
