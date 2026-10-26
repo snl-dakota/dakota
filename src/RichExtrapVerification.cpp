@@ -191,10 +191,12 @@ void RichExtrapVerification::converge_order()
   RealVector refine_triple(3, false), prev_order(numFunctions),
     delta_order(numFunctions, false);
   RealMatrix qoi_triples;
-  size_t i, counter = 0;
-  Real tolerance = 1., refine_level, *qoi_0, *err_qoi, *extrap_qoi;
+  size_t i, counter;
+  Real tolerance, refine_level, *qoi_0, *err_qoi, *extrap_qoi;
   for (factorIndex=0; factorIndex<numFactors; ++factorIndex) {
+    // each factor is refined independently
     refine_level = initialCVars[factorIndex];
+    tolerance = 1.;  counter = 0;  prev_order = 0.;
     while (tolerance > convergenceTol && ++counter <= maxIterations) {
       for (i=0; i<3; ++i)
 	{ refine_triple[i] = refine_level; refine_level /= refinementRate; }
@@ -231,10 +233,12 @@ void RichExtrapVerification::converge_qoi()
 { 
   RealVector refine_triple(3, false), err_qoi_rv;
   RealMatrix qoi_triples;
-  size_t i, counter = 0;
-  Real tolerance = 1., refine_level, *qoi_0, *err_qoi, *extrap_qoi;
+  size_t i, counter;
+  Real tolerance, refine_level, *qoi_0, *err_qoi, *extrap_qoi;
   for (factorIndex=0; factorIndex<numFactors; ++factorIndex) {
+    // each factor is refined independently
     refine_level = initialCVars[factorIndex];
+    tolerance = 1.;  counter = 0;
     while (tolerance > convergenceTol && ++counter <= maxIterations) {
       for (i=0; i<3; ++i)
 	{ refine_triple[i] = refine_level; refine_level /= refinementRate; }
