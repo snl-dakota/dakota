@@ -309,10 +309,11 @@ class FactoryTests(unittest.TestCase):
         if not hasattr(self.study.method, "optpp_q_newton"):
             self.skipTest("Dakota was built without OPT++")
         # The shared fixture is a UQ model; optimizers need design variables,
-        # an objective, and gradients.
-        variables = self.study.variables(continuous_design={
-            "count": 2, "initial_point": [0.9, 1.1],
-            "lower_bounds": [0.5, 0.5], "upper_bounds": [1.5, 1.5]})
+        # an objective, and gradients.  Branching requires a relaxed domain.
+        design = {"count": 2, "initial_point": [0.9, 1.1],
+                  "lower_bounds": [0.5, 0.5], "upper_bounds": [1.5, 1.5]}
+        variables = self.study.variables(continuous_design=design,
+                                         domain={"relaxed": True})
         response = self.study.responses(variables, {
             "response_type": {"objective_functions": {"count": 1}},
             "gradient_type": {"analytic_gradients": True},
@@ -342,6 +343,17 @@ class FactoryTests(unittest.TestCase):
             factory(model, config=by_pointer)
         with self.assertRaises(RuntimeError):
             factory(other_model, method, config=by_pointer)
+
+        # variables without a relaxed domain are rejected
+        mixed_vars = self.study.variables(continuous_design=design)
+        mixed_resp = self.study.responses(mixed_vars, {
+            "response_type": {"objective_functions": {"count": 1}},
+            "gradient_type": {"analytic_gradients": True},
+            "hessian_type": {"no_hessians": True}})
+        mixed_model = self.study.model.simulation(
+            mixed_vars, self.interface, mixed_resp)
+        with self.assertRaises(RuntimeError):
+            factory(mixed_model, config=by_name)
 
         with self.assertRaisesRegex(TypeError, "pass config"):
             factory(model, config=by_name, unexpected=True)

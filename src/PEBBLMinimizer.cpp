@@ -102,6 +102,15 @@ PebbldMinimizer::PebbldMinimizer(const IRStore& method_store, std::shared_ptr<Mo
             bandb_model(method_store, model, method),
             std::shared_ptr<TraitsBase>(new PebbldTraits()))
 {
+  // Branching operates on a relaxed (continuous) discrete domain.  The
+  // ProblemDescDB path infers it from the method; in DI the variables are
+  // built first, so the domain must be requested on the variables spec.
+  short view = iteratedModel->current_variables().view().first;
+  if (view != RELAXED_ALL && (view < RELAXED_DESIGN || view > RELAXED_STATE))
+    throw std::runtime_error(
+      "branch_and_bound requires variables with a relaxed domain; specify "
+      "domain={'relaxed': True} on the variables (domain = relaxed).");
+
   // While this copy will be replaced in best update, initialize here
   // since relied on in Minimizer::initialize_run when a sub-iterator
   bestVariablesArray.push_back(

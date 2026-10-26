@@ -909,7 +909,9 @@ See :ref:`surrogate_based_global options <method-surrogate_based_global>`.)doc")
          py::arg("config") = py::none(),
          R"doc(Construct a branch-and-bound minimizer.
 
-:param model: Model with relaxed discrete variables to branch on. Required
+:param model: Model with relaxed discrete variables to branch on (build its
+    variables with ``domain={'relaxed': True}``; unlike an input file, the
+    domain is not inferred from the method). Required
     with ``method_name``; with ``method_pointer`` it defaults to the model of
     ``method`` and, if given, must be that model.
 :type model: dakota.study.Model or None
