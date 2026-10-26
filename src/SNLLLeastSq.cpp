@@ -127,7 +127,7 @@ SNLLLeastSq(std::shared_ptr<StudyServices> services, const IRStore& method_store
 	    std::shared_ptr<Model> model):
   LeastSq(std::move(services), method_store, model,
 	  std::shared_ptr<TraitsBase>(new SNLLLeastSqTraits())),
-  SNLLBase(method_store), nlfObjective(NULL),
+  SNLLBase(method_store, *model), nlfObjective(NULL),
   nlfConstraint(NULL), nlpConstraint(NULL), theOptimizer(NULL)
 {
   // historical default convergence tolerance

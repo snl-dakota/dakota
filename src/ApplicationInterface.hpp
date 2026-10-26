@@ -95,6 +95,8 @@ protected:
   bool evaluation_cache() const override;
   /// return evalCacheFlag
   bool restart_file() const override;
+  /// return asvControlFlag
+  bool asv_control() const override;
 
   /// form and return the final evaluation ID tag, appending iface ID if needed
   String final_eval_id_tag(int fn_eval_id) override;
@@ -637,6 +639,10 @@ inline short ApplicationInterface::interface_synchronization() const
 
 inline bool ApplicationInterface::evaluation_cache() const
 { return evalCacheFlag; }
+
+
+inline bool ApplicationInterface::asv_control() const
+{ return asvControlFlag; }
 
 
 inline bool ApplicationInterface::restart_file() const

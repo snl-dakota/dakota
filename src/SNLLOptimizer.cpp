@@ -259,7 +259,7 @@ SNLLOptimizer::SNLLOptimizer(ProblemDescDB& problem_db, ParallelLibrary& paralle
 /** This is the DI constructor using method IR plus optional runtime services. */
 SNLLOptimizer::SNLLOptimizer(const IRStore& method_store, std::shared_ptr<Model> model, std::shared_ptr<StudyServices> services):
   Optimizer(std::move(services), method_store, model, std::shared_ptr<TraitsBase>(new SNLLTraits())),
-  SNLLBase(method_store), nlfObjective(NULL), nlfConstraint(NULL),
+  SNLLBase(method_store, *model), nlfObjective(NULL), nlfConstraint(NULL),
   nlpConstraint(NULL), fdnlf1(NULL), fdnlf1Con(NULL), theOptimizer(NULL),
   setUpType("model"), userObjective0(NULL), userObjective1(NULL),
   userConstraint0(NULL), userConstraint1(NULL)

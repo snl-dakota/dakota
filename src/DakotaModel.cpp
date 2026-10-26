@@ -5755,6 +5755,12 @@ bool Model::evaluation_cache(bool recurse_flag) const
 }
 
 
+bool Model::asv_control() const
+{
+  return true; // default
+}
+
+
 /** Only Models including ApplicationInterfaces interact with the restart
     file: surrogate, nested, and recast mappings are not stored in restart.
     Possible exceptions: DataFitSurrModel::import_points(),

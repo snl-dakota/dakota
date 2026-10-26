@@ -250,6 +250,9 @@ public:
   virtual bool evaluation_cache(bool recurse_flag = true) const;
   /// Indicates the usage of a restart file by the Model
   virtual bool restart_file(bool recurse_flag = true) const;
+  /// Indicates whether the Model's own interface honors the active set vector
+  /// (false for "deactivate active_set_vector"); true for models without one
+  virtual bool asv_control() const;
 
   /// Set the reference points for the evaluation counters within the Model
   virtual void set_evaluation_reference();

@@ -274,6 +274,9 @@ public:
   virtual bool evaluation_cache() const;
   /// return flag indicating usage of the restart file
   virtual bool restart_file() const;
+  /// return flag indicating that the active set vector is passed to the
+  /// simulation (false for "deactivate active_set_vector")
+  virtual bool asv_control() const;
 
   /// clean up any interface parameter/response files when aborting
   virtual void file_cleanup() const;

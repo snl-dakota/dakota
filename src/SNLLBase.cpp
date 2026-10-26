@@ -62,12 +62,15 @@ SNLLBase::SNLLBase(ProblemDescDB& problem_db):
 }
 
 
-SNLLBase::SNLLBase(const IRStore& method_store):
+SNLLBase::SNLLBase(const IRStore& method_store, const Model& model):
   searchMethod(method_store.get<String>("optpp.search_method")),
   gradientTol(method_store.get<Real>("gradient_tolerance")),
   maxStep(method_store.get<Real>("optpp.max_step")),
   stepLenToBndry(method_store.get<Real>("optpp.steplength_to_boundary")),
-  centeringParam(method_store.get<Real>("optpp.centering_parameter"))
+  centeringParam(method_store.get<Real>("optpp.centering_parameter")),
+  // As in the ProblemDescDB ctor: only an interface owned by the iterated
+  // model itself sets this (wrapper models report asv control on).
+  constantASVFlag(!model.asv_control())
 {
   switch (method_store.get<short>("optpp.merit_function")) {
   case OPTPP::NormFmu:     meritFn = OPTPP::NormFmu; break;

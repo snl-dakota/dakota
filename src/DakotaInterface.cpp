@@ -1038,6 +1038,12 @@ bool Interface::evaluation_cache() const
 }
 
 
+bool Interface::asv_control() const
+{
+  return true; // default
+}
+
+
 bool Interface::restart_file() const
 {
   return false; // default

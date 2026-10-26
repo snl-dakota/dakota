@@ -155,6 +155,8 @@ protected:
   /// return flag indicated usage of an evaluation cache by the SimulationModel
   /// (request forwarded to userDefinedInterface)
   bool evaluation_cache(bool recurse_flag = true) const override;
+  /// return active set vector control (forwarded to userDefinedInterface)
+  bool asv_control() const override;
   /// return flag indicated usage of a restart file by the SimulationModel
   /// (request forwarded to userDefinedInterface)
   bool restart_file(bool recurse_flag = true) const override;
@@ -411,6 +413,10 @@ inline int SimulationModel::derived_evaluation_id() const
 
 inline bool SimulationModel::evaluation_cache(bool recurse_flag) const
 { return userDefinedInterface->evaluation_cache(); }
+
+
+inline bool SimulationModel::asv_control() const
+{ return userDefinedInterface->asv_control(); }
 
 
 inline bool SimulationModel::restart_file(bool recurse_flag) const

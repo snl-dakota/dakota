@@ -26,6 +26,7 @@ namespace Dakota {
 
 class IRStore;
 class Minimizer;
+class Model;
 class ProblemDescDB;
 /// enumeration for the type of evaluator function
 enum EvalType { NO_EVALUATOR, NLF_EVALUATOR, CON_EVALUATOR }; // could add 0/1/2/2GN granularity
@@ -48,7 +49,8 @@ public:
 
   SNLLBase();                          ///< default constructor
   SNLLBase(ProblemDescDB& problem_db); ///< standard constructor
-  SNLLBase(const IRStore& method_store); ///< IRStore constructor
+  /// IRStore constructor; model is the model the method iterates on
+  SNLLBase(const IRStore& method_store, const Model& model);
   ~SNLLBase();                         ///< destructor
 
 protected:
