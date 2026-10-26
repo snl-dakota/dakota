@@ -54,6 +54,10 @@ public:
   SeqHybridMetaIterator(const IRStore& method_store,
                         std::vector<std::shared_ptr<Iterator>> sub_iterators,
                         std::shared_ptr<StudyServices> services);
+  /// DI constructor for the name form: sub-iterators built from method_name_list in the IR
+  SeqHybridMetaIterator(const IRStore& method_store,
+                        std::vector<std::shared_ptr<Model>> models,
+                        std::shared_ptr<StudyServices> services);
   /// destructor
   ~SeqHybridMetaIterator() override;
 

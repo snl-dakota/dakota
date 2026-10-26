@@ -195,6 +195,49 @@ ConcurrentMetaIterator(const IRStore& method_store,
 
 
 
+ConcurrentMetaIterator::
+ConcurrentMetaIterator(const IRStore& method_store,
+                       std::shared_ptr<Model> model,
+                       std::shared_ptr<StudyServices> services):
+  MetaIterator(std::move(services), method_store, model),
+  numRandomJobs(method_store.get<int>("concurrent.random_jobs")),
+  randomSeed(method_store.get<int>("random_seed"))
+{
+  detail::validate_services(
+    "ConcurrentMetaIterator", study_services(),
+    {detail::runtime_dependency("Model", iteratedModel)});
+
+  if (!iteratedModel)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator (name form) requires a non-null model.");
+
+  const String& sub_method_name = method_store.get<String>("sub_method_name");
+  if (sub_method_name.empty())
+    throw std::runtime_error(
+      "ConcurrentMetaIterator (name form) requires sub_method_name in the IR store.");
+
+  const RealVector& raw_param_sets =
+    method_store.get<RealVector>("concurrent.parameter_sets");
+
+  // initialize_model() must run before get_iterator so that PARETO_SET sets
+  // initial response weights (triggering model recast) before the sub-optimizer
+  // is constructed on top of the (recasted) model.
+  initialize_model();
+
+  // Build the sub-iterator on-the-fly from the method name, exactly as in
+  // the PDB name-form path.  The lightweight ctor sets summaryOutputFlag(false).
+  selectedIterator = Iterator::get_iterator(sub_method_name, iteratedModel);
+
+  copy_data(raw_param_sets, parameterSets, 0, paramSetLen);
+
+  maxIteratorConcurrency = iterSched.numIteratorJobs()
+    = parameterSets.size() + numRandomJobs;
+  if (!maxIteratorConcurrency)
+    throw std::runtime_error(
+      "ConcurrentMetaIterator requires at least one parameter set or random job.");
+}
+
+
 void ConcurrentMetaIterator::declare_sources() {
   evaluationsDB.declare_source(method_id(), 
                                "iterator",

@@ -396,6 +396,23 @@ Study::MethodFactory::multi_start(
 }
 
 std::shared_ptr<ConcurrentMetaIterator>
+Study::MethodFactory::multi_start(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  return std::make_shared<ConcurrentMetaIterator>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<ConcurrentMetaIterator>
+Study::MethodFactory::multi_start(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return multi_start(
+    validate_and_materialize_selected_method(method_json, "multi_start"),
+    std::move(model));
+}
+
+std::shared_ptr<ConcurrentMetaIterator>
 Study::MethodFactory::pareto_set(
   const IRStore& method_store, std::shared_ptr<Iterator> sub_iterator) const
 {
@@ -410,6 +427,23 @@ Study::MethodFactory::pareto_set(
   return pareto_set(
     validate_and_materialize_selected_method(method_json, "pareto_set"),
     std::move(sub_iterator));
+}
+
+std::shared_ptr<ConcurrentMetaIterator>
+Study::MethodFactory::pareto_set(
+  const IRStore& method_store, std::shared_ptr<Model> model) const
+{
+  return std::make_shared<ConcurrentMetaIterator>(
+    method_store, std::move(model), study.services());
+}
+
+std::shared_ptr<ConcurrentMetaIterator>
+Study::MethodFactory::pareto_set(
+  const nlohmann::json& method_json, std::shared_ptr<Model> model) const
+{
+  return pareto_set(
+    validate_and_materialize_selected_method(method_json, "pareto_set"),
+    std::move(model));
 }
 
 std::shared_ptr<SeqHybridMetaIterator>
@@ -431,6 +465,25 @@ Study::MethodFactory::hybrid_sequential(
     std::move(methods));
 }
 
+std::shared_ptr<SeqHybridMetaIterator>
+Study::MethodFactory::hybrid_sequential(
+  const IRStore& method_store,
+  std::vector<std::shared_ptr<Model>> models) const
+{
+  return std::make_shared<SeqHybridMetaIterator>(
+    method_store, std::move(models), study.services());
+}
+
+std::shared_ptr<SeqHybridMetaIterator>
+Study::MethodFactory::hybrid_sequential(
+  const nlohmann::json& method_json,
+  std::vector<std::shared_ptr<Model>> models) const
+{
+  return hybrid_sequential(
+    validate_and_materialize_selected_method(method_json, "hybrid_sequential"),
+    std::move(models));
+}
+
 std::shared_ptr<CollabHybridMetaIterator>
 Study::MethodFactory::hybrid_collaborative(
   const IRStore& method_store,
@@ -448,6 +501,25 @@ Study::MethodFactory::hybrid_collaborative(
   return hybrid_collaborative(
     validate_and_materialize_selected_method(method_json, "hybrid_collaborative"),
     std::move(methods));
+}
+
+std::shared_ptr<CollabHybridMetaIterator>
+Study::MethodFactory::hybrid_collaborative(
+  const IRStore& method_store,
+  std::vector<std::shared_ptr<Model>> models) const
+{
+  return std::make_shared<CollabHybridMetaIterator>(
+    method_store, std::move(models), study.services());
+}
+
+std::shared_ptr<CollabHybridMetaIterator>
+Study::MethodFactory::hybrid_collaborative(
+  const nlohmann::json& method_json,
+  std::vector<std::shared_ptr<Model>> models) const
+{
+  return hybrid_collaborative(
+    validate_and_materialize_selected_method(method_json, "hybrid_collaborative"),
+    std::move(models));
 }
 
 std::shared_ptr<EmbedHybridMetaIterator>
@@ -470,6 +542,28 @@ Study::MethodFactory::hybrid_embedded(
   return hybrid_embedded(
     validate_and_materialize_selected_method(method_json, "hybrid_embedded"),
     std::move(global_method), std::move(local_method));
+}
+
+std::shared_ptr<EmbedHybridMetaIterator>
+Study::MethodFactory::hybrid_embedded(
+  const IRStore& method_store,
+  std::shared_ptr<Model> global_model,
+  std::shared_ptr<Model> local_model) const
+{
+  return std::make_shared<EmbedHybridMetaIterator>(
+    method_store, std::move(global_model), std::move(local_model),
+    study.services());
+}
+
+std::shared_ptr<EmbedHybridMetaIterator>
+Study::MethodFactory::hybrid_embedded(
+  const nlohmann::json& method_json,
+  std::shared_ptr<Model> global_model,
+  std::shared_ptr<Model> local_model) const
+{
+  return hybrid_embedded(
+    validate_and_materialize_selected_method(method_json, "hybrid_embedded"),
+    std::move(global_model), std::move(local_model));
 }
 
 std::shared_ptr<ParamStudy>

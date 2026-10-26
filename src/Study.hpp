@@ -273,6 +273,14 @@ public:
   std::shared_ptr<ConcurrentMetaIterator>
   multi_start(const nlohmann::json& method_json,
               std::shared_ptr<Iterator> sub_iterator) const;
+  /// Construct multi-start using sub_method_name from the IR (name form).
+  std::shared_ptr<ConcurrentMetaIterator>
+  multi_start(const IRStore& method_store,
+              std::shared_ptr<Model> model) const;
+  /// Validate a multi_start fragment and construct it using sub_method_name (name form).
+  std::shared_ptr<ConcurrentMetaIterator>
+  multi_start(const nlohmann::json& method_json,
+              std::shared_ptr<Model> model) const;
 
   /// Construct pareto_set around a non-null injected sub-iterator.
   std::shared_ptr<ConcurrentMetaIterator>
@@ -282,6 +290,14 @@ public:
   std::shared_ptr<ConcurrentMetaIterator>
   pareto_set(const nlohmann::json& method_json,
              std::shared_ptr<Iterator> sub_iterator) const;
+  /// Construct pareto_set using sub_method_name from the IR (name form).
+  std::shared_ptr<ConcurrentMetaIterator>
+  pareto_set(const IRStore& method_store,
+             std::shared_ptr<Model> model) const;
+  /// Validate a pareto_set fragment and construct it using sub_method_name (name form).
+  std::shared_ptr<ConcurrentMetaIterator>
+  pareto_set(const nlohmann::json& method_json,
+             std::shared_ptr<Model> model) const;
 
   /// Construct a sequential hybrid around non-null injected sub-iterators.
   std::shared_ptr<SeqHybridMetaIterator>
@@ -291,6 +307,14 @@ public:
   std::shared_ptr<SeqHybridMetaIterator>
   hybrid_sequential(const nlohmann::json& method_json,
                     std::vector<std::shared_ptr<Iterator>> methods) const;
+  /// Construct a sequential hybrid using method_name_list from the IR (name form).
+  std::shared_ptr<SeqHybridMetaIterator>
+  hybrid_sequential(const IRStore& method_store,
+                    std::vector<std::shared_ptr<Model>> models) const;
+  /// Validate a hybrid_sequential fragment and construct it using method_name_list (name form).
+  std::shared_ptr<SeqHybridMetaIterator>
+  hybrid_sequential(const nlohmann::json& method_json,
+                    std::vector<std::shared_ptr<Model>> models) const;
 
   /// Construct a collaborative hybrid around non-null injected sub-iterators.
   std::shared_ptr<CollabHybridMetaIterator>
@@ -300,6 +324,14 @@ public:
   std::shared_ptr<CollabHybridMetaIterator>
   hybrid_collaborative(const nlohmann::json& method_json,
                        std::vector<std::shared_ptr<Iterator>> methods) const;
+  /// Construct a collaborative hybrid using method_name_list from the IR (name form).
+  std::shared_ptr<CollabHybridMetaIterator>
+  hybrid_collaborative(const IRStore& method_store,
+                       std::vector<std::shared_ptr<Model>> models) const;
+  /// Validate a hybrid_collaborative fragment and construct it using method_name_list (name form).
+  std::shared_ptr<CollabHybridMetaIterator>
+  hybrid_collaborative(const nlohmann::json& method_json,
+                       std::vector<std::shared_ptr<Model>> models) const;
 
   /// Construct an embedded hybrid around non-null injected global and local iterators.
   std::shared_ptr<EmbedHybridMetaIterator>
@@ -311,6 +343,16 @@ public:
   hybrid_embedded(const nlohmann::json& method_json,
                   std::shared_ptr<Iterator> global_method,
                   std::shared_ptr<Iterator> local_method) const;
+  /// Construct an embedded hybrid using name forms from the IR.
+  std::shared_ptr<EmbedHybridMetaIterator>
+  hybrid_embedded(const IRStore& method_store,
+                  std::shared_ptr<Model> global_model,
+                  std::shared_ptr<Model> local_model) const;
+  /// Validate a hybrid_embedded fragment and construct it using name forms.
+  std::shared_ptr<EmbedHybridMetaIterator>
+  hybrid_embedded(const nlohmann::json& method_json,
+                  std::shared_ptr<Model> global_model,
+                  std::shared_ptr<Model> local_model) const;
 
 private:
   const Study& study;

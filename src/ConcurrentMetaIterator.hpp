@@ -57,6 +57,10 @@ public:
   ConcurrentMetaIterator(const IRStore& method_store,
                          std::shared_ptr<Iterator> sub_iterator,
                          std::shared_ptr<StudyServices> services);
+  /// DI constructor for the name form: sub-iterator is built from sub_method_name in the IR
+  ConcurrentMetaIterator(const IRStore& method_store,
+                         std::shared_ptr<Model> model,
+                         std::shared_ptr<StudyServices> services);
   /// destructor
   ~ConcurrentMetaIterator() override;
 

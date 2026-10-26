@@ -75,6 +75,44 @@ EmbedHybridMetaIterator(const IRStore& method_store,
 }
 
 
+EmbedHybridMetaIterator::
+EmbedHybridMetaIterator(const IRStore& method_store,
+                        std::shared_ptr<Model> global_model,
+                        std::shared_ptr<Model> local_model,
+                        std::shared_ptr<StudyServices> services):
+  MetaIterator(std::move(services), method_store,
+               global_model ? global_model : nullptr),
+  singlePassedModel(false),
+  localSearchProb(method_store.get<Real>("hybrid.local_search_probability"))
+{
+  if (!global_model || !local_model)
+    throw std::runtime_error(
+      "EmbedHybridMetaIterator (name form) requires non-null global and local models.");
+
+  detail::validate_services(
+    "EmbedHybridMetaIterator", study_services(),
+    {detail::runtime_dependency("Model", global_model),
+     detail::runtime_dependency("Model", local_model)});
+
+  const String& global_method_name = method_store.get<String>("hybrid.global_method_name");
+  const String& local_method_name  = method_store.get<String>("hybrid.local_method_name");
+
+  if (global_method_name.empty())
+    throw std::runtime_error(
+      "EmbedHybridMetaIterator (name form) requires hybrid.global_method_name in the IR store.");
+  if (local_method_name.empty())
+    throw std::runtime_error(
+      "EmbedHybridMetaIterator (name form) requires hybrid.local_method_name in the IR store.");
+
+  globalModel    = std::move(global_model);
+  localModel     = std::move(local_model);
+  globalIterator = Iterator::get_iterator(global_method_name, globalModel);
+  localIterator  = Iterator::get_iterator(local_method_name,  localModel);
+
+  maxIteratorConcurrency = 1;
+}
+
+
 EmbedHybridMetaIterator::~EmbedHybridMetaIterator()
 { }
 

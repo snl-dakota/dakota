@@ -42,6 +42,11 @@ public:
                           std::shared_ptr<Iterator> global_iterator,
                           std::shared_ptr<Iterator> local_iterator,
                           std::shared_ptr<StudyServices> services);
+  /// DI constructor for the name form: sub-iterators built from global/local_method_name in the IR
+  EmbedHybridMetaIterator(const IRStore& method_store,
+                          std::shared_ptr<Model> global_model,
+                          std::shared_ptr<Model> local_model,
+                          std::shared_ptr<StudyServices> services);
   /// destructor
   ~EmbedHybridMetaIterator() override;
     

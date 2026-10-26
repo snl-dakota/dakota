@@ -438,124 +438,222 @@ This method is present only when Dakota is built with DOT. See
     .def("multi_start",
          [](const Study::MethodFactory& factory,
             std::shared_ptr<Iterator> sub_iterator,
-            const py::object& config, py::kwargs kwargs) {
-           return factory.multi_start(
-             materialize_method(nlohmann::json{{"multi_start",
-               normalize_factory_config(config, kwargs, "MethodFactory.multi_start")}}),
-             std::move(sub_iterator));
+            const py::object& config,
+            std::shared_ptr<Model> model,
+            py::kwargs kwargs) {
+           auto store = materialize_method(nlohmann::json{{"multi_start",
+             normalize_factory_config(config, kwargs, "MethodFactory.multi_start")}});
+           if (sub_iterator)
+             return factory.multi_start(store, std::move(sub_iterator));
+           if (model)
+             return factory.multi_start(store, std::move(model));
+           throw py::type_error(
+             "MethodFactory.multi_start: either sub_iterator or model must be provided.");
          },
-         py::arg("sub_iterator").none(false), py::arg("config") = py::none(),
-         R"doc(Construct a multi-start method around an injected sub-iterator.
+         py::arg("sub_iterator") = py::none(),
+         py::arg("config") = py::none(),
+         py::arg("model") = py::none(),
+         R"doc(Construct a multi-start method.
 
-:param sub_iterator: Method executed from each starting point.
-:type sub_iterator: dakota.study.Iterator
+**Name form** (``sub_method_name`` in config): pass ``model`` (required) and
+omit ``sub_iterator``.  The sub-method is built on-the-fly from the named
+method type using the given model.
+
+**Pointer form** (``sub_method_pointer`` in config): pass ``sub_iterator``
+(required) and omit ``model``.
+
+:param sub_iterator: Method executed from each starting point (pointer form).
+:type sub_iterator: dakota.study.Iterator or None
+:param model: Model to pass to the named sub-method (name form).
+:type model: dakota.study.Model or None
 :param config: A ``MultiStartConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: The constructed meta-iterator.
 :rtype: dakota.study.ConcurrentMetaIterator
-:raises TypeError: If the dependency is null or both configuration forms are used.
+:raises TypeError: If neither sub_iterator nor model is provided, or both
+    configuration forms are used.
 
 See :ref:`multi-start options <method-multi_start>`.)doc");
   factory
     .def("pareto_set",
          [](const Study::MethodFactory& factory,
             std::shared_ptr<Iterator> sub_iterator,
-            const py::object& config, py::kwargs kwargs) {
-           return factory.pareto_set(
-             materialize_method(nlohmann::json{{"pareto_set",
-               normalize_factory_config(config, kwargs, "MethodFactory.pareto_set")}}),
-             std::move(sub_iterator));
+            const py::object& config,
+            std::shared_ptr<Model> model,
+            py::kwargs kwargs) {
+           auto store = materialize_method(nlohmann::json{{"pareto_set",
+             normalize_factory_config(config, kwargs, "MethodFactory.pareto_set")}});
+           if (sub_iterator)
+             return factory.pareto_set(store, std::move(sub_iterator));
+           if (model)
+             return factory.pareto_set(store, std::move(model));
+           throw py::type_error(
+             "MethodFactory.pareto_set: either sub_iterator or model must be provided.");
          },
-         py::arg("sub_iterator").none(false), py::arg("config") = py::none(),
-         R"doc(Construct a Pareto-set meta-iterator around an injected sub-iterator.
+         py::arg("sub_iterator") = py::none(),
+         py::arg("config") = py::none(),
+         py::arg("model") = py::none(),
+         R"doc(Construct a Pareto-set meta-iterator.
 
-:param sub_iterator: Optimizer run for each weight combination.
-:type sub_iterator: dakota.study.Iterator
+**Name form** (``sub_method_name`` in config): pass ``model`` (required) and
+omit ``sub_iterator``.  The sub-method is built on-the-fly from the named
+method type using the given model.
+
+**Pointer form** (``sub_method_pointer`` in config): pass ``sub_iterator``
+(required) and omit ``model``.
+
+:param sub_iterator: Optimizer run for each weight combination (pointer form).
+:type sub_iterator: dakota.study.Iterator or None
+:param model: Model to pass to the named sub-method (name form).
+:type model: dakota.study.Model or None
 :param config: A ``ParetoSetConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: The constructed meta-iterator.
 :rtype: dakota.study.ConcurrentMetaIterator
-:raises TypeError: If the dependency is null or both configuration forms are used.
+:raises TypeError: If neither sub_iterator nor model is provided, or both
+    configuration forms are used.
 
 See :ref:`pareto_set options <method-pareto_set>`.)doc");
   factory
     .def("hybrid_sequential",
          [](const Study::MethodFactory& factory,
-            std::vector<std::shared_ptr<Iterator>> methods,
+            py::object methods_obj,
+            py::object models_obj,
             const py::object& config, py::kwargs kwargs) {
+           auto store = materialize_method(nlohmann::json{{"hybrid_sequential",
+             normalize_factory_config(config, kwargs,
+               "MethodFactory.hybrid_sequential")}});
+           // Name form: no methods, pass models list
+           if (methods_obj.is_none() || py::len(methods_obj) == 0) {
+             if (models_obj.is_none())
+               throw py::type_error(
+                 "MethodFactory.hybrid_sequential: either methods or models must be provided.");
+             auto models = models_obj.cast<std::vector<std::shared_ptr<Model>>>();
+             return factory.hybrid_sequential(store, std::move(models));
+           }
+           auto methods = methods_obj.cast<std::vector<std::shared_ptr<Iterator>>>();
            for (const auto& m : methods)
              if (!m)
                throw py::type_error(
                  "MethodFactory.hybrid_sequential: methods must not contain None");
-           return factory.hybrid_sequential(
-             materialize_method(nlohmann::json{{"hybrid_sequential",
-               normalize_factory_config(config, kwargs,
-                 "MethodFactory.hybrid_sequential")}}),
-             std::move(methods));
+           return factory.hybrid_sequential(store, std::move(methods));
          },
-         py::arg("methods"), py::arg("config") = py::none(),
+         py::arg("methods") = py::none(), py::arg("models") = py::none(),
+         py::arg("config") = py::none(),
          R"doc(Construct a sequential hybrid meta-iterator.
 
-:param methods: Ordered list of methods to execute in sequence.
-:type methods: list[dakota.study.Iterator]
+**Pointer form**: pass ``methods`` (required, non-None items).
+
+**Name form** (``method_name_list`` in config): pass ``models`` (required)
+and omit ``methods``.  Each sub-iterator is built on-the-fly from the
+corresponding name and model.
+
+:param methods: Ordered list of methods to execute in sequence (pointer form).
+:type methods: list[dakota.study.Iterator] or None
+:param models: List of models for the named sub-methods (name form).
+    May be a single-element list to share one model across all sub-methods.
+:type models: list[dakota.study.Model] or None
 :param config: A ``HybridSequentialConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: The constructed sequential hybrid.
 :rtype: dakota.study.SeqHybridMetaIterator
-:raises TypeError: If a method is null or both configuration forms are used.
+:raises TypeError: If neither methods nor models is provided, a method is null,
+    or both configuration forms are used.
 
 See :ref:`hybrid_sequential options <method-hybrid_sequential>`.)doc")
     .def("hybrid_collaborative",
          [](const Study::MethodFactory& factory,
-            std::vector<std::shared_ptr<Iterator>> methods,
+            py::object methods_obj,
+            py::object models_obj,
             const py::object& config, py::kwargs kwargs) {
+           auto store = materialize_method(nlohmann::json{{"hybrid_collaborative",
+             normalize_factory_config(config, kwargs,
+               "MethodFactory.hybrid_collaborative")}});
+           // Name form: no methods, pass models list
+           if (methods_obj.is_none() || py::len(methods_obj) == 0) {
+             if (models_obj.is_none())
+               throw py::type_error(
+                 "MethodFactory.hybrid_collaborative: either methods or models must be provided.");
+             auto models = models_obj.cast<std::vector<std::shared_ptr<Model>>>();
+             return factory.hybrid_collaborative(store, std::move(models));
+           }
+           auto methods = methods_obj.cast<std::vector<std::shared_ptr<Iterator>>>();
            for (const auto& m : methods)
              if (!m)
                throw py::type_error(
                  "MethodFactory.hybrid_collaborative: methods must not contain None");
-           return factory.hybrid_collaborative(
-             materialize_method(nlohmann::json{{"hybrid_collaborative",
-               normalize_factory_config(config, kwargs,
-                 "MethodFactory.hybrid_collaborative")}}),
-             std::move(methods));
+           return factory.hybrid_collaborative(store, std::move(methods));
          },
-         py::arg("methods"), py::arg("config") = py::none(),
+         py::arg("methods") = py::none(), py::arg("models") = py::none(),
+         py::arg("config") = py::none(),
          R"doc(Construct a collaborative hybrid meta-iterator.
 
-:param methods: Methods to run concurrently, sharing information.
-:type methods: list[dakota.study.Iterator]
+**Pointer form**: pass ``methods`` (required, non-None items).
+
+**Name form** (``method_name_list`` in config): pass ``models`` (required)
+and omit ``methods``.  Each sub-iterator is built on-the-fly from the
+corresponding name and model.
+
+:param methods: Methods to run concurrently, sharing information (pointer form).
+:type methods: list[dakota.study.Iterator] or None
+:param models: List of models for the named sub-methods (name form).
+    May be a single-element list to share one model across all sub-methods.
+:type models: list[dakota.study.Model] or None
 :param config: A ``HybridCollaborativeConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: The constructed collaborative hybrid.
 :rtype: dakota.study.CollabHybridMetaIterator
-:raises TypeError: If a method is null or both configuration forms are used.
+:raises TypeError: If neither methods nor models is provided, a method is null,
+    or both configuration forms are used.
 
 See :ref:`hybrid_collaborative options <method-hybrid_collaborative>`.)doc")
     .def("hybrid_embedded",
          [](const Study::MethodFactory& factory,
             std::shared_ptr<Iterator> global_method,
             std::shared_ptr<Iterator> local_method,
+            std::shared_ptr<Model> global_model,
+            std::shared_ptr<Model> local_model,
             const py::object& config, py::kwargs kwargs) {
-           return factory.hybrid_embedded(
-             materialize_method(nlohmann::json{{"hybrid_embedded",
-               normalize_factory_config(config, kwargs,
-                 "MethodFactory.hybrid_embedded")}}),
-             std::move(global_method), std::move(local_method));
+           auto store = materialize_method(nlohmann::json{{"hybrid_embedded",
+             normalize_factory_config(config, kwargs,
+               "MethodFactory.hybrid_embedded")}});
+           if (global_method && local_method)
+             return factory.hybrid_embedded(store,
+               std::move(global_method), std::move(local_method));
+           if (global_model && local_model)
+             return factory.hybrid_embedded(store,
+               std::move(global_model), std::move(local_model));
+           throw py::type_error(
+             "MethodFactory.hybrid_embedded: either (global_method, local_method) "
+             "or (global_model, local_model) must be provided.");
          },
-         py::arg("global_method").none(false),
-         py::arg("local_method").none(false),
+         py::arg("global_method") = py::none(),
+         py::arg("local_method") = py::none(),
+         py::arg("global_model") = py::none(),
+         py::arg("local_model") = py::none(),
          py::arg("config") = py::none(),
          R"doc(Construct an embedded hybrid meta-iterator.
 
-:param global_method: Top-level global optimizer.
-:type global_method: dakota.study.Iterator
-:param local_method: Subordinate local method used for periodic refinement.
-:type local_method: dakota.study.Iterator
+**Pointer form**: pass ``global_method`` and ``local_method`` (both required).
+
+**Name form** (``global_method_name`` / ``local_method_name`` in config):
+pass ``global_model`` and ``local_model`` (both required) and omit
+``global_method`` / ``local_method``.
+
+:param global_method: Top-level global optimizer (pointer form).
+:type global_method: dakota.study.Iterator or None
+:param local_method: Subordinate local method used for periodic refinement (pointer form).
+:type local_method: dakota.study.Iterator or None
+:param global_model: Model for the global named sub-method (name form).
+:type global_model: dakota.study.Model or None
+:param local_model: Model for the local named sub-method (name form).
+:type local_model: dakota.study.Model or None
 :param config: A ``HybridEmbeddedConfig`` or equivalent dictionary.
 :param kwargs: Configuration fields used instead of ``config``.
 :returns: The constructed embedded hybrid.
 :rtype: dakota.study.EmbedHybridMetaIterator
-:raises TypeError: If a dependency is null or both configuration forms are used.
+:raises TypeError: If neither (global_method, local_method) nor
+    (global_model, local_model) is provided, or both configuration forms are used.
 
 See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
 

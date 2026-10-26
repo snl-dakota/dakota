@@ -151,6 +151,59 @@ SeqHybridMetaIterator(const IRStore& method_store,
 }
 
 
+SeqHybridMetaIterator::
+SeqHybridMetaIterator(const IRStore& method_store,
+                      std::vector<std::shared_ptr<Model>> models,
+                      std::shared_ptr<StudyServices> services):
+  MetaIterator(std::move(services), method_store,
+               (!models.empty() && models.front()) ?
+               models.front() : nullptr),
+  lightwtMethodCtor(true), singlePassedModel(false)
+{
+  const StringArray& method_names = method_store.get<StringArray>("hybrid.method_names");
+  if (method_names.empty())
+    throw std::runtime_error(
+      "SeqHybridMetaIterator (name form) requires hybrid.method_names in the IR store.");
+
+  size_t i, num_iterators = method_names.size();
+
+  // Validate/default the models list
+  if (!models.empty() && models.size() != 1 && models.size() != num_iterators)
+    throw std::runtime_error(
+      "SeqHybridMetaIterator (name form): models list size must be 1 or match "
+      "method_names list size.");
+
+  // Build each sub-iterator from the named method
+  selectedIterators.resize(num_iterators);
+  selectedModels.resize(num_iterators);
+  methodStrings.resize(num_iterators);
+  for (i=0; i<num_iterators; ++i) {
+    std::shared_ptr<Model> the_model;
+    if (models.empty())
+      throw std::runtime_error(
+        "SeqHybridMetaIterator (name form) requires at least one model.");
+    else if (models.size() == 1)
+      the_model = models.front();
+    else
+      the_model = models[i];
+
+    if (!the_model)
+      throw std::runtime_error(
+        "SeqHybridMetaIterator (name form) requires non-null models.");
+
+    detail::validate_services(
+      "SeqHybridMetaIterator", study_services(),
+      {detail::runtime_dependency("Model", the_model)});
+
+    selectedIterators[i] = Iterator::get_iterator(method_names[i], the_model);
+    selectedModels[i]    = the_model;
+    methodStrings[i]     = method_names[i];
+  }
+
+  maxIteratorConcurrency = 1; // to be updated in derived_init_communicators()
+}
+
+
 SeqHybridMetaIterator::~SeqHybridMetaIterator()
 { }
 
