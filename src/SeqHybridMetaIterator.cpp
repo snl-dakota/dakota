@@ -315,6 +315,10 @@ void SeqHybridMetaIterator::derived_init_communicators(ParLevLIter pl_iter)
 		       selectedIterators[i], the_model);
     else
       allocate_by_pointer(methodStrings[i], selectedIterators[i], the_model);
+    // Name-built (lightweight) iterators default to no summary output; each
+    // stage should report its results as in the method_pointer_list form.
+    if (lightwtMethodCtor && summaryOutputFlag && selectedIterators[i])
+      selectedIterators[i]->summary_output(true);
   }
 
   // now that parallel paritioning and iterator allocation has occurred,
