@@ -1,0 +1,26 @@
+diff --git a/DOT/dbl_prec/dot6.f b/DOT/dbl_prec/dot6.f
+index ed18643..c8d02ff 100644
+--- a/DOT/dbl_prec/dot6.f
++++ b/DOT/dbl_prec/dot6.f
+@@ -392,6 +392,8 @@ C
+       DIMENSION A(NDV,*),DF(*),G(*),GZRO(*),ICSLP(*),
+      1WK(*),IWK(*),XLSLP(*),XUSLP(*),X(*),IPOINT(*),IPRM(*),SCALX(*),
+      2RPRM(*),ASLP(NDV,*),DQ(*),HM(*),P(*),IC(*),C(*)
++      SAVE ALPSAV
++      DATA ALPSAV /0.0D0/
+       METHOD=1
+       NGT=0
+       CTSAV=RPRM(1)
+diff --git a/DOT/single_prec/dot6.f b/DOT/single_prec/dot6.f
+index e8da497..e96a560 100644
+--- a/DOT/single_prec/dot6.f
++++ b/DOT/single_prec/dot6.f
+@@ -388,6 +388,8 @@ C         ***** ALL RIGHTS RESERVED, WORLDWIDE *****
+       DIMENSION A(NDV,*),DF(*),G(*),GZRO(*),ICSLP(*),
+      1WK(*),IWK(*),XLSLP(*),XUSLP(*),X(*),IPOINT(*),IPRM(*),SCALX(*),
+      2RPRM(*),ASLP(NDV,*),DQ(*),HM(*),P(*),IC(*),C(*)
++      SAVE ALPSAV
++      DATA ALPSAV /0.0/
+       METHOD=1
+       NGT=0
+       CTSAV=RPRM(1)
