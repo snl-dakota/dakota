@@ -1042,7 +1042,7 @@ void NonDBayesCalibration::construct_mcmc_model(const IRStore& method_store)
   }
 
   case NO_EMULATOR:
-    mcmcModelHasSurrogate = (inbound_model->model_type() == "surrogate");
+    mcmcModelHasSurrogate = ModelUtils::is_surrogate_model(*inbound_model);
     // ASKEY_U is currently the best option for scaling the probability space
     // (but could be expanded when the intent is not orthogonal polynomials).
     // If an override is needed to decorrelate priors be transforming to
