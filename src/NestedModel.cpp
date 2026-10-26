@@ -149,9 +149,11 @@ NestedModel::NestedModel(const IRStore& model_store,
   initialize_subordinate_study_state(
     std::move(sub_iterator), nullptr,
     model_store.get<String>("nested.sub_method_pointer"));
-  initialize_variable_mappings(
-    model_store.get<StringArray>("nested.primary_variable_mapping"),
-    model_store.get<StringArray>("nested.secondary_variable_mapping"));
+  primaryVarMappingSpec
+    = model_store.get<StringArray>("nested.primary_variable_mapping");
+  secondaryVarMappingSpec
+    = model_store.get<StringArray>("nested.secondary_variable_mapping");
+  initialize_variable_mappings(primaryVarMappingSpec, secondaryVarMappingSpec);
 }
 
 
@@ -739,7 +741,12 @@ void NestedModel::initialize_variable_mappings(
   // subModel view updating must be performed before subIterator instantiation
   // since any model recastings will pick up the inactive view (and inactive
   // view differences cause problems with recursion updating).
-  if (inactive_sm_view != EMPTY_VIEW) {
+  // DI path: until the iterating method assigns this model's view, the
+  // default (ALL) view would yield an inactive view that can overlap the
+  // sub-iterator's active view; defer to assign_inferred_view().
+  bool di_unassigned = (&probDescDB == &dummy_db) && !active_view_assigned();
+  inactiveViewDeferred = (di_unassigned && inactive_sm_view != EMPTY_VIEW);
+  if (inactive_sm_view != EMPTY_VIEW && !inactiveViewDeferred) {
     subModel->inactive_view(inactive_sm_view); // recurse
     // DI path: subIterator was injected pre-built, so its internal recastings
     // (e.g., ProbabilityTransformModel) already exist and must be updated.
@@ -3039,33 +3046,19 @@ ActiveSet NestedModel::default_interface_active_set()
 void NestedModel::assign_inferred_view(short view, const String& method_label)
 {
   // Do NOT recurse into subModel; the sub-iterator sets its own view.
-
-  // Verify that the variable count under the proposed view would not
-  // invalidate the mapping arrays already sized in initialize_variable_mappings.
-  // The mapping arrays have size = (cv + div + dsv + drv) at construction time.
-  size_t mapped_size = active1ACVarMapIndices.size();
-  if (mapped_size > 0) {
-    // Count the active variables the proposed view would expose by applying
-    // it to a temporary copy.  The copy must deep-copy SharedVariablesData;
-    // the default shallow copy would change the view on this model as well.
-    Variables tmp_vars = currentVariables.copy(true);
-    tmp_vars.active_view(view);
-    size_t new_total = tmp_vars.cv() + tmp_vars.div() +
-                       tmp_vars.dsv() + tmp_vars.drv();
-    if (new_total != mapped_size) {
-      Cerr << "\nError: inferred active view for NestedModel '" << model_id()
-           << "' would change the active variable count from " << mapped_size
-           << " to " << new_total << ".\n"
-           << "  The variable mappings were already sized at construction.\n"
-           << "  Fix: set active= explicitly on the outer Variables "
-           << "specification.\n";
-      throw std::runtime_error(
-        "NestedModel active view conflict: see error message above");
-    }
-  }
+  short prev_view = currentVariables.view().first;
 
   // Call base (handles explicit-user-view precedence and activeViewAssigned).
   Model::assign_inferred_view(view, method_label);
+
+  // DI construction maps variables while this model is still in its default
+  // view, before the iterating method exists (the ProblemDescDB path knows
+  // the view from the pointing method at construction).  The mapping indices
+  // and the default inactive view pushed into subModel depend on the active
+  // variables, so redo them under the assigned view.
+  if (currentVariables.view().first != prev_view || inactiveViewDeferred)
+    initialize_variable_mappings(primaryVarMappingSpec,
+                                 secondaryVarMappingSpec);
 }
 
 } // namespace Dakota

@@ -330,6 +330,12 @@ private:
   short nestedIteratorScheduling = DEFAULT_SCHEDULING;
   /// the sub-method pointer from the nested model specification
   String subMethodPointer;
+  /// variable mapping specs, retained so the DI path can redo the mappings
+  /// once the iterating method assigns this model's active view
+  StringArray primaryVarMappingSpec, secondaryVarMappingSpec;
+  /// DI construction deferred the subModel inactive view until this model's
+  /// active view is assigned
+  bool inactiveViewDeferred = false;
   /// subIterator job counter since last synchronize()
   int subIteratorJobCntr;
   /// mapping from subIterator evaluation counter to nested model counter
