@@ -28,12 +28,6 @@
 
 int main(int argc, char* argv[])
 {
-#ifdef HAVE_AMPL
-  // Switch to 53-bit rounding if appropriate, to eliminate some
-  // cross-platform differences.
-  fpinit_ASL();	
-#endif
-
   // Tie signals to Dakota's abort_handler
   Dakota::register_signal_handlers();
 

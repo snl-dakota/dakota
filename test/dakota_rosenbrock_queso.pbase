@@ -391,13 +391,13 @@ Test Number 19 succeeded
                      -1.9994596092e+00
 Sample moment statistics for each posterior variable:
                             Mean           Std Dev          Skewness          Kurtosis
-            x1  7.0466068954e-01  3.2430085938e-01 -6.4635365396e-01  9.5347812104e-02
-            x2  5.8637383385e-01  4.1760699039e-01  2.8814947259e-01 -8.2545885151e-01
+            x1  7.0466068954e-01  3.2430085938e-01 -6.4635365398e-01  9.5347812062e-02
+            x2  5.8637383384e-01  4.1760699039e-01  2.8814947253e-01 -8.2545885153e-01
 Sample moment statistics for each response function:
                             Mean           Std Dev          Skewness          Kurtosis
-          f1_1 -1.5291315399e-01  6.7355655105e-01  1.1324450769e-01  1.8036175077e-01
-          f2_1  2.9533931046e-01  3.2430085938e-01  6.4635365396e-01  9.5347812104e-02
-Information gained from prior to posterior = 4.7295217177e+00
+          f1_1 -1.5291315404e-01  6.7355655106e-01  1.1324450779e-01  1.8036175066e-01
+          f2_1  2.9533931046e-01  3.2430085938e-01  6.4635365398e-01  9.5347812062e-02
+Information gained from prior to posterior = 4.7295217171e+00
 Test Number 20 succeeded
 <<<<< Function evaluation summary: 30 total (30 new, 0 duplicate)
 <<<<< Best parameters          =

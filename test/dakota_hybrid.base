@@ -167,3 +167,18 @@ Test Number 4 succeeded
 <<<<< Best objective function  =
                       4.2604666733e-12
 <<<<< Best evaluation ID: 653
+Test Number 5 succeeded
+<<<<< Function evaluation summary (I1): 1031 total (1031 new, 0 duplicate)
+<<<<< Best parameters          =
+                      1.0300000000e+00 x1
+                      1.0305921043e+00 x2
+<<<<< Best objective function  =
+                      1.6858654715e-06
+<<<<< Best evaluation ID: 947
+<<<<< Function evaluation summary (I1): 250 total (247 new, 3 duplicate)
+<<<<< Best parameters          =
+                      1.0117553711e+00 x1
+                      1.0113342918e+00 x2
+<<<<< Best objective function  =
+                      3.5599687570e-08
+<<<<< Best evaluation ID: 1281

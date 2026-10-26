@@ -5,7 +5,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.8063871423185782e+02  1.1434025886729910e+02  3.6483514183826432e-01  3.1832131301580219e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073924e+02  1.3282624941012273e+02
+ response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073923e+02  1.3282624941012273e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -43,7 +43,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.8034966647732188e+02  1.1479152176743131e+02  4.1160861954125061e-01  4.5226050148625985e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.5757253813838804e+02  4.0312679481625571e+02  1.0078774190613213e+02  1.3335047035483882e+02
+ response_fn_1  3.5757253813838804e+02  4.0312679481625571e+02  1.0078774190613211e+02  1.3335047035483882e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3 response_fn_1 
        ssv_1  1.00000e+00 
@@ -73,7 +73,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.8063871423185782e+02  1.1434025886729910e+02  3.6483514183826432e-01  3.1832131301580219e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073924e+02  1.3282624941012273e+02
+ response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073923e+02  1.3282624941012273e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -111,7 +111,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.8063871423185782e+02  1.1434025886729910e+02  3.6483514183826432e-01  3.1832131301580219e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073924e+02  1.3282624941012273e+02
+ response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073923e+02  1.3282624941012273e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -149,7 +149,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.8063871423185782e+02  1.1434025886729910e+02  3.6483514183826432e-01  3.1832131301580219e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073924e+02  1.3282624941012273e+02
+ response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073923e+02  1.3282624941012273e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -187,7 +187,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.5879680876012941e+02  1.2701218745604612e+02  4.9640661418020876e-01  5.0690584218944713e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.3359483521929354e+02  3.8399878230096527e+02  1.1151757003612813e+02  1.4754691528853064e+02
+ response_fn_1  3.3359483521929354e+02  3.8399878230096527e+02  1.1151757003612812e+02  1.4754691528853064e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -225,7 +225,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.5879680876012941e+02  1.2701218745604612e+02  4.9640661418020876e-01  5.0690584218944713e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.3359483521929354e+02  3.8399878230096527e+02  1.1151757003612813e+02  1.4754691528853064e+02
+ response_fn_1  3.3359483521929354e+02  3.8399878230096527e+02  1.1151757003612812e+02  1.4754691528853064e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -299,7 +299,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.5879680876012941e+02  1.2701218745604612e+02  4.9640661418020876e-01  5.0690584218944713e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.3359483521929354e+02  3.8399878230096527e+02  1.1151757003612813e+02  1.4754691528853064e+02
+ response_fn_1  3.3359483521929354e+02  3.8399878230096527e+02  1.1151757003612812e+02  1.4754691528853064e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -409,7 +409,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.8063871423185782e+02  1.1434025886729910e+02  3.6483514183826432e-01  3.1832131301580219e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073924e+02  1.3282624941012273e+02
+ response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073923e+02  1.3282624941012273e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -483,7 +483,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.8063871423185782e+02  1.1434025886729910e+02  3.6483514183826432e-01  3.1832131301580219e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073924e+02  1.3282624941012273e+02
+ response_fn_1  3.5795112624253039e+02  4.0332630222118524e+02  1.0039152999073923e+02  1.3282624941012273e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1228,7 +1228,7 @@ Sample moment statistics for each response function:
  response_fn_1  3.9518448055241350e+01  2.7251453958269028e+01  1.1477576340399200e+00  1.5401264749079513e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  3.4111168365303932e+01  4.4925727745178769e+01  2.3926963122568615e+01  3.1657339734121784e+01
+ response_fn_1  3.4111168365303932e+01  4.4925727745178769e+01  2.3926963122568612e+01  3.1657339734121784e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1263,10 +1263,10 @@ Test Number 18 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.8625136561615136e+02  1.1271170414271211e+02  5.4491140024454388e-01  8.6160836132233423e-02
+ response_fn_1  2.8625136561615136e+02  1.1271170414271216e+02  5.4491140024454365e-01  8.6160836132233423e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  2.6388691821593511e+02  3.0861581301636761e+02  9.8961647794437042e+01  1.3093439768467687e+02
+ response_fn_1  2.6388691821593511e+02  3.0861581301636761e+02  9.8961647794437084e+01  1.3093439768467695e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1411,10 +1411,10 @@ Test Number 21 succeeded
 <<<<< Function evaluation summary (ID_I): 100 total (100 new, 0 duplicate)
 Sample moment statistics for each response function:
                                   Mean                 Std Dev                Skewness                Kurtosis
- response_fn_1  2.2739260765116040e+02  1.6983950019782796e+02  1.0158418946978225e+00  5.3497978311147765e-01
+ response_fn_1  2.2739260765116040e+02  1.6983950019782796e+02  1.0158418946978220e+00  5.3497978311147587e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  1.9369276611701090e+02  2.6109244918530987e+02  1.4912024379366500e+02  1.9729834475142263e+02
+ response_fn_1  1.9369276611701093e+02  2.6109244918530987e+02  1.4912024379366500e+02  1.9729834475142263e+02
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1452,7 +1452,7 @@ Sample moment statistics for each response function:
  response_fn_1  2.2660670741139020e+03  1.3780681456757918e+03  1.1300479453490866e+00  1.6218396935702082e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  1.9926284566047852e+03  2.5395056916230187e+03  1.2099532653363638e+03  1.6008676649413105e+03
+ response_fn_1  1.9926284566047852e+03  2.5395056916230187e+03  1.2099532653363635e+03  1.6008676649413105e+03
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1482,7 +1482,7 @@ Sample moment statistics for each response function:
  response_fn_1  2.2661602187300014e+03  1.3766299100153253e+03  1.1250203320427419e+00  1.6065517068151913e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  1.9930069783786721e+03  2.5393134590813306e+03  1.2086904845811703e+03  1.5991969021632642e+03
+ response_fn_1  1.9930069783786721e+03  2.5393134590813306e+03  1.2086904845811700e+03  1.5991969021632642e+03
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1512,7 +1512,7 @@ Sample moment statistics for each response function:
  response_fn_1  1.1872884446084460e+02  5.9881595114281943e+01  8.0697921905823289e-01  7.9622148933460291e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  1.0684703684946534e+02  1.3061065207222387e+02  5.2576450424042527e+01  6.9562967291832607e+01
+ response_fn_1  1.0684703684946534e+02  1.3061065207222387e+02  5.2576450424042520e+01  6.9562967291832607e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1550,7 +1550,7 @@ Sample moment statistics for each response function:
  response_fn_1  1.1879961685616504e+02  5.9867897179188510e+01  7.9530504802133795e-01  7.5813113114553921e-01
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  1.0692052721228720e+02  1.3067870650004289e+02  5.2564423543262599e+01  6.9547054739585931e+01
+ response_fn_1  1.0692052721228720e+02  1.3067870650004289e+02  5.2564423543262592e+01  6.9547054739585931e+01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2        ssv_3        ssv_4        ssv_5 response_fn_1 
        ssv_1  1.00000e+00 
@@ -1591,8 +1591,8 @@ Sample moment statistics for each response function:
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
  response_fn_1  6.5895011994276775e-01  6.8986650102816582e-01  6.8401779871882049e-02  9.0501179473975832e-02
- response_fn_2  2.0062500518882115e-02  9.5755041171818087e-02  1.6746799987308275e-01  2.2157393478721196e-01
- response_fn_3 -6.2644093417310115e-02  1.0061733700447377e-02  1.6085996508371539e-01  2.1283096137975177e-01
+ response_fn_2  2.0062500518882115e-02  9.5755041171818087e-02  1.6746799987308272e-01  2.2157393478721196e-01
+ response_fn_3 -6.2644093417310115e-02  1.0061733700447370e-02  1.6085996508371536e-01  2.1283096137975177e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 
@@ -1620,9 +1620,9 @@ Sample moment statistics for each response function:
  response_fn_3  2.5923895848165800e-02  2.0921401782730301e-01  4.8797147354472931e-01 -8.3297462212692630e-02
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  6.0008320622862621e-01  7.2368511713025152e-01  2.7346637621924358e-01  3.6181850297859208e-01
- response_fn_2 -9.2130445382911583e-03  7.3619225833107704e-02  1.8326448715269175e-01  2.4247398640908413e-01
- response_fn_3 -1.5588704220077954e-02  6.7436495916409558e-02  1.8369133980681948e-01  2.4303874757074562e-01
+ response_fn_1  6.0008320622862621e-01  7.2368511713025152e-01  2.7346637621924352e-01  3.6181850297859208e-01
+ response_fn_2 -9.2130445382911583e-03  7.3619225833107704e-02  1.8326448715269172e-01  2.4247398640908413e-01
+ response_fn_3 -1.5588704220077947e-02  6.7436495916409545e-02  1.8369133980681945e-01  2.4303874757074562e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1        ssv_2 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 
@@ -1654,9 +1654,9 @@ Sample moment statistics for each response function:
  response_fn_3 -2.6462248577507883e-02  1.8257935891820923e-01  8.1930503046309822e-01  1.8302068052589613e+00
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
- response_fn_1  6.5765913436228485e-01  6.8824391090558645e-01  6.7668112473024913e-02  8.9530477175548212e-02
- response_fn_2  2.0351251195034635e-02  9.6312482147670631e-02  1.6806247096214791e-01  2.2236046892162112e-01
- response_fn_3 -6.2689954475037030e-02  9.7654573200212647e-03  1.6030592695963797e-01  2.1209792338283895e-01
+ response_fn_1  6.5765913436228485e-01  6.8824391090558645e-01  6.7668112473024900e-02  8.9530477175548212e-02
+ response_fn_2  2.0351251195034635e-02  9.6312482147670631e-02  1.6806247096214788e-01  2.2236046892162112e-01
+ response_fn_3 -6.2689954475037030e-02  9.7654573200212647e-03  1.6030592695963794e-01  2.1209792338283895e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 
@@ -1685,8 +1685,8 @@ Sample moment statistics for each response function:
 95% confidence intervals for each response function:
                           LowerCI_Mean            UpperCI_Mean          LowerCI_StdDev           UpperCI_StdDev
  response_fn_1  6.5895011994276775e-01  6.8986650102816582e-01  6.8401779871882049e-02  9.0501179473975832e-02
- response_fn_2  2.0062500518882115e-02  9.5755041171818087e-02  1.6746799987308275e-01  2.2157393478721196e-01
- response_fn_3 -6.2644093417310115e-02  1.0061733700447377e-02  1.6085996508371539e-01  2.1283096137975177e-01
+ response_fn_2  2.0062500518882115e-02  9.5755041171818087e-02  1.6746799987308272e-01  2.2157393478721196e-01
+ response_fn_3 -6.2644093417310115e-02  1.0061733700447370e-02  1.6085996508371536e-01  2.1283096137975177e-01
 Simple Correlation Matrix among all inputs and outputs:
                     ssv_1 response_fn_1 response_fn_2 response_fn_3 
        ssv_1  1.00000e+00 

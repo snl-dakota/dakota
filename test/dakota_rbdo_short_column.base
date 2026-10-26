@@ -6,17 +6,17 @@ Test Number 0 succeeded
 <<<<< Best objective function  =
                       1.9775425013e+02
 <<<<< Best constraint values   =
-                      6.1580012269e-03
+                      6.1580012270e-03
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
-<<<<< Function evaluation summary (UQ_I): 114 total (102 new, 12 duplicate)
+<<<<< Function evaluation summary (UQ_I): 114 total (101 new, 13 duplicate)
 <<<<< Best parameters          =
-                      7.8990473550e+00 b
+                      7.8990473551e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
                       1.9747618388e+02
 <<<<< Best constraint values   =
-                      6.1517068169e-03
+                      6.1517068163e-03
 <<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 112 total (98 new, 14 duplicate)
@@ -26,17 +26,17 @@ Test Number 2 succeeded
 <<<<< Best objective function  =
                       1.9888543757e+02
 <<<<< Best constraint values   =
-                      5.6746181255e-03
+                      5.6746181254e-03
 <<<<< Best evaluation ID not available
 Test Number 3 succeeded
 <<<<< Function evaluation summary (UQ_I): 309 total (295 new, 14 duplicate)
 <<<<< Best parameters          =
-                      8.6838222083e+00 b
+                      8.6838222080e+00 b
                       2.5000000000e+01 h
 <<<<< Best objective function  =
-                      2.1709555521e+02
+                      2.1709555520e+02
 <<<<< Best constraint values   =
-                      6.0243375554e-03
+                      6.0243375603e-03
 <<<<< Best evaluation ID not available
 Test Number 4 succeeded
 <<<<< Function evaluation summary (UQ_I): 314 total (300 new, 14 duplicate)
@@ -56,7 +56,7 @@ Test Number 5 succeeded
 <<<<< Best objective function  =
                       2.1709366480e+02
 <<<<< Best constraint values   =
-                      6.0252394310e-03
+                      6.0252394309e-03
 <<<<< Best evaluation ID not available
 Test Number 6 succeeded
 <<<<< Function evaluation summary (UQ_I): 20 total (16 new, 4 duplicate)

@@ -5,14 +5,14 @@ Test Number 0 succeeded
              W3: 6 val (5 n, 1 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters/responses are not reported for generic response_functions
 Test Number 1 succeeded
-<<<<< Function evaluation summary: 63 total (23 new, 40 duplicate)
-             W1: 63 val (23 n, 40 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-             W2: 63 val (23 n, 40 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-             W3: 63 val (23 n, 40 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 126 total (45 new, 81 duplicate)
+             W1: 126 val (45 n, 81 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+             W2: 126 val (45 n, 81 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+             W3: 126 val (45 n, 81 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters/responses are not reported for generic response_functions
 Test Number 2 succeeded
-<<<<< Function evaluation summary: 72 total (26 new, 46 duplicate)
-             W1: 72 val (26 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-             W2: 72 val (26 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-             W3: 72 val (26 n, 46 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary: 141 total (50 new, 91 duplicate)
+             W1: 141 val (50 n, 91 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+             W2: 141 val (50 n, 91 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+             W3: 141 val (50 n, 91 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters/responses are not reported for generic response_functions

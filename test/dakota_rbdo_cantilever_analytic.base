@@ -18,13 +18,13 @@ Test Number 1 succeeded
   response_fn_2: 234 val (219 n, 15 d), 245 grad (230 n, 15 d), 0 Hess (0 n, 0 d)
   response_fn_3: 269 val (254 n, 15 d), 280 grad (265 n, 15 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4564906845e+00 w
-                      3.8928917518e+00 t
+                      2.4564906853e+00 w
+                      3.8928917499e+00 t
 <<<<< Best objective function  =
-                      9.5628523240e+00
+                      9.5628523225e+00
 <<<<< Best constraint values   =
-                      1.0789317649e-03
-                      1.0116886869e-03
+                      1.0789317735e-03
+                      1.0116886834e-03
 <<<<< Best evaluation ID not available
 Test Number 2 succeeded
 <<<<< Function evaluation summary (UQ_I): 241 total (208 new, 33 duplicate)
@@ -55,58 +55,58 @@ Test Number 3 succeeded
                       3.0114460816e+00
 <<<<< Best evaluation ID not available
 Test Number 4 succeeded
-<<<<< Function evaluation summary (UQ_I): 279 total (234 new, 45 duplicate)
-  response_fn_1: 31 val (20 n, 11 d), 40 grad (29 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 122 val (89 n, 33 d), 131 grad (98 n, 33 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 161 val (138 n, 23 d), 170 grad (147 n, 23 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 283 total (240 new, 43 duplicate)
+  response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 123 val (91 n, 32 d), 132 grad (100 n, 32 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 164 val (143 n, 21 d), 173 grad (152 n, 21 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521815103e+00 w
-                      3.8826062154e+00 t
+                      2.4499832483e+00 w
+                      3.8860874704e+00 t
 <<<<< Best objective function  =
-                      9.5208551731e+00
+                      9.5208492040e+00
 <<<<< Best constraint values   =
-                     -9.4392498551e-05
-                     -1.7393979929e-03
+                     -9.5620101918e-05
+                     -7.8866033308e-04
 <<<<< Best evaluation ID not available
 Test Number 5 succeeded
-<<<<< Function evaluation summary (UQ_I): 875 total (838 new, 37 duplicate)
-  response_fn_1: 31 val (20 n, 11 d), 40 grad (29 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 333 val (322 n, 11 d), 342 grad (331 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 484 val (469 n, 15 d), 493 grad (478 n, 15 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 891 total (857 new, 34 duplicate)
+  response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 341 val (331 n, 10 d), 350 grad (340 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 492 val (478 n, 14 d), 501 grad (487 n, 14 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521817159e+00 w
-                      3.8826058833e+00 t
+                      2.4499832337e+00 w
+                      3.8860874848e+00 t
 <<<<< Best objective function  =
-                      9.5208551572e+00
+                      9.5208491823e+00
 <<<<< Best constraint values   =
-                     -9.4389758434e-05
-                     -1.7394840788e-03
+                     -9.5616689445e-05
+                     -7.8865062843e-04
 <<<<< Best evaluation ID not available
 Test Number 6 succeeded
-<<<<< Function evaluation summary (UQ_I): 279 total (241 new, 38 duplicate)
-  response_fn_1: 31 val (20 n, 11 d), 40 grad (29 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 122 val (96 n, 26 d), 131 grad (105 n, 26 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 161 val (138 n, 23 d), 170 grad (147 n, 23 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 283 total (248 new, 35 duplicate)
+  response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 123 val (99 n, 24 d), 132 grad (108 n, 24 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 164 val (143 n, 21 d), 173 grad (152 n, 21 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521848378e+00 w
-                      3.8826068534e+00 t
+                      2.4499846383e+00 w
+                      3.8860912123e+00 t
 <<<<< Best objective function  =
-                      9.5208696572e+00
+                      9.5208637729e+00
 <<<<< Best constraint values   =
-                     -9.4391668842e-05
-                     -1.7403956961e-03
+                     -9.5634195431e-05
+                     -7.8883371754e-04
 <<<<< Best evaluation ID not available
 Test Number 7 succeeded
-<<<<< Function evaluation summary (UQ_I): 897 total (859 new, 38 duplicate)
-  response_fn_1: 31 val (20 n, 11 d), 40 grad (29 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 354 val (343 n, 11 d), 363 grad (352 n, 11 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 485 val (469 n, 16 d), 494 grad (478 n, 16 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 919 total (884 new, 35 duplicate)
+  response_fn_1: 31 val (21 n, 10 d), 40 grad (30 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 362 val (352 n, 10 d), 371 grad (361 n, 10 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 499 val (484 n, 15 d), 508 grad (493 n, 15 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
-                      2.4521850435e+00 w
-                      3.8826065214e+00 t
+                      2.4499844757e+00 w
+                      3.8860914643e+00 t
 <<<<< Best objective function  =
-                      9.5208696414e+00
+                      9.5208637587e+00
 <<<<< Best constraint values   =
-                     -9.4388928951e-05
-                     -1.7404817705e-03
+                     -9.5632083964e-05
+                     -7.8876102301e-04
 <<<<< Best evaluation ID not available

@@ -16,8 +16,8 @@ Test Number 0 succeeded
                       5.0000000000e-01 x1_mean
                       1.3485334409e+00 x2_mean
                       5.0000000000e-01 x3_mean
-                      1.3238647472e+00 x4_mean
-                      8.8581358424e-01 x5_mean
+                      1.3238647471e+00 x4_mean
+                      8.8581358426e-01 x5_mean
                       1.2000000000e+00 x6_mean
                       4.0000000000e-01 x7_mean
 <<<<< Best objective function  =
@@ -27,33 +27,33 @@ Test Number 0 succeeded
 <<<<< Best evaluation ID (full match) not available
 <<<<< Best evaluation ID (partial match): 13
 Test Number 1 succeeded
-<<<<< Function evaluation summary (OPTIONAL_I): 11 total (11 new, 0 duplicate)
-       obj_fn_1: 11 val (11 n, 0 d), 11 grad (11 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 37286 total (36076 new, 1210 duplicate)
-  response_fn_1: 3527 val (3406 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_2: 3383 val (3262 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_3: 3371 val (3250 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_4: 3383 val (3262 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_5: 3371 val (3250 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_6: 6347 val (6226 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_7: 3515 val (3394 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_8: 3479 val (3358 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_9: 3383 val (3262 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
- response_fn_10: 3527 val (3406 n, 121 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (OPTIONAL_I): 15 total (15 new, 0 duplicate)
+       obj_fn_1: 15 val (15 n, 0 d), 15 grad (15 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Function evaluation summary (UQ_I): 50622 total (48972 new, 1650 duplicate)
+  response_fn_1: 4779 val (4614 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_2: 4587 val (4422 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_3: 4575 val (4410 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_4: 4587 val (4422 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_5: 4575 val (4410 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_6: 8751 val (8586 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_7: 4767 val (4602 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_8: 4683 val (4518 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_9: 4587 val (4422 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ response_fn_10: 4731 val (4566 n, 165 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
 <<<<< Best parameters          =
                       5.0000000000e-01 x1_mean
-                      1.3464050156e+00 x2_mean
+                      1.3499729214e+00 x2_mean
                       5.0000000000e-01 x3_mean
-                      1.3220749410e+00 x4_mean
+                      1.3142395756e+00 x4_mean
                       8.7500000000e-01 x5_mean
                       1.2000000000e+00 x6_mean
                       4.0000000000e-01 x7_mean
 <<<<< Best objective function  =
-                      2.4851541967e+01
+                      2.4843920084e+01
 <<<<< Best constraint values   =
-                      1.2877641292e+00
+                      1.2888366277e+00
 <<<<< Best evaluation ID (full match) not available
-<<<<< Best evaluation ID (partial match): 7
+<<<<< Best evaluation ID (partial match): 8
 Test Number 2 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
        obj_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
@@ -79,19 +79,19 @@ Test Number 2 succeeded
 <<<<< Best objective function  =
                       2.1916500000e+01
 <<<<< Best constraint values   =
-                      2.1019162344e+01
+                      2.1019162346e+01
 <<<<< Best evaluation ID (full match) not available
 <<<<< Best evaluation ID (partial match): 6
 Test Number 3 succeeded
 <<<<< Function evaluation summary (OPTIONAL_I): 6 total (6 new, 0 duplicate)
        obj_fn_1: 6 val (6 n, 0 d), 6 grad (6 n, 0 d), 0 Hess (0 n, 0 d)
-<<<<< Function evaluation summary (UQ_I): 21924 total (21264 new, 660 duplicate)
+<<<<< Function evaluation summary (UQ_I): 21912 total (21252 new, 660 duplicate)
   response_fn_1: 1878 val (1812 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_2: 1914 val (1848 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_3: 1866 val (1800 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_4: 1878 val (1812 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_5: 1878 val (1812 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
-  response_fn_6: 4830 val (4764 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+  response_fn_6: 4818 val (4752 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_7: 1890 val (1824 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_8: 1926 val (1860 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
   response_fn_9: 1866 val (1800 n, 66 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
@@ -107,6 +107,6 @@ Test Number 3 succeeded
 <<<<< Best objective function  =
                       2.1916500000e+01
 <<<<< Best constraint values   =
-                      2.1049412627e+01
+                      2.1057646613e+01
 <<<<< Best evaluation ID (full match) not available
 <<<<< Best evaluation ID (partial match): 6

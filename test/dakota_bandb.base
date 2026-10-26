@@ -51,3 +51,16 @@ Test Number 3 succeeded
 <<<<< Best objective function  =
                       2.9772896557e+00
 <<<<< Best evaluation ID: 28
+Test Number 4 succeeded
+<<<<< Function evaluation summary: 188 total (181 new, 7 duplicate)
+       obj_fn_1: 188 val (181 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_1: 164 val (157 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+ nln_ineq_con_2: 160 val (153 n, 7 d), 0 grad (0 n, 0 d), 0 Hess (0 n, 0 d)
+<<<<< Best parameters          =
+                      5.0038033911e-01 x1
+                      5.0038042558e-01 x2
+                      1.0132063241e+00 x3
+                      1.0000000000e+00 z1
+<<<<< Best objective function  =
+                      1.2462008192e-01
+<<<<< Best evaluation ID: 182
