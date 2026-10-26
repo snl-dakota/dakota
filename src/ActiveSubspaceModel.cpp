@@ -141,6 +141,15 @@ ActiveSubspaceModel::transform_sub_model(std::shared_ptr<Model> truth_model)
   if (!truth_model)
     throw std::invalid_argument(
       "ActiveSubspaceModel DI construction requires a non-null truth model.");
+  // The transformation is sized from the truth model's active variables, so
+  // its view must be set first.  In the ProblemDescDB ctor the truth model is
+  // already built with the aleatory view; the subspace operates on aleatory
+  // (normal) uncertain variables, so request that view as a method would.
+  const ShortShortPair& view = truth_model->current_variables().view();
+  bool relaxed = (view.first == RELAXED_ALL ||
+                  (view.first >= RELAXED_DESIGN && view.first <= RELAXED_STATE));
+  truth_model->assign_inferred_view(
+    Variables::method_map(ALEATORY_UNCERTAIN_VIEW, relaxed), "active_subspace");
   return std::make_shared<ProbabilityTransformModel>(
     truth_model, STD_NORMAL_U); // retain dist bounds
 }
