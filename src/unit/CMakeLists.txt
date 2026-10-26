@@ -125,9 +125,7 @@ FILE( COPY
   DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/dakota_surr_reduced_basis"
   )
 
-if (NOT DAKOTA_HAVE_MPI)
-  add_subdirectory(dakota_opt_tpl_api)
-endif (NOT DAKOTA_HAVE_MPI)
+add_subdirectory(dakota_opt_tpl_api)
 
 
 # Unit test: h5py_hdf5

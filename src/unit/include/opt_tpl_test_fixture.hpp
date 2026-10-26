@@ -58,7 +58,7 @@ namespace {
 
     return json{
       {"method", json::array({method_config})},
-      {"model", json::array({json::object()})},
+      {"model", json::array({{{"single", json::object()}}})},
       {"variables", json::array({{
         {"continuous_design", {
           {"count", 2},
