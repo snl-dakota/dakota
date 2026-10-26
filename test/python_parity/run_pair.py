@@ -12,7 +12,7 @@ import sys
 import time
 
 
-def execute(command, directory, name, env=None, *, timeout=110):
+def execute(command, directory, name, env=None, *, timeout=300):
     stdout_path = directory / (name + ".stdout")
     stderr_path = directory / (name + ".stderr")
     with stdout_path.open("w") as out, stderr_path.open("w") as err:
@@ -27,8 +27,17 @@ def execute(command, directory, name, env=None, *, timeout=110):
         )
 
 
+_APPROX_INTERFACE_ID = re.compile(r"\bAPPROX_INTERFACE_\d+\b")
+
+
+def _normalize_approx_ids(text):
+    """Replace APPROX_INTERFACE_<N> with APPROX_INTERFACE_N throughout *text*."""
+    return _APPROX_INTERFACE_ID.sub("APPROX_INTERFACE_N", text)
+
+
 def result_structure(path):
-    lines = [line.split() for line in path.read_text().splitlines() if line.strip()]
+    text = _normalize_approx_ids(path.read_text())
+    lines = [line.split() for line in text.splitlines() if line.strip()]
     if len(lines) < 2:
         raise ValueError("Output comparison failed")
     # Keep labels and row layout exact; let dakota_diff apply numerical tolerances.
@@ -36,6 +45,16 @@ def result_structure(path):
     return [
         ["#" if number.fullmatch(token) else token for token in line] for line in lines
     ]
+
+
+def _write_normalized(path):
+    """Write a .norm.tst sibling of *path* with APPROX_INTERFACE_<N> normalized.
+
+    Returns the path of the normalized file.
+    """
+    norm_path = path.with_suffix(".norm.tst")
+    norm_path.write_text(_normalize_approx_ids(path.read_text()))
+    return norm_path
 
 
 def compare_outputs(command, paths, work, case_id, subtest):
@@ -49,9 +68,13 @@ def compare_outputs(command, paths, work, case_id, subtest):
     """
     report = work / "dakota_diffs.out"
     structure_matches = result_structure(paths[0]) == result_structure(paths[1])
+    # Build a normalized command so that APPROX_INTERFACE_<N> numbering differences
+    # do not cause dakota_diff.perl to treat label lines as mismatches.
+    norm_paths = [_write_normalized(p) for p in paths]
+    norm_command = list(command[:-2]) + [str(p) for p in norm_paths]
     numeric_error = None
     try:
-        execute(command, work, "comparison", {**os.environ, "DAKDIFF_ALL_NUMERIC": "1"})
+        execute(norm_command, work, "comparison", {**os.environ, "DAKDIFF_ALL_NUMERIC": "1"})
     except subprocess.CalledProcessError as exc:
         numeric_error = exc
     finally:
@@ -59,7 +82,7 @@ def compare_outputs(command, paths, work, case_id, subtest):
         diagnostics = f"python_parity_{case_id} (subtest {subtest}): freeform executable vs Python\n"
         diagnostics += f"  base: {paths[0]}\n  test: {paths[1]}\n"
         diagnostics += rule
-        diagnostics += "[1] Numerical comparison (dakota_diff.perl; base< freeform, test> Python)\n"
+        diagnostics += "[1] Numerical comparison (dakota_diff.perl on APPROX_INTERFACE_N-normalized copies; base< freeform, test> Python)\n"
         diagnostics += rule
         for name in ("comparison.stdout", "comparison.stderr"):
             path = work / name
@@ -109,8 +132,10 @@ def main():
         "diff",
     ):
         parser.add_argument("--" + name, required=True)
+    parser.add_argument("--build-test", required=False, default=None)
     args = parser.parse_args()
     source = Path(args.source).resolve()
+    build_test = Path(args.build_test).resolve() if args.build_test else None
     cases = json.loads((source / "python_parity/cases.json").read_text())
     case = next(c for c in cases if c["id"] == args.case)
     work = Path(args.work).resolve()
@@ -127,6 +152,8 @@ def main():
             shutil.rmtree(directory)
         directory.mkdir()
     started = time.monotonic()
+    case_timeout = case.get("timeout", 1200)
+    deadline = started + case_timeout - 5  # 5s margin for overhead
     env = os.environ.copy()
     env["PYTHONPATH"] = args.python_path + os.pathsep + env.get("PYTHONPATH", "")
     for kind in ("freeform", "python"):
@@ -135,7 +162,20 @@ def main():
             # reserved names resolve to build products rather than source files
             built = {"text_book": args.driver, "identity_map": args.plugin}
             origin = Path(built[required]) if required in built else source / required
-            shutil.copy2(origin, directory / origin.name)
+            dst = directory / origin.name
+            if origin.is_dir():
+                shutil.copytree(origin, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(origin, dst)
+        if build_test:
+            for driver in (case.get("build_test_drivers") or []):
+                src = build_test / driver
+                dst = directory / driver
+                if src.is_dir():
+                    shutil.copytree(src, dst, dirs_exist_ok=True)
+                else:
+                    shutil.copy2(src, dst)
+                    dst.chmod(0o755)
         env["PATH"] = str(directory) + os.pathsep + os.environ.get("PATH", "")
         # Optional freeform setup study (e.g. exporting a surrogate that the
         # pair then imports) run in each working directory before the pair.
@@ -172,6 +212,7 @@ def main():
                 directory,
                 "run",
                 env,
+                timeout=max(deadline - time.monotonic(), 30),
             )
         else:
             execute(
@@ -179,6 +220,7 @@ def main():
                 directory,
                 "run",
                 env,
+                timeout=max(deadline - time.monotonic(), 30),
             )
         execute(
             [

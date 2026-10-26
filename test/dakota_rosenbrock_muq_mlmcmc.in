@@ -1,4 +1,5 @@
 #@ *: DakotaConfig=HAVE_MUQ
+#@ *: ReqFiles=dakota_rosenbrock_muq_mlmcmc_driver.py,dakota_rosenbrock_muq_mlmcmc.withsigma.dat
 
 environment,
   tabular_data
@@ -41,14 +42,14 @@ variables,
       set_values = 0 1
 
 interface,
-  analysis_drivers 'dakota_rosenbrock_muq_mlcmc_driver.py'
+  analysis_drivers 'dakota_rosenbrock_muq_mlmcmc_driver.py'
     fork
     parameters_file 'params.in'
     results_file 'results.out'
 
 responses,
   calibration_terms = 2
-    calibration_data_file = 'dakota_rosenbrock_muq_mcmcm.withsigma.dat'
+    calibration_data_file = 'dakota_rosenbrock_muq_mlmcmc.withsigma.dat'
       freeform
       num_experiments = 1
       variance_type = 'scalar'

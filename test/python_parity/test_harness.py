@@ -8,7 +8,7 @@ import sys
 import tempfile
 import unittest
 
-from run_pair import execute, result_structure, compare_outputs
+from run_pair import execute, result_structure, compare_outputs, _normalize_approx_ids
 
 SOURCE = Path(__file__).resolve().parents[1]
 PERL = shutil.which("perl")
@@ -315,7 +315,7 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             for test in tests:
                 props = {p["name"]: p["value"] for p in test["properties"]}
                 self.assertEqual(props["LABELS"], ["PythonParity", "SerialTest"])
-                self.assertEqual(props["TIMEOUT"], 120)
+                self.assertEqual(props["TIMEOUT"], 1200)
 
     def test_extract_original_subtests(self):
         for number, method in ((0, "vector"), (3, "list"), (4, "centered")):
@@ -336,6 +336,38 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             self.assertIn("analytic_gradients" if number == 0 else "no_gradients", text)
             self.assertIn("analytic_hessians" if number == 0 else "no_hessians", text)
             self.assertIn("evaluation_concurrency = 5", text)
+
+
+    def test_approx_interface_id_normalization(self):
+        """APPROX_INTERFACE_<N> labels with different N compare as structurally equal."""
+        raw_n1 = RAW.replace(
+            "Function evaluation summary",
+            "Function evaluation summary (APPROX_INTERFACE_1)",
+        )
+        raw_n2 = RAW.replace(
+            "Function evaluation summary",
+            "Function evaluation summary (APPROX_INTERFACE_2)",
+        )
+        a = self.reduce(raw_n1, "approx_a")
+        b = self.reduce(raw_n2, "approx_b")
+        # Structure should match despite different N
+        self.assertEqual(result_structure(a), result_structure(b))
+        # _normalize_approx_ids should collapse both to N
+        self.assertIn("APPROX_INTERFACE_N", _normalize_approx_ids(a.read_text()))
+        self.assertNotIn("APPROX_INTERFACE_1", _normalize_approx_ids(a.read_text()))
+        # compare_outputs should succeed (only structural diff was the N)
+        command = [
+            PERL,
+            str(SOURCE / "dakota_diff.perl"),
+            "dakota_pstudy.in",
+            str(a),
+            str(b),
+        ]
+        compare_outputs(command, [a, b], self.work, "approx_iface", 0)
+        self.assertIn("PASS test 0", (self.work / "dakota_diffs.out").read_text())
+        # Originals must keep their real labels
+        self.assertIn("APPROX_INTERFACE_1", a.read_text())
+        self.assertIn("APPROX_INTERFACE_2", b.read_text())
 
 
 if __name__ == "__main__":

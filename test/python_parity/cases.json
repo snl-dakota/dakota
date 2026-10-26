@@ -1562,32 +1562,6 @@
     ]
   },
   {
-    "id": "method_branch_and_bound_method_pointer",
-    "input": "python_parity/inputs/branch_and_bound_method_pointer.in",
-    "subtest": 0,
-    "script": "method_branch_and_bound_method_pointer.py",
-    "required_files": [
-      "python_parity/response_driver.py"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.optpp_q_newton",
-      "MethodFactory.branch_and_bound"
-    ],
-    "classes": [
-      "SimulationModel",
-      "SNLLOptimizer",
-      "PebbldMinimizer"
-    ],
-    "requires_features": [
-      "HAVE_ACRO",
-      "HAVE_OPTPP"
-    ]
-  },
-  {
     "id": "method_richardson_extrap",
     "input": "python_parity/inputs/richardson_extrap.in",
     "subtest": 0,
@@ -1821,6 +1795,244 @@
     "requires_features": [
       "HAVE_ACRO",
       "HAVE_SURFPACK"
+    ]
+  },
+  {
+    "id": "method_branch_and_bound_method_pointer",
+    "input": "python_parity/inputs/branch_and_bound_method_pointer.in",
+    "subtest": 0,
+    "script": "method_branch_and_bound_method_pointer.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_q_newton",
+      "MethodFactory.branch_and_bound"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLOptimizer",
+      "PebbldMinimizer"
+    ],
+    "requires_features": [
+      "HAVE_ACRO",
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "method_rol",
+    "input": "python_parity/inputs/rol.in",
+    "subtest": 0,
+    "script": "method_rol.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.rol"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ROLOptimizer"
+    ],
+    "requires_features": [
+      "HAVE_ROL"
+    ]
+  },
+  {
+    "id": "method_dace",
+    "input": "python_parity/inputs/dace.in",
+    "subtest": 0,
+    "script": "method_dace.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.dace"
+    ],
+    "classes": [
+      "SimulationModel",
+      "DDACEDesignCompExp"
+    ],
+    "requires_features": [
+      "HAVE_DDACE"
+    ]
+  },
+  {
+    "id": "method_optpp_g_newton",
+    "input": "python_parity/inputs/optpp_g_newton.in",
+    "subtest": 0,
+    "script": "method_optpp_g_newton.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_g_newton"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLLeastSq"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
+    ]
+  },
+  {
+    "id": "method_nlssol_sqp",
+    "input": "python_parity/inputs/nlssol_sqp.in",
+    "subtest": 0,
+    "script": "method_nlssol_sqp.py",
+    "required_files": [
+      "python_parity/response_driver.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.nlssol_sqp"
+    ],
+    "classes": [
+      "SimulationModel",
+      "NLSSOLLeastSq"
+    ],
+    "requires_features": [
+      "HAVE_NPSOL"
+    ]
+  },
+  {
+    "id": "method_fsu_quasi_mc",
+    "input": "python_parity/inputs/fsu_quasi_mc.in",
+    "subtest": 0,
+    "script": "method_fsu_quasi_mc.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.fsu_quasi_mc"
+    ],
+    "classes": [
+      "SimulationModel",
+      "FSUDesignCompExp"
+    ],
+    "requires_features": [
+      "HAVE_FSUDACE"
+    ]
+  },
+  {
+    "id": "method_fsu_cvt",
+    "input": "python_parity/inputs/fsu_cvt.in",
+    "subtest": 0,
+    "script": "method_fsu_cvt.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.fsu_cvt"
+    ],
+    "classes": [
+      "SimulationModel",
+      "FSUDesignCompExp"
+    ],
+    "requires_features": [
+      "HAVE_FSUDACE"
+    ]
+  },
+  {
+    "id": "method_psuade_moat",
+    "input": "python_parity/inputs/psuade_moat.in",
+    "subtest": 0,
+    "script": "method_psuade_moat.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.psuade_moat"
+    ],
+    "classes": [
+      "SimulationModel",
+      "PSUADEDesignCompExp"
+    ],
+    "requires_features": [
+      "HAVE_PSUADE"
+    ]
+  },
+  {
+    "id": "method_external_python",
+    "input": "python_parity/inputs/external_python.in",
+    "subtest": 0,
+    "script": "method_external_python.py",
+    "required_files": [
+      "text_book",
+      "ext_py_methods.py",
+      "ext_py_options.json",
+      "ext_py_helper.py"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.external_python"
+    ],
+    "classes": [
+      "SimulationModel",
+      "ExtPythonMethod"
+    ],
+    "requires_features": [
+      "HAVE_EXT_PYTHON_METHOD"
+    ]
+  },
+  {
+    "id": "method_pareto_set",
+    "input": "python_parity/inputs/pareto_set.in",
+    "subtest": 0,
+    "script": "method_pareto_set.py",
+    "required_files": [
+      "text_book"
+    ],
+    "factories": [
+      "Study.variables",
+      "Study.interface",
+      "Study.responses",
+      "ModelFactory.simulation",
+      "MethodFactory.optpp_q_newton",
+      "MethodFactory.pareto_set"
+    ],
+    "classes": [
+      "SimulationModel",
+      "SNLLOptimizer",
+      "ConcurrentMetaIterator"
+    ],
+    "requires_features": [
+      "HAVE_OPTPP"
     ]
   },
   {
@@ -2285,218 +2497,6 @@
       "SimulationModel",
       "ActiveSubspaceModel",
       "NonDLHSSampling"
-    ]
-  },
-  {
-    "id": "method_rol",
-    "input": "python_parity/inputs/rol.in",
-    "subtest": 0,
-    "script": "method_rol.py",
-    "required_files": [
-      "text_book"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.rol"
-    ],
-    "classes": [
-      "SimulationModel",
-      "ROLOptimizer"
-    ],
-    "requires_features": [
-      "HAVE_ROL"
-    ]
-  },
-  {
-    "id": "method_dace",
-    "input": "python_parity/inputs/dace.in",
-    "subtest": 0,
-    "script": "method_dace.py",
-    "required_files": [
-      "text_book"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.dace"
-    ],
-    "classes": [
-      "SimulationModel",
-      "DDACEDesignCompExp"
-    ],
-    "requires_features": [
-      "HAVE_DDACE"
-    ]
-  },
-  {
-    "id": "method_optpp_g_newton",
-    "input": "python_parity/inputs/optpp_g_newton.in",
-    "subtest": 0,
-    "script": "method_optpp_g_newton.py",
-    "required_files": [
-      "python_parity/response_driver.py"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.optpp_g_newton"
-    ],
-    "classes": [
-      "SimulationModel",
-      "SNLLLeastSq"
-    ],
-    "requires_features": [
-      "HAVE_OPTPP"
-    ]
-  },
-  {
-    "id": "method_nlssol_sqp",
-    "input": "python_parity/inputs/nlssol_sqp.in",
-    "subtest": 0,
-    "script": "method_nlssol_sqp.py",
-    "required_files": [
-      "python_parity/response_driver.py"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.nlssol_sqp"
-    ],
-    "classes": [
-      "SimulationModel",
-      "NLSSOLLeastSq"
-    ],
-    "requires_features": [
-      "HAVE_NPSOL"
-    ]
-  },
-  {
-    "id": "method_fsu_quasi_mc",
-    "input": "python_parity/inputs/fsu_quasi_mc.in",
-    "subtest": 0,
-    "script": "method_fsu_quasi_mc.py",
-    "required_files": [
-      "text_book"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.fsu_quasi_mc"
-    ],
-    "classes": [
-      "SimulationModel",
-      "FSUDesignCompExp"
-    ],
-    "requires_features": [
-      "HAVE_FSUDACE"
-    ]
-  },
-  {
-    "id": "method_fsu_cvt",
-    "input": "python_parity/inputs/fsu_cvt.in",
-    "subtest": 0,
-    "script": "method_fsu_cvt.py",
-    "required_files": [
-      "text_book"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.fsu_cvt"
-    ],
-    "classes": [
-      "SimulationModel",
-      "FSUDesignCompExp"
-    ],
-    "requires_features": [
-      "HAVE_FSUDACE"
-    ]
-  },
-  {
-    "id": "method_psuade_moat",
-    "input": "python_parity/inputs/psuade_moat.in",
-    "subtest": 0,
-    "script": "method_psuade_moat.py",
-    "required_files": [
-      "text_book"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.psuade_moat"
-    ],
-    "classes": [
-      "SimulationModel",
-      "PSUADEDesignCompExp"
-    ],
-    "requires_features": [
-      "HAVE_PSUADE"
-    ]
-  },
-  {
-    "id": "method_external_python",
-    "input": "python_parity/inputs/external_python.in",
-    "subtest": 0,
-    "script": "method_external_python.py",
-    "required_files": [
-      "text_book",
-      "ext_py_methods.py",
-      "ext_py_options.json",
-      "ext_py_helper.py"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.external_python"
-    ],
-    "classes": [
-      "SimulationModel",
-      "ExtPythonMethod"
-    ],
-    "requires_features": [
-      "HAVE_EXT_PYTHON_METHOD"
-    ]
-  },
-  {
-    "id": "method_pareto_set",
-    "input": "python_parity/inputs/pareto_set.in",
-    "subtest": 0,
-    "script": "method_pareto_set.py",
-    "required_files": [
-      "text_book"
-    ],
-    "factories": [
-      "Study.variables",
-      "Study.interface",
-      "Study.responses",
-      "ModelFactory.simulation",
-      "MethodFactory.optpp_q_newton",
-      "MethodFactory.pareto_set"
-    ],
-    "classes": [
-      "SimulationModel",
-      "SNLLOptimizer",
-      "ConcurrentMetaIterator"
-    ],
-    "requires_features": [
-      "HAVE_OPTPP"
     ]
   }
 ]

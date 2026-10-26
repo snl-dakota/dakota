@@ -1,4 +1,5 @@
-#@ s*: DakotaConfig=HAVE_ACRO
+#@ s0: DakotaConfig=HAVE_ACRO
+#@ s1: DakotaConfig=HAVE_ACRO
 environment,
 	  method_pointer = 'SBGO'
 
@@ -9,8 +10,8 @@ method,
 	id_method = 'SBGO'
 	model_pointer = 'SBGO_M'
 	surrogate_based_global
-#	  approx_method_name = 'coliny_ea'
-	  approx_method_pointer = 'EA_MINLP'
+#	  approx_method_name = 'coliny_ea'          #s1
+	  approx_method_pointer = 'EA_MINLP'         #s0
 	  max_iterations = 25
 	  output quiet
 
@@ -48,12 +49,12 @@ responses,
 ################################
 # begin EA_MINLP specification #
 ################################
-method,
-	id_method = 'EA_MINLP'
-	coliny_ea
-	  population_size = 100
-	  max_iterations = 50 max_function_evaluations = 5000
-	  seed = 1237
+method,                                          #s0
+	id_method = 'EA_MINLP'                   #s0
+	coliny_ea                                #s0
+	  population_size = 100                  #s0
+	  max_iterations = 50 max_function_evaluations = 5000  #s0
+	  seed = 1237                            #s0
 
 ############################
 # begin DACE specification #

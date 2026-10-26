@@ -2,6 +2,7 @@
 #@ s1: DakotaConfig=HAVE_NPSOL
 #@ s2: DakotaConfig=HAVE_ACRO
 # s3: test correct traits coverage
+# s4: method_name form for branch_and_bound
 
 environment
   method_pointer = 'BandB'
@@ -10,16 +11,17 @@ method
   id_method = 'BandB'
   branch_and_bound
     output verbose
-    method_pointer = 'SubNLP'
+    method_pointer = 'SubNLP'                    #s0,#s1,#s2,#s3
+#    method_name 'conmin_frcg'                   #s4
 
-method
-  id_method = 'SubNLP'
+method                                           #s0,#s1,#s2,#s3
+  id_method = 'SubNLP'                           #s0,#s1,#s2,#s3
   conmin_frcg					#s0,#s3
 #  npsol_sqp					#s1
 #  soga 					#s2
 #    seed = 123451337				#s2
-    max_iterations = 1000
-    max_function_evaluations = 10000
+    max_iterations = 1000                        #s0,#s1,#s2,#s3
+    max_function_evaluations = 10000             #s0,#s1,#s2,#s3
 
 variables,
 	continuous_design = 3
@@ -32,12 +34,12 @@ variables,
 #	  lower_bounds       1     1		#s2
 #	  upper_bounds       4     9		#s2
 #	  descriptors      'y1'   'y2'		#s2
-	discrete_design_set			#s0,#s1,#s3
-	  integer = 1				#s0,#s1,#s3
-	    num_set_values = 4			#s0,#s1,#s3
-	    set_values = 1 2 3 4		#s0,#s1,#s3
-	    descriptors  'z1'			#s0,#s1,#s3
-	  categorical 'no'			#s0,#s1,#s3
+	discrete_design_set			#s0,#s1,#s3,#s4
+	  integer = 1				#s0,#s1,#s3,#s4
+	    num_set_values = 4			#s0,#s1,#s3,#s4
+	    set_values = 1 2 3 4		#s0,#s1,#s3,#s4
+	    descriptors  'z1'			#s0,#s1,#s3,#s4
+	  categorical 'no'			#s0,#s1,#s3,#s4
 
 interface,
 	direct
@@ -45,7 +47,7 @@ interface,
 
 responses,
 	objective_functions = 1
-	nonlinear_inequality_constraints = 2	#s0,#s1,#s2
+	nonlinear_inequality_constraints = 2	#s0,#s1,#s2,#s4
 #	nonlinear_inequality_constraints = 1	#s3
 #	nonlinear_equality_constraints = 1		#s3
 	numerical_gradients

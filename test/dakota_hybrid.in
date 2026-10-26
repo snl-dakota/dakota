@@ -37,11 +37,13 @@ environment
 
 method
   id_method = 'HS'
-  hybrid_sequential
+  hybrid_sequential                              #s0,#s1,#s2,#s3,#s4,#s5,#p0,#p1
 #    iterator_servers = 3                       #p0,#p1
     method_pointer_list = 'GA' 'PS' 'NLP'       #s0,#s3,#p0
 #    method_pointer_list = 'GA' 'PS' 'PS2'      #s1,#s2
 #    method_pointer_list = 'GA' 'PS' 'ROL'      #s4,#p1
+#    method_name_list = 'coliny_ea' 'coliny_pattern_search'  #s5
+#    model_pointer_list = 'M1' 'M1'             #s5
 
 method
   id_method = 'GA'
@@ -99,8 +101,8 @@ method                                          #s0,#s3,#p0
 model
   id_model = 'M1'
   single
-    interface_pointer = 'I1'                    #s0,#s4
-  variables_pointer = 'V1'                      #s0,#s4
+    interface_pointer = 'I1'                    #s0,#s4,#s5
+  variables_pointer = 'V1'                      #s0,#s4,#s5
   responses_pointer = 'R1'
 
 model
@@ -111,7 +113,7 @@ model
   responses_pointer = 'R2'
 
 variables
-  id_variables = 'V1'                           #s0,#s4
+  id_variables = 'V1'                           #s0,#s4,#s5
   continuous_design = 2
     initial_point    0.6    0.7
     upper_bounds     5.8    2.9
@@ -119,9 +121,9 @@ variables
     descriptors      'x1'   'x2'
 
 interface
-  id_interface = 'I1'                           #s0,#s4
+  id_interface = 'I1'                           #s0,#s4,#s5
   analysis_drivers =  'text_book'
-    direct                                      #s0,#s1,#s3,#s4,#p0,#p1
+    direct                                      #s0,#s1,#s3,#s4,#s5,#p0,#p1
 #   system asynch                               #s2
 
 responses
