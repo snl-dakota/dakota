@@ -116,7 +116,6 @@ void print_usage(const char* prog)
     std::cout << "\nCommon options (both modes):\n";
     std::cout << "  --no-validate        Skip constraint/cross-field validation\n";
     std::cout << "  --no-semantic        Skip semantic analysis\n";
-    std::cout << "  --no-expand          Skip default expansion\n";
     std::cout << "  --debug              Enable debug output\n";
     std::cout << "  -h, --help           Show this help message\n";
     std::cout << "\nExamples:\n";
@@ -139,7 +138,6 @@ int main(int argc, char* argv[])
     bool do_analyze    = false;
     bool do_validate   = true;
     bool do_semantic   = true;
-    bool do_expand     = true;
     bool output_json   = false;
     bool force_json_in = false;
     bool force_dsl_in  = false;
@@ -155,8 +153,6 @@ int main(int argc, char* argv[])
             do_validate = false;
         } else if (arg == "--no-semantic") {
             do_semantic = false;
-        } else if (arg == "--no-expand") {
-            do_expand = false;
         } else if (arg == "--json") {
             output_json = true;
         } else if (arg == "--json-input") {
@@ -283,17 +279,15 @@ int main(int argc, char* argv[])
         }
     }
 
-    if (do_expand) {
-        if (dakota::g_enable_debug) {
-            std::cout << "\nExpanding defaults...\n";
-        }
-        if (!dakota::expand_defaults(doc)) {
-            std::cerr << "\u2717 Default expansion failed\n";
-            return 1;
-        }
-        if (dakota::g_enable_debug) {
-            std::cout << "\u2713 Default expansion successful\n";
-        }
+    if (dakota::g_enable_debug) {
+        std::cout << "\nExpanding defaults...\n";
+    }
+    if (!dakota::expand_defaults(doc)) {
+        std::cerr << "\u2717 Default expansion failed\n";
+        return 1;
+    }
+    if (dakota::g_enable_debug) {
+        std::cout << "\u2713 Default expansion successful\n";
     }
 
     dakota::json json_output;

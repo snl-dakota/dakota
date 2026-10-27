@@ -1643,7 +1643,9 @@ TEST(CheckInterfaceBlock, BatchAllowsLargerSize) {
 }
 
 TEST(CheckInterfaceBlock, BatchAllowsAbsentFailureCapture) {
-    // Without default expansion (--no-expand), failure_capture may be absent
+    // failure_capture may be absent: this validator is installed public API
+    // (validation.hpp and the Python bindings), so it must accept an instance
+    // whose defaults have not been expanded.  Absent means the default, abort.
     json instance = {
         {"analysis_drivers", {
             {"drivers", {"simulator.py"}}
