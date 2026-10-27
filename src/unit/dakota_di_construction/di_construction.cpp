@@ -231,18 +231,23 @@ void materialize_default_opt_blocks(InstructionMaterializer& materializer,
                                     IRStore& variables_store,
                                     IRStore& responses_store,
                                     IRStore& interface_store,
-                                    IRStore& model_store)
+                                    IRStore& model_store, bool mixed_variables = true)
 {
-  const json variables_json = {
-    {"continuous_design", {
-      {"count", 2},
-      {"descriptors", {"x1", "x2"}},
-      {"initial_point", {0.9, 1.1}},
-      {"lower_bounds", {0.5, 0.5}},
-      {"upper_bounds", {5.8, 2.9}}
-    }}
-  };
 
+   json domain_obj = mixed_variables ? json{{"mixed", true}} : json{{"relaxed", true}};
+   
+   const json variables_json = {
+     {"domain", domain_obj},
+     {"continuous_design", {
+       {"count", 2},
+       {"descriptors", {"x1", "x2"}},
+       {"initial_point", {0.9, 1.1}},
+       {"lower_bounds", {0.5, 0.5}},
+       {"upper_bounds", {5.8, 2.9}}
+     }}
+   };
+
+  std::cout << "Variables_json: " << variables_json << std::endl;
   const json responses_json = {
     {"response_type", {{"objective_functions", {{"count", 1}}}}},
     {"descriptors", {"f"}},
@@ -1238,7 +1243,7 @@ TEST(di_construction_tests, pebbl_minimizer_uses_injected_method)
           {{"sub_method", {{"method_name", {{"name", "optpp_q_newton"}}}}}}}},
     irgen::BlockType::Method);
   materialize_default_opt_blocks(materializer, variables_store,
-                                 responses_store, interface_store, model_store);
+                                 responses_store, interface_store, model_store, false /*relaxed variables */);
 
   ExplicitRuntime runtime;
   ExplicitRuntime other_runtime;
