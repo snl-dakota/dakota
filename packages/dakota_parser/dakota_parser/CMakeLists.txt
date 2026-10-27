@@ -7,6 +7,12 @@ cmake_minimum_required(VERSION 3.14)
 # Option to enable debug output
 option(DAKOTA_PARSER_DEBUG "Enable debug output in parser" OFF)
 
+# Option to build the PEGTL grammar tracing used by dakota_parser --trace.
+# Tracing instantiates each grammar a second time under a different control
+# template: with it on, the method block alone takes about 4x as long to compile
+# and peaks near 7 GB. Parser developers turn it on; nobody else needs it.
+option(DAKOTA_PARSER_TRACE "Build grammar tracing support (--trace); slow to compile" OFF)
+
 # =============================================================================
 # Code Generation Setup
 # =============================================================================
@@ -151,6 +157,15 @@ if(DAKOTA_PARSER_DEBUG)
     message(STATUS "Debug output enabled for parser")
 endif()
 
+# Build grammar tracing if requested. Only the .cpp bodies that call
+# standard_trace are affected (the generated block parsers and dakota_parser.cpp),
+# so this changes no header and no type: targets may be built with and without it.
+if(DAKOTA_PARSER_TRACE)
+    target_compile_definitions(dakota_generated_sources PRIVATE DAKOTA_PARSER_TRACE=1)
+    target_compile_definitions(dakota_parser PRIVATE DAKOTA_PARSER_TRACE=1)
+    message(STATUS "Grammar tracing enabled for parser (--trace); expect slow compiles")
+endif()
+
 # Link nlohmann_json (fetched by parent project, needed for JSON output)
 target_link_libraries(dakota_generated_sources PRIVATE nlohmann_json::nlohmann_json dakota_validation)
 
@@ -184,6 +199,11 @@ target_compile_options(dakota_parser_lib PRIVATE ${DAKOTA_COMPILE_OPTIONS})
 # Enable debug output for library if requested
 if(DAKOTA_PARSER_DEBUG)
     target_compile_definitions(dakota_parser_lib PRIVATE DAKOTA_PARSER_DEBUG=1)
+endif()
+
+# Build grammar tracing for the outer grammar in dakota_parser.cpp if requested
+if(DAKOTA_PARSER_TRACE)
+    target_compile_definitions(dakota_parser_lib PRIVATE DAKOTA_PARSER_TRACE=1)
 endif()
 
 # =============================================================================
@@ -342,5 +362,6 @@ message(STATUS "  Generated code: ${GENERATED_DIR}")
 message(STATUS "  Blocks: ${ALL_BLOCKS}")
 message(STATUS "  Generation: At build time (after schema)")
 message(STATUS "  Debug output: ${DAKOTA_PARSER_DEBUG}")
+message(STATUS "  Grammar tracing (--trace): ${DAKOTA_PARSER_TRACE}")
 message(STATUS "========================================")
 message(STATUS "")

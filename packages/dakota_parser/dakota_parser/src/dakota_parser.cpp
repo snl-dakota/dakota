@@ -18,7 +18,9 @@
 #ifndef _MSC_VER
 #include <tao/pegtl/contrib/analyze.hpp>
 #endif
+#ifdef DAKOTA_PARSER_TRACE
 #include <tao/pegtl/contrib/trace.hpp>
+#endif
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -159,11 +161,21 @@ bool parse_dakota_input(Input& input, const std::string& source_name,
     outer_state.enable_trace = enable_trace;
 
     try {
+        // See the note in generator_common.py: tracing instantiates the grammar a
+        // second time, so it is built only when DAKOTA_PARSER_TRACE is on.
+#ifdef DAKOTA_PARSER_TRACE
         if (enable_trace) {
             std::cout << "\n=== Tracing OUTER grammar ===\n";
             return tao::pegtl::standard_trace<outer::grammar, outer::action, error_control>(
                 input, outer_state);
-        } else {
+        } else
+#else
+        if (enable_trace) {
+            std::cerr << "Warning: grammar tracing is not available in this build; "
+                         "reconfigure with -DDAKOTA_PARSER_TRACE=ON\n";
+        }
+#endif
+        {
             return tao::pegtl::parse<outer::grammar, outer::action, error_control>(
                 input, outer_state);
         }

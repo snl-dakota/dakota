@@ -110,7 +110,12 @@ void print_usage(const char* prog)
     std::cout << "  --dsl-input          Force DSL input mode (overrides .json extension)\n";
     std::cout << "  --schema <path>      Deprecated; ignored\n";
     std::cout << "\nDSL-mode options:\n";
+#ifdef DAKOTA_PARSER_TRACE
     std::cout << "  --trace              Enable grammar tracing\n";
+#else
+    std::cout << "  --trace              Enable grammar tracing"
+                 " (not built in; -DDAKOTA_PARSER_TRACE=ON)\n";
+#endif
     std::cout << "  --analyze            Analyze grammar for issues\n";
     std::cout << "  --json               Output in JSON format (always on for JSON input)\n";
     std::cout << "\nCommon options (both modes):\n";
