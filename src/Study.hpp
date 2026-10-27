@@ -27,9 +27,7 @@ namespace Dakota {
  * studies without a complete input file.
  */
 
-class CollabHybridMetaIterator;
 class ConcurrentMetaIterator;
-class EmbedHybridMetaIterator;
 class SeqHybridMetaIterator;
 class ActiveSubspaceModel;
 class AdaptedBasisModel;
@@ -315,44 +313,6 @@ public:
   std::shared_ptr<SeqHybridMetaIterator>
   hybrid_sequential(const nlohmann::json& method_json,
                     std::vector<std::shared_ptr<Model>> models) const;
-
-  /// Construct a collaborative hybrid around non-null injected sub-iterators.
-  std::shared_ptr<CollabHybridMetaIterator>
-  hybrid_collaborative(const IRStore& method_store,
-                       std::vector<std::shared_ptr<Iterator>> methods) const;
-  /// Validate a hybrid_collaborative fragment and construct it.
-  std::shared_ptr<CollabHybridMetaIterator>
-  hybrid_collaborative(const nlohmann::json& method_json,
-                       std::vector<std::shared_ptr<Iterator>> methods) const;
-  /// Construct a collaborative hybrid using method_name_list from the IR (name form).
-  std::shared_ptr<CollabHybridMetaIterator>
-  hybrid_collaborative(const IRStore& method_store,
-                       std::vector<std::shared_ptr<Model>> models) const;
-  /// Validate a hybrid_collaborative fragment and construct it using method_name_list (name form).
-  std::shared_ptr<CollabHybridMetaIterator>
-  hybrid_collaborative(const nlohmann::json& method_json,
-                       std::vector<std::shared_ptr<Model>> models) const;
-
-  /// Construct an embedded hybrid around non-null injected global and local iterators.
-  std::shared_ptr<EmbedHybridMetaIterator>
-  hybrid_embedded(const IRStore& method_store,
-                  std::shared_ptr<Iterator> global_method,
-                  std::shared_ptr<Iterator> local_method) const;
-  /// Validate a hybrid_embedded fragment and construct it.
-  std::shared_ptr<EmbedHybridMetaIterator>
-  hybrid_embedded(const nlohmann::json& method_json,
-                  std::shared_ptr<Iterator> global_method,
-                  std::shared_ptr<Iterator> local_method) const;
-  /// Construct an embedded hybrid using name forms from the IR.
-  std::shared_ptr<EmbedHybridMetaIterator>
-  hybrid_embedded(const IRStore& method_store,
-                  std::shared_ptr<Model> global_model,
-                  std::shared_ptr<Model> local_model) const;
-  /// Validate a hybrid_embedded fragment and construct it using name forms.
-  std::shared_ptr<EmbedHybridMetaIterator>
-  hybrid_embedded(const nlohmann::json& method_json,
-                  std::shared_ptr<Model> global_model,
-                  std::shared_ptr<Model> local_model) const;
 
 private:
   const Study& study;

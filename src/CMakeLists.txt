@@ -495,9 +495,8 @@ set(iterator_src DakotaIterator.cpp DakotaAnalyzer.cpp DakotaPStudyDACE.cpp
     HierarchSurrBasedLocalMinimizer.cpp DataFitSurrBasedLocalMinimizer.cpp
     SurrBasedGlobalMinimizer.cpp EffGlobalMinimizer.cpp OptDartsOptimizer.cpp
     MetaIterator.cpp ConcurrentMetaIterator.cpp SeqHybridMetaIterator.cpp
-    EmbedHybridMetaIterator.cpp CollabHybridMetaIterator.cpp Rank1Lattice.cpp
-    DigitalNet.cpp low_discrepancy_data.cpp LHSDriverAdapter.cpp LDDriver.cpp LDDriverAdapter.cpp
-    DakotaResponseContainer.cpp
+    Rank1Lattice.cpp DigitalNet.cpp low_discrepancy_data.cpp LHSDriverAdapter.cpp
+    LDDriver.cpp LDDriverAdapter.cpp DakotaResponseContainer.cpp
 )
 set(Dakota_src_fortran lawson_hanson1.f)
 if(DAKOTA_F90)

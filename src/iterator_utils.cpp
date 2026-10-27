@@ -13,8 +13,6 @@
 #include "DakotaIterator.hpp"
 #include "MetaIterator.hpp"
 #include "ConcurrentMetaIterator.hpp"
-#include "CollabHybridMetaIterator.hpp"
-#include "EmbedHybridMetaIterator.hpp"
 #include "SeqHybridMetaIterator.hpp"
 #include "ParamStudy.hpp"
 #include "RichExtrapVerification.hpp"
@@ -144,10 +142,6 @@ namespace Dakota {
         switch (method_name) {
             case HYBRID:
                 switch (problem_db.get<unsigned short>("method.sub_method")) {
-                case SUBMETHOD_COLLABORATIVE:
-                return std::make_shared<CollabHybridMetaIterator>(problem_db, parallel_lib); break;
-                case SUBMETHOD_EMBEDDED:
-                return std::make_shared<EmbedHybridMetaIterator>(problem_db, parallel_lib); break;
                 case SUBMETHOD_SEQUENTIAL:
                 return std::make_shared<SeqHybridMetaIterator>(problem_db, parallel_lib); break;
                 default:
@@ -181,10 +175,6 @@ namespace Dakota {
         switch (method_name) {
         case HYBRID:
         switch (problem_db.get<unsigned short>("method.sub_method")) {
-            case SUBMETHOD_COLLABORATIVE:
-            return std::make_shared<CollabHybridMetaIterator>(problem_db, parallel_lib, model); break;
-            case SUBMETHOD_EMBEDDED:
-            return std::make_shared<EmbedHybridMetaIterator>(problem_db, parallel_lib, model); break;
             case SUBMETHOD_SEQUENTIAL:
             return std::make_shared<SeqHybridMetaIterator>(problem_db, parallel_lib, model); break;
             default:

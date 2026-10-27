@@ -9,14 +9,12 @@
 
 #include "DakotaStudyPython.hpp"
 
-#include "CollabHybridMetaIterator.hpp"
 #include "ConcurrentMetaIterator.hpp"
 #include "DakotaIterator.hpp"
 #include "DakotaModel.hpp"
 #include "DakotaResponse.hpp"
 #include "DataFitSurrBasedLocalMinimizer.hpp"
 #include "EffGlobalMinimizer.hpp"
-#include "EmbedHybridMetaIterator.hpp"
 #include "HierarchSurrBasedLocalMinimizer.hpp"
 #include "NL2SOLLeastSq.hpp"
 #include "NPSOLOptimizer.hpp"
@@ -272,8 +270,6 @@ void bind_iterators(py::module_& m)
              std::shared_ptr<ConcurrentMetaIterator>>(
     m, "ConcurrentMetaIterator", py::module_local());
   register_iterator<SeqHybridMetaIterator>(m, "SeqHybridMetaIterator");
-  register_iterator<EmbedHybridMetaIterator>(m, "EmbedHybridMetaIterator");
-  register_iterator<CollabHybridMetaIterator>(m, "CollabHybridMetaIterator");
   register_iterator<SurrBasedLocalMinimizer>(m, "SurrBasedLocalMinimizer");
   py::class_<DataFitSurrBasedLocalMinimizer, SurrBasedLocalMinimizer,
              std::shared_ptr<DataFitSurrBasedLocalMinimizer>>(
@@ -560,102 +556,7 @@ corresponding name and model.
 :raises TypeError: If neither methods nor models is provided, a method is null,
     or both configuration forms are used.
 
-See :ref:`hybrid_sequential options <method-hybrid_sequential>`.)doc")
-    .def("hybrid_collaborative",
-         [](const Study::MethodFactory& factory,
-            py::object methods_obj,
-            py::object models_obj,
-            const py::object& config, py::kwargs kwargs) {
-           auto store = materialize_method(nlohmann::json{{"hybrid_collaborative",
-             normalize_factory_config(config, kwargs,
-               "MethodFactory.hybrid_collaborative")}});
-           // Name form: no methods, pass models list
-           if (methods_obj.is_none() || py::len(methods_obj) == 0) {
-             if (models_obj.is_none())
-               throw py::type_error(
-                 "MethodFactory.hybrid_collaborative: either methods or models must be provided.");
-             auto models = models_obj.cast<std::vector<std::shared_ptr<Model>>>();
-             return factory.hybrid_collaborative(store, std::move(models));
-           }
-           auto methods = methods_obj.cast<std::vector<std::shared_ptr<Iterator>>>();
-           for (const auto& m : methods)
-             if (!m)
-               throw py::type_error(
-                 "MethodFactory.hybrid_collaborative: methods must not contain None");
-           return factory.hybrid_collaborative(store, std::move(methods));
-         },
-         py::arg("methods") = py::none(), py::arg("models") = py::none(),
-         py::arg("config") = py::none(),
-         R"doc(Construct a collaborative hybrid meta-iterator.
-
-**Pointer form**: pass ``methods`` (required, non-None items).
-
-**Name form** (``method_name_list`` in config): pass ``models`` (required)
-and omit ``methods``.  Each sub-iterator is built on-the-fly from the
-corresponding name and model.
-
-:param methods: Methods to run concurrently, sharing information (pointer form).
-:type methods: list[dakota.study.Iterator] or None
-:param models: List of models for the named sub-methods (name form).
-    May be a single-element list to share one model across all sub-methods.
-:type models: list[dakota.study.Model] or None
-:param config: A ``HybridCollaborativeConfig`` or equivalent dictionary.
-:param kwargs: Configuration fields used instead of ``config``.
-:returns: The constructed collaborative hybrid.
-:rtype: dakota.study.CollabHybridMetaIterator
-:raises TypeError: If neither methods nor models is provided, a method is null,
-    or both configuration forms are used.
-
-See :ref:`hybrid_collaborative options <method-hybrid_collaborative>`.)doc")
-    .def("hybrid_embedded",
-         [](const Study::MethodFactory& factory,
-            std::shared_ptr<Iterator> global_method,
-            std::shared_ptr<Iterator> local_method,
-            std::shared_ptr<Model> global_model,
-            std::shared_ptr<Model> local_model,
-            const py::object& config, py::kwargs kwargs) {
-           auto store = materialize_method(nlohmann::json{{"hybrid_embedded",
-             normalize_factory_config(config, kwargs,
-               "MethodFactory.hybrid_embedded")}});
-           if (global_method && local_method)
-             return factory.hybrid_embedded(store,
-               std::move(global_method), std::move(local_method));
-           if (global_model && local_model)
-             return factory.hybrid_embedded(store,
-               std::move(global_model), std::move(local_model));
-           throw py::type_error(
-             "MethodFactory.hybrid_embedded: either (global_method, local_method) "
-             "or (global_model, local_model) must be provided.");
-         },
-         py::arg("global_method") = py::none(),
-         py::arg("local_method") = py::none(),
-         py::arg("global_model") = py::none(),
-         py::arg("local_model") = py::none(),
-         py::arg("config") = py::none(),
-         R"doc(Construct an embedded hybrid meta-iterator.
-
-**Pointer form**: pass ``global_method`` and ``local_method`` (both required).
-
-**Name form** (``global_method_name`` / ``local_method_name`` in config):
-pass ``global_model`` and ``local_model`` (both required) and omit
-``global_method`` / ``local_method``.
-
-:param global_method: Top-level global optimizer (pointer form).
-:type global_method: dakota.study.Iterator or None
-:param local_method: Subordinate local method used for periodic refinement (pointer form).
-:type local_method: dakota.study.Iterator or None
-:param global_model: Model for the global named sub-method (name form).
-:type global_model: dakota.study.Model or None
-:param local_model: Model for the local named sub-method (name form).
-:type local_model: dakota.study.Model or None
-:param config: A ``HybridEmbeddedConfig`` or equivalent dictionary.
-:param kwargs: Configuration fields used instead of ``config``.
-:returns: The constructed embedded hybrid.
-:rtype: dakota.study.EmbedHybridMetaIterator
-:raises TypeError: If neither (global_method, local_method) nor
-    (global_model, local_model) is provided, or both configuration forms are used.
-
-See :ref:`hybrid_embedded options <method-hybrid_embedded>`.)doc");
+See :ref:`hybrid_sequential options <method-hybrid_sequential>`.)doc");
 
   bind_method(factory, "vector_parameter_study",
     [](const Study::MethodFactory& f, const IRStore& store,

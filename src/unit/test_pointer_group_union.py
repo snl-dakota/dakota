@@ -58,7 +58,6 @@ from dakota.spec.model import (
     TruthModelPointerConfig,
 )
 from dakota.spec.method.branch_and_bound import BranchAndBoundConfig
-from dakota.spec.method.hybrid_embedded import HybridEmbeddedConfig
 from dakota.spec.method.multi_start import MultiStartConfig
 from dakota.spec.method.pareto_set import ParetoSetConfig
 from dakota.spec.method.surrogate_based_local import (
@@ -177,26 +176,6 @@ class TestPointerUnionAbsentApiMode(unittest.TestCase):
     """When a pointer_union field is absent in API mode the first all-pointer
     branch is selected and its pointer field receives the sentinel."""
 
-    def test_embedded_config_sub_method(self):
-        """HybridEmbeddedConfig.sub_method absent -> GlobalMethodPointer branch selected."""
-        obj = HybridEmbeddedConfig()
-        sm = obj.sub_method
-        self.assertTrue(
-            hasattr(sm, "global_method_pointer"),
-            "Expected GlobalMethodPointer branch, got {}".format(type(sm).__name__),
-        )
-        self.assertEqual(sm.global_method_pointer, POINTER_SENTINEL)
-
-    def test_embedded_config_local_sub_method(self):
-        """HybridEmbeddedConfig.local_sub_method absent -> LocalMethodPointer branch selected."""
-        obj = HybridEmbeddedConfig()
-        lsm = obj.local_sub_method
-        self.assertTrue(
-            hasattr(lsm, "local_method_pointer"),
-            "Expected LocalMethodPointer branch, got {}".format(type(lsm).__name__),
-        )
-        self.assertEqual(lsm.local_method_pointer, POINTER_SENTINEL)
-
     def test_pareto_set_config_sub_method(self):
         """ParetoSetConfig.sub_method absent -> ParetoSetMethodPointer branch selected."""
         obj = ParetoSetConfig()
@@ -248,18 +227,6 @@ class TestPointerUnionUserNameBranch(unittest.TestCase):
     """When the user provides the name branch of a pointer_union it is
     validated normally; the sentinel is not injected."""
 
-    def test_embedded_config_global_method_name(self):
-        """Providing global_method_name branch is accepted; name preserved."""
-        obj = HybridEmbeddedConfig(
-            sub_method={"global_method_name": {"name": "coliny_ea"}}
-        )
-        sm = obj.sub_method
-        self.assertTrue(
-            hasattr(sm, "global_method_name"),
-            "Expected GlobalMethodName branch, got {}".format(type(sm).__name__),
-        )
-        self.assertEqual(sm.global_method_name.name, "coliny_ea")
-
     def test_pareto_set_method_name_branch(self):
         """Providing method_name branch for ParetoSetConfig is accepted."""
         obj = ParetoSetConfig(
@@ -279,12 +246,6 @@ class TestPointerUnionUserNameBranch(unittest.TestCase):
 
 class TestPointerUnionInputFileMode(unittest.TestCase):
     """Pointer-union fields absent in input_file_mode are enforced normally."""
-
-    def test_embedded_config_raises(self):
-        """HybridEmbeddedConfig without sub_method in input_file_mode -> ValidationError."""
-        with input_file_mode():
-            with self.assertRaises(ValidationError):
-                HybridEmbeddedConfig()
 
     def test_pareto_set_config_raises(self):
         """ParetoSetConfig without sub_method in input_file_mode -> ValidationError."""

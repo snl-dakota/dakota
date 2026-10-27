@@ -39,8 +39,6 @@ factories are included unless `--native` filters to the installed extension.
 | `MethodFactory.global_interval_est` | method_global_interval_est |
 | `MethodFactory.global_reliability` | method_global_reliability |
 | `MethodFactory.gpais` | method_gpais |
-| `MethodFactory.hybrid_collaborative` | TODO |
-| `MethodFactory.hybrid_embedded` | TODO |
 | `MethodFactory.hybrid_sequential` | method_hybrid_sequential |
 | `MethodFactory.import_points` | import_points |
 | `MethodFactory.importance_sampling` | method_importance_sampling |

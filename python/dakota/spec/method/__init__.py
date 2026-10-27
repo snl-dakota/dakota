@@ -47,8 +47,6 @@ from .global_interval_est import GlobalIntervalEstSelection, GlobalIntervalEstCo
 from .global_reliability import GlobalReliabilitySelection, GlobalReliabilityConfig
 from .gpais import GpaisSelection, GpaisConfig
 from .hybrid_sequential import HybridSequentialSelection, HybridSequentialConfig
-from .hybrid_embedded import HybridEmbeddedSelection, HybridEmbeddedConfig
-from .hybrid_collaborative import HybridCollaborativeSelection, HybridCollaborativeConfig
 from .import_points import ImportPointsSelection, ImportPointsConfig
 from .importance_sampling import ImportanceSamplingSelection, ImportanceSamplingConfig
 from .list_parameter_study import ListParameterStudySelection, ListParameterStudyConfig
@@ -193,10 +191,6 @@ __all__ = [
     "GlobalReliabilitySelection",
     "GpaisConfig",
     "GpaisSelection",
-    "HybridCollaborativeConfig",
-    "HybridCollaborativeSelection",
-    "HybridEmbeddedConfig",
-    "HybridEmbeddedSelection",
     "HybridSequentialConfig",
     "HybridSequentialSelection",
     "ImportPointsConfig",
