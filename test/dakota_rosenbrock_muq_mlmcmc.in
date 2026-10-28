@@ -12,7 +12,8 @@ method,
     subsampling_steps = 12 0
     greedy_resampling_factor = 0.5
   proposal_covariance
-    prior
+    diagonal values 0.2 0.2
+
   seed = 457337
   model_pointer = 'NONHIER'
   chain_samples = 1 # not used by muq mlmcmc because of the target_variance
@@ -42,10 +43,8 @@ variables,
       set_values = 0 1
 
 interface,
-  analysis_drivers 'dakota_rosenbrock_muq_mlmcmc_driver.py'
-    fork
-    parameters_file 'params.in'
-    results_file 'results.out'
+  analysis_drivers 'dakota_rosenbrock_muq_mlmcmc_driver.ml_rosenbrock'
+    python
 
 responses,
   calibration_terms = 2
