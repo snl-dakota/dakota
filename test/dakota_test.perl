@@ -1327,6 +1327,28 @@ sub form_test_command {
 }
 
 
+# Send SIGTERM to the process group of $pid, wait up to 2 s for a clean exit,
+# then send SIGKILL to any survivors, and reap $pid.  On Windows (no process
+# groups) send SIGKILL directly.
+sub terminate_test_process
+{
+  my ($pid) = @_;
+  if ($Config{osname} !~ /MSWin/) {
+    kill(-15, $pid);               # SIGTERM to entire process group
+    my $reaped = 0;
+    for my $i (1..10) {            # up to 2 s grace period for clean exit
+      if (waitpid($pid, &WNOHANG) == $pid) { $reaped = 1; last; }
+      select(undef, undef, undef, 0.2);
+    }
+    kill(-9, $pid);                # SIGKILL any survivors still in the group
+    waitpid($pid, 0) unless $reaped;
+  }
+  else {
+    kill(9, $pid);                 # Windows: direct kill (no process groups)
+    waitpid($pid, 0);
+  }
+}
+
 # The following subroutines (protected_test and fork_dakota) adapted from Xyce
 # test harness, with thanks to Todd Coffey
 #
@@ -1351,64 +1373,80 @@ sub protected_test
   $pid = fork_dakota($test_command);
 
   $exitcode = undef;
-  # fork failed, use legacy system call
+  # fork failed, use legacy system call with alarm-based absolute timeout (POSIX)
   if ($pid == -1) {
     print("fork failure, using system call to invoke dakota");
-    system("$test_command");
-    $exitcode = $?;
+    if ($Config{osname} !~ /MSWin/ && $timeout > 0) {
+      local $SIG{ALRM} = sub { die "timeout\n" };
+      eval {
+        alarm($timeout);
+        system("$test_command");
+        $exitcode = $?;
+        alarm(0);
+      };
+      if ($@ eq "timeout\n") {
+        print("system call killed due to timeout of $timeout seconds\n");
+        $exitcode = 100 << 8;
+      } elsif ($@) {
+        alarm(0);
+        die $@;
+      }
+    }
+    else {
+      system("$test_command");
+      $exitcode = $?;
+    }
   }
   else {
 
-    # Make sure CTRL-C kills the child process group 
-    local $SIG{INT} = sub { kill -9, $pid;
-			    $exitcode = 103 << 8;
-			    print ("aborted\n");
-			    die "User CTRL-C abort";
-			    return ($exitcode);  };
+    # Make sure CTRL-C kills the child process group
+    local $SIG{INT} = sub { terminate_test_process($pid);
+                            $exitcode = 103 << 8;
+                            print ("aborted\n");
+                            die "User CTRL-C abort";
+                            return ($exitcode);  };
 
     $t0 = time;
     $tn = $t0;
-    # TODO: consider kill -15?
     while (not defined $exitcode)
     {
       $dead_pid = waitpid($pid,&WNOHANG); # == $pid on completion
       if ($dead_pid == $pid) {
-	# return the exit code from the child process
-	$exitcode = $?;
+        # child exited cleanly; skip timeout/stale checks for this iteration
+        $exitcode = $?;
+        last;
       }
       $tnp1 = time;
       $elapsed_time = $tnp1 - $t0;
       if ($elapsed_time >= $timeout) {
-	print("killing $pid due to timeout of $timeout seconds\n");
-	kill -9, $pid; # TERM -> process group
-	$dead_pid = waitpid($pid,0);
-	$exitcode = 100 << 8;
+        print("killing $pid due to timeout of $timeout seconds\n");
+        terminate_test_process($pid);
+        $exitcode = 100 << 8;
       }
-      $incr_time = $tnp1-$tn;
-      if ($incr_time >= $delay) {
-	$tn = time;
-	if ( -f "$output_file" ){
-	  $filesize = (stat("$output_file"))[7];
-	  if (defined ($filesize_old) and ($filesize <= $filesize_old)) {
-	    print("killing $pid -- $output_file unchanged for $delay seconds\n");
-	    kill -9, $pid; # TERM -> process group
-	    $dead_pid = waitpid($pid,0);
-	    $exitcode = 101 << 8;
-	  }
-	  $filesize_old = $filesize;
-	}
-	else {
-	  print("killing $pid -- $output_file not created in $delay seconds\n");
-	  kill -9, $pid; # TERM -> process group
-	  $dead_pid = waitpid($pid,0);
-	  $exitcode = 102 << 8;
-	}
+      elsif (($tnp1-$tn) >= $delay) {
+        $tn = time;
+        if ( -f "$output_file" ){
+          $filesize = (stat("$output_file"))[7];
+          if (defined ($filesize_old) and ($filesize <= $filesize_old)) {
+            print("killing $pid -- $output_file unchanged for $delay seconds\n");
+            terminate_test_process($pid);
+            $exitcode = 101 << 8;
+          }
+          $filesize_old = $filesize;
+        }
+        else {
+          print("killing $pid -- $output_file not created in $delay seconds\n");
+          terminate_test_process($pid);
+          $exitcode = 102 << 8;
+        }
       }
       select(undef, undef, undef, 0.1); # non-cpu intensive sleep of 0.1 sec
     }
-    # We have now exited the Dakota run.  To handle cases where mpich's mpirun
-    # lets child processes sit around, kill the whole process group.
-    #kill -9, $pid;
+    # Kill the whole process group after exit to reap any MPI stragglers
+    # (POSIX only; on Windows there is no process group to signal).
+    if ($Config{osname} !~ /MSWin/) {
+      kill(-9, $pid);
+    }
   }
   return $exitcode;
 }
@@ -1426,11 +1464,12 @@ sub fork_dakota
       return $pid;
     }
     elsif (defined $pid) {
-      # We used to call setpgrp to avoid zombies with MPICH mpirun,
-      # but opposite seems to be happening with more recent versions.
-      #if ( $Config{osname} !~ /MSWin/ ) {
-      #  setpgrp(0,0); # This sets process group so I can kill this + children
-      #}
+      # Give the child its own process group so terminate_test_process can
+      # kill the entire Dakota subtree (Dakota + MPI workers + drivers) without
+      # touching the harness.  Guarded for Windows, which has no setpgrp.
+      if ($Config{osname} !~ /MSWin/) {
+        setpgrp(0, 0);
+      }
       exec "$test_command";
       exit 0; # this is for when exec fails
     }
