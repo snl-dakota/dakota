@@ -570,19 +570,21 @@ reshape_update_linear(const SharedVariablesData& prev_svd,
     if ( ( prev_active_view == RELAXED_ALL || prev_active_view == MIXED_ALL ) &&
 	 active_view >= RELAXED_DESIGN) { // contract (ensure omission of zeros)
       curr_cntr = 0;  prev_cntr = curr_svd.cv_start();
-      for (col=0; col<prev_cntr; ++col) // ensure no loss of information
+      for (col=0; col<prev_cntr; ++col) { // ensure no loss of information
 	check_zeros(prev_lin_ineq_coeffs[col], numLinearIneqCons);
-      if (numLinearIneqCons)
-	for (col=0; col<num_cv; ++col, ++curr_cntr, ++prev_cntr)
-	  copy_data(prev_lin_ineq_coeffs[prev_cntr],
-		    linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
-      if (numLinearEqCons)
-	for (col=0; col<num_cv; ++col, ++curr_cntr, ++prev_cntr)
-	  copy_data(prev_lin_eq_coeffs[prev_cntr], linearEqConCoeffs[curr_cntr],
-		    numLinearEqCons);
+	check_zeros(prev_lin_eq_coeffs[col],   numLinearEqCons);
+      }
+      for (col=0; col<num_cv; ++col, ++curr_cntr, ++prev_cntr) {
+	copy_data(prev_lin_ineq_coeffs[prev_cntr],
+		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
+	copy_data(prev_lin_eq_coeffs[prev_cntr],  linearEqConCoeffs[curr_cntr],
+		  numLinearEqCons);
+      }
       col = prev_cntr;  prev_cntr += curr_svd.div_start();
-      for (; col<prev_cntr; ++col) // ensure no loss of information
+      for (; col<prev_cntr; ++col) { // ensure no loss of information
 	check_zeros(prev_lin_ineq_coeffs[col], numLinearIneqCons);
+	check_zeros(prev_lin_eq_coeffs[col],   numLinearEqCons);
+      }
       for (col=0; col<num_div; ++col, ++curr_cntr, ++prev_cntr) {
 	copy_data(prev_lin_ineq_coeffs[prev_cntr],
 		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);
@@ -590,8 +592,10 @@ reshape_update_linear(const SharedVariablesData& prev_svd,
 		  numLinearEqCons);
       }
       col = prev_cntr;  prev_cntr += curr_svd.drv_start();
-      for (; col<prev_cntr; ++col) // ensure no loss of information
+      for (; col<prev_cntr; ++col) { // ensure no loss of information
 	check_zeros(prev_lin_ineq_coeffs[col], numLinearIneqCons);
+	check_zeros(prev_lin_eq_coeffs[col],   numLinearEqCons);
+      }
       for (col=0; col<num_drv; ++col, ++curr_cntr, ++prev_cntr) {
 	copy_data(prev_lin_ineq_coeffs[prev_cntr],
 		  linearIneqConCoeffs[curr_cntr], numLinearIneqCons);

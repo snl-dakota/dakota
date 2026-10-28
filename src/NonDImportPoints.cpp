@@ -107,7 +107,12 @@ import_points()
    iter_vars = pr.variables(); iter_resp = pr.response();
 
    variables_to_sample(iter_vars, allSamples[i]);
-   allResponses[pr.eval_id()] = iter_resp;
+   // Key responses by file-order index (not the file-supplied eval_id):
+   // downstream consumers (e.g. SensAnalysisGlobal) pair allSamples column
+   // j with the j-th map entry in sorted-key order, so keying by eval_id
+   // mispairs variables with responses whenever the imported ids are a
+   // non-ascending permutation and collapses duplicate ids.
+   allResponses[static_cast<int>(i) + 1] = iter_resp;
 
   }
 
