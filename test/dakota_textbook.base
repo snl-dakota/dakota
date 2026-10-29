@@ -121,14 +121,14 @@ Test Number 10 succeeded
                       4.0206408376e-03
 <<<<< Best evaluation ID: 190
 Test Number 11 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 255 total (255 new, 0 duplicate)
-<<<<< Function evaluation summary (TRUE_FN): 506 total (506 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 302 total (302 new, 0 duplicate)
+<<<<< Function evaluation summary (TRUE_FN): 607 total (606 new, 1 duplicate)
 <<<<< Best parameters          =
-                      9.0000000000e-01 x1
-                      1.1000000000e+00 x2
+                      9.9608458422e-01 x1
+                      9.9917236495e-01 x2
 <<<<< Best objective function  =
-                      2.0000000000e-04
+                      2.3549283625e-10
 <<<<< Best constraint values   =
-                      2.6000000000e-01
-                      7.6000000000e-01
-<<<<< Best evaluation ID: 1
+                      4.9259831645e-01
+                      5.0030312277e-01
+<<<<< Best evaluation ID: 102
