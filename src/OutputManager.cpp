@@ -37,8 +37,18 @@
 namespace Dakota {
 namespace {
 
+bool& live_output_managers_alive()
+{
+  static bool alive = true;
+  return alive;
+}
+
 std::set<OutputManager*>& live_output_managers()
 {
+  struct LifetimeGuard {
+    ~LifetimeGuard() { live_output_managers_alive() = false; }
+  };
+  static LifetimeGuard guard;
   static std::set<OutputManager*> managers;
   return managers;
 }
@@ -115,7 +125,8 @@ OutputManager::~OutputManager()
   close_streams();
   if (!resolvedResultsOutputFile.empty())
     active_results_output_files().erase(resolvedResultsOutputFile);
-  live_output_managers().erase(this);
+  if (live_output_managers_alive())
+    live_output_managers().erase(this);
 }
 
 

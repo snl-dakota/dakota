@@ -116,7 +116,7 @@ struct ExplicitRuntime {
       parallelLibrary, outputManager, runOptions))
   {
     WorkdirHelper::initialize();
-    outputManager->push_output_tag("", programOptions, false, true);
+    outputManager->push_output_tag("", programOptions, false, false);
   }
 
   ~ExplicitRuntime()
