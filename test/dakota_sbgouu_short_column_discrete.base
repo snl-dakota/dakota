@@ -10,7 +10,7 @@ Test Number 0 succeeded
                      -3.6680411469e+00
 <<<<< Best evaluation ID not available
 Test Number 1 succeeded
-<<<<< Function evaluation summary (APPROX_INTERFACE_1): 25906 total (25906 new, 0 duplicate)
+<<<<< Function evaluation summary (APPROX_INTERFACE_1): 25977 total (25977 new, 0 duplicate)
 <<<<< Function evaluation summary (ALEAT_I): 2695 total (847 new, 1848 duplicate)
 <<<<< Best parameters          =
                       4.0000000000e+02 P_mean
