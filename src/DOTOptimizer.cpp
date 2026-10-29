@@ -313,6 +313,14 @@ void DOTOptimizer::check_sub_iterator_conflict()
 
 void DOTOptimizer::initialize_run()
 {
+  // The constraint-map builders (Optimizer::configure_constraint_maps and
+  // allocate_constraints below) only append; clear previous contents so
+  // repeated runs of the same iterator instance (e.g. under multi_start
+  // or pareto_set) do not accumulate stale, misclassified entries
+  constraintMapIndices.clear();
+  constraintMapMultipliers.clear();
+  constraintMapOffsets.clear();
+
   Optimizer::initialize_run();
 
   allocate_constraints();
