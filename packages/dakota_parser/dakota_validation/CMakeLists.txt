@@ -258,7 +258,6 @@ if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
                         -v
                 WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             )
-
             # A Dakota build assembles the in-tree Python package here and the
             # copy_dakota_validation target places the extension in it.  Keep
             # the validation binary directory as a fallback for standalone
@@ -270,10 +269,10 @@ if(DAKOTA_ENABLE_TESTS OR BUILD_TESTS)
             endif()
             if(WIN32)
                 set(_VALIDATION_TEST_PYTHONPATH
-                    "${_VALIDATION_PYTHON_PACKAGE};${CMAKE_CURRENT_BINARY_DIR}")
+                    "${_VALIDATION_PYTHON_PACKAGE};${CMAKE_CURRENT_BINARY_DIR};$ENV{PYTHONPATH}")
             else()
                 set(_VALIDATION_TEST_PYTHONPATH
-                    "${_VALIDATION_PYTHON_PACKAGE}:${CMAKE_CURRENT_BINARY_DIR}")
+                    "${_VALIDATION_PYTHON_PACKAGE}:${CMAKE_CURRENT_BINARY_DIR}:$ENV{PYTHONPATH}")
             endif()
 
             set_tests_properties(python_validation_tests PROPERTIES
