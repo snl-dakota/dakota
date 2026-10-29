@@ -598,11 +598,13 @@ See :ref:`hybrid_sequential options <method-hybrid_sequential>`.)doc");
        std::shared_ptr<Model> model) {
       return f.efficient_global(store, std::move(model));
     });
+#ifdef HAVE_NPSOL
   bind_method(factory, "npsol_sqp",
     [](const Study::MethodFactory& f, const IRStore& store,
        std::shared_ptr<Model> model) {
       return f.npsol_sqp(store, std::move(model));
     });
+#endif
   bind_method(factory, "nl2sol",
     [](const Study::MethodFactory& f, const IRStore& store,
        std::shared_ptr<Model> model) {

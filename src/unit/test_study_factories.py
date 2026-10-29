@@ -164,7 +164,6 @@ class FactoryTests(unittest.TestCase):
             "local_interval_est",
             "global_interval_est",
             "efficient_global",
-            "npsol_sqp",
             "nl2sol",
         )
         for name in uniform_method_factories:
@@ -176,6 +175,14 @@ class FactoryTests(unittest.TestCase):
                 self.assertIn("kwargs", signature)
                 self.assertNotIn("method", signature)
                 self.assertTrue(inspect.getdoc(factory))
+        if hasattr(ds.MethodFactory, "npsol_sqp"):
+            factory = ds.MethodFactory.npsol_sqp
+            signature = _callable_signature_text(factory)
+            self.assertIn("model", signature)
+            self.assertIn("config", signature)
+            self.assertIn("kwargs", signature)
+            self.assertNotIn("method", signature)
+            self.assertTrue(inspect.getdoc(factory))
 
     def test_uniform_method_factories_validate_before_construction(self):
         names = (
@@ -187,9 +194,10 @@ class FactoryTests(unittest.TestCase):
             "local_interval_est",
             "global_interval_est",
             "efficient_global",
-            "npsol_sqp",
             "nl2sol",
         )
+        if hasattr(self.study.method, "npsol_sqp"):
+            names = names + ("npsol_sqp",)
         for name in names:
             factory = getattr(self.study.method, name)
             with self.subTest(factory=name):
