@@ -74,6 +74,21 @@ def normalize_factory_config(config: Any, kwargs: dict, factory_name: str) -> di
     )
 
 
+def normalize_interface_config_with_callback(config: Any, kwargs: dict) -> dict:
+    """Like normalize_factory_config for Study.interface, but allows omitting
+    analysis_drivers when a Python callback is supplied instead."""
+    if config is not None and kwargs:
+        raise TypeError(
+            "Study.interface: pass config or configuration kwargs, not both"
+        )
+    d = dict(kwargs) if config is None else config
+    if isinstance(d, dict):
+        if "analysis_drivers" not in d and "algebraic_mappings" not in d:
+            d = {**d, "analysis_drivers": {"drivers": ["python_callback"],
+                                           "interface_type": {"python": {}}}}
+    return _validated_config(d, interface.InterfaceConfig, "Study.interface")
+
+
 def _dump_validated(model: Any) -> dict:
     return model.model_dump(mode="json", exclude_none=True)
 

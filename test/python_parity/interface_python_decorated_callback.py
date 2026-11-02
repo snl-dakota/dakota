@@ -10,13 +10,7 @@ import decorated_driver  # noqa: E402
 
 study = study_context()
 variables = study.variables(continuous_design={"count": 2, "descriptors": ["x1", "x2"]})
-python_driver = {
-    "drivers": ["decorated_driver.rosenbrock"],
-    "interface_type": {"python": {}},
-}
-interface = study.interface(
-    analysis_drivers=python_driver, callback=decorated_driver.rosenbrock
-)
+interface = study.interface(callback=decorated_driver.rosenbrock)
 responses = study.responses(
     variables,
     {

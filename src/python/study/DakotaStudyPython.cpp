@@ -31,6 +31,14 @@ nlohmann::json normalize_factory_config(const py::object& config,
     config, kwargs, factory_name).cast<nlohmann::json>();
 }
 
+nlohmann::json normalize_interface_config_with_callback(const py::object& config,
+                                                         const py::kwargs& kwargs)
+{
+  py::module_ validation = py::module_::import("dakota.study._validation");
+  return validation.attr("normalize_interface_config_with_callback")(
+    config, kwargs).cast<nlohmann::json>();
+}
+
 nlohmann::json validate_variables_fragment(const py::object& value)
 { return validate_fragment(value, "validate_variables_fragment"); }
 

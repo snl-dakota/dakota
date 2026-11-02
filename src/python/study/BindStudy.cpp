@@ -442,8 +442,10 @@ See :ref:`response options <responses>`.)doc")
     .def("interface",
          [](const Study& study, const py::object& config,
             const py::object& callback, py::kwargs kwargs) {
-           auto interface = study.interface(
-             materialize_interface(normalize_factory_config(config, kwargs, "Study.interface")));
+           const auto fragment = callback.is_none()
+             ? normalize_factory_config(config, kwargs, "Study.interface")
+             : normalize_interface_config_with_callback(config, kwargs);
+           auto interface = study.interface(materialize_interface(fragment));
            if (!callback.is_none()) {
 #ifdef DAKOTA_PYBIND11
              auto python_interface =

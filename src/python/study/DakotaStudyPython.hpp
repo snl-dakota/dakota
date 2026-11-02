@@ -35,6 +35,9 @@ nlohmann::json normalize_factory_config(const py::object& config,
                                         const py::kwargs& kwargs,
                                         const char* factory_name);
 
+nlohmann::json normalize_interface_config_with_callback(const py::object& config,
+                                                         const py::kwargs& kwargs);
+
 nlohmann::json validate_variables_fragment(const py::object& value);
 nlohmann::json validate_responses_fragment(const py::object& value);
 nlohmann::json validate_interface_fragment(const py::object& value);
