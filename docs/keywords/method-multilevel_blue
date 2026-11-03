@@ -92,16 +92,71 @@ Topics::
 Examples::
 The following method block:
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-	model_pointer = 'HIERARCH'
-	multilevel_blue
-	  solution_mode online_pilot
-	    relaxation factor_sequence = .5 .75 1.
-	  pilot_samples = 25  #independent
-	  seed = 8674132
-	  max_function_evaluations = 500
+   .. code-block:: dakota
+
+       method
+         model_pointer = 'HIERARCH'
+         multilevel_blue
+           pilot_samples = 25
+           seed = 8674132
+           max_function_evaluations = 500
+
+       model
+         id_model = 'HIERARCH'
+         ensemble_surrogate
+           ordered_model_fidelities = 'HF'
+           correction additive zeroth_order
+
+       model
+         id_model = 'HF'
+         simulation
+           solution_level_control = 'mesh_size'
+           solution_level_cost = 1 16 256
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_blue": {
+               "model_pointer": "HIERARCH",
+               "pilot_samples": {
+                 "counts": [25]
+               },
+               "seed_sequence": [8674132],
+               "max_function_evaluations": 500
+             }
+           }
+         ],
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "HIERARCH",
+               "ensemble": {
+                 "ordered_model_fidelities": {
+                   "pointers": ["HF"],
+                   "correction": {
+                     "correction_type": {"additive": true},
+                     "correction_order": {"zeroth_order": true}
+                   }
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "HF",
+               "cost_model": {
+                 "solution_level_cost": [1.0, 16.0, 256.0]
+               }
+             }
+           }
+         ]
+       }
 
 specifies ML BLUE using an iterated online pilot in combination with
 the default optimization solver strategy (global_local), the default
@@ -109,23 +164,7 @@ shared pilot estimation of group covariances, and an ensemble model
 identified by the HIERARCH pointer.
 
 This HIERARCH model specification provides a one-dimensional sequence,
-here defined by a set of 3 discretization levels:
-
-.. code-block::
-
-    model,
-	id_model = 'HIERARCH'
-	variables_pointer = 'HF_VARS'
-	ensemble_surrogate
-	  truth_model = 'HF'
-
-    model,
-	id_model = 'HF'
-	variables_pointer = 'HF_VARS'
-	interface_pointer = 'HF_INT'
-	simulation
-	  solution_level_control = 'mesh_size'
-	  solution_level_cost = 1 16 256
+here defined by a set of 3 discretization levels.
 
 
 Refer to ``dakota/test/dakota_uq_diffusion_mlblue_cost4``.in within

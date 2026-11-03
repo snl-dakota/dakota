@@ -56,39 +56,113 @@ That is, the user can specify field simulation data and field experiment data,
 and Dakota will interpolate and provide the proper residuals for the calibration.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    # Dakota Input File: rosen_opt_nls.in
-    environment
-      tabular_data
-        tabular_data_file = 'rosen_opt_nls.dat'
-    
-    method
-      max_iterations = 100
-      convergence_tolerance = 1e-4
-      nl2sol
-    
-    model
-      single
-    
-    variables
-      continuous_design = 2
-        initial_point    -1.2      1.0
-        lower_bounds     -2.0     -2.0
-        upper_bounds      2.0      2.0
-        descriptors       'x1'     "x2"
-    
-    interface
-      analysis_driver = 'rosenbrock'
-        direct
-    
-    responses
-      calibration_terms = 2
-      analytic_gradients
-      no_hessians
-    
+   .. code-block:: dakota
 
+       # Dakota Input File: rosen_opt_nls.in
+       environment
+         tabular_data
+           tabular_data_file = 'rosen_opt_nls.dat'
 
+       method
+         max_iterations = 100
+         convergence_tolerance = 1e-4
+         nl2sol
+
+       model
+         single
+
+       variables
+         continuous_design = 2
+           initial_point    -1.2      1.0
+           lower_bounds     -2.0     -2.0
+           upper_bounds      2.0      2.0
+           descriptors       'x1'     "x2"
+
+       interface
+         analysis_driver = 'rosenbrock'
+           direct
+
+       responses
+         calibration_terms = 2
+         analytic_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {
+             "tabular_data_file": "rosen_opt_nls.dat"
+           }
+         },
+         "method": [
+           {
+             "nl2sol": {
+               "max_iterations": 100,
+               "convergence_tolerance": 0.0001
+             }
+           }
+         ],
+         "model": [
+           {
+             "single": {}
+           }
+         ],
+         "variables": [
+           {
+             "continuous_design": {
+               "initial_point": [
+                 -1.2,
+                 1.0
+               ],
+               "lower_bounds": [
+                 -2.0,
+                 -2.0
+               ],
+               "upper_bounds": [
+                 2.0,
+                 2.0
+               ],
+               "descriptors": [
+                 "x1",
+                 "x2"
+               ],
+               "count": 2
+             }
+           }
+         ],
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": [
+                 "rosenbrock"
+               ],
+               "interface_type": {
+                 "direct": {}
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "calibration_terms": {
+                 "count": 2
+               }
+             },
+             "gradient_type": {
+               "analytic_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 Theory::
 NL2SOL has a variety of internal controls as described in AT&T Bell
 Labs CS TR 153 (http://cm.bell-labs.com/cm/cs/cstr/153.ps.gz). A

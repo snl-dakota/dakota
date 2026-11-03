@@ -19,20 +19,50 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-        multifidelity_polynomial_chaos				
-	  p_refinement uniform
-	    expansion_order_sequence = 0 cross_validation
-	    collocation_ratio = 0.75
-	    seed = 8674132
-	  allocation_control greedy
-	    refinement_metric covariance  # override default of level mappings
-	    convergence_tolerance = 1.e-6
-	  samples_on_emulator = 250000
-	  num_response_levels = 41 41 41
-	  response_levels = -100:5:100 -100:5:100 -100:5:100
+   .. code-block:: dakota
+
+       method,
+           multifidelity_polynomial_chaos
+             p_refinement uniform
+               expansion_order_sequence = 0 cross_validation
+               collocation_ratio = 0.75
+               seed = 8674132
+             allocation_control greedy
+               refinement_metric covariance
+               convergence_tolerance = 1.e-6
+             samples_on_emulator = 250000
+             num_response_levels = 41 41 41
+             response_levels = -100:5:100 -100:5:100 -100:5:100
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multifidelity_polynomial_chaos": {
+               "p_refinement": {
+                 "uniform": {
+                   "expansion_order_sequence": [0],
+                   "collocation_ratio": 0.75,
+                   "seed": 8674132
+                 }
+               },
+               "allocation_control": {
+                 "greedy": {
+                   "refinement_metric": {"covariance": {}},
+                   "convergence_tolerance": 1e-6
+                 }
+               },
+               "samples_on_emulator": 250000,
+               "num_response_levels": [41, 41, 41]
+             }
+           }
+         ]
+       }
 
 Theory::
 

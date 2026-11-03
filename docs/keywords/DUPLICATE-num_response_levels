@@ -15,14 +15,33 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        samples = 100
-        seed = 34785
-        num_response_levels = 1 1 1
-        response_levels = 0.5 0.5 0.5
+   .. code-block:: dakota
+
+       method
+         sampling
+           samples = 100
+           seed = 34785
+           num_response_levels = 1 1 1
+           response_levels = 0.5 0.5 0.5
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 100,
+               "seed": 34785,
+               "num_response_levels": [1, 1, 1],
+               "response_levels": {"values": [0.5, 0.5, 0.5]}
+             }
+           }
+         ]
+       }
 
 
 Theory::

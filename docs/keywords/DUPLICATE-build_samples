@@ -15,14 +15,33 @@ Perform GP-based adaptive importance sampling, building the GP with
 the probability.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      gpais
-        build_samples = 100
-        samples_on_emulator = 100
-        max_iterations = 5
-        response_levels = -1.065
+   .. code-block:: dakota
+
+       method
+         gpais
+           build_samples = 100
+           samples_on_emulator = 100
+           max_iterations = 5
+           response_levels = -1.065
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "gpais": {
+               "build_samples": 100,
+               "samples_on_emulator": 100,
+               "max_iterations": 5,
+               "response_levels": {"values": [-1.065]}
+             }
+           }
+         ]
+       }
 
 
 Theory::

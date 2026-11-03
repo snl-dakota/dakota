@@ -17,10 +17,24 @@ The example shows a minimal
 specification for a single model, which is the default model when no
 models are specified by the user.
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      single
+   .. code-block:: dakota
+
+       model
+         single
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "single": {}
+           }
+         ]
+       }
 
 This example does not provide any pointer strings and therefore relies
 on the default behavior of constructing the model with the last

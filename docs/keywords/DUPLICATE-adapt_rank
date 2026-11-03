@@ -17,16 +17,43 @@ Examples::
 This example shows specification of a rank adaptation starting at rank 2,
 incrementing by 2, and limited at rank 10.
 
-.. code-block::
+.. tab:: Freeform
 
-    model,
-     id_model = 'FT'
-     global_surrogate function_train
-       start_order = 5
-       adapt_rank  start_rank = 2  kick_rank = 2  max_rank = 10
-       solver_tolerance   = 1e-12
-       rounding_tolerance = 1e-12
-     dace_method_pointer = 'SAMPLING'
+   .. code-block:: dakota
+
+       model,
+        id_model = 'FT'
+        global_surrogate function_train
+          start_order = 5
+          adapt_rank  start_rank = 2  kick_rank = 2  max_rank = 10
+          solver_tolerance   = 1e-12
+          rounding_tolerance = 1e-12
+        dace_method_pointer = 'SAMPLING'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "FT",
+               "function_train": {
+                 "start_order": 5,
+                 "adapt_rank": {
+                   "start_rank": 2,
+                   "kick_rank": 2,
+                   "max_rank": 10
+                 },
+                 "solver_tolerance": 1e-12,
+                 "rounding_tolerance": 1e-12
+               },
+               "dace_method_pointer": "SAMPLING"
+             }
+           }
+         ]
+       }
 
 
 Note that ``adapt_rank`` and ``adapt_order`` can either be combined or

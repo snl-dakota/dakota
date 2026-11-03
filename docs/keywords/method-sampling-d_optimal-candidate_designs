@@ -8,14 +8,36 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type random
-        samples = 20
-        d_optimal
-          candidate_designs = 500
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type random
+           samples = 20
+           d_optimal
+             candidate_designs = 500
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {
+                 "random": true
+               },
+               "samples": 20,
+               "d_optimal": {
+                 "candidate_designs": 500
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

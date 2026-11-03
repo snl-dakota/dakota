@@ -15,14 +15,39 @@ Examples::
 The following method block
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model = 'SUBSPACE'
-      adapted_basis
-        truth_model_pointer = 'FULLSPACE'
-        sparse_grid_level = 1
-        rotation_method = unranked
+   .. code-block:: dakota
+
+       model
+         id_model = 'SUBSPACE'
+         adapted_basis
+           truth_model_pointer = 'FULLSPACE'
+           sparse_grid_level = 1
+           rotation_method = unranked
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "adapted_basis": {
+               "id_model": "SUBSPACE",
+               "truth_model_pointer": {
+                 "pointer": "FULLSPACE",
+                 "basis_control": {
+                   "sparse_grid_level": 1
+                 },
+                 "rotation_method": {
+                   "unranked": true
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 changes the default method to the :dakkw:`model-adapted_basis-truth_model_pointer-rotation_method-unranked` method.

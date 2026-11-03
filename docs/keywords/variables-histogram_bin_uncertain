@@ -60,13 +60,36 @@ association of multiple sets of :math:`(x,c)` or :math:`(x,y)` pairs with
 individual histogram variables. For example, in this input snippet
 
 
-.. code-block::
+.. tab:: Freeform
 
-    histogram_bin_uncertain = 2
-      pairs_per_variable = 3           4
-      abscissas          = 5  8  10    .1 .2 .3 .4
-      counts             = 17 21 0     12 24 12 0
-      descriptors        = 'hbu_1'     'hbu_2'
+   .. code-block:: dakota
+
+       variables
+         histogram_bin_uncertain = 2
+           pairs_per_variable = 3           4
+           abscissas          = 5  8  10    .1 .2 .3 .4
+           counts             = 17 21 0     12 24 12 0
+           descriptors        = 'hbu_1'     'hbu_2'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "histogram_bin_uncertain": {
+               "count": 2,
+               "pairs_per_variable": [3, 4],
+               "abscissas": [5.0, 8.0, 10.0, 0.1, 0.2, 0.3, 0.4],
+               "density": {
+                 "counts": [17.0, 21.0, 0.0, 12.0, 24.0, 12.0, 0.0]
+               },
+               "descriptors": ["hbu_1", "hbu_2"]
+             }
+           }
+         ]
+       }
 
 
 ``pairs_per_variable`` associates the first 3 :math:`(x,c)` pairs from ``abscissas`` and ``counts`` {(5,17),(8,21),(10,0)} with one bin-based histogram variable,

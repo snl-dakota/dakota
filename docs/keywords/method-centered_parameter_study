@@ -40,37 +40,109 @@ The following example is a good comparison to the examples on
 :dakkw:`method-multidim_parameter_study` and :dakkw:`method-vector_parameter_study`.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    # tested on Dakota 6.0 on 140501
-    environment
-      tabular_data
-        tabular_data_file = 'rosen_centered.dat'
-    
-    method
-      centered_parameter_study
-        steps_per_variable = 5 4
-        step_vector = 0.4 0.5
-    
-    model
-      single
-    
-    variables
-      continuous_design = 2
-        initial_point =   0        0
-        descriptors =     'x1'     "x2"
-    
-    interface
-      analysis_driver = 'rosenbrock'
-        fork
-    
-    responses
-      response_functions = 1
-      no_gradients
-      no_hessians
-    
+   .. code-block:: dakota
 
+       # tested on Dakota 6.0 on 140501
+       environment
+         tabular_data
+           tabular_data_file = 'rosen_centered.dat'
 
+       method
+         centered_parameter_study
+           steps_per_variable = 5 4
+           step_vector = 0.4 0.5
+
+       model
+         single
+
+       variables
+         continuous_design = 2
+           initial_point =   0        0
+           descriptors =     'x1'     "x2"
+
+       interface
+         analysis_driver = 'rosenbrock'
+           fork
+
+       responses
+         response_functions = 1
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {
+             "tabular_data_file": "rosen_centered.dat"
+           }
+         },
+         "method": [
+           {
+             "centered_parameter_study": {
+               "steps_per_variable": [
+                 5,
+                 4
+               ],
+               "step_vector": [
+                 0.4,
+                 0.5
+               ]
+             }
+           }
+         ],
+         "model": [
+           {
+             "single": {}
+           }
+         ],
+         "variables": [
+           {
+             "continuous_design": {
+               "initial_point": [
+                 0,
+                 0
+               ],
+               "descriptors": [
+                 "x1",
+                 "x2"
+               ],
+               "count": 2
+             }
+           }
+         ],
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": [
+                 "rosenbrock"
+               ],
+               "interface_type": {
+                 "fork": {}
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "response_functions": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 Theory::
 
 Faq::

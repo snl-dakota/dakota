@@ -24,12 +24,31 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      vector_parameter_study
-        num_steps = 10
-        final_point =    2.0      2.0
+   .. code-block:: dakota
+
+       method
+         vector_parameter_study
+           num_steps = 10
+           final_point = 2.0 2.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "vector_parameter_study": {
+               "step_control": {
+                 "final_point": [2.0, 2.0]
+               },
+               "num_steps": 10
+             }
+           }
+         ]
+       }
 
 
 Theory::

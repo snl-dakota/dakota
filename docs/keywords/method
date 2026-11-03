@@ -79,24 +79,54 @@ Examples::
 Several examples follow. The first example shows a minimal
 specification for an optimization method.
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      dot_sqp
+   .. code-block:: dakota
+
+       method
+         dot_sqp
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [{"dot_sqp": {}}]
+       }
 
 This example uses all of the defaults for this method.
 
 A more sophisticated example would be
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      id_method = 'NLP1'
-      dot_sqp
-        max_iterations = 50
-        convergence_tolerance = 1e-4
-        output verbose
-        model_pointer = 'M1'
+   .. code-block:: dakota
+
+       method,
+         id_method = 'NLP1'
+         dot_sqp
+           max_iterations = 50
+           convergence_tolerance = 1e-4
+           output verbose
+           model_pointer = 'M1'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "dot_sqp": {
+               "id_method": "NLP1",
+               "max_iterations": 50,
+               "convergence_tolerance": 1e-4,
+               "output": {"verbose": true},
+               "model_pointer": "M1"
+             }
+           }
+         ]
+       }
 
 This example demonstrates the use of identifiers and pointers
 as well as some method independent and method
@@ -107,14 +137,33 @@ controls, in that they are defined for a variety of methods.
 
 The next example shows a specification for a least squares method.
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      optpp_g_newton
-        max_iterations = 10
-        convergence_tolerance = 1.e-8
-        search_method trust_region
-        gradient_tolerance = 1.e-6
+   .. code-block:: dakota
+
+       method
+         optpp_g_newton
+           max_iterations = 10
+           convergence_tolerance = 1.e-8
+           search_method trust_region
+           gradient_tolerance = 1.e-6
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "optpp_g_newton": {
+               "max_iterations": 10,
+               "convergence_tolerance": 1e-8,
+               "search_method": {"trust_region": true},
+               "gradient_tolerance": 1e-6
+             }
+           }
+         ]
+       }
 
 Some of the same method independent controls are present along with
 several method dependent controls ( ``search_method`` and
@@ -124,26 +173,64 @@ several method dependent controls ( ``search_method`` and
 The next example shows a specification for a nondeterministic method
 with several method dependent controls (refer to :dakkw:`method-sampling`).
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        samples = 100
-        seed = 12345
-        sample_type lhs
-        response_levels = 1000. 500.
+   .. code-block:: dakota
+
+       method
+         sampling
+           samples = 100
+           seed = 12345
+           sample_type lhs
+           response_levels = 1000. 500.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 100,
+               "seed": 12345,
+               "sample_type": {"lhs": {}},
+               "response_levels": {"values": [1000.0, 500.0]}
+             }
+           }
+         ]
+       }
 
 
 The last example shows a specification for a parameter study method
 where, again, each of the controls are method dependent (refer to
 :dakkw:`method-vector_parameter_study`).
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      vector_parameter_study
-        step_vector = 1. 1. 1.
-        num_steps = 10
+   .. code-block:: dakota
+
+       method
+         vector_parameter_study
+           step_vector = 1. 1. 1.
+           num_steps = 10
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "vector_parameter_study": {
+               "step_control": {
+                 "step_vector": [1.0, 1.0, 1.0]
+               },
+               "num_steps": 10
+             }
+           }
+         ]
+       }
 
 
 Theory::

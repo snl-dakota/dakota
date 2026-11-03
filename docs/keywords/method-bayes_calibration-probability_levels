@@ -41,41 +41,127 @@ Below is a Dakota input file specifying the calculation of credible and
 prediction intervals
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     bayes_calibration queso
-       chain_samples = 1000 seed = 348
-       dram
-     proposal_covariance
-       diagonal values 1.0e6 1.0e-1
-     probability_levels 0.05  0.1
-          0.075 0.1
-    
-    variables,
-     uniform_uncertain 2
-              upper_bounds  1.e8 10.0
-              lower_bounds 1.e6 0.1
-              initial_point 2.85e7 2.5
-              descriptors 'E' 'w'
-            continuous_state 4
-              initial_state 3 40000 500 1000
-              descriptors 't' 'R' 'X' 'Y'
-    
-    interface,
-            direct
-              analysis_driver = 'mod_cantilever'
-    
-    responses,
-            calibration_terms = 2
-            calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
-              freeform
-              num_experiments = 10
-              experiment_variance_type = 'scalar'
-            descriptors = 'stress' 'displacement'
-            no_gradients
-            no_hessians
+   .. code-block:: dakota
 
+       method,
+        bayes_calibration queso
+          chain_samples = 1000 seed = 348
+          dram
+        proposal_covariance
+          diagonal values 1.0e6 1.0e-1
+        probability_levels 0.05  0.1
+             0.075 0.1
+
+       variables,
+        uniform_uncertain 2
+                 upper_bounds  1.e8 10.0
+                 lower_bounds 1.e6 0.1
+                 initial_point 2.85e7 2.5
+                 descriptors 'E' 'w'
+               continuous_state 4
+                 initial_state 3 40000 500 1000
+                 descriptors 't' 'R' 'X' 'Y'
+
+       interface,
+               direct
+                 analysis_driver = 'mod_cantilever'
+
+       responses,
+               calibration_terms = 2
+               calibration_data_file = 'dakota_cantilever_queso.withsigma.dat'
+                 freeform
+                 num_experiments = 10
+                 experiment_variance_type = 'scalar'
+               descriptors = 'stress' 'displacement'
+               no_gradients
+               no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "probability_levels": {
+                 "values": [0.05, 0.1, 0.075, 0.1]
+               },
+               "sub_method": {
+                 "queso": {
+                   "chain_samples": 1000,
+                   "seed": 348,
+                   "mcmc_algorithm": {
+                     "dram": true
+                   },
+                   "proposal_covariance": {
+                     "values": {
+                       "elements": [1000000.0, 0.1],
+                       "covariance_form": {
+                         "diagonal": true
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         ],
+         "variables": [
+           {
+             "uniform_uncertain": {
+               "count": 2,
+               "upper_bounds": [100000000.0, 10.0],
+               "lower_bounds": [1000000.0, 0.1],
+               "initial_point": [28500000.0, 2.5],
+               "descriptors": ["E", "w"]
+             },
+             "continuous_state": {
+               "count": 4,
+               "initial_state": [3.0, 40000.0, 500.0, 1000.0],
+               "descriptors": ["t", "R", "X", "Y"]
+             }
+           }
+         ],
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": ["mod_cantilever"],
+               "interface_type": {
+                 "direct": {}
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "calibration_terms": {
+                 "count": 2,
+                 "data_specification": {
+                   "calibration_data_file": {
+                     "filename": "dakota_cantilever_queso.withsigma.dat",
+                     "format": {
+                       "freeform": true
+                     },
+                     "num_experiments": 10,
+                     "experiment_variance_type": ["scalar"]
+                   }
+                 }
+               }
+             },
+             "descriptors": ["stress", "displacement"],
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 The resulting screen output below shows the table of credible and prediction
 intervals.
@@ -111,8 +197,6 @@ intervals.
                       3.5097481218e-01  9.2500000000e-01
                       2.4016170870e-01  1.0000000000e-01
                       3.4701712866e-01  9.0000000000e-01
-
-
 Theory::
 
 Faq::

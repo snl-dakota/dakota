@@ -32,14 +32,34 @@ Topics::
 Examples::
 In the following example, the analysis_driver command is run without any edits from Dakota.
 
-.. code-block::
+.. tab:: Freeform
 
-    interface
-      analysis_driver = "matlab -nodesktop -nojvm -r 'MatlabDriver_hardcoded_filenames; exit' "
-        fork
-          parameters_file 'params.in'
-          results_file 'results.out'
-          verbatim # this tells Dakota to fork the command exactly as written, instead of appending I/O filenames
+   .. code-block:: dakota
+
+       interface
+         analysis_driver = "matlab -nodesktop -nojvm -r 'MatlabDriver_hardcoded_filenames; exit' "
+           fork
+             parameters_file 'params.in'
+             results_file 'results.out'
+             verbatim
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": ["matlab -nodesktop -nojvm -r 'MatlabDriver_hardcoded_filenames; exit' "]
+             },
+             "interface_type": {"fork": {}},
+             "parameters_file": "params.in",
+             "results_file": "results.out",
+             "verbatim": true
+           }
+         ]
+       }
 
 The -r flag identifies the commands that will be run by matlab. The Matlab script has the
 parameters_file and results_file names hardcoded, so no additional arguments are required.

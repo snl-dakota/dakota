@@ -22,13 +22,31 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type lhs
-        samples = 10
-        distribution complementary
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type lhs
+           samples = 10
+           distribution complementary
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {"lhs": true},
+               "samples": 10,
+               "distribution": {"complementary": true}
+             }
+           }
+         ]
+       }
 
 
 Theory::

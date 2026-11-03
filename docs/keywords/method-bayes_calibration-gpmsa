@@ -55,45 +55,145 @@ variables, followed by the value of 'lin' and its observation error
 (variance).
 
 
-.. code-block::
+.. tab:: Freeform
 
-    
-    method
-      bayes_calibration gpmsa
-        chain_samples 1000
-        seed 2460
-        build_samples 60
-        import_build_points_file  'sim_data.dat'  freeform
-        export_chain_points_file  'posterior.dat'
-          burn_in_samples = 100  sub_sampling_period = 2
-        posterior_stats kl
-    
-    variables
-      uniform_uncertain  3
-        upper_bounds   0.4500   -0.1000    0.4000
-        initial_point  0.2750   -0.3000    0.1000
-        lower_bounds  -0.1000   -0.5000   -0.2000
-        descriptors   'beta0'   'beta1'   'beta2'
-    
-      continuous_state  3
-        upper_bounds   3 * 1.0
-        initial_state  3 * 0.5
-        lower_bounds   3 * 0.0
-        descriptors    'x0'  'x1'  'x2'
-    
-    responses
-      descriptors 'lin'
-      calibration_terms   1
-      calibration_data_file 'y_exp_with_var.dat'
-        freeform
-        num_experiments  5
-          num_config_variables   3
-        experiment_variance_type 'scalar'
-      no_gradients
-      no_hessians
-    
+   .. code-block:: dakota
 
+       method
+         bayes_calibration gpmsa
+           chain_samples 1000
+           seed 2460
+           build_samples 60
+           import_build_points_file  'sim_data.dat'  freeform
+           export_chain_points_file  'posterior.dat'
+             burn_in_samples = 100  sub_sampling_period = 2
+           posterior_stats kl
 
+       variables
+         uniform_uncertain  3
+           upper_bounds   0.4500   -0.1000    0.4000
+           initial_point  0.2750   -0.3000    0.1000
+           lower_bounds  -0.1000   -0.5000   -0.2000
+           descriptors   'beta0'   'beta1'   'beta2'
+
+         continuous_state  3
+           upper_bounds   3 * 1.0
+           initial_state  3 * 0.5
+           lower_bounds   3 * 0.0
+           descriptors    'x0'  'x1'  'x2'
+
+       responses
+         descriptors 'lin'
+         calibration_terms   1
+         calibration_data_file 'y_exp_with_var.dat'
+           freeform
+           num_experiments  5
+             num_config_variables   3
+           experiment_variance_type 'scalar'
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "burn_in_samples": 100,
+               "sub_sampling_period": 2,
+               "posterior_stats": {
+                 "kl_divergence": true
+               },
+               "sub_method": {
+                 "gpmsa": {
+                   "chain_samples": 1000,
+                   "seed": 2460,
+                   "build_samples": 60,
+                   "import_build_points_file": {
+                     "filename": "sim_data.dat",
+                     "format": {
+                       "freeform": true
+                     }
+                   },
+                   "export_chain_points_file": {
+                     "filename": "posterior.dat"
+                   }
+                 }
+               }
+             }
+           }
+         ],
+         "variables": [
+           {
+             "uniform_uncertain": {
+               "upper_bounds": [
+                 0.45,
+                 -0.1,
+                 0.4
+               ],
+               "initial_point": [
+                 0.275,
+                 -0.3,
+                 0.1
+               ],
+               "lower_bounds": [
+                 -0.1,
+                 -0.5,
+                 -0.2
+               ],
+               "descriptors": [
+                 "beta0",
+                 "beta1",
+                 "beta2"
+               ],
+               "count": 3
+             },
+             "continuous_state": {
+               "upper_bounds": [
+                 1.0,
+                 1.0,
+                 1.0
+               ],
+               "initial_state": [
+                 0.5,
+                 0.5,
+                 0.5
+               ],
+               "lower_bounds": [
+                 0.0,
+                 0.0,
+                 0.0
+               ],
+               "descriptors": [
+                 "x0",
+                 "x1",
+                 "x2"
+               ],
+               "count": 3
+             }
+           }
+         ],
+         "responses": [
+           {
+             "descriptors": [
+               "lin"
+             ],
+             "response_type": {
+               "calibration_terms": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 Theory::
 
 Faq::

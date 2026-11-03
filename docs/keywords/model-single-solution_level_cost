@@ -19,23 +19,90 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    model,
-     simulation
-       solution_level_control = 'mesh_size'
-       solution_level_cost = 1. 8. 64. 512. 4096.
-    
-    variables,
-     uniform_uncertain = 9
-       lower_bounds      =  9*-1.
-       upper_bounds      =  9* 1.
-     discrete_state_set
-       integer = 1
-             set_values = 4 8 16 32 64
-             descriptors = 'mesh_size'
+   .. code-block:: dakota
 
+       model,
+        simulation
+          solution_level_control = 'mesh_size'
+          solution_level_cost = 1. 8. 64. 512. 4096.
 
+       variables,
+        uniform_uncertain = 9
+          lower_bounds      =  9*-1.
+          upper_bounds      =  9* 1.
+        discrete_state_set
+          integer = 1
+                set_values = 4 8 16 32 64
+                descriptors = 'mesh_size'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "single": {
+               "solution_level_control": "mesh_size",
+               "cost_model": {
+                 "solution_level_cost": [
+                   1.0,
+                   8.0,
+                   64.0,
+                   512.0,
+                   4096.0
+                 ]
+               }
+             }
+           }
+         ],
+         "variables": [
+           {
+             "uniform_uncertain": {
+               "lower_bounds": [
+                 -1.0,
+                 -1.0,
+                 -1.0,
+                 -1.0,
+                 -1.0,
+                 -1.0,
+                 -1.0,
+                 -1.0,
+                 -1.0
+               ],
+               "upper_bounds": [
+                 1.0,
+                 1.0,
+                 1.0,
+                 1.0,
+                 1.0,
+                 1.0,
+                 1.0,
+                 1.0,
+                 1.0
+               ],
+               "count": 9
+             },
+             "discrete_state_set": {
+               "integer": {
+                 "count": 1,
+                 "elements": [
+                   4,
+                   8,
+                   16,
+                   32,
+                   64
+                 ],
+                 "descriptors": [
+                   "mesh_size"
+                 ]
+               }
+             }
+           }
+         ]
+       }
 Theory::
 
 Faq::

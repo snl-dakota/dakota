@@ -24,16 +24,40 @@ this case, the number of candidates for each level is limited to one
 uniform refinement of the current sparse grid level.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-     multifidelity_stoch_collocation
-       nodal
-       allocation_control greedy
-       p_refinement uniform
-         sparse_grid_level_sequence = 0 unrestricted
-         convergence_tolerance 1.e-3
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+        multifidelity_stoch_collocation
+          nodal
+          allocation_control greedy
+          p_refinement uniform
+            sparse_grid_level_sequence = 0 unrestricted
+            convergence_tolerance 1.e-3
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multifidelity_stoch_collocation": {
+               "model_pointer": "HIERARCH",
+               "nodal": {},
+               "allocation_control": {"greedy": {}},
+               "p_refinement": {
+                 "uniform": {
+                   "sparse_grid_level_sequence": [0],
+                   "convergence_tolerance": 1e-3
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 The next example employs generalized sparse grids and hierarchical
@@ -43,20 +67,45 @@ The full set of candidates across all levels is competed within a
 unified greedy competition, where the greedy selection metric is the
 induced change in the statistical QoI, normalized by the aggregate
 simulation cost of the index set candidate.  In this case, there are
-multiple candidates for each level and the number of candidates grows
+multiple candidates for each model level and the number of candidates grows
 rapidly with random dimension and grid level.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-     multifidelity_stoch_collocation
-       hierarchical
-       allocation_control greedy
-       p_refinement dimension_adaptive generalized
-         sparse_grid_level_sequence = 0 unrestricted
-         convergence_tolerance 1.e-8
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+        multifidelity_stoch_collocation
+          hierarchical
+          allocation_control greedy
+          p_refinement dimension_adaptive generalized
+            sparse_grid_level_sequence = 0 unrestricted
+            convergence_tolerance 1.e-8
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multifidelity_stoch_collocation": {
+               "model_pointer": "HIERARCH",
+               "hierarchical": {},
+               "allocation_control": {"greedy": {}},
+               "p_refinement": {
+                 "dimension_adaptive": {
+                   "generalized": {},
+                   "sparse_grid_level_sequence": [0],
+                   "convergence_tolerance": 1e-8
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

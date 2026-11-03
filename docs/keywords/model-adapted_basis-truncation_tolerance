@@ -11,14 +11,37 @@ Examples::
 The following block
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model = 'SUBSPACE'
-      adapted_basis
-        truth_model_pointer = 'FULLSPACE'
-        sparse_grid_level = 1
-        truncation_tolerance = 0.9
+   .. code-block:: dakota
+
+       model
+         id_model = 'SUBSPACE'
+         adapted_basis
+           truth_model_pointer = 'FULLSPACE'
+           sparse_grid_level = 1
+           truncation_tolerance = 0.9
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "adapted_basis": {
+               "id_model": "SUBSPACE",
+               "truth_model_pointer": {
+                 "pointer": "FULLSPACE",
+                 "basis_control": {
+                   "sparse_grid_level": 1
+                 }
+               },
+               "truncation_tolerance": 0.9
+             }
+           }
+         ]
+       }
 
 
 increases the default value (0.8) for the ``truncation_tolerance`` to 0.9 to obtain a rotation matrix and, consequently, a reduced model that more closely approximates the full dimensional model.

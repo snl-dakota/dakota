@@ -15,14 +15,36 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      sampling
-        sample_type lhs
-        samples = 100
-        principal_components
-        percent_variance_explained = 0.98
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type lhs
+           samples = 100
+           principal_components
+             percent_variance_explained = 0.98
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {
+                 "lhs": true
+               },
+               "samples": 100,
+               "principal_components": {
+                 "percent_variance_explained": 0.98
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

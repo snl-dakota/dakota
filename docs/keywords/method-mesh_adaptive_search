@@ -50,28 +50,97 @@ The following is an example of a Dakota input file that makes use of
 ``mesh_adaptive_search`` to optimize the textbook function.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            mesh_adaptive_search
-            seed = 1234
-    
-    variables,
-            continuous_design = 3
-              initial_point   -1.0    1.5   2.0
-              upper_bounds    10.0   10.0  10.0
-              lower_bounds   -10.0  -10.0 -10.0
-              descriptors      'x1'  'x2'  'x3'
-    
-    interface,
-           direct
-              analysis_driver = 'text_book'
-    
-    responses,
-            objective_functions = 1
-            no_gradients
-            no_hessians
+   .. code-block:: dakota
 
+       method,
+               mesh_adaptive_search
+               seed = 1234
+
+       variables,
+               continuous_design = 3
+                 initial_point   -1.0    1.5   2.0
+                 upper_bounds    10.0   10.0  10.0
+                 lower_bounds   -10.0  -10.0 -10.0
+                 descriptors      'x1'  'x2'  'x3'
+
+       interface,
+              direct
+                 analysis_driver = 'text_book'
+
+       responses,
+               objective_functions = 1
+               no_gradients
+               no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "mesh_adaptive_search": {
+               "seed": 1234
+             }
+           }
+         ],
+         "variables": [
+           {
+             "continuous_design": {
+               "initial_point": [
+                 -1.0,
+                 1.5,
+                 2.0
+               ],
+               "upper_bounds": [
+                 10.0,
+                 10.0,
+                 10.0
+               ],
+               "lower_bounds": [
+                 -10.0,
+                 -10.0,
+                 -10.0
+               ],
+               "descriptors": [
+                 "x1",
+                 "x2",
+                 "x3"
+               ],
+               "count": 3
+             }
+           }
+         ],
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": [
+                 "text_book"
+               ],
+               "interface_type": {
+                 "direct": {}
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "objective_functions": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 The best function value and associated parameters are found at the end
 of the Dakota output.
@@ -160,8 +229,6 @@ A NOMAD-generated iteration summary is also printed to the screen.
     
     blackbox evaluations                     : 674
     best feasible solution                   : ( 1 1 1 ) h=0 f=1.073537728e-52
-
-
 Theory::
 
 Faq::

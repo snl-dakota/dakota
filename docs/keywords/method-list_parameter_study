@@ -44,79 +44,240 @@ Examples::
 This shows the method and variables block of a Dakota input file
 that runs a list_parameter_study.
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      list_parameter_study
-        list_of_points =
-                     3.1e6    0.0029    0.31
-                     3.2e6    0.0028    0.32
-                     3.3e6    0.0027    0.34
-                     3.3e6    0.0026    0.36
-    
-    variables
-      continuous_design = 3
-        descriptors = 'E'    'MASS'     'DENSITY'
-    
+   .. code-block:: dakota
 
+       method
+         list_parameter_study
+           list_of_points =
+                        3.1e6    0.0029    0.31
+                        3.2e6    0.0028    0.32
+                        3.3e6    0.0027    0.34
+                        3.3e6    0.0026    0.36
+
+       variables
+         continuous_design = 3
+           descriptors = 'E'    'MASS'     'DENSITY'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "list_parameter_study": {
+               "source": {
+                 "list_of_points": [
+                   3100000.0,
+                   0.0029,
+                   0.31,
+                   3200000.0,
+                   0.0028,
+                   0.32,
+                   3300000.0,
+                   0.0027,
+                   0.34,
+                   3300000.0,
+                   0.0026,
+                   0.36
+                 ]
+               }
+             }
+           }
+         ],
+         "variables": [
+           {
+             "continuous_design": {
+               "descriptors": [
+                 "E",
+                 "MASS",
+                 "DENSITY"
+               ],
+               "count": 3
+             }
+           }
+         ]
+       }
 
 Note that because of the way Dakota treats whitespace, the above example is equivalent to:
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      list_parameter_study
-        list_of_points =
-    3.1e6    0.0029    0.31  3.2e6    0.0028
-    0.32    3.3e6    0.0027
-    0.34  3.3e6    0.0026    0.36
-    
-    variables
-      continuous_design = 3
-        descriptors = 'E'  'MASS'   'DENSITY'
+   .. code-block:: dakota
+
+       method
+         list_parameter_study
+           list_of_points =
+       3.1e6    0.0029    0.31  3.2e6    0.0028
+       0.32    3.3e6    0.0027
+       0.34  3.3e6    0.0026    0.36
+
+       variables
+         continuous_design = 3
+           descriptors = 'E'  'MASS'   'DENSITY'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "list_parameter_study": {
+               "source": {
+                 "list_of_points": []
+               }
+             }
+           }
+         ],
+         "variables": [
+           {
+             "continuous_design": {
+               "descriptors": [
+                 "E",
+                 "MASS",
+                 "DENSITY"
+               ],
+               "count": 3
+             }
+           }
+         ]
+       }
 
 Although the first example is much more readable.
 
 And here's a full input file:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    # tested on Dakota 6.0 on 140501
-    environment
-      tabular_data
-        tabular_data_file 'List_param_study.dat'
-    
-    method
-      list_parameter_study
-        list_of_points =     0.1    0.1
-                             0.2    0.1
-                             0.3    0.0
-                             0.3    1.0
-    
-    model
-      single
-    
-    variables
-      active design
-      continuous_design = 2
-        descriptors    'x1' 'x2'
-      continuous_state = 1
-        descriptors =   'constant1'
-        initial_state = 100
-    
-    interface
-      analysis_drivers 'text_book'
-        fork
-      asynchronous
-        evaluation_concurrency 2
-    
-    responses
-      response_functions = 1
-      no_gradients
-      no_hessians
-    
+   .. code-block:: dakota
 
+       # tested on Dakota 6.0 on 140501
+       environment
+         tabular_data
+           tabular_data_file 'List_param_study.dat'
+
+       method
+         list_parameter_study
+           list_of_points =     0.1    0.1
+                                0.2    0.1
+                                0.3    0.0
+                                0.3    1.0
+
+       model
+         single
+
+       variables
+         active design
+         continuous_design = 2
+           descriptors    'x1' 'x2'
+         continuous_state = 1
+           descriptors =   'constant1'
+           initial_state = 100
+
+       interface
+         analysis_drivers 'text_book'
+           fork
+         asynchronous
+           evaluation_concurrency 2
+
+       responses
+         response_functions = 1
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {
+             "tabular_data_file": "List_param_study.dat"
+           }
+         },
+         "method": [
+           {
+             "list_parameter_study": {
+               "source": {
+                 "list_of_points": [
+                   0.1,
+                   0.1,
+                   0.2,
+                   0.1,
+                   0.3,
+                   0.0,
+                   0.3,
+                   1.0
+                 ]
+               }
+             }
+           }
+         ],
+         "model": [
+           {
+             "single": {}
+           }
+         ],
+         "variables": [
+           {
+             "active": {
+               "design": true
+             },
+             "continuous_design": {
+               "descriptors": [
+                 "x1",
+                 "x2"
+               ],
+               "count": 2
+             },
+             "continuous_state": {
+               "descriptors": [
+                 "constant1"
+               ],
+               "initial_state": [
+                 100
+               ],
+               "count": 1
+             }
+           }
+         ],
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": [
+                 "text_book"
+               ],
+               "interface_type": {
+                 "fork": {}
+               }
+             },
+             "concurrency": {
+               "asynchronous": {
+                 "evaluation_concurrency": 2
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "response_functions": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 This example illustrates the list_parameter_study.
 

@@ -95,37 +95,79 @@ Topics::
 Examples::
 The following method block
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-     multilevel_sampling
-       pilot_samples = 20 seed = 1237
-       max_iterations = 10
-       convergence_tolerance = .001
+   .. code-block:: dakota
 
+       method
+         model_pointer = 'HIERARCH'
+         multilevel_sampling
+           pilot_samples = 20 seed = 1237
+           max_iterations = 10
+           convergence_tolerance = .001
+
+       model
+         id_model = 'HIERARCH'
+         ensemble_surrogate
+           ordered_model_fidelities = 'SIM1'
+           correction additive zeroth_order
+
+       model
+         id_model = 'SIM1'
+         simulation
+           solution_level_control = 'N_x'
+           solution_level_cost = 630. 1260. 2100. 4200.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "model_pointer": "HIERARCH",
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "max_iterations": 10,
+               "convergence_tolerance": {
+                 "value": 0.001
+               }
+             }
+           }
+         ],
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "HIERARCH",
+               "ensemble": {
+                 "ordered_model_fidelities": {
+                   "pointers": ["SIM1"],
+                   "correction": {
+                     "correction_type": {"additive": true},
+                     "correction_order": {"zeroth_order": true}
+                   }
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "SIM1",
+               "cost_model": {
+                 "solution_level_cost": [630.0, 1260.0, 2100.0, 4200.0]
+               }
+             }
+           }
+         ]
+       }
 
 specifies a multilevel Monte Carlo study in combination with the model
 identified by the HIERARCH pointer.  This model specification provides
 a one-dimensional hierarchy, typically defined by a single model
 fidelity with multiple discretization levels, but may also be provided
 as multiple ordered model fidelities, each with a single (or default)
-discretization level.  An example of the former (single model fidelity
-with multiple discretization levels) follows:
-
-.. code-block::
-
-    model,
-     id_model = 'HIERARCH'
-     ensemble_surrogate
-       ordered_model_fidelities = 'SIM1'
-       correction additive zeroth_order
-    
-    model,
-     id_model = 'SIM1'
-     simulation
-       solution_level_control = 'N_x'
-       solution_level_cost = 630. 1260. 2100. 4200.
+discretization level.
 
 
 Refer to ``dakota/test/dakota_uq_*_mlmc``.in in the source distribution

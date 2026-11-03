@@ -15,15 +15,37 @@ unique values the variable takes in the sample set.
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      sampling
-        sample_type lhs
-        samples = 100
-        variance_based_decomp
-          vbd_method binned
-            num_bins = 10
+   .. code-block:: dakota
+
+       method,
+         sampling
+           sample_type lhs
+           samples = 100
+           variance_based_decomp
+             vbd_method binned
+               num_bins = 10
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {"lhs": true},
+               "samples": 100,
+               "variance_based_decomp": {
+                 "vbd_sampling_method": {
+                   "binned": {"num_bins": 10}
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 Theory::
 The binned approach to computing Sobol' main effect indices is 

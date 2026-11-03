@@ -63,13 +63,46 @@ Examples::
 are specified:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      calibration_terms = 2
-        descriptors = 'volts' 'amps'
-        calibration_data_file = 'circuit.dat'
-          annotated
+   .. code-block:: dakota
+
+       responses
+         calibration_terms = 2
+           descriptors = 'volts' 'amps'
+           calibration_data_file = 'circuit.dat'
+             annotated
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "descriptors": ["volts", "amps"],
+             "response_type": {
+               "calibration_terms": {
+                 "count": 2,
+                 "data_specification": {
+                   "calibration_data_file": {
+                     "filename": "circuit.dat",
+                     "format": {
+                       "annotated": true
+                     }
+                   }
+                 }
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 
 And the data file ``circuit``.dat must contain only the :math:`y^{Data}`  observations which represent a single experimental observation.
@@ -102,14 +135,48 @@ in the example above with 2 calibration terms, the input file would
 contain
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      calibration_terms = 2
-        descriptors = 'volts' 'amps'
-        calibration_data_file = 'circuit.dat'
-          annotated
-          num_experiments = 4
+   .. code-block:: dakota
+
+       responses
+         calibration_terms = 2
+           descriptors = 'volts' 'amps'
+           calibration_data_file = 'circuit.dat'
+             annotated
+             num_experiments = 4
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "descriptors": ["volts", "amps"],
+             "response_type": {
+               "calibration_terms": {
+                 "count": 2,
+                 "data_specification": {
+                   "calibration_data_file": {
+                     "filename": "circuit.dat",
+                     "format": {
+                       "annotated": true
+                     },
+                     "num_experiments": 4
+                   }
+                 }
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 
 And the ``calibration_data_file`` would need to contain 2 rows (one for
@@ -148,14 +215,40 @@ NOTE: you must specify the same ``experiment_variance_type`` for all scalar
 terms. That is, they will all be 'none' or all be 'scalar.'
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      calibration_terms = 2
-        descriptors = 'volts' 'amps'
-        calibration_data_file = 'circuit.dat'
-          annotated
-          experiment_variance_type 'scalar'
+   .. code-block:: dakota
+
+       responses
+         calibration_terms = 2
+           descriptors = 'volts' 'amps'
+           calibration_data_file = 'circuit.dat'
+             annotated
+             experiment_variance_type 'scalar'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "descriptors": ["volts", "amps"],
+             "response_type": {
+               "calibration_terms": {
+                 "count": 2,
+                 "data_specification": {
+                   "calibration_data_file": {
+                     "filename": "circuit.dat",
+                     "format": {"annotated": true},
+                     "experiment_variance_type": ["scalar"]
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 For each response that has a 'scalar' variance type, each row of the
@@ -183,16 +276,44 @@ for :math:`i = 1 \dots N_{terms}` .
 together might look like
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      calibration_terms = 2
-        descriptors = 'volts' 'amps'
-        calibration_data_file = 'circuit.dat'
-          annotated
-          num_experiments = 4
-          num_config_variables = 2
-          experiment_variance_type 'scalar'
+   .. code-block:: dakota
+
+       responses
+         calibration_terms = 2
+           descriptors = 'volts' 'amps'
+           calibration_data_file = 'circuit.dat'
+             annotated
+             num_experiments = 4
+             num_config_variables = 2
+             experiment_variance_type 'scalar'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "descriptors": ["volts", "amps"],
+             "response_type": {
+               "calibration_terms": {
+                 "count": 2,
+                 "data_specification": {
+                   "calibration_data_file": {
+                     "filename": "circuit.dat",
+                     "format": {"annotated": true},
+                     "num_experiments": 4,
+                     "num_config_variables": 2,
+                     "experiment_variance_type": ["scalar"]
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Dakota will expect a data file

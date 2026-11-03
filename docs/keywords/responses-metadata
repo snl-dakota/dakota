@@ -25,15 +25,41 @@ simulation cost in minutes and number of dead elements will be
 tabulated for each evaluation:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      descriptors 'stress' 'displacement'
-      response_functions 2
-      no_gradients
-      no_hessians
-      metadata 'simulation_cost_minutes' 'number_dead_elements'
-    
+   .. code-block:: dakota
+
+       responses
+         descriptors 'stress' 'displacement'
+         response_functions 2
+         no_gradients
+         no_hessians
+         metadata 'simulation_cost_minutes' 'number_dead_elements'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "descriptors": ["stress", "displacement"],
+             "response_type": {
+               "response_functions": {
+                 "count": 2
+               }
+             },
+             "metadata": ["simulation_cost_minutes", "number_dead_elements"],
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
+
 
 
 Theory::

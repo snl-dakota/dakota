@@ -14,6 +14,31 @@ Topics::
 
 Examples::
 
+.. tab:: Freeform
+
+   .. code-block:: dakota
+
+       responses
+         response_functions = 2
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "response_type": {
+               "response_functions": {"count": 2}
+             },
+             "gradient_type": {"no_gradients": true},
+             "hessian_type": {"no_hessians": true}
+           }
+         ]
+       }
+
 Theory::
 This type of data set is used by uncertainty
 quantification methods, in which the effect of parameter uncertainty

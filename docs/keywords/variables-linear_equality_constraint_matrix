@@ -42,18 +42,38 @@ The pair of constraints can be written in matrix form as:
 The coefficient matrix and right hand side are expressed to Dakota in the
 :dakkw:`variables` section of the input file:
 
-.. code-block::
-    
-    variables
-      continuous_design 2
-        descriptors 'x1' 'x2'
-    
-      linear_equality_constraint_matrix = 1.5  1.0  0.0
-                                          3.0  0.0 -4.0
-    
-      linear_equality_targets = 5.0
-                                0.0
-    
+.. tab:: Freeform
+
+   .. code-block:: dakota
+
+       variables
+         continuous_design = 3
+           descriptors 'x1' 'x2' 'x3'
+
+         linear_equality_constraint_matrix = 1.5  1.0  0.0
+                                             3.0  0.0 -4.0
+
+         linear_equality_targets = 5.0
+                                   0.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_design": {
+               "count": 3,
+               "descriptors": ["x1", "x2", "x3"]
+             },
+             "linear_equality_constraint_matrix": [1.5, 1.0, 0.0, 3.0, 0.0, -4.0],
+             "linear_equality_targets": [5.0, 0.0]
+           }
+         ]
+       }
+
+
 
 
 For related examples, see the :dakkw:`variables-linear_inequality_constraint_matrix`

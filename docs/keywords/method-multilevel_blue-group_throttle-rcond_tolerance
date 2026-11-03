@@ -14,14 +14,34 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-    	model_pointer = 'ENSEMBLE'
-        multilevel_blue
-	  pilot_samples = 50 seed = 8674132
-	  group_throttle rcond_tolerance = 1.e-12
-	  max_function_evaluations = 1000
+   .. code-block:: dakota
+
+       method
+         model_pointer = 'ENSEMBLE'
+         multilevel_blue
+           pilot_samples = 50 seed = 8674132
+           group_throttle rcond_tolerance = 1.e-12
+           max_function_evaluations = 1000
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_blue": {
+               "model_pointer": "ENSEMBLE",
+               "pilot_samples": {"counts": [50]},
+               "seed_sequence": [8674132],
+               "group_throttle": {"rcond_tolerance": 1e-12},
+               "max_function_evaluations": 1000
+             }
+           }
+         ]
+       }
 
 Theory::
 

@@ -16,12 +16,29 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      centered_parameter_study
-        steps_per_variable = 5 4
-        step_vector = 0.4 0.5
+   .. code-block:: dakota
+
+       method
+         centered_parameter_study
+           steps_per_variable = 5 4
+           step_vector = 0.4 0.5
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "centered_parameter_study": {
+               "steps_per_variable": [5, 4],
+               "step_vector": [0.4, 0.5]
+             }
+           }
+         ]
+       }
 
 
 Theory::

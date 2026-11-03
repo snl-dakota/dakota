@@ -78,23 +78,61 @@ method_independent_controls
 Examples::
 The two examples below are equivalent:
 
-.. code-block::
+.. tab:: Freeform
 
-      responses
-        objective_functions 3
-        sense "maximize"
-        primary_scale_types = "value"
-        primary_scales = 1 1 100
+   .. code-block:: dakota
+
+         responses
+           objective_functions 3
+           sense "maximize"
+           primary_scale_types = "value"
+           primary_scales = 1 1 100
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "response_type": {
+               "objective_functions": {"count": 3}
+             },
+             "sense": ["maximize"],
+             "primary_scale_types": ["value"],
+             "primary_scales": [1.0, 1.0, 100.0]
+           }
+         ]
+       }
 
 
+.. tab:: Freeform
+   :new-set:
 
-.. code-block::
+   .. code-block:: dakota
 
-      responses
-        objective_functions 3
-        sense "maximize"
-        primary_scale_types = "value" "value" "value"
-        primary_scales = 1 1 100
+         responses
+           objective_functions 3
+           sense "maximize"
+           primary_scale_types = "value" "value" "value"
+           primary_scales = 1 1 100
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "response_type": {
+               "objective_functions": {"count": 3}
+             },
+             "sense": ["maximize"],
+             "primary_scale_types": ["value", "value", "value"],
+             "primary_scales": [1.0, 1.0, 100.0]
+           }
+         ]
+       }
 
 
 Theory::

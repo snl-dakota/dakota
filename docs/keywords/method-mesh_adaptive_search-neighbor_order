@@ -25,33 +25,75 @@ In this example, suppose we have the following categorical variables
 and associated adjacency matrices.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    variables
-      discrete_design_set
-        real = 2
-          categorical ‘yes’ ‘yes’
-          num_set_values = 3 5
-          set_values = 1.2 2.3 3.4
-                       1.2 3.3 4.4 5.5 7.7
-          adjacency_matrix = 1 1 0
-                             1 1 1
-                             0 1 1
-                             1 0 1 0 1
-                             0 1 0 1 0
-                             1 0 1 0 1
-                             0 1 0 1 0
-                             1 0 1 0 1
+   .. code-block:: dakota
+
+       variables
+         discrete_design_set
+           real = 2
+             categorical ‘yes’ ‘yes’
+             num_set_values = 3 5
+             set_values = 1.2 2.3 3.4
+                          1.2 3.3 4.4 5.5 7.7
+             adjacency_matrix = 1 1 0
+                                1 1 1
+                                0 1 1
+                                1 0 1 0 1
+                                0 1 0 1 0
+                                1 0 1 0 1
+                                0 1 0 1 0
+                                1 0 1 0 1
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_design_set": {
+               "real": {
+                 "count": 2,
+                 "categorical": ["yes", "yes"],
+                 "elements_per_variable": [3, 5],
+                 "elements": [1.2, 2.3, 3.4, 1.2, 3.3, 4.4, 5.5, 7.7],
+                 "adjacency_matrix": [
+                   1, 1, 0, 1, 1, 1, 0, 1, 1,
+                   1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1
+                 ]
+               }
+             }
+           }
+         ]
+       }
 
 
 Also suppose that we have the following method specification.
 
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    method
-      mesh_adaptive_search
-        seed = 1234
+   .. code-block:: dakota
+
+       method
+         mesh_adaptive_search
+           seed = 1234
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "mesh_adaptive_search": {
+               "seed": 1234
+             }
+           }
+         ]
+       }
 
 
 If the mesh adaptive direct search is at the point (1.2, 1.2), then
@@ -69,12 +111,30 @@ perturbations and would be the following:
 If, instead, the method specification is the following:
 
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    method
-      mesh_adaptive_search
-        seed = 1234
-        neighbor_order = 2
+   .. code-block:: dakota
+
+       method
+         mesh_adaptive_search
+           seed = 1234
+           neighbor_order = 2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "mesh_adaptive_search": {
+               "seed": 1234,
+               "neighbor_order": 2
+             }
+           }
+         ]
+       }
 
 
 The neighbors will be defined by 2-dimensional perturbations defined

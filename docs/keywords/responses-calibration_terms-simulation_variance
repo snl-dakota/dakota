@@ -42,22 +42,74 @@ commands that will apply to the low- and high-fidelity model responses,
 respectively.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses,
-      id_responses = 'low-fidelity'
-     calibration_terms = 1
-     simulation_variance = 0.5
-    
-    responses,
-      id_responses = 'high-fidelity'
-      calibration_terms = 1
-     calibration_data_file = 'dakota_bayes_expdesign.dat'
-       freeform
-       num_config_variables = 1
-       num_experiments = 1
-       experiment_variance_type = 'none'
-     simulation_variance = 1.2
+   .. code-block:: dakota
+
+       responses
+         id_responses = 'low-fidelity'
+         calibration_terms = 1
+           simulation_variance = 0.5
+
+       responses
+         id_responses = 'high-fidelity'
+         calibration_terms = 1
+           calibration_data_file = 'dakota_bayes_expdesign.dat'
+             freeform
+             num_config_variables = 1
+             num_experiments = 1
+             experiment_variance_type = 'none'
+           simulation_variance = 1.2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "id_responses": "low-fidelity",
+             "response_type": {
+               "calibration_terms": {
+                 "count": 1,
+                 "simulation_variance": [0.5]
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           },
+           {
+             "id_responses": "high-fidelity",
+             "response_type": {
+               "calibration_terms": {
+                 "count": 1,
+                 "simulation_variance": [1.2],
+                 "data_specification": {
+                   "calibration_data_file": {
+                     "filename": "dakota_bayes_expdesign.dat",
+                     "format": {
+                       "freeform": true
+                     },
+                     "num_config_variables": 1,
+                     "num_experiments": 1,
+                     "experiment_variance_type": ["none"]
+                   }
+                 }
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 
 Theory::

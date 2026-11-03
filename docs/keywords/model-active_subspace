@@ -24,15 +24,37 @@ truncation method to identify an active subspace. The truncation method uses 150
 to compute the Bing Li truncation metric.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      subspace
-        id_model = 'SUBSPACE'
-        truth_model_pointer = 'FULLSPACE'
-        initial_samples  100
-        truncation_method bing_li
-        bootstrap_samples 150
+   .. code-block:: dakota
+
+       model
+         active_subspace
+           id_model = 'SUBSPACE'
+           truth_model_pointer = 'FULLSPACE'
+           initial_samples = 100
+           truncation_method bing_li
+           bootstrap_samples = 150
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "active_subspace": {
+               "id_model": "SUBSPACE",
+               "truth_model_pointer": "FULLSPACE",
+               "initial_samples": 100,
+               "truncation_method": {
+                 "bing_li": true
+               },
+               "bootstrap_samples": 150
+             }
+           }
+         ]
+       }
 
 
 Theory::

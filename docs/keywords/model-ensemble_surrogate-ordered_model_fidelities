@@ -29,28 +29,75 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    model,
-     id_model = 'HIERARCH'
-     ensemble_surrogate
-       ordered_model_fidelities = 'LF' 'MF 'HF'
-       correction additive zeroth_order
-    
-    model,
-     id_model = 'LF'
-     simulation
-       interface_pointer = 'LF_DRIVER'
-    
-    model,
-     id_model = 'MF'
-     simulation
-       interface_pointer = 'MF_DRIVER'
-    
-    model,
-     id_model = 'HF'
-     simulation
-       interface_pointer = 'HF_DRIVER'
+   .. code-block:: dakota
+
+       model
+         id_model = 'HIERARCH'
+         ensemble_surrogate
+           ordered_model_fidelities = 'LF' 'MF' 'HF'
+           correction additive zeroth_order
+
+       model
+         id_model = 'LF'
+         single
+           interface_pointer = 'LF_DRIVER'
+
+       model
+         id_model = 'MF'
+         single
+           interface_pointer = 'MF_DRIVER'
+
+       model
+         id_model = 'HF'
+         single
+           interface_pointer = 'HF_DRIVER'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "HIERARCH",
+               "ensemble": {
+                 "ordered_model_fidelities": {
+                   "pointers": ["LF", "MF", "HF"],
+                   "correction": {
+                     "correction_type": {
+                       "additive": true
+                     },
+                     "correction_order": {
+                       "zeroth_order": true
+                     }
+                   }
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "LF",
+               "interface_pointer": "LF_DRIVER"
+             }
+           },
+           {
+             "single": {
+               "id_model": "MF",
+               "interface_pointer": "MF_DRIVER"
+             }
+           },
+           {
+             "single": {
+               "id_model": "HF",
+               "interface_pointer": "HF_DRIVER"
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -19,20 +19,42 @@ Perform an initial sparse grid design (level 1) to evaluate the PCE expansion an
 Afterwards, 100 samples are generated for the model in the rotated space to obtain its statistics.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      sampling
-        model_pointer = 'SUBSPACE'
-        samples = 100 seed = 1234567
-    
-    model
-      id_model = 'SUBSPACE'
-      adapted_basis
-        truth_model_pointer = 'FULLSPACE'
-        sparse_grid_level = 1
+   .. code-block:: dakota
 
+       method,
+         sampling
+           model_pointer = 'SUBSPACE'
+           samples = 100 seed = 1234567
 
+       model
+         id_model = 'SUBSPACE'
+         adapted_basis
+           truth_model_pointer = 'FULLSPACE'
+           sparse_grid_level = 1
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 100,
+               "model_pointer": "SUBSPACE"
+             }
+           }
+         ],
+         "model": [
+           {
+             "single": {
+               "id_model": "SUBSPACE"
+             }
+           }
+         ]
+       }
 Theory::
 The idea behind the Basis Adaptation method is to generate a PCE representation and rotate it such that the new set of
 rotated variables are organized in a decreasing importance ordering. Subsequently this rotation matrix can be truncated according to some

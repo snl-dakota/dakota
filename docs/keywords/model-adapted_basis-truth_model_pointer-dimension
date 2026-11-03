@@ -8,14 +8,37 @@ Examples::
 The following block
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model = 'SUBSPACE'
-      adapted_basis
-        truth_model_pointer = 'FULLSPACE'
-        sparse_grid_level = 1
-        dimension = 3
+   .. code-block:: dakota
+
+       model
+         id_model = 'SUBSPACE'
+         adapted_basis
+           truth_model_pointer = 'FULLSPACE'
+           sparse_grid_level = 1
+           dimension = 3
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "adapted_basis": {
+               "id_model": "SUBSPACE",
+               "truth_model_pointer": {
+                 "pointer": "FULLSPACE",
+                 "basis_control": {
+                   "sparse_grid_level": 1
+                 },
+                 "dimension": 3
+               }
+             }
+           }
+         ]
+       }
 
 
 prescribes the selection of the first three most important directions to build the rotation matrix and the reduced model representation.

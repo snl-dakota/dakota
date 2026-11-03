@@ -23,12 +23,31 @@ Import a free-form experimental data file containing raw experiment
 data in a calibration study
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      ...
-      scalar_data_file 'shock_experiment.dat'
-        freeform
+   .. code-block:: dakota
+
+       responses
+         ...
+         scalar_data_file 'shock_experiment.dat'
+           freeform
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "calibration_data": {
+               "scalar_data_file": {
+                 "filename": "shock_experiment.dat",
+                 "tabular_format": {"freeform": true}
+               }
+             }
+           }
+         ]
+       }
 
 
 Example data file with two measured quantities, three experiments:

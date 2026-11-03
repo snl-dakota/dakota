@@ -75,15 +75,50 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    model,
-     id_model = 'FT'
-     global_surrogate function_train
-       start_order = 2
-       start_rank  = 2  kick_rank = 2  max_rank = 10
-       adapt_rank
-     dace_method_pointer = 'SAMPLING'
+   .. code-block:: dakota
+
+       model
+         id_model = 'FT'
+         global_surrogate
+           function_train
+             start_order = 2
+             start_rank = 2
+             kick_rank = 2
+             max_rank = 10
+             adapt_rank
+           dace_method_pointer = 'SAMPLING'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "FT",
+               "type": {
+                 "function_train": {
+                   "start_order": {
+                     "value": 2
+                   },
+                   "start_rank": 2,
+                   "kick_rank": 2,
+                   "max_rank": 10,
+                   "adapt_rank": true
+                 }
+               },
+               "build_data": {
+                 "dace_method_pointer": {
+                   "pointer": "SAMPLING"
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

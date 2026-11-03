@@ -25,30 +25,78 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-     bayes_calibration queso
-       dram
-       seed = 34785
-       chain_samples = 1000
-       posterior_stats mutual_info
-      ksg2
+   .. code-block:: dakota
+
+       method
+        bayes_calibration queso
+          dram
+          seed = 34785
+          chain_samples = 1000
+          posterior_stats mutual_info
+         ksg2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "dram": {},
+                 "seed": 34785,
+                 "chain_samples": 1000,
+                 "posterior_stats": {"mutual_info": true}
+               },
+               "ksg2": {}
+             }
+           }
+         ]
+       }
 
 
+.. tab:: Freeform
+   :new-set:
 
-.. code-block::
+   .. code-block:: dakota
 
-    method
-     bayes_calibration
-       queso
-       dram
-       chain_samples = 1000 seed = 348
-      experimental_design
-       initial_samples = 5
-       num_candidates = 10
-       max_hifi_evaluations = 3
-       ksg2
+       method
+        bayes_calibration
+          queso
+          dram
+          chain_samples = 1000 seed = 348
+         experimental_design
+          initial_samples = 5
+          num_candidates = 10
+          max_hifi_evaluations = 3
+          ksg2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "dram": {},
+                 "chain_samples": 1000,
+                 "seed": 348
+               },
+               "experimental_design": {
+                 "initial_samples": 5,
+                 "num_candidates": 10,
+                 "max_hifi_evaluations": 3,
+                 "ksg2": {}
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -25,14 +25,34 @@ overlaid based on the variable and response descriptors used by the
 individual mappings.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    interface,
-     algebraic_mappings = 'ampl/fma.nl'
-     fork
-       analysis_driver = 'text_book'
-       parameters_file = 'tb.in'
-       results_file    = 'tb.out'
+   .. code-block:: dakota
+
+       interface,
+        algebraic_mappings = 'ampl/fma.nl'
+        fork
+          analysis_driver = 'text_book'
+          parameters_file = 'tb.in'
+          results_file    = 'tb.out'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "interface": [
+           {
+             "algebraic_mappings": "ampl/fma.nl",
+             "analysis_drivers": {
+               "drivers": ["text_book"],
+               "interface_type": {"fork": {}},
+               "parameters_file": "tb.in",
+               "results_file": "tb.out"
+             }
+           }
+         ]
+       }
 
 
 Theory::

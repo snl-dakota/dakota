@@ -43,10 +43,20 @@ which is the default model when no models are explicitly specified
 by the user.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      single
+   .. code-block:: dakota
+
+       model
+         single
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [{"single": {}}]
+       }
 
 
 The next example displays a surrogate model specification which
@@ -58,17 +68,42 @@ employs the first-order multiplicative approach to correcting the
 approximation each time correction is requested.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model,
-      id_model = 'M1'
-      variables_pointer = 'V1'
-      responses_pointer = 'R1'
-      global_surrogate
-          polynomial quadratic
-          dace_method_pointer = 'DACE'
-          reuse_samples region
-          correction multiplicative first_order
+   .. code-block:: dakota
+
+       model,
+         id_model = 'M1'
+         variables_pointer = 'V1'
+         responses_pointer = 'R1'
+         global_surrogate
+             polynomial quadratic
+             dace_method_pointer = 'DACE'
+             reuse_samples region
+             correction multiplicative first_order
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "M1",
+               "variables_pointer": "V1",
+               "responses_pointer": "R1",
+               "polynomial": {"quadratic": true},
+               "dace_method_pointer": "DACE",
+               "reuse_samples": {"region": true},
+               "correction": {
+                 "correction_type": {"multiplicative": true},
+                 "correction_order": {"first_order": true}
+               }
+             }
+           }
+         ]
+       }
 
 This example demonstrates the use of identifiers and pointers. It
 provides the optional model independent specifications for model
@@ -78,21 +113,49 @@ global surrogates (see :dakkw:`model-global_surrogate`).
 
 Finally, an advanced nested model example would be
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model = 'M1'
-      variables_pointer = 'V1'
-      responses_pointer = 'R1'
-      nested
-        optional_interface_pointer = 'OI1'
-          optional_interface_responses_pointer = 'OIR1'
-         sub_method_pointer = 'SM1'
-           primary_variable_mapping  = '' '' 'X'   'Y'
-           secondary_variable_mapping = '' '' 'mean' 'mean'
-           primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
-           secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
-                                        0. 0. 0. 0. 0. 0. 1. 3. 0.
+   .. code-block:: dakota
+
+       model
+         id_model = 'M1'
+         variables_pointer = 'V1'
+         responses_pointer = 'R1'
+         nested
+           optional_interface_pointer = 'OI1'
+             optional_interface_responses_pointer = 'OIR1'
+            sub_method_pointer = 'SM1'
+              primary_variable_mapping  = '' '' 'X'   'Y'
+              secondary_variable_mapping = '' '' 'mean' 'mean'
+              primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
+              secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
+                                           0. 0. 0. 0. 0. 0. 1. 3. 0.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "nested": {
+               "id_model": "M1",
+               "variables_pointer": "V1",
+               "responses_pointer": "R1",
+               "optional_interface_pointer": "OI1",
+               "optional_interface_responses_pointer": "OIR1",
+               "sub_method_pointer": {
+                 "pointer": "SM1",
+                 "primary_variable_mapping": ["", "", "X", "Y"],
+                 "secondary_variable_mapping": ["", "", "mean", "mean"],
+                 "primary_response_mapping": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                 "secondary_response_mapping": [0.0, 0.0, 0.0, 1.0, 3.0, 0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 3.0, 0.0]
+               }
+             }
+           }
+         ]
+       }
 
 This example illustrates controls for model
 identifier, variables pointer, and responses pointer

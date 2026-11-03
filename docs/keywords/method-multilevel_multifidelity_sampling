@@ -70,39 +70,96 @@ Topics::
 Examples::
 The following method block
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-     multilevel_multifidelity_sampling
-       pilot_samples = 20 seed = 1237  #s0,#s1,#s2,#s3,#p0,#p1
-       convergence_tolerance = .01   #s0,#s2,#s3,#p0,#p1
+   .. code-block:: dakota
 
+       method
+         model_pointer = 'HIERARCH'
+         multilevel_multifidelity_sampling
+           pilot_samples = 20 seed = 1237
+           convergence_tolerance = .01
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_multifidelity_sampling": {
+               "model_pointer": "HIERARCH",
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "convergence_tolerance": {
+                 "value": 0.01
+               }
+             }
+           }
+         ]
+       }
 
 specifies a multilevel-multifidelity Monte Carlo study in combination
 with the model identified by the HIERARCH pointer.  This model
 specification provides a two-dimensional hierarchy, comprised of two
 model forms each with four discretization levels:
 
+.. tab:: Freeform
+   :new-set:
 
-.. code-block::
+   .. code-block:: dakota
 
-    model,
-     id_model = 'HIERARCH'
-     ensemble_surrogate
-       ordered_model_fidelities = 'LF' 'HF'
-    
-    model,
-     id_model = 'LF'
-     simulation
-       solution_level_control = 'N_x'
-       solution_level_cost = 375. 10125. 81000. 648000.
-    
-    model,
-     id_model = 'HF'
-     simulation
-       solution_level_control = 'N_x'
-       solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8
+       model
+         id_model = 'HIERARCH'
+         ensemble_surrogate
+           ordered_model_fidelities = 'LF' 'HF'
+
+       model
+         id_model = 'LF'
+         simulation
+           solution_level_control = 'N_x'
+           solution_level_cost = 375. 10125. 81000. 648000.
+
+       model
+         id_model = 'HF'
+         simulation
+           solution_level_control = 'N_x'
+           solution_level_cost = 5.67e+5 4.536e+6 2.1e+7 1.68e+8
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "HIERARCH",
+               "ensemble": {
+                 "ordered_model_fidelities": {
+                   "pointers": ["LF", "HF"]
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "LF",
+               "cost_model": {
+                 "solution_level_cost": [375.0, 10125.0, 81000.0, 648000.0]
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "HF",
+               "cost_model": {
+                 "solution_level_cost": [567000.0, 4536000.0, 21000000.0, 168000000.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 Refer to ``dakota/test/dakota_uq_heat_eq_mlcvmc``.in in the source

@@ -15,17 +15,40 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        samples 5
-        refinement_samples 4 3 3
-        sample_type random
-        tolerance_intervals
-          coverage 0.96
-          confidence_level 0.92
-        seed = 31415
+   .. code-block:: dakota
+
+       method
+         sampling
+           samples 5
+           refinement_samples 4 3 3
+           sample_type random
+           tolerance_intervals
+             coverage 0.96
+             confidence_level 0.92
+           seed = 31415
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 5,
+               "refinement_samples": [4, 3, 3],
+               "sample_type": {"random": true},
+               "tolerance_intervals": {
+                 "coverage": 0.96,
+                 "confidence_level": 0.92
+               },
+               "seed": 31415
+             }
+           }
+         ]
+       }
 
 Theory::
 

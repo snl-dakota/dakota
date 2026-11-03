@@ -33,11 +33,30 @@ launched with :dakkw:`interface-analysis_drivers-fork`, and is also
 compiled with Dakota. The internal version can be used with:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    interface
-      analysis_drivers = 'rosenbrock'
-        direct
+   .. code-block:: dakota
+
+       interface
+         analysis_drivers = 'rosenbrock'
+           direct
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": ["rosenbrock"],
+               "interface_type": {
+                 "direct": {}
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

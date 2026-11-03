@@ -12,15 +12,48 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    bayes_calibration queso
-      chain_samples = 2000 seed = 348
-      delayed_rejection
-      emulator
-        gaussian_process surfpack build_samples = 30
-        posterior_adaptive max_iterations = 10
-        proposal_covariance derivatives
+   .. code-block:: dakota
+
+       method
+         bayes_calibration queso
+           chain_samples = 2000 seed = 348
+           delayed_rejection
+           emulator
+             gaussian_process surfpack build_samples = 30
+             posterior_adaptive max_iterations = 10
+             proposal_covariance derivatives
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "chain_samples": 2000,
+                 "seed": 348,
+                 "delayed_rejection": {},
+                 "emulator": {
+                   "gaussian_process": {
+                     "surfpack": {},
+                     "build_samples": 30
+                   },
+                   "posterior_adaptive": {
+                     "max_iterations": 10
+                   },
+                   "proposal_covariance": {
+                     "derivatives": {}
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

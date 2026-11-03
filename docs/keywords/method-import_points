@@ -80,37 +80,118 @@ Topics::
 uncertainty_quantification, sampling
 Examples::
 
-.. code-block::
-    
-    environment
-    
-    method
-      import_points
-        import_points_file 'all_points.dat'
-        variance_based_decomp
-    
-    model
-      single
-    
-    variables
-      active uncertain
-      uniform_uncertain = 2
-        descriptors  =   'input1'     'input2'
-        lower_bounds =  -2.0     -2.0
-        upper_bounds =   2.0      2.0
-      continuous_state = 1
-        descriptors =   'constant1'
-        initial_state = 100
-    
-    interface
-      analysis_drivers 'text_book'
-        fork
-    
-    responses
-      response_functions = 1
-      no_gradients
-      no_hessians
+.. tab:: Freeform
 
+   .. code-block:: dakota
+
+       environment
+
+       method
+         import_points
+           import_points_file 'all_points.dat'
+           variance_based_decomp
+
+       model
+         single
+
+       variables
+         active uncertain
+         uniform_uncertain = 2
+           descriptors  =   'input1'     'input2'
+           lower_bounds =  -2.0     -2.0
+           upper_bounds =   2.0      2.0
+         continuous_state = 1
+           descriptors =   'constant1'
+           initial_state = 100
+
+       interface
+         analysis_drivers 'text_book'
+           fork
+
+       responses
+         response_functions = 1
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "import_points": {
+               "import_points_file": {
+                 "filename": "all_points.dat"
+               },
+               "variance_based_decomp": {}
+             }
+           }
+         ],
+         "model": [
+           {
+             "single": {}
+           }
+         ],
+         "variables": [
+           {
+             "active": {
+               "uncertain": true
+             },
+             "uniform_uncertain": {
+               "descriptors": [
+                 "input1",
+                 "input2"
+               ],
+               "lower_bounds": [
+                 -2.0,
+                 -2.0
+               ],
+               "upper_bounds": [
+                 2.0,
+                 2.0
+               ],
+               "count": 2
+             },
+             "continuous_state": {
+               "descriptors": [
+                 "constant1"
+               ],
+               "initial_state": [
+                 100
+               ],
+               "count": 1
+             }
+           }
+         ],
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": [
+                 "text_book"
+               ],
+               "interface_type": {
+                 "fork": {}
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "response_functions": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 This example illustrates a basic import points Dakota input file.
 

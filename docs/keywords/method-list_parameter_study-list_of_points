@@ -20,15 +20,38 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      list_parameter_study
-        list_of_points =
-                     3.1e6    0.0029    0.31
-                     3.2e6    0.0028    0.32
-                     3.3e6    0.0027    0.34
-                     3.3e6    0.0026    0.36
+   .. code-block:: dakota
+
+       method
+         list_parameter_study
+           list_of_points =
+                        3.1e6    0.0029    0.31
+                        3.2e6    0.0028    0.32
+                        3.3e6    0.0027    0.34
+                        3.3e6    0.0026    0.36
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "list_parameter_study": {
+               "source": {
+                 "list_of_points": [
+                   3100000.0, 0.0029, 0.31,
+                   3200000.0, 0.0028, 0.32,
+                   3300000.0, 0.0027, 0.34,
+                   3300000.0, 0.0026, 0.36
+                 ]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

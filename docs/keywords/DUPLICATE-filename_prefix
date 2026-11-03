@@ -23,14 +23,34 @@ will follow the patterns ``my_surrogate``.{response_descriptor}.alg
 ``my_surrogate``.{response_descriptor}.bsps (for the binary files).
 
 
-.. code-block::
+.. tab:: Freeform
 
-    global_surrogate gaussian_process surfpack
-      export_model
-        filename_prefix = 'my_surrogate'
-          formats
-            algebraic_file
-            binary_archive
+   .. code-block:: dakota
+
+       global_surrogate gaussian_process surfpack
+         export_model
+           filename_prefix = 'my_surrogate'
+             formats
+               algebraic_file
+               binary_archive
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "gaussian_process": {"surfpack": {}},
+               "export_model": {
+                 "filename_prefix": "my_surrogate",
+                 "formats": {"algebraic_file": true, "binary_archive": true}
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

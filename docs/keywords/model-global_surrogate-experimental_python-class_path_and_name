@@ -19,14 +19,40 @@ Examples::
 Use of python-based surrogates in Dakota is enabled with the model
 block via:
 
-.. code-block::
+.. tab:: Freeform
 
-  model,
-      id_model = 'SURR'
-      global_surrogate,
-      dace_method_pointer = 'DACE'
-      experimental_python
-          class_path_and_name = "surrogate_polynomial.Surrogate"
+   .. code-block:: dakota
+
+       model
+         id_model = 'SURR'
+         global_surrogate
+           dace_method_pointer = 'DACE'
+           experimental_python
+             class_path_and_name = "surrogate_polynomial.Surrogate"
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "SURR",
+               "type": {
+                 "experimental_python": {
+                   "class_path_and_name": "surrogate_polynomial.Surrogate"
+                 }
+               },
+               "build_data": {
+                 "dace_method_pointer": {
+                   "pointer": "DACE"
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 An example python class that implements a linear regression surrogate
 that works for both scalar and vector-valued responses and that includes

@@ -67,73 +67,190 @@ Examples::
 Two examples are provided to illustrate nested models. The first is a relatively simple case. Although it is somewhat contrived, it demonstrates several features of nested models. A step-by-step explanation is provided below.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    environment
-      method_pointer 'opt'
-    
-    method
-      id_method 'opt'
-      asynch_pattern_search
-      model_pointer 'outer_model'
-      output verbose
-    
-    model
-      id_model 'outer_model'
-      variables_pointer 'outer_vars'
-      responses_pointer 'outer_resps'
-      nested
-        sub_method_pointer 'UQ_method'
-          primary_variable_mapping 'x1' 'x2'
-          secondary_variable_mapping 'mean' 'mean'
-          primary_response_mapping  0 0 0.3 0 0 0.7
-    
-    variables
-      id_variables 'outer_vars'
-        continuous_design 2
-        descriptors 'x1_mean' 'x2_mean'
-        lower_bounds -2.0 -2.0
-        upper_bounds  2.0  2.0
-    
-    responses
-      id_responses 'outer_resps'
-        objective_functions 1
-        descriptors 'sum_p
-        no_gradients
-        no_hessians
-    
-    method
-      id_method 'UQ_method'
-      sampling samples 30
-      seed 1234
-      model_pointer 'UQ_model'
-      probability_levels 0.9 0.9
-    
-    model
-      id_model 'UQ_model'
-      single
-      variables_pointer 'inner_vars'
-      responses_pointer 'inner_resps'
-      interface_pointer 'inf'
-    
-    variables
-      id_variables 'inner_vars'
-      normal_uncertain 2
-      descriptors 'x1' 'x2'
-      means 0.0 0.0
-      std_deviations 1.0 1.0
-    
-    responses
-      id_responses 'inner_resps'
-      response_functions 2
-      descriptors 'f1' 'f2'
-      no_gradients
-      no_hessians
-    
-    interface
-      id_interface 'inf'
-      direct
-        analysis_drivers 'text_book'
+   .. code-block:: dakota
+
+       environment
+         top_method_pointer = 'opt'
+
+       method
+         id_method = 'opt'
+         asynch_pattern_search
+           model_pointer = 'outer_model'
+
+       model
+         id_model = 'outer_model'
+         variables_pointer = 'outer_vars'
+         responses_pointer = 'outer_resps'
+         nested
+           sub_method_pointer = 'UQ_method'
+             primary_variable_mapping   = 'x1'   'x2'
+             secondary_variable_mapping = 'mean' 'mean'
+             primary_response_mapping   = 0 0 0.3 0 0 0.7
+
+       variables
+         id_variables = 'outer_vars'
+         continuous_design = 2
+           descriptors  = 'x1_mean' 'x2_mean'
+           lower_bounds = -2.0 -2.0
+           upper_bounds =  2.0  2.0
+
+       responses
+         id_responses = 'outer_resps'
+         objective_functions = 1
+           descriptors = 'sum_p'
+         no_gradients
+         no_hessians
+
+       method
+         id_method = 'UQ_method'
+         sampling
+           samples = 30
+           seed = 1234
+           model_pointer = 'UQ_model'
+           probability_levels = 0.9 0.9
+
+       model
+         id_model = 'UQ_model'
+         single
+           variables_pointer = 'inner_vars'
+           responses_pointer = 'inner_resps'
+           interface_pointer = 'inf'
+
+       variables
+         id_variables = 'inner_vars'
+         normal_uncertain = 2
+           descriptors    = 'x1' 'x2'
+           means          = 0.0 0.0
+           std_deviations = 1.0 1.0
+
+       responses
+         id_responses = 'inner_resps'
+         response_functions = 2
+           descriptors = 'f1' 'f2'
+         no_gradients
+         no_hessians
+
+       interface
+         id_interface = 'inf'
+         direct
+           analysis_drivers = 'text_book'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "top_method_pointer": "opt"
+         },
+         "method": [
+           {
+             "asynch_pattern_search": {
+               "id_method": "opt",
+               "model_pointer": "outer_model"
+             }
+           },
+           {
+             "sampling": {
+               "id_method": "UQ_method",
+               "samples": 30,
+               "seed": 1234,
+               "model_pointer": "UQ_model",
+               "probability_levels": {
+                 "values": [0.9, 0.9]
+               }
+             }
+           }
+         ],
+         "model": [
+           {
+             "nested": {
+               "id_model": "outer_model",
+               "variables_pointer": "outer_vars",
+               "responses_pointer": "outer_resps",
+               "sub_method_pointer": {
+                 "pointer": "UQ_method",
+                 "primary_variable_mapping": ["x1", "x2"],
+                 "secondary_variable_mapping": ["mean", "mean"],
+                 "primary_response_mapping": [0.0, 0.0, 0.3, 0.0, 0.0, 0.7]
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "UQ_model",
+               "variables_pointer": "inner_vars",
+               "responses_pointer": "inner_resps",
+               "interface_pointer": "inf"
+             }
+           }
+         ],
+         "variables": [
+           {
+             "id_variables": "outer_vars",
+             "continuous_design": {
+               "count": 2,
+               "descriptors": ["x1_mean", "x2_mean"],
+               "lower_bounds": [-2.0, -2.0],
+               "upper_bounds": [2.0, 2.0]
+             }
+           },
+           {
+             "id_variables": "inner_vars",
+             "normal_uncertain": {
+               "count": 2,
+               "descriptors": ["x1", "x2"],
+               "means": [0.0, 0.0],
+               "std_deviations": [1.0, 1.0]
+             }
+           }
+         ],
+         "interface": [
+           {
+             "id_interface": "inf",
+             "analysis_drivers": {
+               "drivers": ["text_book"],
+               "interface_type": {
+                 "direct": {}
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "id_responses": "outer_resps",
+             "response_type": {
+               "objective_functions": {
+                 "count": 1
+               }
+             },
+             "descriptors": ["sum_p"],
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           },
+           {
+             "id_responses": "inner_resps",
+             "response_type": {
+               "response_functions": {
+                 "count": 2
+               }
+             },
+             "descriptors": ["f1", "f2"],
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 
 The example input is an 'optimization under uncertainty' or OUU. In an OUU, some
@@ -145,17 +262,17 @@ in the optimization.
 
 In Dakota, this is accomplished by nesting an uncertainty quantification method
 ( :dakkw:`method-sampling`), which computes the 90th percentiles, within an optimizer
-( ``method-asynch_pattern_search``), which iteratively adjusts the variable means to minimize
+( :dakkw:`method-asynch_pattern_search`), which iteratively adjusts the variable means to minimize
 the objective. For every evaluation requested by the optimizer, the design variables ( ``x1_mean``
 and ``x2_mean`` in the example) are inserted into the means of the uncertain variables ( ``x1`` and
-``x2``), then the ``,sampling`` study is run to completion, and finally the resulting statistics for
+``x2``), then the ``sampling`` study is run to completion, and finally the resulting statistics for
 the responses ``f1`` and ``f2`` are mapped into the responses ``sum_p``.
 
 It may be helpful to sketch out the relationships between blocks as indicated by their
 various pointers in order to understand the nested structure of the study. The top-level
-or outer method, ``'opt'``, has a model named ``opt',``'outer_model'. This model refers to
-variables and responses blocks ( ``'outer_vars'`` and ``outer_vars'``'outer_resps') that are used by
-the optimizer. The ``'outer_model'`` block also refers to a sub-method, ``outer_model'``'UQ_method' which
+or outer method, ``'opt'``, has a model named ``'outer_model'``. This model refers to
+variables and responses blocks ( ``'outer_vars'`` and ``'outer_resps'``) that are used by
+the optimizer. The ``'outer_model'`` block also refers to a sub-method, ``'UQ_method'`` which
 defines the UQ study and has its own model, which in turn possess variables, an interface, and
 responses.
 
@@ -173,25 +290,47 @@ The coefficients 0.3 and 0.7 in the matrix result in a weighted sum of the 90th 
 
 .. math:: sum\_p = 0.3*(90th\: percentile \:of \:f1) + 0.7*(90th\: percentile\: of\: f2)
 
-<hr>
 The next example is a fragment of an input file, showing only the nested model itself. It
 illustrates more complex variable and response mappings.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    primary_variable_mapping  = '' '' 'X'   'Y'
-    secondary_variable_mapping = '' '' 'mean' 'mean'
-    primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
-    secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
-                                 0. 0. 0. 0. 0. 0. 1. 3. 0.
+   .. code-block:: dakota
+
+       primary_variable_mapping  = '' '' 'X'   'Y'
+       secondary_variable_mapping = '' '' 'mean' 'mean'
+       primary_response_mapping  = 1. 0. 0. 0. 0. 0. 0. 0. 0.
+       secondary_response_mapping = 0. 0. 0. 1. 3. 0. 0. 0. 0.
+                                    0. 0. 0. 0. 0. 0. 1. 3. 0.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "nested": {
+               "sub_method_pointer": {
+                 "pointer": "SM1",
+                 "primary_variable_mapping": ["", "", "X", "Y"],
+                 "secondary_variable_mapping": ["", "", "mean", "mean"],
+                 "primary_response_mapping": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+                 "secondary_response_mapping": [0.0, 0.0, 0.0, 1.0, 3.0, 0.0, 0.0, 0.0, 0.0,
+                                                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 3.0, 0.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 The variable mappings correspond to 4 top-level variables, the first
 two of which employ the default mappings from active top-level
 variables to sub-model variables of the same type (option 3 above) and
 the latter two of which are inserted into the mean distribution
-parameters of sub-model variables ``'X'`` and ``X'``'Y' (option 1 above).
+parameters of sub-model variables ``'X'`` and ``'Y'`` (option 1 above).
 
 The response mappings define a 3 by 9 matrix corresponding to 9 inner
 loop results and 3 outer loop response functions (one

@@ -38,13 +38,31 @@ Topics::
 Examples::
 Defining a multilevel Monte Carlo in the following way
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-            multilevel_sampling
-       pilot_samples = 100  50   40   30   20
-       seed_sequence = 1234 2345 3456 4567 5678
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+               multilevel_sampling
+          pilot_samples = 100  50   40   30   20
+          seed_sequence = 1234 2345 3456 4567 5678
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "model_pointer": "HIERARCH",
+               "pilot_samples": [100, 50, 40, 30, 20],
+               "seed_sequence": [1234, 2345, 3456, 4567, 5678]
+             }
+           }
+         ]
+       }
 
 allows the reuse (via restart) of intermediate sample sets from other
 sources by matching the seed specifications for the targeted model

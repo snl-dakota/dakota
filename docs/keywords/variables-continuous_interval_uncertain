@@ -26,23 +26,64 @@ continuous_variables, epistemic_uncertain_variables
 Examples::
 The following specification is for an interval analysis:
 
-.. code-block::
+.. tab:: Freeform
 
-    continuous_interval_uncertain = 2
-     lower_bounds = 2.0 4.0
-     upper_bounds = 2.5 5.0
+   .. code-block:: dakota
+
+       variables
+         continuous_interval_uncertain = 2
+           lower_bounds = 2.0 4.0
+           upper_bounds = 2.5 5.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_interval_uncertain": {
+               "count": 2,
+               "lower_bounds": [2.0, 4.0],
+               "upper_bounds": [2.5, 5.0]
+             }
+           }
+         ]
+       }
 
 
 
 The following specification is for a Dempster-Shafer analysis:
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    continuous_interval_uncertain = 2
-     num_intervals = 3 2
-     interval_probs = 0.25 0.5 0.25 0.4 0.6
-     lower_bounds = 2.0 4.0 4.5 1.0 3.0
-     upper_bounds = 2.5 5.0 6.0 5.0 5.0
+   .. code-block:: dakota
+
+       variables
+         continuous_interval_uncertain = 2
+           num_intervals = 3 2
+           interval_probs = 0.25 0.5 0.25 0.4 0.6
+           lower_bounds = 2.0 4.0 4.5 1.0 3.0
+           upper_bounds = 2.5 5.0 6.0 5.0 5.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_interval_uncertain": {
+               "count": 2,
+               "num_intervals": [3, 2],
+               "interval_probabilities": [0.25, 0.5, 0.25, 0.4, 0.6],
+               "lower_bounds": [2.0, 4.0, 4.5, 1.0, 3.0],
+               "upper_bounds": [2.5, 5.0, 6.0, 5.0, 5.0]
+             }
+           }
+         ]
+       }
 
 
 Here there are 2 interval uncertain variables. The first one is defined by three intervals, and the second by two intervals. The three intervals for the first variable have basic probability assignments of 0.2, 0.5, and 0.3, respectively, while the basic probability assignments for the two intervals for the second variable are 0.4 and 0.6.

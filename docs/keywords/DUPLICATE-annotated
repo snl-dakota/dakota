@@ -26,12 +26,27 @@ Export an annotated top-level tabular data file containing a header
 row, leading eval_id and interface_id columns, and data for variables
 and responses.  Input file fragment:
 
-.. code-block::
+.. tab:: Freeform
 
-    environment
-      tabular_data
-        tabular_data_file = 'dakota_summary.dat'
-        annotated
+   .. code-block:: dakota
+
+       environment
+         tabular_data
+           tabular_data_file = 'dakota_summary.dat'
+           annotated
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {
+             "tabular_data_file": "dakota_summary.dat",
+             "tabular_format": {"annotated": true}
+           }
+         }
+       }
 
 Resulting tabular file:
 

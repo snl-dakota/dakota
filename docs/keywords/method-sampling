@@ -103,41 +103,127 @@ Topics::
 uncertainty_quantification, sampling
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    # tested on Dakota 6.0 on 140501
-    
-    environment
-      tabular_data
-        tabular_data_file = 'Sampling_basic.dat'
-    
-    method
-      sampling
-        sample_type lhs
-        samples = 20
-    
-    model
-      single
-    
-    variables
-      active uncertain
-      uniform_uncertain = 2
-        descriptors  =   'input1'     'input2'
-        lower_bounds =  -2.0     -2.0
-        upper_bounds =   2.0      2.0
-      continuous_state = 1
-        descriptors =   'constant1'
-        initial_state = 100
-    
-    interface
-      analysis_drivers 'text_book'
-        fork
-    
-    responses
-      response_functions = 1
-      no_gradients
-      no_hessians
+   .. code-block:: dakota
 
+       # tested on Dakota 6.0 on 140501
+
+       environment
+         tabular_data
+           tabular_data_file = 'Sampling_basic.dat'
+
+       method
+         sampling
+           sample_type lhs
+           samples = 20
+
+       model
+         single
+
+       variables
+         active uncertain
+         uniform_uncertain = 2
+           descriptors  =   'input1'     'input2'
+           lower_bounds =  -2.0     -2.0
+           upper_bounds =   2.0      2.0
+         continuous_state = 1
+           descriptors =   'constant1'
+           initial_state = 100
+
+       interface
+         analysis_drivers 'text_book'
+           fork
+
+       responses
+         response_functions = 1
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {
+             "tabular_data_file": "Sampling_basic.dat"
+           }
+         },
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {
+                 "lhs": true
+               },
+               "samples": 20
+             }
+           }
+         ],
+         "model": [
+           {
+             "single": {}
+           }
+         ],
+         "variables": [
+           {
+             "active": {
+               "uncertain": true
+             },
+             "uniform_uncertain": {
+               "descriptors": [
+                 "input1",
+                 "input2"
+               ],
+               "lower_bounds": [
+                 -2.0,
+                 -2.0
+               ],
+               "upper_bounds": [
+                 2.0,
+                 2.0
+               ],
+               "count": 2
+             },
+             "continuous_state": {
+               "descriptors": [
+                 "constant1"
+               ],
+               "initial_state": [
+                 100
+               ],
+               "count": 1
+             }
+           }
+         ],
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": [
+                 "text_book"
+               ],
+               "interface_type": {
+                 "fork": {}
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "response_functions": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 This example illustrates a basic sampling Dakota input file.
 

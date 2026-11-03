@@ -10,14 +10,34 @@ Default method is ``pick_and_freeze``.
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      sampling
-        sample_type lhs
-        samples = 100
-        variance_based_decomp
-          vbd_sampling_method pick_and_freeze
+   .. code-block:: dakota
+
+       method,
+         sampling
+           sample_type lhs
+           samples = 100
+           variance_based_decomp
+             vbd_sampling_method pick_and_freeze
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {"lhs": true},
+               "samples": 100,
+               "variance_based_decomp": {
+                 "vbd_sampling_method": {"pick_and_freeze": {}}
+               }
+             }
+           }
+         ]
+       }
 
 Theory::
 

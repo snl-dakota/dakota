@@ -14,13 +14,35 @@ from the following sets during the search for an optimal design. :math:`y1
 \in \{0.25,1.25, 2.25, 3.25, 4.25\}` , :math:`y2 \in \{0,5\}` 
 
 
-.. code-block::
+.. tab:: Freeform
 
-    discrete_design_set
-      real 2
-        descriptors           'y1'                       'y2'
-        elements_per_variable 5                          2
-        elemetns              0.25 1.25 2.25 3.25 4.25   0 5
+   .. code-block:: dakota
+
+       variables
+         discrete_design_set
+           real 2
+             descriptors           'y1'                       'y2'
+             elements_per_variable 5                          2
+             elements              0.25 1.25 2.25 3.25 4.25   0.0 5.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_design_set": {
+               "real": {
+                 "count": 2,
+                 "descriptors": ["y1", "y2"],
+                 "elements_per_variable": [5, 2],
+                 "elements": [0.25, 1.25, 2.25, 3.25, 4.25, 0.0, 5.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

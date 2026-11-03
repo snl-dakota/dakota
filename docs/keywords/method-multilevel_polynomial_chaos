@@ -62,32 +62,96 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     multilevel_polynomial_chaos
-       model_pointer = 'HIERARCH'
-       pilot_samples = 10
-       expansion_order_sequence = 2
-       collocation_ratio = .9
-       seed = 1237
-       orthogonal_matching_pursuit
-       convergence_tolerance = .01
-     output silent
-    
-    model,
-     id_model = 'HIERARCH'
-     ensemble_surrogate
-       ordered_model_fidelities = 'SIM1'
-       correction additive zeroth_order
-    
-    model,
-     id_model = 'SIM1'
-     simulation
-       solution_level_control = 'mesh_size'
-       solution_level_cost = 1. 8. 64. 512. 4096.
+   .. code-block:: dakota
 
+       method,
+        multilevel_polynomial_chaos
+          model_pointer = 'HIERARCH'
+          pilot_samples = 10
+          expansion_order_sequence = 2
+          collocation_ratio = .9
+          seed = 1237
+          orthogonal_matching_pursuit
+          convergence_tolerance = .01
+        output silent
 
+       model,
+        id_model = 'HIERARCH'
+        ensemble_surrogate
+          ordered_model_fidelities = 'SIM1'
+          correction additive zeroth_order
+
+       model,
+        id_model = 'SIM1'
+        simulation
+          solution_level_control = 'mesh_size'
+          solution_level_cost = 1. 8. 64. 512. 4096.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_polynomial_chaos": {
+               "model_pointer": "HIERARCH",
+               "seed_sequence": [
+                 1237
+               ],
+               "convergence_tolerance": {
+                 "value": 0.01
+               },
+               "coefficient_approach": {
+                 "expansion_order_sequence": {
+                   "sequence": [
+                     2
+                   ],
+                   "point_sequence_selection": {
+                     "collocation_ratio": {
+                       "sequence": 0.9,
+                       "regression_method": {
+                         "orthogonal_matching_pursuit": {}
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         ],
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "HIERARCH",
+               "ensemble": {
+                 "ordered_model_fidelities": {
+                   "pointers": [
+                     "SIM1"
+                   ]
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "SIM1",
+               "solution_level_control": "mesh_size",
+               "cost_model": {
+                 "solution_level_cost": [
+                   1.0,
+                   8.0,
+                   64.0,
+                   512.0,
+                   4096.0
+                 ]
+               }
+             }
+           }
+         ]
+       }
 Theory::
 
 Faq::

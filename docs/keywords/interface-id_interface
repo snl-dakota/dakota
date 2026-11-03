@@ -24,16 +24,54 @@ block_identifier
 Examples::
 For example, a model specification including
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      interface_pointer = 'I1'
+   .. code-block:: dakota
+
+       model
+         interface_pointer = 'I1'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "single": {
+               "interface_pointer": "I1"
+             }
+           }
+         ]
+       }
 
 will link to an interface with
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    id_interface = 'I1'
+   .. code-block:: dakota
+
+       interface
+         id_interface = 'I1'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "interface": [
+           {
+             "id_interface": "I1",
+             "analysis_drivers": {
+               "drivers": ["text_book"],
+               "interface_type": {
+                 "fork": {}
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

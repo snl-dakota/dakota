@@ -51,19 +51,38 @@ The coefficient matrix and right hand side of this matrix inequality are express
 to Dakota in the variables section of the input file:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    
-    variables
-      continuous_design 2
-        descriptors 'x1' 'x2'
-    
-      linear_inequality_constraint_matrix = 1.5   1.0
-                                            1.0  -1.0
-    
-      linear_inequality_upper_bounds = 5.0
-                                       0.0
-    
+   .. code-block:: dakota
+
+       variables
+         continuous_design 2
+           descriptors 'x1' 'x2'
+
+         linear_inequality_constraint_matrix = 1.5   1.0
+                                               1.0  -1.0
+
+         linear_inequality_upper_bounds = 5.0
+                                          0.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_design": {
+               "count": 2,
+               "descriptors": ["x1", "x2"]
+             },
+             "linear_inequality_constraint_matrix": [1.5, 1.0, 1.0, -1.0],
+             "linear_inequality_upper_bounds": [5.0, 0.0]
+           }
+         ]
+       }
+
+
 
 The second example is more complex in two respects. First, some, but not all,
 of the constraints are "two sided", with both lower and upper bounds. Second,
@@ -112,27 +131,51 @@ Or, in matrix form,
 
 The Dakota specification for this matrix inequality is:
 
-.. code-block::
+.. tab:: Freeform
 
-    
-    variables
-      continuous_design 4
-        descriptors 'x1' 'x2' 'x3' 'x4'
-    
-      linear_inequality_constraint_matrix = 5.0  2.0  0.0  0.0
-                                            1.0  0.0  1.0  0.0
-                                            0.0  1.0  0.0  6.0
-                                            1.0  1.0  1.0  0.0
-    
-      linear_inequality_lower_bounds =  -2.0
-                                         0.0
-                                        -8.0
-                                        -inf
-    
-      linear_inequality_upper_bounds = 9.0
-                                       inf
-                                       8.0
-                                       9.0
+   .. code-block:: dakota
+
+       variables
+         continuous_design 4
+           descriptors 'x1' 'x2' 'x3' 'x4'
+
+         linear_inequality_constraint_matrix = 5.0  2.0  0.0  0.0
+                                               1.0  0.0  1.0  0.0
+                                               0.0  1.0  0.0  6.0
+                                               1.0  1.0  1.0  0.0
+
+         linear_inequality_lower_bounds =  -2.0
+                                            0.0
+                                           -8.0
+                                           -inf
+
+         linear_inequality_upper_bounds = 9.0
+                                          inf
+                                          8.0
+                                          9.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_design": {
+               "count": 4,
+               "descriptors": ["x1", "x2", "x3", "x4"]
+             },
+             "linear_inequality_constraint_matrix": [
+               5.0, 2.0, 0.0, 0.0,
+               1.0, 0.0, 1.0, 0.0,
+               0.0, 1.0, 0.0, 6.0,
+               1.0, 1.0, 1.0, 0.0
+             ],
+             "linear_inequality_lower_bounds": [-2.0, 0.0, -8.0, -1.0e38],
+             "linear_inequality_upper_bounds": [9.0, 1.0e38, 8.0, 9.0]
+           }
+         ]
+       }
 
 
 Theory::

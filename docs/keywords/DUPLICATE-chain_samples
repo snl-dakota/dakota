@@ -19,11 +19,29 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      bayes_calibration queso
-        chain_samples = 20000
+   .. code-block:: dakota
+
+       method
+         bayes_calibration queso
+           chain_samples = 20000
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "chain_samples": 20000
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

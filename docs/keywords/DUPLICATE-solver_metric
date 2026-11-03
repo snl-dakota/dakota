@@ -14,14 +14,36 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-	approximate_control_variate acv_mf
-	  solver_metric norm_estimator_variance norm_order = 2	# objective fn for budget-constrained
-	solution_mode  online_pilot
-	pilot_samples = 50 seed = 8674132
-	max_function_evaluations = 500
+   .. code-block:: dakota
+
+       method,
+         approximate_control_variate acv_mf
+           solver_metric norm_estimator_variance norm_order = 2
+           solution_mode  online_pilot
+           pilot_samples = 50 seed = 8674132
+           max_function_evaluations = 500
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "approximate_control_variate": {
+               "solver_metric": {
+                 "norm_estimator_variance": {"norm_order": 2}
+               },
+               "solution_mode": {"online_pilot": {}},
+               "pilot_samples": [50],
+               "seed_sequence": [8674132],
+               "max_function_evaluations": 500
+             }
+           }
+         ]
+       }
 
 Theory::
 

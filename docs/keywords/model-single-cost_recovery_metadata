@@ -26,21 +26,56 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    model,
-     id_model = 'TUNABLE_LF'
-     simulation
-       cost_recovery_metadata = 'core_time'
-    
-    responses,
-     response_functions = 1
-     descriptors = 'Q'
-     no_gradients
-     no_hessians
-     metadata 'core_time'
+   .. code-block:: dakota
 
+       model,
+        id_model = 'TUNABLE_LF'
+        simulation
+          cost_recovery_metadata = 'core_time'
 
+       responses,
+        response_functions = 1
+        descriptors = 'Q'
+        no_gradients
+        no_hessians
+        metadata 'core_time'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "single": {
+               "id_model": "TUNABLE_LF",
+               "cost_model": {
+                 "cost_recovery_metadata": "core_time"
+               }
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "response_functions": {
+                 "count": 1
+               }
+             },
+             "descriptors": [
+               "Q"
+             ],
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 Theory::
 
 Faq::

@@ -12,15 +12,41 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      bayes_calibration queso
-        samples = 2000 seed = 348
-        delayed_rejection
-        emulator
-          pce sparse_grid_level = 2
-          pre_solve nip # default for emulators
+   .. code-block:: dakota
+
+       method
+         bayes_calibration queso
+           samples = 2000 seed = 348
+           delayed_rejection
+           emulator
+             pce sparse_grid_level = 2
+             pre_solve nip
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "samples": 2000,
+                 "seed": 348,
+                 "delayed_rejection": {},
+                 "emulator": {
+                   "pce": {
+                     "sparse_grid_level": 2
+                   },
+                   "pre_solve": {"nip": true}
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

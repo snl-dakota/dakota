@@ -21,11 +21,27 @@ If the following is included in the ``interface`` section of the Dakota
 input:
 
 
-.. code-block::
+.. tab:: Freeform
 
-      parameters_file = params.in
-      results_file = results.out
-      file_tag
+   .. code-block:: dakota
+
+         parameters_file = params.in
+         results_file = results.out
+         file_tag
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "interface": [
+           {
+             "parameters_file": "params.in",
+             "results_file": "results.out",
+             "file_tag": true
+           }
+         ]
+       }
 
 
 Then for the 3rd evaluation, Dakota will write ``params``.in.3, and will expect

@@ -9,15 +9,44 @@ bayesian_calibration
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-    bayes_calibration muq
-    multilevel_mcmc
-        initial_chain_samples = 50
-        target_variance = 0.5
-        subsampling_steps = 12 0
-        greedy_resampling_factor = 0.5
+   .. code-block:: dakota
+
+       method,
+       bayes_calibration muq
+         chain_samples = 1000
+         multilevel_mcmc
+           initial_chain_samples = 50
+           target_variance = 0.5
+           subsampling_steps = 12 0
+           greedy_resampling_factor = 0.5
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "sub_method": {
+                 "muq": {
+                   "chain_samples": 1000,
+                   "mcmc_algorithm": {
+                     "multilevel_mcmc": {
+                       "initial_chain_samples": 50,
+                       "target_variance": 0.5,
+                       "subsampling_steps": [12, 0],
+                       "greedy_resampling_factor": 0.5
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 Theory::
 

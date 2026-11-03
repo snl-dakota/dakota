@@ -22,15 +22,48 @@ first accepted sample and every 100th sample thereafter.
 An example method block of a Dakota input file is given below
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     bayes_calibration queso
-       chain_samples = 1000 seed = 348
-       dram
-     proposal_covariance
-       diagonal values 1.0e6 1.0e-1
-     sub_sampling_period 100
+   .. code-block:: dakota
+
+       method,
+        bayes_calibration queso
+          chain_samples = 1000 seed = 348
+          dram
+        proposal_covariance
+          diagonal values 1.0e6 1.0e-1
+        sub_sampling_period 100
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "sub_sampling_period": 100,
+               "sub_method": {
+                 "queso": {
+                   "chain_samples": 1000,
+                   "seed": 348,
+                   "mcmc_algorithm": {
+                     "dram": true
+                   },
+                   "proposal_covariance": {
+                     "values": {
+                       "elements": [1000000.0, 0.1],
+                       "covariance_form": {
+                         "diagonal": true
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -26,12 +26,32 @@ Topics::
 bayesian_calibration
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            bayes_calibration queso
-              adaptive_metropolis
-              samples = 10000 seed = 348
+   .. code-block:: dakota
+
+       method,
+               bayes_calibration queso
+                 adaptive_metropolis
+                 samples = 10000 seed = 348
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "adaptive_metropolis": {},
+                 "samples": 10000,
+                 "seed": 348
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

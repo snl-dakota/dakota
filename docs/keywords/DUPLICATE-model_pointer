@@ -21,56 +21,130 @@ Topics::
 block_pointer
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    environment
-      tabular_data
-      method_pointer = 'UQ'
-    
-    method
-      id_method = 'UQ'
-      model_pointer = 'SURR'
-      sampling,
-        samples = 10
-        seed = 98765 rng rnum2
-        response_levels = 0.1 0.2 0.6
-                          0.1 0.2 0.6
-                                0.1 0.2 0.6
-        sample_type lhs
-        distribution cumulative
-    
-    model
-      id_model = 'SURR'
-        global_surrogate,
-        dace_method_pointer = 'DACE'
-        polynomial quadratic
-    
-    method
-      id_method = 'DACE'
-        model_pointer = 'DACE_M'
-        sampling sample_type lhs
-        samples = 121 seed = 5034 rng rnum2
-    
-    model
-      id_model = 'DACE_M'
-      single
-      interface_pointer = 'I1'
-    
-    variables
-      uniform_uncertain = 2
-        lower_bounds =  0.   0.
-        upper_bounds =  1.   1.
-        descriptors  = 'x1' 'x2'
-    
-    interface
-      id_interface = 'I1'
-      system asynch evaluation_concurrency = 5
-        analysis_driver = 'text_book'
-    
-    responses
-      response_functions = 3
-      no_gradients
-      no_hessians
+   .. code-block:: dakota
+
+       environment
+         tabular_data
+         method_pointer = 'UQ'
+
+       method
+         id_method = 'UQ'
+         model_pointer = 'SURR'
+         sampling,
+           samples = 10
+           seed = 98765 rng rnum2
+           response_levels = 0.1 0.2 0.6
+                             0.1 0.2 0.6
+                                   0.1 0.2 0.6
+           sample_type lhs
+           distribution cumulative
+
+       model
+         id_model = 'SURR'
+           global_surrogate,
+           dace_method_pointer = 'DACE'
+           polynomial quadratic
+
+       method
+         id_method = 'DACE'
+           model_pointer = 'DACE_M'
+           sampling sample_type lhs
+           samples = 121 seed = 5034 rng rnum2
+
+       model
+         id_model = 'DACE_M'
+         single
+         interface_pointer = 'I1'
+
+       variables
+         uniform_uncertain = 2
+           lower_bounds =  0.   0.
+           upper_bounds =  1.   1.
+           descriptors  = 'x1' 'x2'
+
+       interface
+         id_interface = 'I1'
+         system asynch evaluation_concurrency = 5
+           analysis_driver = 'text_book'
+
+       responses
+         response_functions = 3
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {},
+           "method_pointer": "UQ"
+         },
+         "method": [
+           {
+             "sampling": {
+               "id_method": "UQ",
+               "model_pointer": "SURR",
+               "samples": 10,
+               "seed": 98765,
+               "response_levels": {"values": [0.1, 0.2, 0.6, 0.1, 0.2, 0.6, 0.1, 0.2, 0.6]},
+               "sample_type": {"lhs": true},
+               "distribution": {"cumulative": true}
+             }
+           },
+           {
+             "sampling": {
+               "id_method": "DACE",
+               "model_pointer": "DACE_M",
+               "sample_type": {"lhs": true},
+               "samples": 121,
+               "seed": 5034
+             }
+           }
+         ],
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "SURR",
+               "polynomial": {"quadratic": true},
+               "dace_method_pointer": "DACE"
+             }
+           },
+           {
+             "single": {
+               "id_model": "DACE_M",
+               "interface_pointer": "I1"
+             }
+           }
+         ],
+         "variables": [
+           {
+             "uniform_uncertain": {
+               "count": 2,
+               "lower_bounds": [0.0, 0.0],
+               "upper_bounds": [1.0, 1.0],
+               "descriptors": ["x1", "x2"]
+             }
+           }
+         ],
+         "interface": [
+           {
+             "id_interface": "I1",
+             "analysis_drivers": {"drivers": ["text_book"]},
+             "interface_type": {"system": {}}
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {"response_functions": {"count": 3}},
+             "gradient_type": {"no_gradients": true},
+             "hessian_type": {"no_hessians": true}
+           }
+         ]
+       }
 
 
 Theory::

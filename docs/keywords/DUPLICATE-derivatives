@@ -40,14 +40,42 @@ Examples::
 Generate a 2000 sample posterior chain, using derivatives to
 initialize the proposal covariance at the start of the chain.
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            bayes_calibration queso
-              samples = 2000 seed = 348
-              delayed_rejection
-              emulator pce sparse_grid_level = 2
-              proposal_covariance derivatives
+   .. code-block:: dakota
+
+       method,
+               bayes_calibration queso
+                 samples = 2000 seed = 348
+                 delayed_rejection
+                 emulator pce sparse_grid_level = 2
+                 proposal_covariance derivatives
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "samples": 2000,
+                 "seed": 348,
+                 "delayed_rejection": {},
+                 "emulator": {
+                   "pce": {
+                     "sparse_grid_level": 2
+                   }
+                 },
+                 "proposal_covariance": {
+                   "derivatives": {}
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

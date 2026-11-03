@@ -25,13 +25,31 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type random
-        initial_samples = 20
-        refinement_samples = 5
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type random
+           initial_samples = 20
+           refinement_samples = 5
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {"random": true},
+               "initial_samples": 20,
+               "refinement_samples": [5]
+             }
+           }
+         ]
+       }
 
 
 Theory::

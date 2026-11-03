@@ -15,12 +15,29 @@ Topics::
 dakota_output
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    environment
-      results_output
-          hdf5
-          results_output_file 'my_results'  # The .h5 extension will be added
+   .. code-block:: dakota
+
+       environment
+         results_output
+             hdf5
+             results_output_file 'my_results'  # The .h5 extension will be added
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "results_output": {
+             "format": {
+               "hdf5": true
+             },
+             "results_output_file": "my_results"
+           }
+         }
+       }
 
 
 Theory::

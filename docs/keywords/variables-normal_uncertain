@@ -26,6 +26,33 @@ continuous_variables, aleatory_uncertain_variables
 
 Examples::
 
+.. tab:: Freeform
+
+   .. code-block:: dakota
+
+       variables
+         normal_uncertain = 2
+           descriptors    = 'x1'  'x2'
+           means          =  0.0   0.0
+           std_deviations =  1.0   1.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "normal_uncertain": {
+               "count": 2,
+               "descriptors": ["x1", "x2"],
+               "means": [0.0, 0.0],
+               "std_deviations": [1.0, 1.0]
+             }
+           }
+         ]
+       }
+
 Theory::
 When used with some methods such as design of experiments and
 multidimensional parameter studies, distribution bounds are inferred

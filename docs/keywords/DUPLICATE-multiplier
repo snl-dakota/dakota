@@ -17,14 +17,37 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      bayes_calibration queso
-        samples = 2000 seed = 348
-        dram
-        proposal_covariance prior
-          multiplier 0.1
+   .. code-block:: dakota
+
+       method
+         bayes_calibration queso
+           samples = 2000 seed = 348
+           dram
+           proposal_covariance prior
+             multiplier 0.1
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "samples": 2000,
+                 "seed": 348,
+                 "dram": {},
+                 "proposal_covariance": {
+                   "prior": {"multiplier": 0.1}
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -18,6 +18,33 @@ continuous_variables, aleatory_uncertain_variables
 
 Examples::
 
+.. tab:: Freeform
+
+   .. code-block:: dakota
+
+       variables
+         uniform_uncertain = 2
+           descriptors = 'x1' 'x2'
+           lower_bounds = -2.0 -2.0
+           upper_bounds =  2.0  2.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "uniform_uncertain": {
+               "count": 2,
+               "descriptors": ["x1", "x2"],
+               "lower_bounds": [-2.0, -2.0],
+               "upper_bounds": [2.0, 2.0]
+             }
+           }
+         ]
+       }
+
 Theory::
 This distribution is a special case of the more general beta distribution.
 

@@ -118,47 +118,101 @@ ensemble model specification employing multiple approximations.
 
 The following method block:
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'NONHIER'
-     multifidelity_sampling
-       pilot_samples = 20 seed = 1237
-       max_iterations = 10
-       convergence_tolerance = .001
+   .. code-block:: dakota
+
+       method
+         model_pointer = 'NONHIER'
+         multifidelity_sampling
+           pilot_samples = 20 seed = 1237
+           max_iterations = 10
+           convergence_tolerance = .001
+
+       model
+         id_model = 'NONHIER'
+         ensemble_surrogate
+           truth_model = 'HF'
+           unordered_model_fidelities = 'LF1' 'LF2'
+
+       model
+         id_model = 'LF1'
+         simulation
+           solution_level_cost = 0.01
+
+       model
+         id_model = 'LF2'
+         simulation
+           solution_level_cost = 0.1
+
+       model
+         id_model = 'HF'
+         simulation
+           solution_level_cost = 1.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multifidelity_sampling": {
+               "model_pointer": "NONHIER",
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "max_iterations": 10,
+               "convergence_tolerance": {
+                 "value": 0.001
+               }
+             }
+           }
+         ],
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "NONHIER",
+               "ensemble": {
+                 "truth_model_pointer": {
+                   "pointer": "HF",
+                   "approximation_models": ["LF1", "LF2"]
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "LF1",
+               "cost_model": {
+                 "solution_level_cost": [0.01]
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "LF2",
+               "cost_model": {
+                 "solution_level_cost": [0.1]
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "HF",
+               "cost_model": {
+                 "solution_level_cost": [1.0]
+               }
+             }
+           }
+         ]
+       }
 
 specifies MFMC in combination with the model identified by the
 NONHIER pointer.
 
 This NONHIER model specification provides a truth model and a set of
 unordered approximation models, each with a single (or default)
-discretization level:
-
-.. code-block::
-
-    model,
-     id_model = 'NONHIER'
-     ensemble_surrogate
-       truth_model = 'HF'
-       unordered_model_fidelities = 'LF1' 'LF2'
-    
-    model,
-     id_model = 'LF1'
-     interface_pointer = 'LF1_INT'
-     simulation
-       solution_level_cost = 0.01
-    
-    model,
-     id_model = 'LF2'
-     interface_pointer = 'LF2_INT'
-     simulation
-       solution_level_cost = 0.1
-    
-    model,
-     id_model = 'HF'
-     interface_pointer = 'HF_INT'
-     simulation
-       solution_level_cost = 1.
+discretization level.
 
 
 Refer to ``dakota/test/dakota_uq_*_cvmc``.in and

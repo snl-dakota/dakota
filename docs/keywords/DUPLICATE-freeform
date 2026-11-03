@@ -25,12 +25,27 @@ Examples::
 Export a freeform tabular file containing only data for variables and
 responses.  Input file fragment:
 
-.. code-block::
+.. tab:: Freeform
 
-    environment
-      tabular_data
-        tabular_data_file = 'dakota_summary.dat'
-        freeform
+   .. code-block:: dakota
+
+       environment
+         tabular_data
+           tabular_data_file = 'dakota_summary.dat'
+           freeform
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {
+             "tabular_data_file": "dakota_summary.dat",
+             "tabular_format": {"freeform": true}
+           }
+         }
+       }
 
 Resulting tabular file:
 

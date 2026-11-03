@@ -56,8 +56,10 @@ extensions = ['myst_parser', 'sphinxcontrib.bibtex',
               'sphinx.ext.autodoc',
               'sphinx_dakota',
               'sphinx_copybutton',
-              'sphinxcontrib.autodoc_pydantic']
-#              'sphinx.ext.mathjax']
+              'sphinxcontrib.autodoc_pydantic',
+              'sphinx_inline_tabs'
+#             'sphinx.ext.mathjax'
+]
 
 # Dakota input file syntax highlighting
 highlight_language = "dakota"

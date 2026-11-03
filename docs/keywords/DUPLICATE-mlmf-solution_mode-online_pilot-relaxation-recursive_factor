@@ -40,15 +40,40 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-	multilevel_blue
-	  solution_mode  online_pilot
-	    relaxation recursive_factor = .5
-	  pilot_samples = 25
-	  seed = 8674132
-	  max_function_evaluations = 500
+   .. code-block:: dakota
+
+       method,
+         multilevel_blue
+           solution_mode  online_pilot
+             relaxation recursive_factor = .5
+           pilot_samples = 25
+           seed = 8674132
+           max_function_evaluations = 500
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_blue": {
+               "solution_mode": {
+                 "online_pilot": {
+                   "relaxation": {
+                     "recursive_factor": 0.5
+                   }
+                 }
+               },
+               "pilot_samples": {"counts": [25]},
+               "seed_sequence": [8674132],
+               "max_function_evaluations": 500
+             }
+           }
+         ]
+       }
 
 Theory::
 

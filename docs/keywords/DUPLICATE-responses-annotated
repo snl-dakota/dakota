@@ -25,12 +25,31 @@ Import an annotated experimental data file containing a header row, leading
 exp_id column, and experiment data in a calibration study
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      ...
-      scalar_data_file 'shock_experiment.dat'
-        annotated
+   .. code-block:: dakota
+
+       responses
+         ...
+         scalar_data_file 'shock_experiment.dat'
+           annotated
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "calibration_data": {
+               "scalar_data_file": {
+                 "filename": "shock_experiment.dat",
+                 "tabular_format": {"annotated": true}
+               }
+             }
+           }
+         ]
+       }
 
 
 Example data file with two measured quantities, three experiments:

@@ -26,13 +26,31 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type lhs
-        samples = 10
-        seed = 15347
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type lhs
+           samples = 10
+           seed = 15347
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {"lhs": true},
+               "samples": 10,
+               "seed": 15347
+             }
+           }
+         ]
+       }
 
 
 Theory::

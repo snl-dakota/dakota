@@ -12,13 +12,33 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      polynomial_chaos
-        expansion_order = 4
-        import_approx_points_file = 'import.mcmc_annot.dat'
-          annotated
+   .. code-block:: dakota
+
+       method
+         polynomial_chaos
+           expansion_order = 4
+           import_approx_points_file = 'import.mcmc_annot.dat'
+             annotated
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "polynomial_chaos": {
+               "expansion_order": 4,
+               "import_approx_points_file": {
+                 "filename": "import.mcmc_annot.dat",
+                 "tabular_format": {"annotated": true}
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

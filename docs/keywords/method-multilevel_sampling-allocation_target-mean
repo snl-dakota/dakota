@@ -7,14 +7,38 @@ Topics::
 Examples::
 The following method block
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-            multilevel_sampling
-       pilot_samples = 20 seed = 1237
-       convergence_tolerance = .01
-       allocation_target = mean
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+        multilevel_sampling
+          pilot_samples = 20 seed = 1237
+          convergence_tolerance = .01
+          allocation_target = mean
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "model_pointer": "HIERARCH",
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "convergence_tolerance": {
+                 "value": 0.01
+               },
+               "allocation_target": {
+                 "mean": true
+               }
+             }
+           }
+         ]
+       }
 
 
 uses the mean as sample allocation target by computing its variance.

@@ -26,12 +26,33 @@ Import an experimental data file containing a header row, no leading
 exp_id column, and experiment data in a calibration study
 
 
-.. code-block::
+.. tab:: Freeform
 
-    responses
-      ...
-      scalar_data_file 'shock_experiment.dat'
-        custom_annotated header
+   .. code-block:: dakota
+
+       responses
+         ...
+         scalar_data_file 'shock_experiment.dat'
+           custom_annotated header
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "calibration_data": {
+               "scalar_data_file": {
+                 "filename": "shock_experiment.dat",
+                 "tabular_format": {
+                   "custom_annotated": {"header": true}
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Example data file with two measured quantities, three experiments:

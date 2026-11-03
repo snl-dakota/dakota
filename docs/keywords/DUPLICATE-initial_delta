@@ -26,39 +26,97 @@ Three example method input blocks appear below.
 
 For ``asynch_pattern_search``:
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      asynch_pattern_search
-        initial_delta = .5
-        contraction_factor = 0.25
-        merit_function merit1_smooth
-        smoothing_factor = 1.0
-        constraint_tolerance = 1.e-6
+   .. code-block:: dakota
+
+       method
+         asynch_pattern_search
+           initial_delta = .5
+           contraction_factor = 0.25
+           merit_function merit1_smooth
+           smoothing_factor = 1.0
+           constraint_tolerance = 1.e-6
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "asynch_pattern_search": {
+               "initial_delta": 0.5,
+               "contraction_factor": 0.25,
+               "merit_function": {"merit1_smooth": {}},
+               "smoothing_factor": 1.0,
+               "constraint_tolerance": 1e-6
+             }
+           }
+         ]
+       }
 
 
 For ``coliny_pattern_search``:
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      coliny_pattern_search
-        initial_delta = .2
-        variable_tolerance = 1.e-4
-        max_iterations 100
-        solution_accuracy = 1.e-6
-        seed = 1234
-        max_function_evaluations = 1000
+   .. code-block:: dakota
+
+       method
+         coliny_pattern_search
+           initial_delta = .2
+           variable_tolerance = 1.e-4
+           max_iterations 100
+           solution_accuracy = 1.e-6
+           seed = 1234
+           max_function_evaluations = 1000
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "coliny_pattern_search": {
+               "initial_delta": 0.2,
+               "variable_tolerance": 1e-4,
+               "max_iterations": 100,
+               "solution_accuracy": 1e-6,
+               "seed": 1234,
+               "max_function_evaluations": 1000
+             }
+           }
+         ]
+       }
 
 
 For ``mesh_adaptive_search``
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      mesh_adaptive_search
-        initial_delta = 2.0
-        seed = 1234
+   .. code-block:: dakota
+
+       method
+         mesh_adaptive_search
+           initial_delta = 2.0
+           seed = 1234
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "mesh_adaptive_search": {
+               "initial_delta": 2.0,
+               "seed": 1234
+             }
+           }
+         ]
+       }
 
 
 Theory::

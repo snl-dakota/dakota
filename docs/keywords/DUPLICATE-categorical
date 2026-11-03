@@ -17,13 +17,34 @@ false, the integrality can be relaxed and 'rotor_blades' can take on
 any value between 2 and 7, e.g., 3, 6, or 5.5.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    discrete_design_set
-     integer 1
-            elements 2 4 7
-     descriptor 'rotor_blades'
-     categorical 'no'
+   .. code-block:: dakota
+
+       discrete_design_set
+        integer 1
+               elements 2 4 7
+        descriptor 'rotor_blades'
+        categorical 'no'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_design_set": {
+               "integer": {
+                 "count": 1,
+                 "elements": [2, 4, 7],
+                 "descriptors": ["rotor_blades"],
+                 "categorical": ["no"]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -208,14 +208,39 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     stoch_collocation
-       sparse_grid_level = 2
-       samples = 10000 seed = 12347 rng rnum2
-       response_levels = .1 1. 50. 100. 500. 1000.
-       variance_based_decomp
+   .. code-block:: dakota
+
+       method
+         stoch_collocation
+           sparse_grid_level = 2
+           samples = 10000
+           seed = 12347
+           rng rnum2
+           response_levels = .1 1. 50. 100. 500. 1000.
+           variance_based_decomp
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "stoch_collocation": {
+               "grid_type": {
+                 "sparse_grid_level": {
+                   "level": 2
+                 }
+               },
+               "samples_on_emulator": 10000,
+               "seed": 12347,
+               "variance_based_decomp": {}
+             }
+           }
+         ]
+       }
 
 
 Theory::

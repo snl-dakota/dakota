@@ -20,46 +20,131 @@ Topics::
 Examples::
 Note that the default for weighted MLMC is no search,
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-        multilevel_sampling
-	  pilot_samples = 20 seed = 1237
-	  weighted
-	  max_function_evaluations = 500
+   .. code-block:: dakota
+
+       method
+         multilevel_sampling
+           pilot_samples = 20 seed = 1237
+           weighted
+           max_function_evaluations = 500
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "weighted": {},
+               "max_function_evaluations": 500
+             }
+           }
+         ]
+       }
 
 with options to activate search over model ordering,
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    method,
-        multilevel_sampling
-	  pilot_samples = 20 seed = 1237
-	  weighted
-	    search_model_graphs full_recursion
-	  max_function_evaluations = 500
+   .. code-block:: dakota
+
+       method
+         multilevel_sampling
+           pilot_samples = 20 seed = 1237
+           weighted
+             search_model_graphs full_recursion
+           max_function_evaluations = 500
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "weighted": {
+                 "search_model_graphs": {"full_recursion": {}}
+               },
+               "max_function_evaluations": 500
+             }
+           }
+         ]
+       }
 
 over model subset selection,
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    method,
-        multilevel_sampling
-	  pilot_samples = 20 seed = 1237
-	  weighted
-	    search_model_graphs no_recursion model_selection
-	  max_function_evaluations = 500
+   .. code-block:: dakota
+
+       method
+         multilevel_sampling
+           pilot_samples = 20 seed = 1237
+           weighted
+             search_model_graphs no_recursion model_selection
+           max_function_evaluations = 500
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "weighted": {
+                 "search_model_graphs": {"no_recursion": {}, "model_selection": {}}
+               },
+               "max_function_evaluations": 500
+             }
+           }
+         ]
+       }
 
 or over both.
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    method,
-        multilevel_sampling
-	  pilot_samples = 20 seed = 1237
-	  weighted
-	    search_model_graphs full_recursion model_selection
-	  max_function_evaluations = 500
+   .. code-block:: dakota
+
+       method
+         multilevel_sampling
+           pilot_samples = 20 seed = 1237
+           weighted
+             search_model_graphs full_recursion model_selection
+           max_function_evaluations = 500
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "weighted": {
+                 "search_model_graphs": {"full_recursion": {}, "model_selection": {}}
+               },
+               "max_function_evaluations": 500
+             }
+           }
+         ]
+       }
 
 
 Theory::

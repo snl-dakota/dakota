@@ -20,13 +20,34 @@ Topics::
 bayesian_calibration
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            bayes_calibration queso
-              samples = 2000 seed = 348
-              dram
-              proposal_covariance prior
+   .. code-block:: dakota
+
+       method,
+               bayes_calibration queso
+                 samples = 2000 seed = 348
+                 dram
+                 proposal_covariance prior
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "samples": 2000,
+                 "seed": 348,
+                 "dram": {},
+                 "proposal_covariance": {"prior": {}}
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -13,15 +13,33 @@ understood by Dakota's template processing tool,
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    interface
-      fork
-      analysis_drivers 'driver.py'
-      parameters_file = "params.in"
-      results_file = "results.out"
-      parameters_format
-        aprepro
+   .. code-block:: dakota
+
+       interface
+         fork
+         analysis_drivers 'driver.py'
+         parameters_file = "params.in"
+         results_file = "results.out"
+         parameters_format
+           aprepro
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "interface": [
+           {
+             "analysis_drivers": {"drivers": ["driver.py"]},
+             "interface_type": {"fork": {}},
+             "parameters_file": "params.in",
+             "results_file": "results.out",
+             "parameters_format": {"aprepro": true}
+           }
+         ]
+       }
 
 Theory::
 

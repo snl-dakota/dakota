@@ -15,16 +15,43 @@ Examples::
 This example shows specification of an order adaptation starting at order 2,
 incrementing by 2, and limited at order 6.
 
-.. code-block::
+.. tab:: Freeform
 
-    model,
-     id_model = 'FT'
-     global_surrogate function_train
-       start_rank = 4
-       adapt_order  start_order = 2  kick_order = 2  max_order = 6
-       solver_tolerance   = 1e-12
-       rounding_tolerance = 1e-12
-     dace_method_pointer = 'SAMPLING'
+   .. code-block:: dakota
+
+       model,
+        id_model = 'FT'
+        global_surrogate function_train
+          start_rank = 4
+          adapt_order  start_order = 2  kick_order = 2  max_order = 6
+          solver_tolerance   = 1e-12
+          rounding_tolerance = 1e-12
+        dace_method_pointer = 'SAMPLING'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "FT",
+               "function_train": {
+                 "start_rank": 4,
+                 "adapt_order": {
+                   "start_order": 2,
+                   "kick_order": 2,
+                   "max_order": 6
+                 },
+                 "solver_tolerance": 1e-12,
+                 "rounding_tolerance": 1e-12
+               },
+               "dace_method_pointer": "SAMPLING"
+             }
+           }
+         ]
+       }
 
 
 Note that ``adapt_rank`` and ``adapt_order`` can either be combined or

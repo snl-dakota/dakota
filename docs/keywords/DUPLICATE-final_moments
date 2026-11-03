@@ -9,47 +9,125 @@ Topics::
 Examples::
 The following method specification overrides the default to print ``central`` moments and include them in the set of final statistics.
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      sampling
-        samples = 50 seed = 1234
-        response_levels = 3.6e+11 1.2e+05 3.5e+05
-        final_moments central
+   .. code-block:: dakota
+
+       method,
+         sampling
+           samples = 50 seed = 1234
+           response_levels = 3.6e+11 1.2e+05 3.5e+05
+           final_moments central
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 50,
+               "seed": 1234,
+               "response_levels": {"values": [3.6e+11, 1.2e+05, 3.5e+05]},
+               "final_moments": {"central": true}
+             }
+           }
+         ]
+       }
 
 
 Overriding the default to ``none`` as follows:
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      sampling
-        samples = 50 seed = 1234
-        response_levels = 3.6e+11 1.2e+05 3.5e+05
-        final_moments none
+   .. code-block:: dakota
+
+       method,
+         sampling
+           samples = 50 seed = 1234
+           response_levels = 3.6e+11 1.2e+05 3.5e+05
+           final_moments none
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 50,
+               "seed": 1234,
+               "response_levels": {"values": [3.6e+11, 1.2e+05, 3.5e+05]},
+               "final_moments": {"none": true}
+             }
+           }
+         ]
+       }
 
 
 allows associated nested model mappings to be simplified from:
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      nested
-        sub_method_pointer = 'UQ'
-        primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.
-        secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.
+   .. code-block:: dakota
+
+       model
+         nested
+           sub_method_pointer = 'UQ'
+           primary_response_mapping   = 0. 0. 1. 0. 0. 1. 0. 0. 0.
+           secondary_response_mapping = 0. 0. 0. 0. 0. 0. 0. 0. 1.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "nested": {
+               "sub_method_pointer": {
+                 "pointer": "UQ",
+                 "primary_response_mapping": [0.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0],
+                 "secondary_response_mapping": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 to a more compact version focused only on the response level mappings (two
 leading zeros per response function for moment mappings have been removed):
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      nested
-        sub_method_pointer = 'UQ'
-        primary_response_mapping   = 1. 1. 0.
-        secondary_response_mapping = 0. 0. 1.
+   .. code-block:: dakota
+
+       model
+         nested
+           sub_method_pointer = 'UQ'
+           primary_response_mapping   = 1. 1. 0.
+           secondary_response_mapping = 0. 0. 1.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "nested": {
+               "sub_method_pointer": {
+                 "pointer": "UQ",
+                 "primary_response_mapping": [1.0, 1.0, 0.0],
+                 "secondary_response_mapping": [0.0, 0.0, 1.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

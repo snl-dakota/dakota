@@ -8,13 +8,34 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type random
-        wilks
-          one_sided_lower
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type random
+           wilks
+             one_sided_lower
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {
+                 "random": true
+               },
+               "wilks": {
+                 "one_sided_lower": true
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

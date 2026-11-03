@@ -45,12 +45,29 @@ The following example shows the syntax for specifying
 listed within a single string.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      mesh_adaptive_search
-        display_format 'bbe obj poll_size'
-        seed = 1234
+   .. code-block:: dakota
+
+       method
+         mesh_adaptive_search
+           display_format 'bbe obj poll_size'
+           seed = 1234
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "mesh_adaptive_search": {
+               "display_format": "bbe obj poll_size",
+               "seed": 1234
+             }
+           }
+         ]
+       }
 
 
 Below is the output reported for the above example.

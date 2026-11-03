@@ -16,59 +16,152 @@ Topics::
 dakota_output
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    environment
-      results_output
-          hdf5
-           # interface_selection
-           #  simulation
-           #  all
-           #  none
-          results_output_file 'my_results'  # The .h5 extension will be added
-    
-       method_pointer 'opt'
-    
-    method
-      id_method 'opt'
-        optpp_q_newton
-      model_pointer 'surr'
-    
-    model
-      id_model 'surr'
-      global_surrogate gaussian_process surfpack
-      dace_method_pointer 'training'
-    
-    method
-      id_method 'training'
-      sampling
-        seed 1234
-        samples 20
-      model_pointer 'truth_m'
-    
-    model
-      id_model 'truth_m'
-      simulation
-    
-    interface
-      id_interface 'truth'
-      direct
-        analysis_drivers 'text_book'
-    
-    variables
-      continuous_design 2
-        descriptors 'x1' 'x2'
-        lower_bounds -2.0 -2.0
-        upper_bounds  2.0  2.0
-    
-    responses
-      objective_functions 2
-        descriptors 'f1' 'f2'
-      analytic_gradients
-      no_hessians
-    
+   .. code-block:: dakota
 
+       environment
+         results_output
+             hdf5
+              # interface_selection
+              #  simulation
+              #  all
+              #  none
+             results_output_file 'my_results'  # The .h5 extension will be added
 
+          method_pointer 'opt'
+
+       method
+         id_method 'opt'
+           optpp_q_newton
+         model_pointer 'surr'
+
+       model
+         id_model 'surr'
+         global_surrogate gaussian_process surfpack
+         dace_method_pointer 'training'
+
+       method
+         id_method 'training'
+         sampling
+           seed 1234
+           samples 20
+         model_pointer 'truth_m'
+
+       model
+         id_model 'truth_m'
+         simulation
+
+       interface
+         id_interface 'truth'
+         direct
+           analysis_drivers 'text_book'
+
+       variables
+         continuous_design 2
+           descriptors 'x1' 'x2'
+           lower_bounds -2.0 -2.0
+           upper_bounds  2.0  2.0
+
+       responses
+         objective_functions 2
+           descriptors 'f1' 'f2'
+         analytic_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "optpp_q_newton": {
+               "id_method": "opt",
+               "model_pointer": "surr"
+             }
+           },
+           {
+             "sampling": {
+               "seed": 1234,
+               "samples": 20,
+               "id_method": "training",
+               "model_pointer": "truth_m"
+             }
+           }
+         ],
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "surr",
+               "build_data": {
+                 "dace_method_pointer": {
+                   "pointer": "training"
+                 }
+               },
+               "type": {
+                 "gaussian_process": {
+                   "gp_implementation": {
+                     "surfpack": {}
+                   }
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "truth_m"
+             }
+           }
+         ],
+         "interface": [
+           {
+             "id_interface": "truth",
+             "analysis_drivers": {
+               "drivers": [
+                 "text_book"
+               ],
+               "interface_type": {
+                 "direct": {}
+               }
+             }
+           }
+         ],
+         "variables": [
+           {
+             "continuous_design": {
+               "descriptors": [
+                 "x1",
+                 "x2"
+               ],
+               "lower_bounds": [
+                 -2.0,
+                 -2.0
+               ],
+               "upper_bounds": [
+                 2.0,
+                 2.0
+               ],
+               "count": 2
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "objective_functions": {
+                 "count": 2
+               }
+             },
+             "gradient_type": {
+               "analytic_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 Theory::
 
 Faq::

@@ -107,15 +107,37 @@ Topics::
 Examples::
 The following method block:
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'NONHIER'
-     approximate_control_variate
-       acv_mf nip
-       pilot_samples = 20 seed = 1237
-       max_iterations = 10
-       convergence_tolerance = .001
+   .. code-block:: dakota
+
+       method
+         model_pointer = 'NONHIER'
+         approximate_control_variate
+           acv_mf nip
+           pilot_samples = 20 seed = 1237
+           max_iterations = 10
+           convergence_tolerance = .001
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "approximate_control_variate": {
+               "model_pointer": "NONHIER",
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "max_iterations": 10,
+               "convergence_tolerance": {
+                 "value": 0.001
+               }
+             }
+           }
+         ]
+       }
 
 specifies ACV-MF using the nonlinear interior point (NIP) solver in
 combination with the model identified by the NONHIER pointer.
@@ -124,31 +146,78 @@ This NONHIER model specification provides a one-dimensional sequence,
 here defined by a single truth model and a set of unordered approximation
 models, each with a single (or default) discretization level:
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-    model,
-     id_model = 'NONHIER'
-     ensemble_surrogate
-       truth_model = 'HF'
-       unordered_model_fidelities = 'LF1' 'LF2'
-    
-    model,
-     id_model = 'LF1'
-     interface_pointer = 'LF1_INT'
-     simulation
-       solution_level_cost = 1
-    
-    model,
-     id_model = 'LF2'
-     interface_pointer = 'LF2_INT'
-     simulation
-       solution_level_cost = 16
-    
-    model,
-     id_model = 'HF'
-     interface_pointer = 'HF_INT'
-     simulation
-       solution_level_cost = 256.
+   .. code-block:: dakota
+
+       model
+         id_model = 'NONHIER'
+         ensemble_surrogate
+           truth_model = 'HF'
+           unordered_model_fidelities = 'LF1' 'LF2'
+
+       model
+         id_model = 'LF1'
+         interface_pointer = 'LF1_INT'
+         simulation
+           solution_level_cost = 1
+
+       model
+         id_model = 'LF2'
+         interface_pointer = 'LF2_INT'
+         simulation
+           solution_level_cost = 16
+
+       model
+         id_model = 'HF'
+         interface_pointer = 'HF_INT'
+         simulation
+           solution_level_cost = 256.
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "NONHIER",
+               "ensemble": {
+                 "truth_model_pointer": {
+                   "pointer": "HF",
+                   "approximation_models": ["LF1", "LF2"]
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "LF1",
+               "cost_model": {
+                 "solution_level_cost": [1.0]
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "LF2",
+               "cost_model": {
+                 "solution_level_cost": [16.0]
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "HF",
+               "cost_model": {
+                 "solution_level_cost": [256.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 Refer to ``dakota/test/dakota_uq_diffusion_acv3_cost4``.in and

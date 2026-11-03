@@ -19,15 +19,48 @@ Generate a chain of length 1000 and discard the first 100 points,
 resulting in a chain of length 900.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     bayes_calibration queso
-       chain_samples = 1000 seed = 348
-       dram
-     proposal_covariance
-       diagonal values 1.0e6 1.0e-1
-     burn_in_samples 100
+   .. code-block:: dakota
+
+       method,
+        bayes_calibration queso
+          chain_samples = 1000 seed = 348
+          dram
+        proposal_covariance
+          diagonal values 1.0e6 1.0e-1
+        burn_in_samples 100
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "burn_in_samples": 100,
+               "sub_method": {
+                 "queso": {
+                   "chain_samples": 1000,
+                   "seed": 348,
+                   "mcmc_algorithm": {
+                     "dram": true
+                   },
+                   "proposal_covariance": {
+                     "values": {
+                       "elements": [1000000.0, 0.1],
+                       "covariance_form": {
+                         "diagonal": true
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

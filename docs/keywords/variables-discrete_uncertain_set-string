@@ -21,13 +21,35 @@ Topics::
 discrete_variables, epistemic_uncertain_variables
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    discrete_uncertain_set
-     string
-     num_set_values 2             3
-     set_values     'red' 'blue'  'coarse' 'medium' 'fine'
-     descriptors    'ds1'         'ds2'
+   .. code-block:: dakota
+
+       variables
+         discrete_uncertain_set
+           string
+             num_set_values 2             3
+             set_values     'blue' 'red'  'coarse' 'fine' 'medium'
+             descriptors    'ds1'         'ds2'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_uncertain_set": {
+               "string": {
+                 "count": 2,
+                 "elements_per_variable": [2, 3],
+                 "elements": ["blue", "red", "coarse", "fine", "medium"],
+                 "descriptors": ["ds1", "ds2"]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

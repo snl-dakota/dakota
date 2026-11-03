@@ -13,11 +13,46 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      bayes_calibration
-        wasabi
+   .. code-block:: dakota
+
+       method
+         bayes_calibration
+           wasabi
+             pushforward_samples = 100
+             data_distribution gaussian
+               means = 0.0
+               covariance diagonal values 1.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "sub_method": {
+                 "wasabi": {
+                   "pushforward_samples": 100,
+                   "data_distribution": {
+                     "gaussian": {
+                       "means": [0.0],
+                       "covariance": {
+                         "values": [1.0],
+                         "type": {
+                           "diagonal": true
+                         }
+                       }
+                     }
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

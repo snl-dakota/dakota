@@ -14,12 +14,29 @@ Examples::
 Use of external python methods in Dakota is enabled within the method
 block via:
 
-.. code-block::
+.. tab:: Freeform
 
-  method,
-      external_python
-        class_path_and_name = "ext_py_methods.RandomSample"
-        options_file = 'ext_py_options.json'
+   .. code-block:: dakota
+
+       method,
+           external_python
+             class_path_and_name = "ext_py_methods.RandomSample"
+             options_file = 'ext_py_options.json'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "external_python": {
+               "class_path_and_name": "ext_py_methods.RandomSample",
+               "options_file": "ext_py_options.json"
+             }
+           }
+         ]
+       }
 
 
 An example python class that implements simple random sampling in the

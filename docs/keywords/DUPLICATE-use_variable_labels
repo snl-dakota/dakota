@@ -38,16 +38,43 @@ Topics::
 Examples::
 This example enforces variable labels for both build and challenge points
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model = 'SURR'
-      global_surrogate
-        polynomial quadratic
-        import_build_points_file = 'dakota_surrogate_import.unc_fixedothers.dat'
-          annotated  use_variable_labels
-        challenge_points_file = 'dakota_surrogate_import.dat'
-          annotated  use_variable_labels
+   .. code-block:: dakota
+
+       model
+         id_model = 'SURR'
+         global_surrogate
+           polynomial quadratic
+           import_build_points_file = 'dakota_surrogate_import.unc_fixedothers.dat'
+             annotated  use_variable_labels
+           challenge_points_file = 'dakota_surrogate_import.dat'
+             annotated  use_variable_labels
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "SURR",
+               "polynomial": {"quadratic": true},
+               "import_build_points_file": {
+                 "filename": "dakota_surrogate_import.unc_fixedothers.dat",
+                 "tabular_format": {"annotated": true},
+                 "use_variable_labels": true
+               },
+               "challenge_points_file": {
+                 "filename": "dakota_surrogate_import.dat",
+                 "tabular_format": {"annotated": true},
+                 "use_variable_labels": true
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -37,16 +37,42 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type random
-        wilks
-          probability_levels = 0.75 0.8 0.95 0.99
-          confidence_level 0.99
-          two_sided
-          order 2
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type random
+           probability_levels = 0.75 0.8 0.95 0.99
+           wilks
+             confidence_level = 0.99
+             two_sided
+             order = 2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {
+                 "random": true
+               },
+               "probability_levels": {
+                 "values": [0.75, 0.8, 0.95, 0.99]
+               },
+               "wilks": {
+                 "confidence_level": 0.99,
+                 "two_sided": true,
+                 "order": 2
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

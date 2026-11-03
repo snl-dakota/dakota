@@ -7,16 +7,42 @@ Topics::
 Examples::
 The following method block
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-            multilevel_sampling
-       pilot_samples = 20 seed = 1237
-       convergence_tolerance = .01
-       allocation_target = scalarization
-        scalarization_response_mapping = 1 0 0 0
-                                                     0 0 1 3
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+        multilevel_sampling
+          pilot_samples = 20 seed = 1237
+          convergence_tolerance = .01
+          allocation_target = scalarization
+            scalarization_response_mapping = 1 0 0 0
+                                             0 0 1 3
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "model_pointer": "HIERARCH",
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "convergence_tolerance": {
+                 "value": 0.01
+               },
+               "allocation_target": {
+                 "scalarization": {
+                   "scalarization_response_mapping": [1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 3.0]
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 uses the standard_deviation as sample allocation target by computing its variance. In this example, we assume a problem with two responses where the first line in scalarization_response_mapping refers to the first response, the second line to the second response. In the first line we only use 1 times the mean as quantity of interest. For the second response, we use 1 time the mean plus 3 times the standard devitation of the second quantity of interested. This behavior mimics the keywords :dakkw:`model-nested-sub_method_pointer-primary_response_mapping` and :dakkw:`model-nested-sub_method_pointer-secondary_response_mapping`.

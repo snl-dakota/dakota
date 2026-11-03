@@ -6,13 +6,32 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-      sampling
-        samples = 50 seed = 1234
-        response_levels = 3.6e+11 1.2e+05 3.5e+05
-        final_moments none
+   .. code-block:: dakota
+
+       method,
+         sampling
+           samples = 50 seed = 1234
+           response_levels = 3.6e+11 1.2e+05 3.5e+05
+           final_moments none
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 50,
+               "seed": 1234,
+               "response_levels": {"values": [3.6e+11, 1.2e+05, 3.5e+05]},
+               "final_moments": {"none": true}
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -29,14 +29,33 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            multilevel_polynomial_chaos
-       expansion_order_sequence = 2
-       collocation_ratio = .9
-       orthogonal_matching_pursuit
-       discrepancy_emulation recursive
+   .. code-block:: dakota
+
+       method,
+               multilevel_polynomial_chaos
+                 expansion_order_sequence = 2
+                 collocation_ratio = .9
+                 orthogonal_matching_pursuit
+                 discrepancy_emulation recursive
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_polynomial_chaos": {
+               "expansion_order_sequence": [2],
+               "collocation_ratio": 0.9,
+               "orthogonal_matching_pursuit": {},
+               "discrepancy_emulation": {"recursive": true}
+             }
+           }
+         ]
+       }
 
 
 Theory::

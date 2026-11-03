@@ -28,13 +28,31 @@ The following example shows the syntax for specifying
 ``display_all_evaluations``.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      mesh_adaptive_search
-        display_all_evaluations
-        max_function evaluations=20
-        seed = 1234
+   .. code-block:: dakota
+
+       method
+         mesh_adaptive_search
+           display_all_evaluations
+           max_function_evaluations = 20
+           seed = 1234
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "mesh_adaptive_search": {
+               "display_all_evaluations": true,
+               "max_function_evaluations": 20,
+               "seed": 1234
+             }
+           }
+         ]
+       }
 
 
 Note that the output below reports information (default for

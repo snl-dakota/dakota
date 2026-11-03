@@ -37,13 +37,34 @@ Let d1 be 2, 3 or 4 with probability 0.2, 4 or 5 with probability 0.5 and 6 with
 Let d2 be 4, 5 or 6 with probability 0.4 and 6, 7 or 8 with probability 0.6.
 The following specification is for a Dempster-Shafer analysis:
 
-.. code-block::
+.. tab:: Freeform
 
-    discrete_interval_uncertain = 2
-     num_intervals = 3 2
-     interval_probs = 0.2 0.5 0.3 0.4 0.6
-     lower_bounds = 2 4 6 4 6
-     upper_bounds = 4 5 6 6 8
+   .. code-block:: dakota
+
+       variables
+         discrete_interval_uncertain = 2
+           num_intervals = 3 2
+           interval_probs = 0.2 0.5 0.3 0.4 0.6
+           lower_bounds = 2 4 6 4 6
+           upper_bounds = 4 5 6 6 8
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_interval_uncertain": {
+               "count": 2,
+               "num_intervals": [3, 2],
+               "interval_probabilities": [0.2, 0.5, 0.3, 0.4, 0.6],
+               "lower_bounds": [2, 4, 6, 4, 6],
+               "upper_bounds": [4, 5, 6, 6, 8]
+             }
+           }
+         ]
+       }
 
 
 Theory::

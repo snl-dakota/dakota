@@ -24,16 +24,48 @@ block_identifier
 Examples::
 For example, a model specification including
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      variables_pointer = 'V1'
+   .. code-block:: dakota
 
-will link to a response set with
+       model
+         variables_pointer = 'V1'
 
-.. code-block::
+.. tab:: JSON
 
-      id_variables = 'V1'
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "single": {
+               "variables_pointer": "V1"
+             }
+           }
+         ]
+       }
+
+will link to a variables block with
+
+.. tab:: Freeform
+   :new-set:
+
+   .. code-block:: dakota
+
+       variables
+         id_variables = 'V1'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "id_variables": "V1"
+           }
+         ]
+       }
 
 
 Theory::

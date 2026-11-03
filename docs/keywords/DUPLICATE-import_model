@@ -54,40 +54,94 @@ Examples::
 The following model block exports a Gaussian process after it's built:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model = 'SURR_M'
-      global_surrogate
-        dace_method_pointer = 'DACE'
-        experimental_gaussian_process
-          metrics 'root_mean_squared'
-            cross_validation folds 5
-          export_model
-            filename_prefix = 'gp_export'
-            formats = binary_archive
-          export_approx_points_file 'gp_values.dat'
-          export_approx_variance_file 'gp_variance.dat'
+   .. code-block:: dakota
+
+       model
+         id_model = 'SURR_M'
+         global_surrogate
+           dace_method_pointer = 'DACE'
+           experimental_gaussian_process
+             metrics 'root_mean_squared'
+               cross_validation folds 5
+             export_model
+               filename_prefix = 'gp_export'
+               formats = binary_archive
+             export_approx_points_file 'gp_values.dat'
+             export_approx_variance_file 'gp_variance.dat'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "SURR_M",
+               "dace_method_pointer": "DACE",
+               "experimental_gaussian_process": {
+                 "metrics": ["root_mean_squared"],
+                 "cross_validation": {"folds": 5},
+                 "export_model": {
+                   "filename_prefix": "gp_export",
+                   "formats": {"binary_archive": true}
+                 },
+                 "export_approx_points_file": "gp_values.dat",
+                 "export_approx_variance_file": "gp_variance.dat"
+               }
+             }
+           }
+         ]
+       }
 
 
 And this model block imports it using a nearly identical model
 specification:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model = 'SURR_M'
-      global_surrogate
-        dace_method_pointer = 'DACE'
-        experimental_gaussian_process
-          metrics 'root_mean_squared'
-            cross_validation folds 5
-          import_model
-            filename_prefix = 'gp_export'
-        binary_archive
-          export_approx_points_file 'gp_values.dat'
-          export_approx_variance_file 'gp_variance.dat'
+   .. code-block:: dakota
+
+       model
+         id_model = 'SURR_M'
+         global_surrogate
+           dace_method_pointer = 'DACE'
+           experimental_gaussian_process
+             metrics 'root_mean_squared'
+               cross_validation folds 5
+             import_model
+               filename_prefix = 'gp_export'
+           binary_archive
+             export_approx_points_file 'gp_values.dat'
+             export_approx_variance_file 'gp_variance.dat'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "SURR_M",
+               "dace_method_pointer": "DACE",
+               "experimental_gaussian_process": {
+                 "metrics": ["root_mean_squared"],
+                 "cross_validation": {"folds": 5},
+                 "import_model": {
+                   "filename_prefix": "gp_export",
+                   "formats": {"binary_archive": true}
+                 },
+                 "export_approx_points_file": "gp_values.dat",
+                 "export_approx_variance_file": "gp_variance.dat"
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

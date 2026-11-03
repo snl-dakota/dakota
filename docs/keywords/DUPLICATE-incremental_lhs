@@ -55,37 +55,70 @@ via a command line option:
 which uses the input file:
 
 
-.. code-block::
+.. tab:: Freeform
 
-    # LHS_50.in
-    
-    environment
-      tabular_data
-        tabular_data_file = 'LHS_50.dat'
-    
-    method
-      sampling
-        seed = 1337
-        sample_type lhs
-        samples = 50
-    
-    model
-      single
-    
-    variables
-      uniform_uncertain = 2
-        descriptors  =   'input1'     'input2'
-        lower_bounds =  -2.0     -2.0
-        upper_bounds =   2.0      2.0
-    
-    interface
-      analysis_drivers 'text_book'
-        fork
-    
-    responses
-      response_functions = 1
-      no_gradients
-      no_hessians
+   .. code-block:: dakota
+
+       # LHS_50.in
+
+       environment
+         tabular_data
+           tabular_data_file = 'LHS_50.dat'
+
+       method
+         sampling
+           seed = 1337
+           sample_type lhs
+           samples = 50
+
+       model
+         single
+
+       variables
+         uniform_uncertain = 2
+           descriptors  =   'input1'     'input2'
+           lower_bounds =  -2.0     -2.0
+           upper_bounds =   2.0      2.0
+
+       interface
+         analysis_drivers 'text_book'
+           fork
+
+       responses
+         response_functions = 1
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {"tabular_data_file": "LHS_50.dat"}
+         },
+         "method": [{"sampling": {"seed": 1337, "sample_type": {"lhs": true}, "samples": 50}}],
+         "model": [{"single": {}}],
+         "variables": [{
+           "uniform_uncertain": {
+             "count": 2,
+             "descriptors": ["input1", "input2"],
+             "lower_bounds": [-2.0, -2.0],
+             "upper_bounds": [2.0, 2.0]
+           }
+         }],
+         "interface": [{
+           "analysis_drivers": {
+             "drivers": ["text_book"],
+             "interface_type": {"fork": {}}
+           }
+         }],
+         "responses": [{
+           "response_type": {"response_functions": {"count": 1}},
+           "gradient_type": {"no_gradients": true},
+           "hessian_type": {"no_hessians": true}
+         }]
+       }
 
 and the restart file is written to ``LHS_50``.rst.
 
@@ -101,38 +134,78 @@ file containing the results of the previous LHS study. In the example input
 files for the initial and incremental studies, the values for ``seed`` match.
 This ensures that the initial 50 samples generated in both runs are the same.
 
-.. code-block::
+.. tab:: Freeform
 
-    # LHS_100.in
-    
-    environment
-      tabular_data
-        tabular_data_file = 'LHS_100.dat'
-    
-    method
-      sampling
-        seed = 1337
-        sample_type incremental_lhs
-        samples = 50
-          refinement_samples = 50
-    
-    model
-      single
-    
-    variables
-      uniform_uncertain = 2
-        descriptors  =   'input1'     'input2'
-        lower_bounds =  -2.0     -2.0
-        upper_bounds =   2.0      2.0
-    
-    interface
-      analysis_drivers 'text_book'
-        fork
-    
-    responses
-      response_functions = 1
-      no_gradients
-      no_hessians
+   .. code-block:: dakota
+
+       # LHS_100.in
+
+       environment
+         tabular_data
+           tabular_data_file = 'LHS_100.dat'
+
+       method
+         sampling
+           seed = 1337
+           sample_type incremental_lhs
+           samples = 50
+             refinement_samples = 50
+
+       model
+         single
+
+       variables
+         uniform_uncertain = 2
+           descriptors  =   'input1'     'input2'
+           lower_bounds =  -2.0     -2.0
+           upper_bounds =   2.0      2.0
+
+       interface
+         analysis_drivers 'text_book'
+           fork
+
+       responses
+         response_functions = 1
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "tabular_data": {"tabular_data_file": "LHS_100.dat"}
+         },
+         "method": [{
+           "sampling": {
+             "seed": 1337,
+             "sample_type": {"incremental_lhs": true},
+             "samples": 50,
+             "refinement_samples": [50]
+           }
+         }],
+         "model": [{"single": {}}],
+         "variables": [{
+           "uniform_uncertain": {
+             "count": 2,
+             "descriptors": ["input1", "input2"],
+             "lower_bounds": [-2.0, -2.0],
+             "upper_bounds": [2.0, 2.0]
+           }
+         }],
+         "interface": [{
+           "analysis_drivers": {
+             "drivers": ["text_book"],
+             "interface_type": {"fork": {}}
+           }
+         }],
+         "responses": [{
+           "response_type": {"response_functions": {"count": 1}},
+           "gradient_type": {"no_gradients": true},
+           "hessian_type": {"no_hessians": true}
+         }]
+       }
 
 
 The user will get 50 new LHS samples which

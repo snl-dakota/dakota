@@ -33,18 +33,41 @@ for each level, the candidate expansion order is incremented as needed
 in order to synchronize with the specified collocation ratio.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-     multilevel_polynomial_chaos
-       orthogonal_matching_pursuit
-       expansion_order_sequence = 2
-       pilot_samples = 10
-       collocation_ratio = .9
-       allocation_control rip_sampling
-       seed = 1237
-       convergence_tolerance = .01
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+        multilevel_polynomial_chaos
+          orthogonal_matching_pursuit
+          expansion_order_sequence = 2
+          pilot_samples = 10
+          collocation_ratio = .9
+          allocation_control rip_sampling
+          seed = 1237
+          convergence_tolerance = .01
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_polynomial_chaos": {
+               "model_pointer": "HIERARCH",
+               "orthogonal_matching_pursuit": {},
+               "expansion_order_sequence": [2],
+               "pilot_samples": [10],
+               "collocation_ratio": 0.9,
+               "allocation_control": {"rip_sampling": {}},
+               "seed": 1237,
+               "convergence_tolerance": 0.01
+             }
+           }
+         ]
+       }
 
 
 Theory::

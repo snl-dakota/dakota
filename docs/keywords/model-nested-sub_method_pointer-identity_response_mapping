@@ -20,13 +20,33 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model 'nested'
-        nested
-        sub_method_pointer 'aleat'
-        identity_response_mapping
+   .. code-block:: dakota
+
+       model
+         id_model = 'nested'
+         nested
+           sub_method_pointer = 'aleat'
+           identity_response_mapping
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "nested": {
+               "id_model": "nested",
+               "sub_method_pointer": {
+                 "pointer": "aleat",
+                 "identity_response_mapping": true
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

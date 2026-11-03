@@ -10,15 +10,41 @@ Topics::
 Examples::
 The following method block
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-            multilevel_sampling
-       pilot_samples = 20 seed = 1237
-       convergence_tolerance = .01
-       allocation_target = variance
-        optimization
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+        multilevel_sampling
+          pilot_samples = 20 seed = 1237
+          convergence_tolerance = .01
+          allocation_target = variance
+            optimization
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multilevel_sampling": {
+               "model_pointer": "HIERARCH",
+               "pilot_samples": [20],
+               "seed_sequence": [1237],
+               "convergence_tolerance": {
+                 "value": 0.01
+               },
+               "allocation_target": {
+                 "variance": {
+                   "optimization": true
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 uses the variance as sample allocation target and solves the resulting optimization problem using numerical optimization.

@@ -9,13 +9,34 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type random
-        wilks
-          order 2
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type random
+           wilks
+             order = 2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {
+                 "random": true
+               },
+               "wilks": {
+                 "order": 2
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

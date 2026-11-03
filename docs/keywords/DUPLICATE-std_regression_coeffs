@@ -31,12 +31,29 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-       samples 50
-       std_regression_coeffs
+   .. code-block:: dakota
+
+       method
+         sampling
+           samples = 50
+           std_regression_coeffs
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "samples": 50,
+               "std_regression_coeffs": true
+             }
+           }
+         ]
+       }
 
 Theory::
 

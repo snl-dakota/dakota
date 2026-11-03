@@ -12,12 +12,29 @@ Topics::
 Examples::
 Perform 10000 samples on the PCE approximation of the true model:
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      polynomial_chaos
-        quadrature_order    = 2
-        samples_on_emulator = 10000
+   .. code-block:: dakota
+
+       method
+         polynomial_chaos
+           quadrature_order    = 2
+           samples_on_emulator = 10000
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "polynomial_chaos": {
+               "quadrature_order": 2,
+               "samples_on_emulator": 10000
+             }
+           }
+         ]
+       }
 
 
 Theory::

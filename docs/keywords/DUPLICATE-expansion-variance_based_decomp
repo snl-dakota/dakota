@@ -41,12 +41,31 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            polynomial_chaos # or stoch_collocation
-              sparse_grid_level = 3
-              variance_based_decomp interaction_order = 2
+   .. code-block:: dakota
+
+       method,
+               polynomial_chaos
+                 sparse_grid_level = 3
+                 variance_based_decomp interaction_order = 2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "polynomial_chaos": {
+               "sparse_grid_level": 3,
+               "variance_based_decomp": {
+                 "interaction_order": 2
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

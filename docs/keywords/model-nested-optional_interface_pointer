@@ -82,33 +82,78 @@ The nested model ( ``nested``) expects two primary responses
 
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model 'nested'
-      nested
-        optional_interface_pointer 'opt_intf'
-          optional_interface_response_pointer 'opt_resp'
-        sub_method_pointer 'inner_method'
-          primary_response_mapping   1.0 2.0
-    
-        responses_pointer 'outer_resp'
-        variables_pointer 'outer_vars'
-    
-    responses
-      id_responses 'opt_resp'
-      response_functions 2
-        descriptors 'opt1' 'opt2'
-      no_gradients
-      no_hessians
-    
-    responses
-      id_responses 'outer_resp'
-      response_functions 2
-        descriptors 'out1' 'out2'
-      no_gradients
-      no_hessians
+   .. code-block:: dakota
 
+       model
+         id_model 'nested'
+         nested
+           optional_interface_pointer 'opt_intf'
+             optional_interface_response_pointer 'opt_resp'
+           sub_method_pointer 'inner_method'
+             primary_response_mapping   1.0 2.0
+
+           responses_pointer 'outer_resp'
+           variables_pointer 'outer_vars'
+
+       responses
+         id_responses 'opt_resp'
+         response_functions 2
+           descriptors 'opt1' 'opt2'
+         no_gradients
+         no_hessians
+
+       responses
+         id_responses 'outer_resp'
+         response_functions 2
+           descriptors 'out1' 'out2'
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "nested": {
+               "id_model": "nested"
+             }
+           }
+         ],
+         "responses": [
+           {
+             "id_responses": "opt_resp",
+             "response_type": {
+               "response_functions": {
+                 "count": 2
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           },
+           {
+             "id_responses": "outer_resp",
+             "response_type": {
+               "response_functions": {
+                 "count": 2
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 The first nested model response, :math:`out1` 
 will be computed :math:`out1 = opt1 + 1.0*mean + 2.0*stddev` , and the second
@@ -162,37 +207,82 @@ matrix could be changed to:
 Secondary responses will be demonstrated in the second example.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      id_model 'nested'
-      nested
-        optional_interface_pointer 'opt_intf'
-          optional_interface_response_pointer 'opt_resp'
-        sub_method_pointer 'inner_method'
-          primary_response_mapping   1.0 2.0
-          secondary_response_mapping 1.0 0.0
-        responses_pointer 'outer_resp'
-        variables_pointer 'outer_vars'
-    
-    responses
-      id_responses 'opt_resp'
-      objective_functions 2
-        descriptors 'opt1' 'opt2'
-      nonlinear_inequality_constraints 1
-        descriptors 'optc'
-      no_gradients
-      no_hessians
-    
-    responses
-      id_responses 'outer_resp'
-      objective_functions 2
-        descriptors 'out1' 'out2'
-      nonlinear_inequality_constraints 2
-        descriptors 'outc1' 'outc2'
-      no_gradients
-      no_hessians
+   .. code-block:: dakota
 
+       model
+         id_model 'nested'
+         nested
+           optional_interface_pointer 'opt_intf'
+             optional_interface_response_pointer 'opt_resp'
+           sub_method_pointer 'inner_method'
+             primary_response_mapping   1.0 2.0
+             secondary_response_mapping 1.0 0.0
+           responses_pointer 'outer_resp'
+           variables_pointer 'outer_vars'
+
+       responses
+         id_responses 'opt_resp'
+         objective_functions 2
+           descriptors 'opt1' 'opt2'
+         nonlinear_inequality_constraints 1
+           descriptors 'optc'
+         no_gradients
+         no_hessians
+
+       responses
+         id_responses 'outer_resp'
+         objective_functions 2
+           descriptors 'out1' 'out2'
+         nonlinear_inequality_constraints 2
+           descriptors 'outc1' 'outc2'
+         no_gradients
+         no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "nested": {
+               "id_model": "nested"
+             }
+           }
+         ],
+         "responses": [
+           {
+             "id_responses": "opt_resp",
+             "response_type": {
+               "objective_functions": {
+                 "count": 2
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           },
+           {
+             "id_responses": "outer_resp",
+             "response_type": {
+               "objective_functions": {
+                 "count": 2
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 The nested model expects a total of two constraints. Because the
 ``secondary_response_mapping`` has one row, one of these constraints will be

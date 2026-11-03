@@ -39,39 +39,84 @@ The following example shows a variables specification where some real
 and some integer ``discrete_design_set`` variables are categorical.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    variables
-      continuous_design = 3
-        initial_point  -1.0    1.5   2.0
-        lower_bounds  -10.0  -10.0 -10.0
-        upper_bounds   10.0   10.0  10.0
-        descriptors    'x1'   'x2'  'x3'
-      discrete_design_range = 2
-        initial_point  2     2
-        lower_bounds   1     1
-        upper_bounds   4     9
-        descriptors   'y1'  'y2'
-      discrete_design_set
-        real = 2
-          elements_per_variable = 4 5
-          elements  =  1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7
-          descriptors  'y3'            'y4'
-          categorical  'no'            'yes'
-          adjacency_matrix 1 1 0 0  # Begin entry of 4x4 matrix for y3
-                           1 1 1 0
-                           0 1 1 1
-                           0 0 1 1
-                           1 0 1 0 1 # Begin entry of 5x5 matrix for y4
-                           0 1 0 1 0
-                           1 0 1 0 1
-                           0 1 0 1 0
-                           1 0 1 0 1
-        integer = 2
-          elements_per_variable = 2 3
-          elements  =  4  7  8  9  12
-          descriptors  'z1'  'z2'
-          categorical  'yes' 'yes'
+   .. code-block:: dakota
+
+       variables
+         continuous_design = 3
+           initial_point  -1.0    1.5   2.0
+           lower_bounds  -10.0  -10.0 -10.0
+           upper_bounds   10.0   10.0  10.0
+           descriptors    'x1'   'x2'  'x3'
+         discrete_design_range = 2
+           initial_point  2     2
+           lower_bounds   1     1
+           upper_bounds   4     9
+           descriptors   'y1'  'y2'
+         discrete_design_set
+           real = 2
+             elements_per_variable = 4 5
+             elements  =  1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7
+             descriptors  'y3'            'y4'
+             categorical  'no'            'yes'
+             adjacency_matrix 1 1 0 0
+                              1 1 1 0
+                              0 1 1 1
+                              0 0 1 1
+                              1 0 1 0 1
+                              0 1 0 1 0
+                              1 0 1 0 1
+                              0 1 0 1 0
+                              1 0 1 0 1
+           integer = 2
+             elements_per_variable = 2 3
+             elements  =  4  7  8  9  12
+             descriptors  'z1'  'z2'
+             categorical  'yes' 'yes'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_design": {
+               "count": 3,
+               "initial_point": [-1.0, 1.5, 2.0],
+               "lower_bounds": [-10.0, -10.0, -10.0],
+               "upper_bounds": [10.0, 10.0, 10.0],
+               "descriptors": ["x1", "x2", "x3"]
+             },
+             "discrete_design_range": {
+               "count": 2,
+               "initial_point": [2, 2],
+               "lower_bounds": [1, 1],
+               "upper_bounds": [4, 9],
+               "descriptors": ["y1", "y2"]
+             },
+             "discrete_design_set": {
+               "real": {
+                 "count": 2,
+                 "elements_per_variable": [4, 5],
+                 "elements": [1.2, 2.3, 3.4, 4.5, 1.2, 3.3, 4.4, 5.5, 7.7],
+                 "descriptors": ["y3", "y4"],
+                 "categorical": ["no", "yes"],
+                 "adjacency_matrix": [1,1,0,0,1,1,1,0,0,1,1,1,0,0,1,1,
+                                      1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1]
+               },
+               "integer": {
+                 "count": 2,
+                 "elements_per_variable": [2, 3],
+                 "elements": [4, 7, 8, 9, 12],
+                 "descriptors": ["z1", "z2"],
+                 "categorical": ["yes", "yes"]
+               }
+             }
+           }
+         ]
+       }
 
 
 Note that for the real case, the user wants to define an adjacency
@@ -99,22 +144,50 @@ categorical.  If an adjacency matrix is not specified, a
 method-dependent default matrix will be used.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    variables,
-      continuous_design = 2
-        initial_point  0.5  0.5
-        lower_bounds   0.   0.
-        upper_bounds   1.   1.
-        descriptors =  'x'  'y'
-      discrete_design_set string = 1
-        elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'
-        descriptors = 'ancomp'
-        adjacency_matrix 1 1 0 0 0
-                         1 1 0 0 0
-                         0 0 1 1 1
-                         0 0 1 1 1
-                         0 0 1 1 1
+   .. code-block:: dakota
+
+       variables,
+         continuous_design = 2
+           initial_point  0.5  0.5
+           lower_bounds   0.   0.
+           upper_bounds   1.   1.
+           descriptors =  'x'  'y'
+         discrete_design_set string = 1
+           elements = 'aniso1' 'aniso2' 'iso1' 'iso2' 'iso3'
+           descriptors = 'ancomp'
+           adjacency_matrix 1 1 0 0 0
+                            1 1 0 0 0
+                            0 0 1 1 1
+                            0 0 1 1 1
+                            0 0 1 1 1
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_design": {
+               "count": 2,
+               "initial_point": [0.5, 0.5],
+               "lower_bounds": [0.0, 0.0],
+               "upper_bounds": [1.0, 1.0],
+               "descriptors": ["x", "y"]
+             },
+             "discrete_design_set": {
+               "string": {
+                 "count": 1,
+                 "elements": ["aniso1", "aniso2", "iso1", "iso2", "iso3"],
+                 "descriptors": ["ancomp"],
+                 "adjacency_matrix": [1,1,0,0,0,1,1,0,0,0,0,0,1,1,1,0,0,1,1,1,0,0,1,1,1]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -28,19 +28,48 @@ order for all approximation cores in combination with a rank
 adaptation between two and ten, incrementing in steps of two.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     model_pointer = 'HIERARCH'
-     multifidelity_function_train
-       allocation_control greedy
-       p_refinement uniform
-         start_rank_sequence  = 2 2 2 2 2
-         adapt_rank  kick_rank = 2  max_rank  = 10
-         start_order_sequence = 2 2 2 2 2  max_order = 10
-         collocation_ratio = 2.  seed = 160415
-         convergence_tolerance = 1.e-2
-         max_refinement_iterations = 5
+   .. code-block:: dakota
+
+       method,
+        model_pointer = 'HIERARCH'
+        multifidelity_function_train
+          allocation_control greedy
+          p_refinement uniform
+            start_rank_sequence  = 2 2 2 2 2
+            adapt_rank  kick_rank = 2  max_rank  = 10
+            start_order_sequence = 2 2 2 2 2  max_order = 10
+            collocation_ratio = 2.  seed = 160415
+            convergence_tolerance = 1.e-2
+            max_refinement_iterations = 5
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multifidelity_function_train": {
+               "model_pointer": "HIERARCH",
+               "allocation_control": {"greedy": {}},
+               "p_refinement": {
+                 "uniform": {
+                   "start_rank_sequence": [2, 2, 2, 2, 2],
+                   "adapt_rank": {"kick_rank": 2, "max_rank": 10},
+                   "start_order_sequence": [2, 2, 2, 2, 2],
+                   "max_order": 10,
+                   "collocation_ratio": 2.0,
+                   "seed": 160415,
+                   "convergence_tolerance": 1e-2,
+                   "max_refinement_iterations": 5
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

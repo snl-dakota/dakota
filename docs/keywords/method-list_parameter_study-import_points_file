@@ -20,11 +20,31 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      list_parameter_study
-        import_points_file = 'dakota_pstudy.3.dat'
+   .. code-block:: dakota
+
+       method
+         list_parameter_study
+           import_points_file = 'dakota_pstudy.3.dat'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "list_parameter_study": {
+               "source": {
+                 "import_points_file": {
+                   "filename": "dakota_pstudy.3.dat"
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

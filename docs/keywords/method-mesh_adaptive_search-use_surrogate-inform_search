@@ -34,61 +34,185 @@ The following example shows the syntax used to set ``use_surrogate`` to
 ``optimize``.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     mesh_adaptive_search
-     model_pointer = 'SURROGATE'
-     use_surrogate inform_search
-    
-    model,
-     id_model = 'SURROGATE'
-     global_surrogate
-     polynomial quadratic
-     dace_method_pointer = 'SAMPLING'
-    
-    variables,
-     continuous_design = 3
-       initial_point   -1.0    1.5   2.0
-       upper_bounds    10.0   10.0  10.0
-       lower_bounds   -10.0  -10.0 -10.0
-       descriptors      'x1'  'x2'  'x3'
-     discrete_design_range = 2
-       initial_point      2     2
-       lower_bounds       1     1
-       upper_bounds       4     9
-       descriptors      'y1'   'y2'
-           discrete_design_set
-             real = 2
-               elements_per_variable = 4 5
-               elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7
-               descriptors      'y3'   'y4'
-             integer = 2
-               elements_per_variable = 2 2
-               elements = 4 7 8 9
-               descriptors      'z1'   'z2'
-    
-    method,
-     id_method = 'SAMPLING'
-     model_pointer = 'TRUTH'
-     sampling
-       samples = 55
-    
-    model,
-     id_model = 'TRUTH'
-     single
-       interface_pointer = 'TRUE_FN'
-    
-    interface,
-     id_interface = 'TRUE_FN'
-           direct
-       analysis_driver = 'text_book'
-    
-    responses,
-     objective_functions = 1
-     no_gradients
-     no_hessians
+   .. code-block:: dakota
 
+       method,
+        mesh_adaptive_search
+        model_pointer = 'SURROGATE'
+        use_surrogate inform_search
+
+       model,
+        id_model = 'SURROGATE'
+        global_surrogate
+        polynomial quadratic
+        dace_method_pointer = 'SAMPLING'
+
+       variables,
+        continuous_design = 3
+          initial_point   -1.0    1.5   2.0
+          upper_bounds    10.0   10.0  10.0
+          lower_bounds   -10.0  -10.0 -10.0
+          descriptors      'x1'  'x2'  'x3'
+        discrete_design_range = 2
+          initial_point      2     2
+          lower_bounds       1     1
+          upper_bounds       4     9
+          descriptors      'y1'   'y2'
+              discrete_design_set
+                real = 2
+                  elements_per_variable = 4 5
+                  elements = 1.2 2.3 3.4 4.5 1.2 3.3 4.4 5.5 7.7
+                  descriptors      'y3'   'y4'
+                integer = 2
+                  elements_per_variable = 2 2
+                  elements = 4 7 8 9
+                  descriptors      'z1'   'z2'
+
+       method,
+        id_method = 'SAMPLING'
+        model_pointer = 'TRUTH'
+        sampling
+          samples = 55
+
+       model,
+        id_model = 'TRUTH'
+        single
+          interface_pointer = 'TRUE_FN'
+
+       interface,
+        id_interface = 'TRUE_FN'
+              direct
+          analysis_driver = 'text_book'
+
+       responses,
+        objective_functions = 1
+        no_gradients
+        no_hessians
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "mesh_adaptive_search": {
+               "use_surrogate": {
+                 "inform_search": true
+               },
+               "model_pointer": "SURROGATE"
+             }
+           },
+           {
+             "sampling": {
+               "samples": 55,
+               "id_method": "SAMPLING",
+               "model_pointer": "TRUTH"
+             }
+           }
+         ],
+         "model": [
+           {
+             "global_surrogate": {
+               "id_model": "SURROGATE",
+               "type": {
+                 "polynomial": {
+                   "order": {
+                     "quadratic": true
+                   }
+                 }
+               },
+               "build_data": {
+                 "dace_method_pointer": {
+                   "pointer": "SAMPLING"
+                 }
+               }
+             }
+           },
+           {
+             "single": {
+               "id_model": "TRUTH",
+               "interface_pointer": "TRUE_FN"
+             }
+           }
+         ],
+         "variables": [
+           {
+             "continuous_design": {
+               "initial_point": [
+                 -1.0,
+                 1.5,
+                 2.0
+               ],
+               "upper_bounds": [
+                 10.0,
+                 10.0,
+                 10.0
+               ],
+               "lower_bounds": [
+                 -10.0,
+                 -10.0,
+                 -10.0
+               ],
+               "descriptors": [
+                 "x1",
+                 "x2",
+                 "x3"
+               ],
+               "count": 3
+             },
+             "discrete_design_range": {
+               "initial_point": [
+                 2,
+                 2
+               ],
+               "lower_bounds": [
+                 1,
+                 1
+               ],
+               "upper_bounds": [
+                 4,
+                 9
+               ],
+               "descriptors": [
+                 "y1",
+                 "y2"
+               ],
+               "count": 2
+             }
+           }
+         ],
+         "interface": [
+           {
+             "id_interface": "TRUE_FN",
+             "analysis_drivers": {
+               "interface_type": {
+                 "direct": {}
+               },
+               "drivers": [
+                 "text_book"
+               ]
+             }
+           }
+         ],
+         "responses": [
+           {
+             "response_type": {
+               "objective_functions": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 The following will appear toward the end of the screen output when
 Dakota is run on this example.  The number of true function
@@ -101,8 +225,6 @@ number of truth evaluations done by ``mesh_adaptive_search``.
 
     <<<<< Function evaluation summary (APPROX_INTERFACE): 1660 total (1660 new, 0 duplicate)
     <<<<< Function evaluation summary (TRUE_FN): 795 total (795 new, 0 duplicate)
-
-
 Theory::
 
 Faq::

@@ -20,11 +20,29 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      import_points
-        import_points_file = 'all_samples.dat'
+   .. code-block:: dakota
+
+       method
+         import_points
+           import_points_file = 'all_samples.dat'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "import_points": {
+               "import_points_file": {
+                 "filename": "all_samples.dat"
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

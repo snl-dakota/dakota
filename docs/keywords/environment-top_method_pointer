@@ -45,16 +45,41 @@ Examples::
 Specify that the optimization method is the outermost method in an
 optimization under uncertainty study
 
-.. code-block::
+.. tab:: Freeform
 
-    environment
-      top_method_pointer 'OPTIMIZATION_METHOD'
-    method
-      id_method 'UQ_METHOD'
-    ...
-    method
-      id_method 'OPTIMIZATION_METHOD'
-    ...
+   .. code-block:: dakota
+
+       environment
+         top_method_pointer 'OPTIMIZATION_METHOD'
+       method
+         id_method 'UQ_METHOD'
+       ...
+       method
+         id_method 'OPTIMIZATION_METHOD'
+       ...
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "environment": {
+           "top_method_pointer": "OPTIMIZATION_METHOD"
+         },
+         "method": [
+           {
+             "sampling": {
+               "id_method": "UQ_METHOD",
+               "samples": 100
+             }
+           },
+           {
+             "asynch_pattern_search": {
+               "id_method": "OPTIMIZATION_METHOD"
+             }
+           }
+         ]
+       }
 
 
 Theory::

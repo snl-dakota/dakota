@@ -43,13 +43,35 @@ individual histogram variables. For example, in the following
 specification,
 
 
-.. code-block::
+.. tab:: Freeform
 
-    histogram_point_uncertain
-      integer            = 2
-      pairs_per_variable = 2     3
-      abscissas          = 3 4   100 200 300
-      counts             = 1 1   1   2   1
+   .. code-block:: dakota
+
+       variables
+         histogram_point_uncertain
+           integer = 2
+             pairs_per_variable = 2     3
+             abscissas          = 3 4   100 200 300
+             counts             = 1 1   1   2   1
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "histogram_point_uncertain": {
+               "integer": {
+                 "count": 2,
+                 "pairs_per_variable": [2, 3],
+                 "abscissas": [3, 4, 100, 200, 300],
+                 "counts": [1.0, 1.0, 1.0, 2.0, 1.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 ``pairs_per_variable`` associates the :math:`(x,c)` pairs {(3,1),(4,1)} with

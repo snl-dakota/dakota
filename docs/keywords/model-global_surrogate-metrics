@@ -34,13 +34,46 @@ dakota/share/dakota/test/dakota_surrogate_import.in for additional
 examples.)
 
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      global_surrogate
-        polynomial quadratic
-        metrics = "root_mean_squared" "sum_abs" "mean_abs" "max_abs"
-        cross_validation folds = 5
+   .. code-block:: dakota
+
+       model
+         global_surrogate
+           polynomial quadratic
+           metrics = "root_mean_squared" "sum_abs" "mean_abs" "max_abs"
+           cross_validation folds = 5
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "global_surrogate": {
+               "type": {
+                 "polynomial": {
+                   "order": {
+                     "quadratic": true
+                   }
+                 }
+               },
+               "metrics": {
+                 "metrics": [
+                   "root_mean_squared",
+                   "sum_abs",
+                   "mean_abs",
+                   "max_abs"
+                 ],
+                 "cross_validation": {
+                   "folds": 5
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

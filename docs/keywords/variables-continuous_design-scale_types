@@ -26,15 +26,38 @@ Examples::
 Two continuous design variables, one scaled by 4.0, the other by 0.1,
 then further log scaled:
 
-.. code-block::
+.. tab:: Freeform
 
-      continuous_design = 2
-        initial_point    -1.2      1.0
-        lower_bounds     -2.0      0.001
-        upper_bounds      2.0      2.0
-        descriptors       'x1'     "x2"
-        scale_types =     'value' 'log'
-        scales =          4.0      0.1
+   .. code-block:: dakota
+
+       variables
+         continuous_design = 2
+           initial_point    -1.2      1.0
+           lower_bounds     -2.0      0.001
+           upper_bounds      2.0      2.0
+           descriptors       'x1'     "x2"
+           scale_types =     'value' 'log'
+           scales =          4.0      0.1
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "continuous_design": {
+               "count": 2,
+               "initial_point": [-1.2, 1.0],
+               "lower_bounds": [-2.0, 0.001],
+               "upper_bounds": [2.0, 2.0],
+               "descriptors": ["x1", "x2"],
+               "scale_types": ["value", "log"],
+               "scales": [4.0, 0.1]
+             }
+           }
+         ]
+       }
 
 
 Theory::

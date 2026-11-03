@@ -18,14 +18,36 @@ values from a set of three possible elements and the second variable,
 'mesh_file', from a set of two possible elements.
 
 
-.. code-block::
+.. tab:: Freeform
 
-    discrete_design_set
-      string 2
-        descriptors           'linear_solver'  'mesh_file'
-        elements_per_variable 3                2
-        elements              'cg' 'gmres' 'direct'
-                              'mesh64.exo' 'mesh128.exo'
+   .. code-block:: dakota
+
+       variables
+         discrete_design_set
+           string 2
+             descriptors           'linear_solver'  'mesh_file'
+             elements_per_variable 3                2
+             elements              'cg' 'direct' 'gmres'
+                                   'mesh128.exo' 'mesh64.exo'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_design_set": {
+               "string": {
+                 "count": 2,
+                 "descriptors": ["linear_solver", "mesh_file"],
+                 "elements_per_variable": [3, 2],
+                 "elements": ["cg", "direct", "gmres", "mesh128.exo", "mesh64.exo"]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

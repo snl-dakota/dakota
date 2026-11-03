@@ -9,13 +9,35 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    histogram_point_uncertain
-      real = 2
-      pairs_per_variable = 2               3
-      abscissas          = 3.1415 4.5389   100 200.112345 300
-      counts             = 1      1        1   2          1
+   .. code-block:: dakota
+
+       variables
+         histogram_point_uncertain
+           real = 2
+             pairs_per_variable = 2               3
+             abscissas          = 3.1415 4.5389   100 200.112345 300
+             counts             = 1      1        1   2          1
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "histogram_point_uncertain": {
+               "real": {
+                 "count": 2,
+                 "pairs_per_variable": [2, 3],
+                 "abscissas": [3.1415, 4.5389, 100.0, 200.112345, 300.0],
+                 "counts": [1.0, 1.0, 1.0, 2.0, 1.0]
+               }
+             }
+           }
+         ]
+       }
 
 
 There are two variables, the first one has two possible real values

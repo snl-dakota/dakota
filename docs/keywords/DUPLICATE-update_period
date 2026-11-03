@@ -19,15 +19,45 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            bayes_calibration queso
-              samples = 2000 seed = 348
-              delayed_rejection
-              emulator pce sparse_grid_level = 2
-              proposal_covariance derivatives
-                update_period = 40  # update proposal covariance every 40 points
+   .. code-block:: dakota
+
+       method,
+               bayes_calibration queso
+                 samples = 2000 seed = 348
+                 delayed_rejection
+                 emulator pce sparse_grid_level = 2
+                 proposal_covariance derivatives
+                   update_period = 40
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "bayes_calibration": {
+               "queso": {
+                 "samples": 2000,
+                 "seed": 348,
+                 "delayed_rejection": {},
+                 "emulator": {
+                   "pce": {
+                     "sparse_grid_level": 2
+                   }
+                 },
+                 "proposal_covariance": {
+                   "derivatives": {
+                     "update_period": 40
+                   }
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

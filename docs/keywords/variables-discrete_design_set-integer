@@ -15,13 +15,35 @@ following sets during the search for an optimal design. :math:`y1 \in
 \{10, 15, 20, 23\}` .
 
 
-.. code-block::
+.. tab:: Freeform
 
-    discrete_design_set
-      integer 4
-        descriptors           'y1'  'y2'  'y3'  'y4'
-        elements_per_variable 2     2     2     4
-        elements              0 1   0 1   0 5   10 15 20 23
+   .. code-block:: dakota
+
+       variables
+         discrete_design_set
+           integer 4
+             descriptors           'y1'  'y2'  'y3'  'y4'
+             elements_per_variable 2     2     2     4
+             elements              0 1   0 1   0 5   10 15 20 23
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_design_set": {
+               "integer": {
+                 "count": 4,
+                 "descriptors": ["y1", "y2", "y3", "y4"],
+                 "elements_per_variable": [2, 2, 2, 4],
+                 "elements": [0, 1, 0, 1, 0, 5, 10, 15, 20, 23]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

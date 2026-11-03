@@ -9,14 +9,37 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    histogram_point_uncertain
-      string = 2
-      pairs_per_variable = 2            3
-      abscissas          = 'no' 'yes'   'function1' 'function2' 'function3'
-      counts             = 1     1      1           2           1
-      descriptors        = 'vote'       'which_function'
+   .. code-block:: dakota
+
+       variables
+         histogram_point_uncertain
+           string = 2
+             pairs_per_variable = 2            3
+             abscissas          = 'no' 'yes'   'function1' 'function2' 'function3'
+             counts             = 1     1      1           2           1
+             descriptors        = 'vote'       'which_function'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "histogram_point_uncertain": {
+               "string": {
+                 "count": 2,
+                 "pairs_per_variable": [2, 3],
+                 "abscissas": ["no", "yes", "function1", "function2", "function3"],
+                 "counts": [1.0, 1.0, 1.0, 2.0, 1.0],
+                 "descriptors": ["vote", "which_function"]
+               }
+             }
+           }
+         ]
+       }
 
 
 Here there are two variables, the first one ('vote') has two possible

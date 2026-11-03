@@ -16,15 +16,36 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      active_subspace
-        id_model = 'SUBSPACE'
-        truth_model_pointer = 'FULLSPACE'
-        initial_samples  100
-       build_surrogate
-         refinement_samples 10
+   .. code-block:: dakota
+
+       model
+         active_subspace
+           id_model = 'SUBSPACE'
+           truth_model_pointer = 'FULLSPACE'
+           initial_samples = 100
+           build_surrogate
+             refinement_samples = 10
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "active_subspace": {
+               "id_model": "SUBSPACE",
+               "truth_model_pointer": "FULLSPACE",
+               "initial_samples": 100,
+               "build_surrogate": {
+                 "refinement_samples": [10]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

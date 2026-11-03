@@ -94,20 +94,59 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-     multifidelity_stoch_collocation
-       model_pointer = 'HIERARCH'
-       sparse_grid_level_sequence = 4 3 2
-    
-    model,
-     id_model = 'HIERARCH'
-     ensemble_surrogate
-       ordered_model_fidelities = 'LF' 'MF' 'HF'
-       correction additive zeroth_order
+   .. code-block:: dakota
 
+       method,
+        multifidelity_stoch_collocation
+          model_pointer = 'HIERARCH'
+          sparse_grid_level_sequence = 4 3 2
 
+       model,
+        id_model = 'HIERARCH'
+        ensemble_surrogate
+          ordered_model_fidelities = 'LF' 'MF' 'HF'
+          correction additive zeroth_order
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "multifidelity_stoch_collocation": {
+               "model_pointer": "HIERARCH",
+               "grid_type": {
+                 "sparse_grid_level_sequence": {
+                   "sequence": [
+                     4,
+                     3,
+                     2
+                   ]
+                 }
+               }
+             }
+           }
+         ],
+         "model": [
+           {
+             "ensemble_surrogate": {
+               "id_model": "HIERARCH",
+               "ensemble": {
+                 "ordered_model_fidelities": {
+                   "pointers": [
+                     "LF",
+                     "MF",
+                     "HF"
+                   ]
+                 }
+               }
+             }
+           }
+         ]
+       }
 Theory::
 
 Faq::

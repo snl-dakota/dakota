@@ -13,14 +13,36 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method
-      sampling
-        sample_type random
-        samples = 20
-        d_optimal
-          oversample_ratio = 2.0
+   .. code-block:: dakota
+
+       method
+         sampling
+           sample_type random
+           samples = 20
+           d_optimal
+             leja_oversample_ratio = 2.0
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "sampling": {
+               "sample_type": {
+                 "random": true
+               },
+               "samples": 20,
+               "d_optimal": {
+                 "leja_oversample_ratio": 2.0
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

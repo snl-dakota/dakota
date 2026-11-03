@@ -23,16 +23,39 @@ reads variables from params.in and writes responses to results.out.
 Preserve the analysis files for each function evaluation with tag and
 save.
 
+.. tab:: Freeform
 
-.. code-block::
+   .. code-block:: dakota
 
-    interface
-      analysis_drivers = 'rosenbrock'
-        fork
-          parameters_file = 'params.in'
-          results_file   = 'results.out'
-          file_tag
-          file_save
+       interface
+         analysis_drivers = 'rosenbrock'
+           fork
+             parameters_file = 'params.in'
+             results_file   = 'results.out'
+             file_tag
+             file_save
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "interface": [
+           {
+             "analysis_drivers": {
+               "drivers": ["rosenbrock"],
+               "interface_type": {
+                 "fork": {
+                   "parameters_file": "params.in",
+                   "results_file": "results.out",
+                   "file_tag": true,
+                   "file_save": true
+                 }
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

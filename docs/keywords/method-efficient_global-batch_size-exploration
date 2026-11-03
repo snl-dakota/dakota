@@ -16,13 +16,33 @@ Topics::
 
 Examples::
 
-.. code-block::
+.. tab:: Freeform
 
-    method,
-            efficient_global
-          seed = 1237
-          batch_size = 8    # total
-          exploration = 2   # 2 out of 8
+   .. code-block:: dakota
+
+       method
+         efficient_global
+           seed = 1237
+           batch_size = 8
+           exploration = 2
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "method": [
+           {
+             "efficient_global": {
+               "seed": 1237,
+               "batch_size": {
+                 "count": 8,
+                 "exploration": 2
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

@@ -25,13 +25,35 @@ Examples::
 Let `di1` be 2 or 13 and `di2` be 4, 5 or 26.
 The following specification is for an interval analysis:
 
-.. code-block::
+.. tab:: Freeform
 
-    discrete_uncertain_set
-     integer
-     num_set_values 2     3
-     set_values     2 13  4 5 26
-     descriptors    'di1' 'di2'
+   .. code-block:: dakota
+
+       variables
+         discrete_uncertain_set
+           integer
+             num_set_values 2     3
+             set_values     2 13  4 5 26
+             descriptors    'di1' 'di2'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "variables": [
+           {
+             "discrete_uncertain_set": {
+               "integer": {
+                 "count": 2,
+                 "elements_per_variable": [2, 3],
+                 "elements": [2, 13, 4, 5, 26],
+                 "descriptors": ["di1", "di2"]
+               }
+             }
+           }
+         ]
+       }
 
 
 Theory::

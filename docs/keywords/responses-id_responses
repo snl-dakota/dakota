@@ -24,16 +24,59 @@ block_identifier
 Examples::
 For example, a model specification including
 
-.. code-block::
+.. tab:: Freeform
 
-    model
-      responses_pointer = 'R1'
+   .. code-block:: dakota
+
+       model
+         responses_pointer = 'R1'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "model": [
+           {
+             "single": {
+               "responses_pointer": "R1"
+             }
+           }
+         ]
+       }
 
 will link to a response set with
 
-.. code-block::
+.. tab:: Freeform
+   :new-set:
 
-      id_responses = 'R1'
+   .. code-block:: dakota
+
+       responses
+         id_responses = 'R1'
+
+.. tab:: JSON
+
+   .. code-block:: json
+
+       {
+         "responses": [
+           {
+             "id_responses": "R1",
+             "response_type": {
+               "response_functions": {
+                 "count": 1
+               }
+             },
+             "gradient_type": {
+               "no_gradients": true
+             },
+             "hessian_type": {
+               "no_hessians": true
+             }
+           }
+         ]
+       }
 
 
 Theory::
