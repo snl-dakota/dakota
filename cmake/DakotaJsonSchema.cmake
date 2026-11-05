@@ -35,12 +35,17 @@ if(DAKOTA_GENERATE_JSON_SCHEMA OR DAKOTA_CHECK_JSON_SCHEMA)
     VERBATIM
   )
 
+  set(dakota_generated_xml
+    "${Dakota_BINARY_DIR}/generated/schema/dakota.generated.xml")
+
   add_custom_command(
-    OUTPUT "${DAKOTA_XML_INPUT}"
+    OUTPUT "${dakota_generated_xml}"
+    COMMAND "${CMAKE_COMMAND}" -E make_directory
+      "${Dakota_BINARY_DIR}/generated/schema"
     COMMAND "${Python3_EXECUTABLE}"
       "${Dakota_SOURCE_DIR}/src/xml_codegen/generate_dakota_xml.py"
       --schema "${DAKOTA_SCHEMA_PATH}"
-      --output "${DAKOTA_XML_INPUT}"
+      --output "${dakota_generated_xml}"
     DEPENDS
       "${DAKOTA_SCHEMA_PATH}"
       "${Dakota_SOURCE_DIR}/src/xml_codegen/generate_dakota_xml.py"
@@ -48,6 +53,6 @@ if(DAKOTA_GENERATE_JSON_SCHEMA OR DAKOTA_CHECK_JSON_SCHEMA)
     VERBATIM
   )
 
-  add_custom_target(dakota_xml_grammar DEPENDS "${DAKOTA_XML_INPUT}")
+  add_custom_target(dakota_xml_grammar DEPENDS "${dakota_generated_xml}")
   add_dependencies(dakota_xml_grammar dakota_json_schema)
 endif()
