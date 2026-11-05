@@ -97,6 +97,7 @@ class GpaisSelection(MethodSelection):
 
     gpais: GpaisConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["gaussian_process_adaptive_importance_sampling"],
             "materialization": [
                 {

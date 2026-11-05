@@ -139,6 +139,7 @@ class ParetoSetSelection(MethodSelection):
 
     pareto_set: ParetoSetConfig = DakotaField(
         dakota={
+            "group": "Optimization: Other",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

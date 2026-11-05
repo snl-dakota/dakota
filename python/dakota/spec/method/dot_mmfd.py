@@ -23,6 +23,7 @@ class DotMmfdSelection(MethodSelection):
 
     dot_mmfd: DotMmfdConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

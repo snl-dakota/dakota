@@ -148,6 +148,7 @@ class FsuCvtSelection(MethodSelection):
 
     fsu_cvt: FsuCvtConfig = DakotaField(
         dakota={
+            "group": "DACE",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

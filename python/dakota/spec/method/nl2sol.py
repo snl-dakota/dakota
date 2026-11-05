@@ -153,6 +153,7 @@ class Nl2solSelection(MethodSelection):
 
     nl2sol: Nl2solConfig = DakotaField(
         dakota={
+            "group": "Calibration",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

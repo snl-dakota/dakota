@@ -200,6 +200,7 @@ class GlobalReliabilityConfig(
         default=None,
         description="Use derivative data to construct surrogate models",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "method.derivative_usage",
@@ -230,6 +231,7 @@ class GlobalReliabilitySelection(MethodSelection):
 
     global_reliability: GlobalReliabilityConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_global_reliability"],
             "materialization": [
                 {

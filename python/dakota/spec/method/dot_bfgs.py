@@ -23,6 +23,7 @@ class DotBfgsSelection(MethodSelection):
 
     dot_bfgs: DotBfgsConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

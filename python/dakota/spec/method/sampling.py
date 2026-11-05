@@ -458,6 +458,7 @@ class SamplingSelection(MethodSelection):
 
     sampling: SamplingConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_sampling"],
             "materialization": [
                 {

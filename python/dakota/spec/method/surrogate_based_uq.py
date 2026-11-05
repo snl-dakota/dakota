@@ -30,6 +30,7 @@ class SurrogateBasedUqSelection(MethodSelection):
 
     surrogate_based_uq: SurrogateBasedUqConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -43,6 +43,7 @@ class GenieOptDartsSelection(MethodSelection):
 
     genie_opt_darts: GenieOptDartsConfig = DakotaField(
         dakota={
+            "group": "Optimization: Global",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

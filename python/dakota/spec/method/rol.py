@@ -70,6 +70,7 @@ class RolSelection(MethodSelection):
 
     rol: RolConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -23,6 +23,7 @@ class DotSlpSelection(MethodSelection):
 
     dot_slp: DotSlpConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -6381,6 +6381,7 @@ class VariablesConfig(DakotaBaseModel):
         default=None,
         description="Name the variables block; helpful when there are multiple",
         dakota={
+            "taglist": "variables",
             "materialization": [
                 {
                     "ir_key": "variables.id",
@@ -6405,75 +6406,76 @@ class VariablesConfig(DakotaBaseModel):
     continuous_design: ContinuousDesign | None = DakotaField(
         default=None,
         description="Design variable - continuous",
-        dakota={"argument": "count"},
+        dakota={"group": "Design Variables", "argument": "count"},
     )
     discrete_design_range: DiscreteDesignRange | None = DakotaField(
         default=None,
         description="Design variable - discrete range-valued",
-        dakota={"argument": "count"},
+        dakota={"group": "Design Variables", "argument": "count"},
     )
     discrete_design_set: DiscreteDesignSet | None = DakotaField(
-        default=None, description="Design variable - discrete set-valued"
+        default=None, description="Design variable - discrete set-valued", dakota={"group": "Design Variables"}
     )
     normal_uncertain: NormalUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - normal (Gaussian)",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     lognormal_uncertain: LognormalUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - lognormal",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     uniform_uncertain: UniformUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - uniform",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     loguniform_uncertain: LoguniformUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - loguniform",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     triangular_uncertain: TriangularUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - triangular",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     exponential_uncertain: ExponentialUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - exponential",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     beta_uncertain: BetaUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - beta",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     gamma_uncertain: GammaUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - gamma",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     gumbel_uncertain: GumbelUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - gumbel",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     frechet_uncertain: FrechetUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - Frechet",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     weibull_uncertain: WeibullUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - Weibull",
-        dakota={"argument": "count"},
+        dakota={"group": "Continuous Aleatory Uncertain", "argument": "count"},
     )
     histogram_bin_uncertain: HistogramBinUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain variable - continuous histogram",
         dakota={
+            "group": "Continuous Aleatory Uncertain",
             "argument": "count",
             "materialization": [
                 {
@@ -6487,35 +6489,36 @@ class VariablesConfig(DakotaBaseModel):
     poisson_uncertain: PoissonUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain discrete variable - Poisson",
-        dakota={"argument": "count"},
+        dakota={"group": "Discrete Aleatory Uncertain", "argument": "count"},
     )
     binomial_uncertain: BinomialUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain discrete variable - binomial",
-        dakota={"argument": "count"},
+        dakota={"group": "Discrete Aleatory Uncertain", "argument": "count"},
     )
     negative_binomial_uncertain: NegativeBinomialUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain discrete variable - negative binomial",
-        dakota={"argument": "count"},
+        dakota={"group": "Discrete Aleatory Uncertain", "argument": "count"},
     )
     geometric_uncertain: GeometricUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain discrete variable - geometric",
-        dakota={"argument": "count"},
+        dakota={"group": "Discrete Aleatory Uncertain", "argument": "count"},
     )
     hypergeometric_uncertain: HypergeometricUncertain | None = DakotaField(
         default=None,
         description="Aleatory uncertain discrete variable - hypergeometric",
-        dakota={"argument": "count"},
+        dakota={"group": "Discrete Aleatory Uncertain", "argument": "count"},
     )
     histogram_point_uncertain: HistogramPointUncertain | None = DakotaField(
-        default=None, description="Aleatory uncertain variable - discrete histogram"
+        default=None, description="Aleatory uncertain variable - discrete histogram", dakota={"group": "Discrete Aleatory Uncertain"}
     )
     uncertain_correlation_matrix: list[DakotaFloat] | None = DakotaField(
         default=None,
         description="Correlation among aleatory uncertain variables",
         dakota={
+            "group": "Aleatory Uncertain Correlations",
             "materialization": [
                 {
                     "ir_key": "variables.uncertain.correlation_matrix",
@@ -6529,6 +6532,7 @@ class VariablesConfig(DakotaBaseModel):
         default=None,
         description="Epistemic uncertain variable - values from one or more continuous intervals",
         dakota={
+            "group": "Epistemic Uncertain",
             "argument": "count",
             "aliases": ["interval_uncertain"],
             "materialization": [
@@ -6544,6 +6548,7 @@ class VariablesConfig(DakotaBaseModel):
         default=None,
         description="Epistemic uncertain variable - values from one or more discrete intervals",
         dakota={
+            "group": "Epistemic Uncertain",
             "argument": "count",
             "materialization": [
                 {
@@ -6555,20 +6560,20 @@ class VariablesConfig(DakotaBaseModel):
         },
     )
     discrete_uncertain_set: DiscreteUncertainSet | None = DakotaField(
-        default=None, description="Epistemic uncertain variable - discrete set-valued"
+        default=None, description="Epistemic uncertain variable - discrete set-valued", dakota={"group": "Epistemic Uncertain"}
     )
     continuous_state: ContinuousState | None = DakotaField(
         default=None,
         description="State variable - continuous",
-        dakota={"argument": "count"},
+        dakota={"group": "State Variables", "argument": "count"},
     )
     discrete_state_range: DiscreteStateRange | None = DakotaField(
         default=None,
         description="State variables - discrete range-valued",
-        dakota={"argument": "count"},
+        dakota={"group": "State Variables", "argument": "count"},
     )
     discrete_state_set: DiscreteStateSet | None = DakotaField(
-        default=None, description="State variable - discrete set-valued"
+        default=None, description="State variable - discrete set-valued", dakota={"group": "State Variables"}
     )
     linear_inequality_constraint_matrix: list[DakotaFloat] | None = DakotaField(
         default=None,

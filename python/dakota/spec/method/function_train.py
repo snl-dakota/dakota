@@ -44,6 +44,7 @@ class FtSelection(MethodSelection):
 
     function_train: FtConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

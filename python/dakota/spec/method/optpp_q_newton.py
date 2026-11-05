@@ -28,6 +28,7 @@ class OptppQNewtonSelection(MethodSelection):
 
     optpp_q_newton: OptppQNewtonConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

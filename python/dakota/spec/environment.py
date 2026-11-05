@@ -484,14 +484,14 @@ class Hdf5(DakotaBaseModel):
     ] = DakotaField(
         default_factory=TopMethod,
         description="Select the models that write evaluation data to HDF5",
-        dakota={"union_pattern": 1, "model_default": "TopMethod"},
+        dakota={"group": "Model Evaluation Storage Selection", "complexity": 1, "union_pattern": 1, "model_default": "TopMethod"},
     )
     interface_selection: Union[
         InterfaceSelectionNone, Simulation, InterfaceSelectionAll
     ] = DakotaField(
         default_factory=Simulation,
         description="Select the models that write evaluation data to HDF5",
-        dakota={"union_pattern": 1, "model_default": "Simulation"},
+        dakota={"group": "Interface Evaluation Storage Selection", "complexity": 1, "union_pattern": 1, "model_default": "Simulation"},
     )
 
 
@@ -709,6 +709,7 @@ class EnvironmentConfig(DakotaBaseModel):
         description="Write a tabular results file with variable and response history",
         dakota={
             "aliases": ["tabular_graphics_data"],
+            "group_label": "Input/Output",
             "materialization": [
                 {
                     "ir_key": "environment.tabular_graphics_data",
@@ -722,6 +723,7 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="Base filename for output redirection",
         dakota={
+            "group_label": "Input/Output",
             "materialization": [
                 {
                     "ir_key": "environment.output_file",
@@ -735,6 +737,7 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="Base filename for error redirection",
         dakota={
+            "group_label": "Input/Output",
             "materialization": [
                 {
                     "ir_key": "environment.error_file",
@@ -747,12 +750,14 @@ class EnvironmentConfig(DakotaBaseModel):
     read_restart: ReadRestart | None = DakotaField(
         default=None,
         description="Base filename for restart file read",
-        dakota={"argument": "filename"},
+        dakota={"group_label": "Input/Output", "argument": "filename"},
     )
     write_restart: str | None = DakotaField(
         default=None,
         description="Base filename for restart file write",
         dakota={
+            "complexity": 1,
+            "group_label": "Input/Output",
             "materialization": [
                 {
                     "ir_key": "environment.write_restart",
@@ -767,6 +772,8 @@ class EnvironmentConfig(DakotaBaseModel):
         ge=0,
         description="Control the output precision",
         dakota={
+            "complexity": 1,
+            "group_label": "Input/Output",
             "materialization": [
                 {
                     "ir_key": "environment.output_precision",
@@ -780,6 +787,8 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="(Experimental) Write a summary file containing the final results",
         dakota={
+            "complexity": 1,
+            "group_label": "Input/Output",
             "materialization": [
                 {
                     "ir_key": "environment.results_output",
@@ -793,6 +802,8 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="(DEPRECATED) Display plots of variables and responses",
         dakota={
+            "complexity": 1,
+            "group_label": "Input/Output",
             "materialization": [
                 {
                     "ir_key": "environment.graphics",
@@ -806,6 +817,7 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="Invoke Dakota in input check mode",
         dakota={
+            "group_label": "Run Modes",
             "materialization": [
                 {
                     "ir_key": "environment.check",
@@ -819,6 +831,7 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="Invoke Dakota with pre-run mode active",
         dakota={
+            "group_label": "Run Modes",
             "materialization": [
                 {
                     "ir_key": "environment.pre_run",
@@ -832,6 +845,7 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="Invoke Dakota with run mode active",
         dakota={
+            "group_label": "Run Modes",
             "materialization": [
                 {
                     "ir_key": "environment.run",
@@ -845,6 +859,7 @@ class EnvironmentConfig(DakotaBaseModel):
         default=None,
         description="Invoke Dakota with post-run mode active",
         dakota={
+            "group_label": "Run Modes",
             "materialization": [
                 {
                     "ir_key": "environment.post_run",

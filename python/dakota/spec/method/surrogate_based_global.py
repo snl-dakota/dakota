@@ -94,6 +94,7 @@ class SurrogateBasedGlobalSelection(MethodSelection):
 
     surrogate_based_global: SurrogateBasedGlobalConfig = DakotaField(
         dakota={
+            "group": "Surrogate-based Methods",
             "pointer_group": True,
             "materialization": [
                 {

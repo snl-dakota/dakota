@@ -378,6 +378,7 @@ class LocalReliabilitySelection(MethodSelection):
 
     local_reliability: LocalReliabilityConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_local_reliability"],
             "materialization": [
                 {

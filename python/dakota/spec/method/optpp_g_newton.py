@@ -28,6 +28,7 @@ class OptppGNewtonSelection(MethodSelection):
 
     optpp_g_newton: OptppGNewtonConfig = DakotaField(
         dakota={
+            "group": "Calibration",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

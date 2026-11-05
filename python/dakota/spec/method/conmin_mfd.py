@@ -21,6 +21,7 @@ class ConminMfdSelection(MethodSelection):
 
     conmin_mfd: ConminMfdConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

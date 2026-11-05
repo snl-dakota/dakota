@@ -75,6 +75,7 @@ class DemoTplSelection(MethodSelection):
 
     demo_tpl: DemoTplConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

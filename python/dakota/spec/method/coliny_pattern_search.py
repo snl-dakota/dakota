@@ -252,6 +252,7 @@ class ColinyPatternSearchSelection(MethodSelection):
 
     coliny_pattern_search: ColinyPatternSearchConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-free",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

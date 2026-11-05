@@ -68,6 +68,7 @@ class ColinyCommonOptsMixin(DakotaBaseModel):
         default=None,
         description="Show algorithm parameters not exposed in Dakota input",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "method.coliny.show_misc_options",
@@ -725,13 +726,14 @@ class ModelFourOptionalKeywordsMixin(DakotaBaseModel):
         default=None,
         description="Give the model block an identifying name, in case of multiple model blocks",
         dakota={
+            "taglist": "model",
             "materialization": [
                 {
                     "ir_key": "model.id",
                     "storage_type": "DIRECT_VALUE",
                     "ir_value_type": "String",
                 }
-            ]
+            ],
         },
     )
     variables_pointer: str | None = DakotaField(
@@ -766,6 +768,7 @@ class ModelFourOptionalKeywordsMixin(DakotaBaseModel):
         default=None,
         description="Enables hierarchical evaluation tagging",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.hierarchical_tags",
@@ -6703,13 +6706,14 @@ class MethodThreeOptionalKeywordsMixin(DakotaBaseModel):
         default=None,
         description="Name the method block; helpful when there are multiple",
         dakota={
+            "taglist": "method",
             "materialization": [
                 {
                     "ir_key": "method.id",
                     "storage_type": "DIRECT_VALUE",
                     "ir_value_type": "String",
                 }
-            ]
+            ],
         },
     )
     output: Union[Debug, Verbose, Normal, Quiet, Silent] = DakotaField(

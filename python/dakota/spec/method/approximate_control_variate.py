@@ -274,6 +274,7 @@ class ApproximateControlVariateSelection(MethodSelection):
 
     approximate_control_variate: ApproximateControlVariateConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["acv_sampling"],
             "materialization": [
                 {

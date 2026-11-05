@@ -265,6 +265,7 @@ class AsynchPatternSearchSelection(MethodSelection):
 
     asynch_pattern_search: AsynchPatternSearchConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-free",
             "aliases": ["coliny_apps"],
             "materialization": [
                 {

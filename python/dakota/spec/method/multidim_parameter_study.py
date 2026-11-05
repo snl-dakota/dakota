@@ -45,6 +45,7 @@ class MultidimParameterStudySelection(MethodSelection):
 
     multidim_parameter_study: MultidimParameterStudyConfig = DakotaField(
         dakota={
+            "group": "Parameter Studies",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

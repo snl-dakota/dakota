@@ -23,6 +23,7 @@ class NlssolSqpSelection(MethodSelection):
 
     nlssol_sqp: NlssolSqpConfig = DakotaField(
         dakota={
+            "group": "Calibration",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

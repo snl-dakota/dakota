@@ -115,6 +115,7 @@ class RkdDartsSelection(MethodSelection):
 
     rkd_darts: RkdDartsConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_rkd_darts"],
             "materialization": [
                 {

@@ -417,6 +417,7 @@ class SurrogateBasedLocalSelection(MethodSelection):
 
     surrogate_based_local: SurrogateBasedLocalConfig = DakotaField(
         dakota={
+            "group": "Surrogate-based Methods",
             "pointer_group": True,
             "materialization": [
                 {

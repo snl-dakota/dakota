@@ -69,6 +69,7 @@ class MultifidelitySamplingSelection(MethodSelection):
 
     multifidelity_sampling: MultifidelitySamplingConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["multifidelity_mc", "mfmc"],
             "materialization": [
                 {

@@ -46,6 +46,7 @@ class OptppPdsSelection(MethodSelection):
 
     optpp_pds: OptppPdsConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-free",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

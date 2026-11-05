@@ -275,6 +275,7 @@ class AdaptiveSamplingSelection(MethodSelection):
 
     adaptive_sampling: AdaptiveSamplingConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_adaptive_sampling"],
             "materialization": [
                 {

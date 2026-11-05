@@ -23,6 +23,7 @@ class NpsolSqpSelection(MethodSelection):
 
     npsol_sqp: NpsolSqpConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

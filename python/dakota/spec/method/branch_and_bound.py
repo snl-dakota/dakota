@@ -75,6 +75,7 @@ class BranchAndBoundSelection(MethodSelection):
 
     branch_and_bound: BranchAndBoundConfig = DakotaField(
         dakota={
+            "group": "Optimization: Other",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

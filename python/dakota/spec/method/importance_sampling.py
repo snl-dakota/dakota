@@ -140,6 +140,7 @@ class ImportanceSamplingSelection(MethodSelection):
 
     importance_sampling: ImportanceSamplingConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_importance_sampling"],
             "materialization": [
                 {

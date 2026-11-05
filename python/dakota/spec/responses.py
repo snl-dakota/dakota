@@ -1162,7 +1162,8 @@ class ResponsesConfig(ResponseGradientsMixin, ResponseHessiansMixin):
                     "storage_type": "DIRECT_VALUE",
                     "ir_value_type": "String",
                 }
-            ]
+            ],
+            "taglist": "responses",
         },
     )
     descriptors: list[str] | None = DakotaField(

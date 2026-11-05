@@ -23,6 +23,7 @@ class OptppCgSelection(MethodSelection):
 
     optpp_cg: OptppCgConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -30,6 +30,7 @@ class LocalEvidenceSelection(MethodSelection):
 
     local_evidence: LocalEvidenceConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_local_evidence"],
             "materialization": [
                 {

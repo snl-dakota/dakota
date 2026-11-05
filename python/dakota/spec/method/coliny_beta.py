@@ -39,6 +39,7 @@ class ColinyBetaSelection(MethodSelection):
 
     coliny_beta: ColinyBetaConfig = DakotaField(
         dakota={
+            "group": "Optimization: Other",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -67,6 +67,7 @@ class SolutionLevelCost(DakotaBaseModel):
     solution_level_cost: list[DakotaFloat] = DakotaField(
         description="Cost estimates associated with a set of solution control values.",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.simulation.solution_level_cost",
@@ -497,6 +498,7 @@ class NeuralNetworkConfig(
         default=0.0,
         description="Range for neural network random weights",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.neural_network_range",
@@ -510,6 +512,7 @@ class NeuralNetworkConfig(
         default=0,
         description="(Inactive) Random weight control",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.neural_network_random_weight",
@@ -541,6 +544,7 @@ class RadialBasisConfig(ModelFullSurfpackExportFormatMixin, ModelSurrogateImport
         default=0,
         description="Maximum number of RBF CVT points",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.rbf_max_pts",
@@ -554,6 +558,7 @@ class RadialBasisConfig(ModelFullSurfpackExportFormatMixin, ModelSurrogateImport
         default=0,
         description="(Inactive) Minimum RBF partition",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.rbf_min_partition",
@@ -567,6 +572,7 @@ class RadialBasisConfig(ModelFullSurfpackExportFormatMixin, ModelSurrogateImport
         default=0,
         description="Number of trial RBF subsets",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.rbf_max_subsets",
@@ -1838,6 +1844,7 @@ class GlobalApproxGPSurfpackConfig(
         default=None,
         description="Change the optimization method used to compute hyperparameters",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.kriging_opt_method",
@@ -1852,6 +1859,7 @@ class GlobalApproxGPSurfpackConfig(
         gt=0,
         description="Max number of likelihood function evaluations",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.kriging_max_trials",
@@ -1868,6 +1876,7 @@ class GlobalApproxGPSurfpackConfig(
         default=None,
         description="Specify the correlation lengths for the Gaussian process",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.kriging_correlations",
@@ -2729,6 +2738,7 @@ class DaceMethodPointerConfig(DakotaBaseModel):
         default=None,
         description="Experimental auto-refinement of surrogate model",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.auto_refine",
@@ -3165,6 +3175,7 @@ class NestedSelection(ModelSelection):
     nested: NestedConfig = DakotaField(
         description="A model whose responses are computed through the use of a sub-iterator",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.type",
@@ -3298,6 +3309,7 @@ class RandomFieldSelection(ModelSelection):
         description="Experimental capability to generate a random field representation. from data, from simulation runs, or from a covariance matrix.  The representation may then be sampled for use as a random field input to another simulation.  THIS IS AN EXPERIMENTAL CAPABILITY.",
         dakota={
             "pointer_group": True,
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.type",
@@ -3326,6 +3338,7 @@ class ActiveSubspaceSelection(ModelSelection):
         dakota={
             "pointer_group": True,
             "aliases": ["subspace"],
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.type",
@@ -3377,6 +3390,7 @@ class GlobalApproxConfig(SurrogateCorrectionMixin):
         default=None,
         description="Piecewise Domain Decomposition for Global Surrogate Models",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.domain_decomp",
@@ -3503,6 +3517,7 @@ class MultipointSurrogateSelection(ModelSelection):
     multipoint_surrogate: MultipointSurrogateConfig = DakotaField(
         description="A surrogate constructed from multiple existing training points",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.type",
@@ -3527,6 +3542,7 @@ class LocalSurrogateSelection(ModelSelection):
     local_surrogate: LocalSurrogateConfig = DakotaField(
         description="A locally accurate surrogate constructed from data at a single point",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.type",

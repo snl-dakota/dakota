@@ -74,6 +74,7 @@ class VectorParameterStudySelection(MethodSelection):
 
     vector_parameter_study: VectorParameterStudyConfig = DakotaField(
         dakota={
+            "group": "Parameter Studies",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

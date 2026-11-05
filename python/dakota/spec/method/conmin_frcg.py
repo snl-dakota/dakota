@@ -21,6 +21,7 @@ class ConminFrcgSelection(MethodSelection):
 
     conmin_frcg: ConminFrcgConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -62,6 +62,7 @@ class GlobalIntervalEstSelection(MethodSelection):
 
     global_interval_est: GlobalIntervalEstConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_global_interval_est"],
             "materialization": [
                 {

@@ -34,6 +34,7 @@ class NlpqlSqpSelection(MethodSelection):
 
     nlpql_sqp: NlpqlSqpConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

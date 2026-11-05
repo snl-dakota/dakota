@@ -276,6 +276,7 @@ class SogaSelection(MethodSelection):
 
     soga: SogaConfig = DakotaField(
         dakota={
+            "group": "Optimization: Global",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

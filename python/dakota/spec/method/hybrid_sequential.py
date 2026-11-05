@@ -91,6 +91,7 @@ class HybridSequentialSelection(MethodSelection):
     hybrid_sequential: HybridSequentialConfig = DakotaField(
         description="Methods are run one at a time, in sequence",
         dakota={
+            "group": "Optimization: Other",
             "aliases": ["hybrid_uncoupled"],
             "materialization": [
                 {

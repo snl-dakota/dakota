@@ -43,6 +43,7 @@ class GenieDirectSelection(MethodSelection):
 
     genie_direct: GenieDirectConfig = DakotaField(
         dakota={
+            "group": "Optimization: Global",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

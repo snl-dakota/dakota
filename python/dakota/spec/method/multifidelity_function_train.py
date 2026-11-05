@@ -48,6 +48,7 @@ class MultifidelityFtSelection(MethodSelection):
 
     multifidelity_function_train: MultifidelityFtConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -325,6 +325,7 @@ class ImportPointsSelection(MethodSelection):
 
     import_points: ImportPointsConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

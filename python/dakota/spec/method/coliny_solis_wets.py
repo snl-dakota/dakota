@@ -132,6 +132,7 @@ class ColinySolisWetsSelection(MethodSelection):
 
     coliny_solis_wets: ColinySolisWetsConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-free",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

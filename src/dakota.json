@@ -92,7 +92,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -149,6 +150,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -347,6 +349,7 @@
                     "x-aliases": [
                         "subspace"
                     ],
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.type",
@@ -464,7 +467,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -521,6 +525,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -865,7 +870,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -1107,6 +1113,7 @@
                     "x-aliases": [
                         "nond_adaptive_sampling"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -1246,6 +1253,7 @@
                     "default": null,
                     "description": "Run a pre-processing script before the analysis drivers",
                     "title": "Input Filter",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.application.input_filter",
@@ -1266,6 +1274,7 @@
                     "default": null,
                     "description": "Run a post-processing script after the analysis drivers",
                     "title": "Output Filter",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.application.output_filter",
@@ -1321,6 +1330,7 @@
                     "default": null,
                     "description": "Provide additional identifiers to analysis drivers.",
                     "title": "Analysis Components",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.application.analysis_components",
@@ -1356,6 +1366,7 @@
                     "description": "Deprecated grid computing interface",
                     "title": "Grid",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.type",
@@ -1379,6 +1390,7 @@
                     "description": "Specify a dedicated scheduler partition for concurrent analysis executions",
                     "title": "Dedicated",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.analysis_scheduling",
@@ -1402,6 +1414,7 @@
                     "description": "Specify a peer partition for parallel analysis scheduling",
                     "title": "Peer",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.analysis_scheduling",
@@ -1782,7 +1795,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -2042,6 +2056,7 @@
                     "x-aliases": [
                         "acv_sampling"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -2190,7 +2205,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -2357,6 +2373,7 @@
                     "x-aliases": [
                         "coliny_apps"
                     ],
+                    "x-group": "Optimization: Local, Derivative-free",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -2434,6 +2451,7 @@
                     "default": null,
                     "description": "Control how local asynchronous jobs are scheduled",
                     "title": "Local Evaluation Scheduling",
+                    "x-complexity": 1,
                     "x-union-pattern": 2
                 },
                 "analysis_concurrency": {
@@ -2449,6 +2467,7 @@
                     "default": null,
                     "description": "Limit the number of analysis drivers within an evaluation that Dakota will schedule",
                     "title": "Analysis Concurrency",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.asynch_local_analysis_concurrency",
@@ -2935,7 +2954,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -3139,6 +3159,7 @@
                     "x-aliases": [
                         "nond_bayes_calibration"
                     ],
+                    "x-group": "Calibration",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -4619,7 +4640,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -4769,6 +4791,7 @@
             "properties": {
                 "branch_and_bound": {
                     "$ref": "#/$defs/BranchAndBoundConfig",
+                    "x-group": "Optimization: Other",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -5896,7 +5919,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -5982,6 +6006,7 @@
             "properties": {
                 "centered_parameter_study": {
                     "$ref": "#/$defs/CenteredParameterStudyConfig",
+                    "x-group": "Parameter Studies",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -6156,6 +6181,7 @@
                     "default": null,
                     "description": "Show algorithm parameters not exposed in Dakota input",
                     "title": "Show Misc Options",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.coliny.show_misc_options",
@@ -6272,7 +6298,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -6336,6 +6363,7 @@
             "properties": {
                 "coliny_beta": {
                     "$ref": "#/$defs/ColinyBetaConfig",
+                    "x-group": "Optimization: Other",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -6432,6 +6460,7 @@
                     "default": null,
                     "description": "Show algorithm parameters not exposed in Dakota input",
                     "title": "Show Misc Options",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.coliny.show_misc_options",
@@ -6548,7 +6577,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -6623,6 +6653,7 @@
             "properties": {
                 "coliny_cobyla": {
                     "$ref": "#/$defs/ColinyCobylaConfig",
+                    "x-group": "Optimization: Local, Derivative-free",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -6719,6 +6750,7 @@
                     "default": null,
                     "description": "Show algorithm parameters not exposed in Dakota input",
                     "title": "Show Misc Options",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.coliny.show_misc_options",
@@ -6835,7 +6867,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -6966,6 +6999,7 @@
             "properties": {
                 "coliny_direct": {
                     "$ref": "#/$defs/ColinyDirectConfig",
+                    "x-group": "Optimization: Global",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -7062,6 +7096,7 @@
                     "default": null,
                     "description": "Show algorithm parameters not exposed in Dakota input",
                     "title": "Show Misc Options",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.coliny.show_misc_options",
@@ -7178,7 +7213,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -7621,6 +7657,7 @@
             "properties": {
                 "coliny_ea": {
                     "$ref": "#/$defs/ColinyEaConfig",
+                    "x-group": "Optimization: Global",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -7751,6 +7788,7 @@
                     "default": null,
                     "description": "Show algorithm parameters not exposed in Dakota input",
                     "title": "Show Misc Options",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.coliny.show_misc_options",
@@ -7884,7 +7922,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -8111,6 +8150,7 @@
             "properties": {
                 "coliny_pattern_search": {
                     "$ref": "#/$defs/ColinyPatternSearchConfig",
+                    "x-group": "Optimization: Local, Derivative-free",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -8207,6 +8247,7 @@
                     "default": null,
                     "description": "Show algorithm parameters not exposed in Dakota input",
                     "title": "Show Misc Options",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.coliny.show_misc_options",
@@ -8323,7 +8364,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -8492,6 +8534,7 @@
             "properties": {
                 "coliny_solis_wets": {
                     "$ref": "#/$defs/ColinySolisWetsConfig",
+                    "x-group": "Optimization: Local, Derivative-free",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -8675,7 +8718,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -8724,6 +8768,7 @@
             "properties": {
                 "conmin_frcg": {
                     "$ref": "#/$defs/ConminFrcgConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -8884,7 +8929,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -8933,6 +8979,7 @@
             "properties": {
                 "conmin_mfd": {
                     "$ref": "#/$defs/ConminMfdConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -9007,6 +9054,7 @@
                     "description": "Cause Dakota to step toward the failed \"target\" simulation from a nearby successful \"source\"",
                     "title": "Continuation",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.failure_capture.action",
@@ -10422,7 +10470,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -10644,6 +10693,7 @@
                     ],
                     "default": null,
                     "description": "Experimental auto-refinement of surrogate model",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.auto_refine",
@@ -10811,6 +10861,7 @@
                     "default": null,
                     "description": "Do not retain function evaluation history in memory",
                     "title": "Evaluation Cache",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.evaluation_cache",
@@ -10830,6 +10881,7 @@
                     ],
                     "default": null,
                     "description": "Do not require strict cache equality when finding duplicates",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.nearby_evaluation_cache",
@@ -10851,6 +10903,7 @@
                     "default": null,
                     "description": "Deactivate writing to the restart file",
                     "title": "Restart File",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.restart_file",
@@ -11320,7 +11373,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -11423,6 +11477,7 @@
             "properties": {
                 "demo_tpl": {
                     "$ref": "#/$defs/DemoTplConfig",
+                    "x-group": "Optimization: Local",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -11910,6 +11965,7 @@
                     "default": null,
                     "description": "Specify the number of processors per analysis when Dakota is run in parallel",
                     "title": "Processors Per Analysis",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.direct.processors_per_analysis",
@@ -15993,7 +16049,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -16042,6 +16099,7 @@
             "properties": {
                 "dot_bfgs": {
                     "$ref": "#/$defs/DotBfgsConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -16202,7 +16260,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -16251,6 +16310,7 @@
             "properties": {
                 "dot_frcg": {
                     "$ref": "#/$defs/DotFrcgConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -16411,7 +16471,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -16460,6 +16521,7 @@
             "properties": {
                 "dot_mmfd": {
                     "$ref": "#/$defs/DotMmfdConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -16620,7 +16682,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -16669,6 +16732,7 @@
             "properties": {
                 "dot_slp": {
                     "$ref": "#/$defs/DotSlpConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -16829,7 +16893,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -16878,6 +16943,7 @@
             "properties": {
                 "dot_sqp": {
                     "$ref": "#/$defs/DotSqpConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -17303,7 +17369,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -17586,6 +17653,7 @@
             "properties": {
                 "efficient_global": {
                     "$ref": "#/$defs/EfficientGlobalConfig",
+                    "x-group": "Surrogate-based Methods",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -21842,7 +21910,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -21899,6 +21968,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -21998,6 +22068,7 @@
                     "x-aliases": [
                         "tabular_graphics_data"
                     ],
+                    "x-group-label": "Input/Output",
                     "x-materialization": [
                         {
                             "ir_key": "environment.tabular_graphics_data",
@@ -22018,6 +22089,7 @@
                     "default": null,
                     "description": "Base filename for output redirection",
                     "title": "Output File",
+                    "x-group-label": "Input/Output",
                     "x-materialization": [
                         {
                             "ir_key": "environment.output_file",
@@ -22038,6 +22110,7 @@
                     "default": null,
                     "description": "Base filename for error redirection",
                     "title": "Error File",
+                    "x-group-label": "Input/Output",
                     "x-materialization": [
                         {
                             "ir_key": "environment.error_file",
@@ -22057,7 +22130,8 @@
                     ],
                     "argument": "filename",
                     "default": null,
-                    "description": "Base filename for restart file read"
+                    "description": "Base filename for restart file read",
+                    "x-group-label": "Input/Output"
                 },
                 "write_restart": {
                     "anyOf": [
@@ -22071,6 +22145,8 @@
                     "default": null,
                     "description": "Base filename for restart file write",
                     "title": "Write Restart",
+                    "x-complexity": 1,
+                    "x-group-label": "Input/Output",
                     "x-materialization": [
                         {
                             "ir_key": "environment.write_restart",
@@ -22085,6 +22161,8 @@
                     "minimum": 0,
                     "title": "Output Precision",
                     "type": "integer",
+                    "x-complexity": 1,
+                    "x-group-label": "Input/Output",
                     "x-materialization": [
                         {
                             "ir_key": "environment.output_precision",
@@ -22104,6 +22182,8 @@
                     ],
                     "default": null,
                     "description": "(Experimental) Write a summary file containing the final results",
+                    "x-complexity": 1,
+                    "x-group-label": "Input/Output",
                     "x-materialization": [
                         {
                             "ir_key": "environment.results_output",
@@ -22125,6 +22205,8 @@
                     "default": null,
                     "description": "(DEPRECATED) Display plots of variables and responses",
                     "title": "Graphics",
+                    "x-complexity": 1,
+                    "x-group-label": "Input/Output",
                     "x-materialization": [
                         {
                             "ir_key": "environment.graphics",
@@ -22146,6 +22228,7 @@
                     "default": null,
                     "description": "Invoke Dakota in input check mode",
                     "title": "Check",
+                    "x-group-label": "Run Modes",
                     "x-materialization": [
                         {
                             "ir_key": "environment.check",
@@ -22165,6 +22248,7 @@
                     ],
                     "default": null,
                     "description": "Invoke Dakota with pre-run mode active",
+                    "x-group-label": "Run Modes",
                     "x-materialization": [
                         {
                             "ir_key": "environment.pre_run",
@@ -22184,6 +22268,7 @@
                     ],
                     "default": null,
                     "description": "Invoke Dakota with run mode active",
+                    "x-group-label": "Run Modes",
                     "x-materialization": [
                         {
                             "ir_key": "environment.run",
@@ -22203,6 +22288,7 @@
                     ],
                     "default": null,
                     "description": "Invoke Dakota with post-run mode active",
+                    "x-group-label": "Run Modes",
                     "x-materialization": [
                         {
                             "ir_key": "environment.post_run",
@@ -22323,6 +22409,7 @@
                     "description": "Specify a dedicated scheduler partition for concurrent evaluation scheduling",
                     "title": "Dedicated",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.evaluation_scheduling",
@@ -23870,6 +23957,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -23889,6 +23977,7 @@
                     ],
                     "default": null,
                     "description": "Exports surrogate model in user-specified format(s)",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.export_surrogate",
@@ -24165,6 +24254,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -24184,6 +24274,7 @@
                     ],
                     "default": null,
                     "description": "Exports surrogate model in user-specified format(s)",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.export_surrogate",
@@ -25285,7 +25376,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -26815,7 +26907,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -26952,6 +27045,7 @@
             "properties": {
                 "fsu_cvt": {
                     "$ref": "#/$defs/FsuCvtConfig",
+                    "x-group": "DACE",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -27044,7 +27138,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -27277,7 +27372,8 @@
             "description": "Generated model for FsuQuasiMcSelection",
             "properties": {
                 "fsu_quasi_mc": {
-                    "$ref": "#/$defs/FsuQuasiMcConfig"
+                    "$ref": "#/$defs/FsuQuasiMcConfig",
+                    "x-group": "DACE"
                 }
             },
             "required": [
@@ -27996,7 +28092,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -28431,6 +28528,7 @@
             "properties": {
                 "function_train": {
                     "$ref": "#/$defs/FtConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -29361,7 +29459,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -29431,6 +29530,7 @@
             "properties": {
                 "genie_direct": {
                     "$ref": "#/$defs/GenieDirectConfig",
+                    "x-group": "Optimization: Global",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -29525,7 +29625,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -29595,6 +29696,7 @@
             "properties": {
                 "genie_opt_darts": {
                     "$ref": "#/$defs/GenieOptDartsConfig",
+                    "x-group": "Optimization: Global",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -30149,6 +30251,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -30208,6 +30311,7 @@
                     "default": null,
                     "description": "Change the optimization method used to compute hyperparameters",
                     "title": "Optimization Method",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.kriging_opt_method",
@@ -30229,6 +30333,7 @@
                     "default": null,
                     "description": "Max number of likelihood function evaluations",
                     "title": "Max Trials",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.kriging_max_trials",
@@ -30270,6 +30375,7 @@
                     "default": null,
                     "description": "Specify the correlation lengths for the Gaussian process",
                     "title": "Correlation Lengths",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.kriging_correlations",
@@ -30516,6 +30622,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -30752,7 +30859,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -30838,6 +30946,7 @@
                     "x-aliases": [
                         "nond_global_evidence"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -30981,7 +31090,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -31067,6 +31177,7 @@
                     "x-aliases": [
                         "nond_global_interval_est"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -31262,7 +31373,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -31378,6 +31490,7 @@
                     "default": null,
                     "description": "Use derivative data to construct surrogate models",
                     "title": "Use Derivatives",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.derivative_usage",
@@ -31556,6 +31669,7 @@
                     "x-aliases": [
                         "nond_global_reliability"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -31660,6 +31774,7 @@
                     ],
                     "default": null,
                     "description": "Piecewise Domain Decomposition for Global Surrogate Models",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.domain_decomp",
@@ -31849,7 +31964,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -31906,6 +32022,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -32115,7 +32232,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -32274,6 +32392,7 @@
                     "x-aliases": [
                         "gaussian_process_adaptive_importance_sampling"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -33227,6 +33346,8 @@
                     ],
                     "description": "Select the models that write evaluation data to HDF5",
                     "title": "Model Selection",
+                    "x-complexity": 1,
+                    "x-group": "Model Evaluation Storage Selection",
                     "x-model-default": "TopMethod",
                     "x-union-pattern": 1
                 },
@@ -33244,6 +33365,8 @@
                     ],
                     "description": "Select the models that write evaluation data to HDF5",
                     "title": "Interface Selection",
+                    "x-complexity": 1,
+                    "x-group": "Interface Evaluation Storage Selection",
                     "x-model-default": "Simulation",
                     "x-union-pattern": 1
                 }
@@ -34545,7 +34668,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -34600,6 +34724,7 @@
                     "x-aliases": [
                         "hybrid_uncoupled"
                     ],
+                    "x-group": "Optimization: Other",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -36049,6 +36174,7 @@
                     "description": "User-customizable portion of exported/imported surrogate model filenames",
                     "title": "Filename Prefix",
                     "type": "string",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.model_import_prefix",
@@ -36232,7 +36358,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -36664,6 +36791,7 @@
             "properties": {
                 "import_points": {
                     "$ref": "#/$defs/ImportPointsConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -37119,7 +37247,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -37297,6 +37426,7 @@
                     "x-aliases": [
                         "nond_importance_sampling"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -37996,7 +38126,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "interface"
                 },
                 "analysis_drivers": {
                     "anyOf": [
@@ -38023,6 +38154,7 @@
                     "default": null,
                     "description": "Use AMPL to define algebraic input-output mappings",
                     "title": "Algebraic Mappings",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.algebraic_mappings",
@@ -38094,6 +38226,8 @@
                     "default": null,
                     "description": "Specify the number of evaluation servers when Dakota is run in parallel",
                     "title": "Evaluation Servers",
+                    "x-complexity": 1,
+                    "x-group-label": "Parallel Configuration",
                     "x-materialization": [
                         {
                             "ir_key": "interface.evaluation_servers",
@@ -38117,6 +38251,8 @@
                     "default": null,
                     "description": "Specify the scheduling of concurrent evaluations when Dakota is run in parallel",
                     "title": "Evaluation Scheduling",
+                    "x-complexity": 1,
+                    "x-group-label": "Parallel Configuration",
                     "x-union-pattern": 2
                 },
                 "processors_per_evaluation": {
@@ -38132,6 +38268,8 @@
                     "default": null,
                     "description": "Specify the number of processors per evaluation server when Dakota is run in parallel",
                     "title": "Processors Per Evaluation",
+                    "x-complexity": 1,
+                    "x-group-label": "Parallel Configuration",
                     "x-materialization": [
                         {
                             "ir_key": "interface.processors_per_evaluation",
@@ -38153,6 +38291,8 @@
                     "default": null,
                     "description": "Specify the number of analysis servers when Dakota is run in parallel",
                     "title": "Analysis Servers",
+                    "x-complexity": 1,
+                    "x-group-label": "Parallel Configuration",
                     "x-materialization": [
                         {
                             "ir_key": "interface.analysis_servers",
@@ -38176,6 +38316,8 @@
                     "default": null,
                     "description": "Specify the scheduling of concurrent analyses when Dakota is run in parallel",
                     "title": "Analysis Scheduling",
+                    "x-complexity": 1,
+                    "x-group-label": "Parallel Configuration",
                     "x-union-pattern": 2
                 }
             },
@@ -38651,7 +38793,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -38872,6 +39015,7 @@
             "properties": {
                 "list_parameter_study": {
                     "$ref": "#/$defs/ListParameterStudyConfig",
+                    "x-group": "Parameter Studies",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -38898,6 +39042,7 @@
                     "description": "Dynamic local scheduling (sequential)",
                     "title": "Dynamic",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.local_evaluation_scheduling",
@@ -38921,6 +39066,7 @@
                     "description": "Static local scheduling (tiled)",
                     "title": "Static",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.local_evaluation_scheduling",
@@ -39069,7 +39215,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -39121,6 +39268,7 @@
                     "x-aliases": [
                         "nond_local_evidence"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -39239,7 +39387,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -39291,6 +39440,7 @@
                     "x-aliases": [
                         "nond_local_interval_est"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -39493,7 +39643,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -39557,6 +39708,7 @@
                     "x-aliases": [
                         "nond_local_reliability"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -39639,7 +39791,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -39696,6 +39849,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -39729,6 +39883,7 @@
             "properties": {
                 "local_surrogate": {
                     "$ref": "#/$defs/LocalSurrogateConfig",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.type",
@@ -40558,6 +40713,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -40577,6 +40733,7 @@
                     ],
                     "default": null,
                     "description": "Exports surrogate model in user-specified format(s)",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.export_surrogate",
@@ -40629,6 +40786,7 @@
                     "description": "Run Matlab through a direct interface - requires special Dakota build",
                     "title": "Matlab",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.type",
@@ -41068,7 +41226,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -46397,7 +46556,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -46876,6 +47036,7 @@
                     "default": null,
                     "description": "Use derivative data to construct surrogate models",
                     "title": "Use Derivatives",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.derivative_usage",
@@ -48317,6 +48478,7 @@
             "properties": {
                 "multifidelity_polynomial_chaos": {
                     "$ref": "#/$defs/MfPceConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -49583,7 +49745,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -50056,6 +50219,7 @@
                     "default": null,
                     "description": "Use derivative data to construct surrogate models",
                     "title": "Use Derivatives",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.derivative_usage",
@@ -51149,6 +51313,7 @@
             "properties": {
                 "multilevel_polynomial_chaos": {
                     "$ref": "#/$defs/MlPceConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -51587,6 +51752,7 @@
                     "description": "User-customizable portion of exported/imported surrogate model filenames",
                     "title": "Filename Prefix",
                     "type": "string",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.model_export_prefix",
@@ -51596,7 +51762,9 @@
                     ]
                 },
                 "formats": {
-                    "$ref": "#/$defs/ModelPartialSurrogateExportFormatFormats"
+                    "$ref": "#/$defs/ModelPartialSurrogateExportFormatFormats",
+                    "x-complexity": 1,
+                    "x-group": "Surrogate Export Formats"
                 }
             },
             "required": [
@@ -52216,7 +52384,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -52418,6 +52587,7 @@
             "properties": {
                 "moga": {
                     "$ref": "#/$defs/MogaConfig",
+                    "x-group": "Optimization: Global",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -52493,6 +52663,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -52512,6 +52683,7 @@
                     ],
                     "default": null,
                     "description": "Exports surrogate model in user-specified format(s)",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.export_surrogate",
@@ -52786,7 +52958,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -52972,6 +53145,7 @@
             "properties": {
                 "multi_start": {
                     "$ref": "#/$defs/MultiStartConfig",
+                    "x-group": "Optimization: Other",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -53054,7 +53228,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -53132,6 +53307,7 @@
             "properties": {
                 "multidim_parameter_study": {
                     "$ref": "#/$defs/MultidimParameterStudyConfig",
+                    "x-group": "Parameter Studies",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -53927,7 +54103,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -53987,6 +54164,7 @@
             "properties": {
                 "multifidelity_function_train": {
                     "$ref": "#/$defs/MultifidelityFtConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -54232,7 +54410,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -54341,6 +54520,7 @@
                         "multifidelity_mc",
                         "mfmc"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -54834,7 +55014,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -55324,6 +55505,7 @@
             "properties": {
                 "multifidelity_stoch_collocation": {
                     "$ref": "#/$defs/MultifidelityStochCollocConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -55628,7 +55810,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -55733,6 +55916,7 @@
             "properties": {
                 "multilevel_blue": {
                     "$ref": "#/$defs/MultilevelBlueConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -56494,7 +56678,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -56554,6 +56739,7 @@
             "properties": {
                 "multilevel_function_train": {
                     "$ref": "#/$defs/MultilevelFtConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -56858,7 +57044,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -56967,6 +57154,7 @@
                         "multilevel_multifidelity_mc",
                         "mlmfmc"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -57188,7 +57376,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -57365,6 +57554,7 @@
                         "multilevel_mc",
                         "mlmc"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -57479,7 +57669,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -57536,6 +57727,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -57569,6 +57761,7 @@
             "properties": {
                 "multipoint_surrogate": {
                     "$ref": "#/$defs/MultipointSurrogateConfig",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.type",
@@ -58117,7 +58310,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -58213,6 +58407,7 @@
             "properties": {
                 "ncsu_direct": {
                     "$ref": "#/$defs/NcsuDirectConfig",
+                    "x-group": "Optimization: Global",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -58515,7 +58710,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -58572,6 +58768,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -58611,6 +58808,7 @@
             "properties": {
                 "nested": {
                     "$ref": "#/$defs/NestedConfig",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.type",
@@ -58664,6 +58862,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -58712,6 +58911,7 @@
                     "description": "Range for neural network random weights",
                     "title": "Range",
                     "type": "number",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.neural_network_range",
@@ -58725,6 +58925,7 @@
                     "description": "(Inactive) Random weight control",
                     "title": "Random Weight",
                     "type": "integer",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.neural_network_random_weight",
@@ -58897,7 +59098,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -59071,6 +59273,7 @@
             "properties": {
                 "nl2sol": {
                     "$ref": "#/$defs/Nl2solConfig",
+                    "x-group": "Calibration",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -59197,7 +59400,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -59246,6 +59450,7 @@
             "properties": {
                 "nlpql_sqp": {
                     "$ref": "#/$defs/NlpqlSqpConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -59445,7 +59650,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -59494,6 +59700,7 @@
             "properties": {
                 "nlssol_sqp": {
                     "$ref": "#/$defs/NlssolSqpConfig",
+                    "x-group": "Calibration",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -59721,7 +59928,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -59793,6 +60001,7 @@
             "properties": {
                 "nonlinear_cg": {
                     "$ref": "#/$defs/NonlinearCgConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -60303,7 +60512,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -60551,7 +60761,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -60600,6 +60811,7 @@
             "properties": {
                 "npsol_sqp": {
                     "$ref": "#/$defs/NpsolSqpConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -63120,7 +63332,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -63169,6 +63382,7 @@
             "properties": {
                 "optpp_cg": {
                     "$ref": "#/$defs/OptppCgConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -63408,7 +63622,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -63457,6 +63672,7 @@
             "properties": {
                 "optpp_fd_newton": {
                     "$ref": "#/$defs/OptppFdNewtonConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -63696,7 +63912,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -63745,6 +63962,7 @@
             "properties": {
                 "optpp_g_newton": {
                     "$ref": "#/$defs/OptppGNewtonConfig",
+                    "x-group": "Calibration",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -63984,7 +64202,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -64033,6 +64252,7 @@
             "properties": {
                 "optpp_newton": {
                     "$ref": "#/$defs/OptppNewtonConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -64159,7 +64379,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -64221,6 +64442,7 @@
             "properties": {
                 "optpp_pds": {
                     "$ref": "#/$defs/OptppPdsConfig",
+                    "x-group": "Optimization: Local, Derivative-free",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -64460,7 +64682,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -64509,6 +64732,7 @@
             "properties": {
                 "optpp_q_newton": {
                     "$ref": "#/$defs/OptppQNewtonConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -64936,7 +65160,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -65134,6 +65359,7 @@
             "properties": {
                 "pareto_set": {
                     "$ref": "#/$defs/ParetoSetConfig",
+                    "x-group": "Optimization: Other",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -65648,7 +65874,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -66087,6 +66314,7 @@
                     "default": null,
                     "description": "Use derivative data to construct surrogate models",
                     "title": "Use Derivatives",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "method.derivative_usage",
@@ -67901,6 +68129,7 @@
                     "x-aliases": [
                         "nond_polynomial_chaos"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -67927,6 +68156,7 @@
                     "description": "Specify dynamic scheduling in a peer partition when Dakota is run in parallel.",
                     "title": "Dynamic",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.evaluation_scheduling",
@@ -67950,6 +68180,7 @@
                     "description": "Specify static scheduling in a peer partition when Dakota is run in parallel.",
                     "title": "Static",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.evaluation_scheduling",
@@ -68313,7 +68544,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -68477,6 +68709,7 @@
                     "x-aliases": [
                         "nond_pof_darts"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -69400,7 +69633,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -69517,6 +69751,7 @@
             "properties": {
                 "psuade_moat": {
                     "$ref": "#/$defs/PsuadeMoatConfig",
+                    "x-group": "DACE",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -69539,6 +69774,7 @@
             "properties": {
                 "python": {
                     "$ref": "#/$defs/PythonConfig",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.type",
@@ -69572,6 +69808,7 @@
                     "default": null,
                     "description": "Enable the use of numpy in Dakota's Python interface",
                     "title": "Numpy",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.python.numpy",
@@ -70266,6 +70503,7 @@
                     ],
                     "default": null,
                     "description": "Import surrogate model from archive file",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.import_surrogate",
@@ -70311,6 +70549,7 @@
                     "description": "Maximum number of RBF CVT points",
                     "title": "Max Pts",
                     "type": "integer",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.rbf_max_pts",
@@ -70324,6 +70563,7 @@
                     "description": "(Inactive) Minimum RBF partition",
                     "title": "Min Partition",
                     "type": "integer",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.rbf_min_partition",
@@ -70337,6 +70577,7 @@
                     "description": "Number of trial RBF subsets",
                     "title": "Max Subsets",
                     "type": "integer",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.surrogate.rbf_max_subsets",
@@ -70394,7 +70635,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -70451,6 +70693,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -70558,6 +70801,7 @@
             "properties": {
                 "random_field": {
                     "$ref": "#/$defs/RandomFieldConfig",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.type",
@@ -72008,7 +72252,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "responses"
                 },
                 "descriptors": {
                     "anyOf": [
@@ -72394,7 +72639,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -72476,6 +72722,7 @@
             "properties": {
                 "richardson_extrap": {
                     "$ref": "#/$defs/RichardsonExtrapConfig",
+                    "x-group": "Verification Studies",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -72623,7 +72870,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -72787,6 +73035,7 @@
                     "x-aliases": [
                         "nond_rkd_darts"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -72986,7 +73235,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -73081,6 +73331,7 @@
             "properties": {
                 "rol": {
                     "$ref": "#/$defs/RolConfig",
+                    "x-group": "Optimization: Local, Derivative-based",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -73374,7 +73625,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -73685,6 +73937,7 @@
                     "x-aliases": [
                         "nond_sampling"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -74260,6 +74513,7 @@
                     "description": "Run Scilab through a direct interface - requires special Dakota build",
                     "title": "Scilab",
                     "type": "boolean",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.type",
@@ -74536,7 +74790,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "model"
                 },
                 "variables_pointer": {
                     "anyOf": [
@@ -74593,6 +74848,7 @@
                     "default": null,
                     "description": "Enables hierarchical evaluation tagging",
                     "title": "Hierarchical Tagging",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.hierarchical_tags",
@@ -74817,7 +75073,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -75146,7 +75403,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -75316,6 +75574,7 @@
             "properties": {
                 "soga": {
                     "$ref": "#/$defs/SogaConfig",
+                    "x-group": "Optimization: Global",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -75343,6 +75602,7 @@
                     },
                     "title": "Solution Level Cost",
                     "type": "array",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "model.simulation.solution_level_cost",
@@ -75991,7 +76251,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -76441,6 +76702,7 @@
                     "x-aliases": [
                         "nond_stoch_collocation"
                     ],
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -76466,6 +76728,7 @@
                     "description": "Specify tolerance when identifying duplicate function evaluations",
                     "title": "Cache Tolerance",
                     "type": "number",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.nearby_evaluation_cache_tolerance",
@@ -76923,7 +77186,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -77081,6 +77345,7 @@
             "properties": {
                 "surrogate_based_global": {
                     "$ref": "#/$defs/SurrogateBasedGlobalConfig",
+                    "x-group": "Surrogate-based Methods",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -77177,7 +77442,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -77406,6 +77672,7 @@
             "properties": {
                 "surrogate_based_local": {
                     "$ref": "#/$defs/SurrogateBasedLocalConfig",
+                    "x-group": "Surrogate-based Methods",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -77747,7 +78014,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -77796,6 +78064,7 @@
             "properties": {
                 "surrogate_based_uq": {
                     "$ref": "#/$defs/SurrogateBasedUqConfig",
+                    "x-group": "Uncertainty Quantification",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",
@@ -78005,6 +78274,7 @@
                     "default": null,
                     "description": "Change how Dakota deals with existing results files",
                     "title": "Allow Existing Results",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.allow_existing_results",
@@ -78026,6 +78296,7 @@
                     "default": null,
                     "description": "Specify the command Dakota uses to launch analysis driver(s) and filters",
                     "title": "Verbatim",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.application.verbatim",
@@ -78312,6 +78583,7 @@
                     "default": null,
                     "description": "Overwrite existing files within a work directory",
                     "title": "Replace",
+                    "x-complexity": 1,
                     "x-materialization": [
                         {
                             "ir_key": "interface.templateReplace",
@@ -79965,7 +80237,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "variables"
                 },
                 "active": {
                     "anyOf": [
@@ -80025,7 +80298,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Design variable - continuous"
+                    "description": "Design variable - continuous",
+                    "x-group": "Design Variables"
                 },
                 "discrete_design_range": {
                     "anyOf": [
@@ -80038,7 +80312,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Design variable - discrete range-valued"
+                    "description": "Design variable - discrete range-valued",
+                    "x-group": "Design Variables"
                 },
                 "discrete_design_set": {
                     "anyOf": [
@@ -80050,7 +80325,8 @@
                         }
                     ],
                     "default": null,
-                    "description": "Design variable - discrete set-valued"
+                    "description": "Design variable - discrete set-valued",
+                    "x-group": "Design Variables"
                 },
                 "normal_uncertain": {
                     "anyOf": [
@@ -80063,7 +80339,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - normal (Gaussian)"
+                    "description": "Aleatory uncertain variable - normal (Gaussian)",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "lognormal_uncertain": {
                     "anyOf": [
@@ -80076,7 +80353,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - lognormal"
+                    "description": "Aleatory uncertain variable - lognormal",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "uniform_uncertain": {
                     "anyOf": [
@@ -80089,7 +80367,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - uniform"
+                    "description": "Aleatory uncertain variable - uniform",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "loguniform_uncertain": {
                     "anyOf": [
@@ -80102,7 +80381,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - loguniform"
+                    "description": "Aleatory uncertain variable - loguniform",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "triangular_uncertain": {
                     "anyOf": [
@@ -80115,7 +80395,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - triangular"
+                    "description": "Aleatory uncertain variable - triangular",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "exponential_uncertain": {
                     "anyOf": [
@@ -80128,7 +80409,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - exponential"
+                    "description": "Aleatory uncertain variable - exponential",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "beta_uncertain": {
                     "anyOf": [
@@ -80141,7 +80423,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - beta"
+                    "description": "Aleatory uncertain variable - beta",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "gamma_uncertain": {
                     "anyOf": [
@@ -80154,7 +80437,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - gamma"
+                    "description": "Aleatory uncertain variable - gamma",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "gumbel_uncertain": {
                     "anyOf": [
@@ -80167,7 +80451,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - gumbel"
+                    "description": "Aleatory uncertain variable - gumbel",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "frechet_uncertain": {
                     "anyOf": [
@@ -80180,7 +80465,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - Frechet"
+                    "description": "Aleatory uncertain variable - Frechet",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "weibull_uncertain": {
                     "anyOf": [
@@ -80193,7 +80479,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain variable - Weibull"
+                    "description": "Aleatory uncertain variable - Weibull",
+                    "x-group": "Continuous Aleatory Uncertain"
                 },
                 "histogram_bin_uncertain": {
                     "anyOf": [
@@ -80207,6 +80494,7 @@
                     "argument": "count",
                     "default": null,
                     "description": "Aleatory uncertain variable - continuous histogram",
+                    "x-group": "Continuous Aleatory Uncertain",
                     "x-materialization": [
                         {
                             "ir_key": "variables.histogram_uncertain.bin_pairs",
@@ -80226,7 +80514,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain discrete variable - Poisson"
+                    "description": "Aleatory uncertain discrete variable - Poisson",
+                    "x-group": "Discrete Aleatory Uncertain"
                 },
                 "binomial_uncertain": {
                     "anyOf": [
@@ -80239,7 +80528,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain discrete variable - binomial"
+                    "description": "Aleatory uncertain discrete variable - binomial",
+                    "x-group": "Discrete Aleatory Uncertain"
                 },
                 "negative_binomial_uncertain": {
                     "anyOf": [
@@ -80252,7 +80542,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain discrete variable - negative binomial"
+                    "description": "Aleatory uncertain discrete variable - negative binomial",
+                    "x-group": "Discrete Aleatory Uncertain"
                 },
                 "geometric_uncertain": {
                     "anyOf": [
@@ -80265,7 +80556,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain discrete variable - geometric"
+                    "description": "Aleatory uncertain discrete variable - geometric",
+                    "x-group": "Discrete Aleatory Uncertain"
                 },
                 "hypergeometric_uncertain": {
                     "anyOf": [
@@ -80278,7 +80570,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "Aleatory uncertain discrete variable - hypergeometric"
+                    "description": "Aleatory uncertain discrete variable - hypergeometric",
+                    "x-group": "Discrete Aleatory Uncertain"
                 },
                 "histogram_point_uncertain": {
                     "anyOf": [
@@ -80290,7 +80583,8 @@
                         }
                     ],
                     "default": null,
-                    "description": "Aleatory uncertain variable - discrete histogram"
+                    "description": "Aleatory uncertain variable - discrete histogram",
+                    "x-group": "Discrete Aleatory Uncertain"
                 },
                 "uncertain_correlation_matrix": {
                     "anyOf": [
@@ -80307,6 +80601,7 @@
                     "default": null,
                     "description": "Correlation among aleatory uncertain variables",
                     "title": "Uncertain Correlation Matrix",
+                    "x-group": "Aleatory Uncertain Correlations",
                     "x-materialization": [
                         {
                             "ir_key": "variables.uncertain.correlation_matrix",
@@ -80330,6 +80625,7 @@
                     "x-aliases": [
                         "interval_uncertain"
                     ],
+                    "x-group": "Epistemic Uncertain",
                     "x-materialization": [
                         {
                             "ir_key": "variables.continuous_interval_uncertain.basic_probs",
@@ -80350,6 +80646,7 @@
                     "argument": "count",
                     "default": null,
                     "description": "Epistemic uncertain variable - values from one or more discrete intervals",
+                    "x-group": "Epistemic Uncertain",
                     "x-materialization": [
                         {
                             "ir_key": "variables.discrete_interval_uncertain.basic_probs",
@@ -80368,7 +80665,8 @@
                         }
                     ],
                     "default": null,
-                    "description": "Epistemic uncertain variable - discrete set-valued"
+                    "description": "Epistemic uncertain variable - discrete set-valued",
+                    "x-group": "Epistemic Uncertain"
                 },
                 "continuous_state": {
                     "anyOf": [
@@ -80381,7 +80679,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "State variable - continuous"
+                    "description": "State variable - continuous",
+                    "x-group": "State Variables"
                 },
                 "discrete_state_range": {
                     "anyOf": [
@@ -80394,7 +80693,8 @@
                     ],
                     "argument": "count",
                     "default": null,
-                    "description": "State variables - discrete range-valued"
+                    "description": "State variables - discrete range-valued",
+                    "x-group": "State Variables"
                 },
                 "discrete_state_set": {
                     "anyOf": [
@@ -80406,7 +80706,8 @@
                         }
                     ],
                     "default": null,
-                    "description": "State variable - discrete set-valued"
+                    "description": "State variable - discrete set-valued",
+                    "x-group": "State Variables"
                 },
                 "linear_inequality_constraint_matrix": {
                     "anyOf": [
@@ -80843,7 +81144,8 @@
                             "ir_value_type": "String",
                             "storage_type": "DIRECT_VALUE"
                         }
-                    ]
+                    ],
+                    "x-taglist": "method"
                 },
                 "output": {
                     "anyOf": [
@@ -80922,6 +81224,7 @@
             "properties": {
                 "vector_parameter_study": {
                     "$ref": "#/$defs/VectorParameterStudyConfig",
+                    "x-group": "Parameter Studies",
                     "x-materialization": [
                         {
                             "ir_key": "method.algorithm",

@@ -181,6 +181,7 @@ class SystemWorkDirectory(DakotaBaseModel):
         default=None,
         description="Overwrite existing files within a work directory",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.templateReplace",
@@ -379,6 +380,7 @@ class DirectConfig(DakotaBaseModel):
         gt=0,
         description="Specify the number of processors per analysis when Dakota is run in parallel",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.direct.processors_per_analysis",
@@ -414,6 +416,7 @@ class Matlab(DakotaBaseModel):
         default=True,
         description="Run Matlab through a direct interface - requires special Dakota build",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.type",
@@ -433,6 +436,7 @@ class PythonConfig(DakotaBaseModel):
         default=None,
         description="Enable the use of numpy in Dakota's Python interface",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.python.numpy",
@@ -451,6 +455,7 @@ class Scilab(DakotaBaseModel):
         default=True,
         description="Run Scilab through a direct interface - requires special Dakota build",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.type",
@@ -470,6 +475,7 @@ class AnalysisDriversGrid(DakotaBaseModel):
         default=True,
         description="Deprecated grid computing interface",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.type",
@@ -548,6 +554,7 @@ class Continuation(DakotaBaseModel):
         default=True,
         description='Cause Dakota to step toward the failed "target" simulation from a nearby successful "source"',
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.failure_capture.action",
@@ -567,6 +574,7 @@ class StrictCacheEquality(DakotaBaseModel):
         default=DBL_EPSILON,
         description="Specify tolerance when identifying duplicate function evaluations",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.nearby_evaluation_cache_tolerance",
@@ -604,6 +612,7 @@ class LocalEvaluationSchedulingDynamic(DakotaBaseModel):
         default=True,
         description="Dynamic local scheduling (sequential)",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.local_evaluation_scheduling",
@@ -623,6 +632,7 @@ class LocalEvaluationSchedulingStatic(DakotaBaseModel):
         default=True,
         description="Static local scheduling (tiled)",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.local_evaluation_scheduling",
@@ -642,6 +652,7 @@ class EvaluationSchedulingDedicated(DakotaBaseModel):
         default=True,
         description="Specify a dedicated scheduler partition for concurrent evaluation scheduling",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_scheduling",
@@ -661,6 +672,7 @@ class PeerDynamic(DakotaBaseModel):
         default=True,
         description="Specify dynamic scheduling in a peer partition when Dakota is run in parallel.",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_scheduling",
@@ -680,6 +692,7 @@ class PeerStatic(DakotaBaseModel):
         default=True,
         description="Specify static scheduling in a peer partition when Dakota is run in parallel.",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_scheduling",
@@ -699,6 +712,7 @@ class AnalysisSchedulingDedicated(DakotaBaseModel):
         default=True,
         description="Specify a dedicated scheduler partition for concurrent analysis executions",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.analysis_scheduling",
@@ -718,6 +732,7 @@ class AnalysisSchedulingPeer(DakotaBaseModel):
         default=True,
         description="Specify a peer partition for parallel analysis scheduling",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.analysis_scheduling",
@@ -808,6 +823,7 @@ class Python(DakotaBaseModel):
     python: PythonConfig = DakotaField(
         description="Run Python through a Pybind11-based direct interface - requires a special Dakota build",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.type",
@@ -840,6 +856,7 @@ class Deactivate(DakotaBaseModel):
         default=None,
         description="Do not retain function evaluation history in memory",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_cache",
@@ -853,6 +870,7 @@ class Deactivate(DakotaBaseModel):
         default=None,
         description="Do not require strict cache equality when finding duplicates",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.nearby_evaluation_cache",
@@ -866,6 +884,7 @@ class Deactivate(DakotaBaseModel):
         default=None,
         description="Deactivate writing to the restart file",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.restart_file",
@@ -916,13 +935,14 @@ class AsynchronousConfig(DakotaBaseModel):
     ) = DakotaField(
         default=None,
         description="Control how local asynchronous jobs are scheduled",
-        dakota={"union_pattern": 2},
+        dakota={"complexity": 1, "union_pattern": 2},
     )
     analysis_concurrency: int | None = DakotaField(
         default=None,
         gt=0,
         description="Limit the number of analysis drivers within an evaluation that Dakota will schedule",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.asynch_local_analysis_concurrency",
@@ -1053,6 +1073,7 @@ class SystemConfig(DakotaBaseModel):
         default=None,
         description="Change how Dakota deals with existing results files",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.allow_existing_results",
@@ -1066,6 +1087,7 @@ class SystemConfig(DakotaBaseModel):
         default=None,
         description="Specify the command Dakota uses to launch analysis driver(s) and filters",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.application.verbatim",
@@ -1288,6 +1310,7 @@ class AnalysisDrivers(DakotaBaseModel):
         default=None,
         description="Run a pre-processing script before the analysis drivers",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.application.input_filter",
@@ -1301,6 +1324,7 @@ class AnalysisDrivers(DakotaBaseModel):
         default=None,
         description="Run a post-processing script after the analysis drivers",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.application.output_filter",
@@ -1319,6 +1343,7 @@ class AnalysisDrivers(DakotaBaseModel):
         default=None,
         description="Provide additional identifiers to analysis drivers.",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.application.analysis_components",
@@ -1341,6 +1366,7 @@ class InterfaceConfig(DakotaBaseModel):
         default=None,
         description="Name the interface block; helpful when there are multiple",
         dakota={
+            "taglist": "interface",
             "materialization": [
                 {
                     "ir_key": "interface.id",
@@ -1359,6 +1385,7 @@ class InterfaceConfig(DakotaBaseModel):
         default=None,
         description="Use AMPL to define algebraic input-output mappings",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "interface.algebraic_mappings",
@@ -1387,6 +1414,8 @@ class InterfaceConfig(DakotaBaseModel):
         gt=0,
         description="Specify the number of evaluation servers when Dakota is run in parallel",
         dakota={
+            "complexity": 1,
+            "group_label": "Parallel Configuration",
             "materialization": [
                 {
                     "ir_key": "interface.evaluation_servers",
@@ -1401,13 +1430,15 @@ class InterfaceConfig(DakotaBaseModel):
     ) = DakotaField(
         default=None,
         description="Specify the scheduling of concurrent evaluations when Dakota is run in parallel",
-        dakota={"union_pattern": 2},
+        dakota={"complexity": 1, "group_label": "Parallel Configuration", "union_pattern": 2},
     )
     processors_per_evaluation: int | None = DakotaField(
         default=None,
         gt=0,
         description="Specify the number of processors per evaluation server when Dakota is run in parallel",
         dakota={
+            "complexity": 1,
+            "group_label": "Parallel Configuration",
             "materialization": [
                 {
                     "ir_key": "interface.processors_per_evaluation",
@@ -1422,6 +1453,8 @@ class InterfaceConfig(DakotaBaseModel):
         gt=0,
         description="Specify the number of analysis servers when Dakota is run in parallel",
         dakota={
+            "complexity": 1,
+            "group_label": "Parallel Configuration",
             "materialization": [
                 {
                     "ir_key": "interface.analysis_servers",
@@ -1436,5 +1469,5 @@ class InterfaceConfig(DakotaBaseModel):
     ) = DakotaField(
         default=None,
         description="Specify the scheduling of concurrent analyses when Dakota is run in parallel",
-        dakota={"union_pattern": 2},
+        dakota={"complexity": 1, "group_label": "Parallel Configuration", "union_pattern": 2},
     )

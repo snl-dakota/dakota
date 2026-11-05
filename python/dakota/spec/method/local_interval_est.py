@@ -30,6 +30,7 @@ class LocalIntervalEstSelection(MethodSelection):
 
     local_interval_est: LocalIntervalEstConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_local_interval_est"],
             "materialization": [
                 {

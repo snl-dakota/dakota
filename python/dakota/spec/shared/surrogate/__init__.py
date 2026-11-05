@@ -513,6 +513,7 @@ class ModelPartialSurrogateExportFormatExportModel(DakotaBaseModel):
         default="exported_surrogate",
         description="User-customizable portion of exported/imported surrogate model filenames",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_export_prefix",
@@ -523,7 +524,11 @@ class ModelPartialSurrogateExportFormatExportModel(DakotaBaseModel):
         },
     )
     formats: ModelPartialSurrogateExportFormatFormats = DakotaField(
-        description="Formats for surrogate model export"
+        description="Formats for surrogate model export",
+        dakota={
+            "group": "Surrogate Export Formats",
+            "complexity": 1
+        }
     )
 
 
@@ -534,6 +539,7 @@ class ImportModel(DakotaBaseModel):
         default="exported_surrogate",
         description="User-customizable portion of exported/imported surrogate model filenames",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.model_import_prefix",
@@ -635,6 +641,7 @@ class ModelPartialSurrogateExportFormatMixin(DakotaBaseModel):
         default=None,
         description="Exports surrogate model in user-specified format(s)",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.export_surrogate",
@@ -653,6 +660,7 @@ class ModelSurrogateImportMixin(DakotaBaseModel):
         default=None,
         description="Import surrogate model from archive file",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "model.surrogate.import_surrogate",

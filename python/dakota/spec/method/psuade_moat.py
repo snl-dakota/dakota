@@ -71,6 +71,7 @@ class PsuadeMoatSelection(MethodSelection):
 
     psuade_moat: PsuadeMoatConfig = DakotaField(
         dakota={
+            "group": "DACE",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

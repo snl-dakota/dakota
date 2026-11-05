@@ -332,6 +332,7 @@ class MultilevelSamplingSelection(MethodSelection):
 
     multilevel_sampling: MultilevelSamplingConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["multilevel_mc", "mlmc"],
             "materialization": [
                 {

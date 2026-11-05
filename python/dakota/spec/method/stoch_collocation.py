@@ -308,6 +308,7 @@ class StochCollocSelection(MethodSelection):
 
     stoch_collocation: StochCollocConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_stoch_collocation"],
             "materialization": [
                 {

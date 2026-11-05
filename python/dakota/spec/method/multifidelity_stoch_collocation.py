@@ -346,6 +346,7 @@ class MultifidelityStochCollocSelection(MethodSelection):
 
     multifidelity_stoch_collocation: MultifidelityStochCollocConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -2853,6 +2853,7 @@ class BayesCalibrationSelection(MethodSelection):
 
     bayes_calibration: BayesCalibrationConfig = DakotaField(
         dakota={
+            "group": "Calibration",
             "aliases": ["nond_bayes_calibration"],
             "materialization": [
                 {

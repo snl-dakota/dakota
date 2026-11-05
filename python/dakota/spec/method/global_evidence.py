@@ -58,6 +58,7 @@ class GlobalEvidenceSelection(MethodSelection):
 
     global_evidence: GlobalEvidenceConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_global_evidence"],
             "materialization": [
                 {

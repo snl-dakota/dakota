@@ -115,6 +115,7 @@ class PofDartsSelection(MethodSelection):
 
     pof_darts: PofDartsConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_pof_darts"],
             "materialization": [
                 {

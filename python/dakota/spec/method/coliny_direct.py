@@ -136,6 +136,7 @@ class ColinyDirectSelection(MethodSelection):
 
     coliny_direct: ColinyDirectConfig = DakotaField(
         dakota={
+            "group": "Optimization: Global",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

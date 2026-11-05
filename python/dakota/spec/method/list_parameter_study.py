@@ -203,6 +203,7 @@ class ListParameterStudySelection(MethodSelection):
 
     list_parameter_study: ListParameterStudyConfig = DakotaField(
         dakota={
+            "group": "Parameter Studies",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

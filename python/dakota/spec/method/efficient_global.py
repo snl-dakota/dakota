@@ -202,6 +202,7 @@ class EfficientGlobalSelection(MethodSelection):
 
     efficient_global: EfficientGlobalConfig = DakotaField(
         dakota={
+            "group": "Surrogate-based Methods",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

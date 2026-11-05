@@ -49,6 +49,7 @@ class CenteredParameterStudySelection(MethodSelection):
 
     centered_parameter_study: CenteredParameterStudyConfig = DakotaField(
         dakota={
+            "group": "Parameter Studies",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

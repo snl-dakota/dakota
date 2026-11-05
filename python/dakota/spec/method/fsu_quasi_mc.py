@@ -160,4 +160,8 @@ class FsuQuasiMcConfig(
 class FsuQuasiMcSelection(MethodSelection):
     "Generated model for FsuQuasiMcSelection"
 
-    fsu_quasi_mc: FsuQuasiMcConfig
+    fsu_quasi_mc: FsuQuasiMcConfig = DakotaField(
+        dakota={
+            "group": "DACE",
+        }
+    )

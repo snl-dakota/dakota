@@ -48,6 +48,7 @@ class MultilevelFtSelection(MethodSelection):
 
     multilevel_function_train: MultilevelFtConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -983,6 +983,7 @@ class MfPceExpansionOrderSequenceCollocRatioConfig(DakotaBaseModel):
         default=None,
         description="Use derivative data to construct surrogate models",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "method.derivative_usage",
@@ -1312,6 +1313,7 @@ class MfPceSelection(MethodSelection):
 
     multifidelity_polynomial_chaos: MfPceConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

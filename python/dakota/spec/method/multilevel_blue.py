@@ -69,6 +69,7 @@ class MultilevelBlueSelection(MethodSelection):
 
     multilevel_blue: MultilevelBlueConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

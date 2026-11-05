@@ -435,6 +435,7 @@ class ColinyEaSelection(MethodSelection):
 
     coliny_ea: ColinyEaConfig = DakotaField(
         dakota={
+            "group": "Optimization: Global",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

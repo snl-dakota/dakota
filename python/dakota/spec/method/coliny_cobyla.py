@@ -53,6 +53,7 @@ class ColinyCobylaSelection(MethodSelection):
 
     coliny_cobyla: ColinyCobylaConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-free",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

@@ -1251,6 +1251,7 @@ class PceExpansionOrderCollocPointsConfig(DakotaBaseModel):
         default=None,
         description="Use derivative data to construct surrogate models",
         dakota={
+            "complexity": 1,
             "materialization": [
                 {
                     "ir_key": "method.derivative_usage",
@@ -1710,6 +1711,7 @@ class PceSelection(MethodSelection):
 
     polynomial_chaos: PceConfig = DakotaField(
         dakota={
+            "group": "Uncertainty Quantification",
             "aliases": ["nond_polynomial_chaos"],
             "materialization": [
                 {

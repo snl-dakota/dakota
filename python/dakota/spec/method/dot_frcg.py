@@ -23,6 +23,7 @@ class DotFrcgSelection(MethodSelection):
 
     dot_frcg: DotFrcgConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

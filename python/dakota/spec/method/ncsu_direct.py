@@ -79,6 +79,7 @@ class NcsuDirectSelection(MethodSelection):
 
     ncsu_direct: NcsuDirectConfig = DakotaField(
         dakota={
+            "group": "Optimization: Global",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

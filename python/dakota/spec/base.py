@@ -76,6 +76,10 @@ def DakotaField(*, dakota: dict | None = None, **field_kwargs):
               - materialization -> x-materialization
               - argument -> argument
               - anchor -> anchor
+              - group -> x-group (str: GUI display category for this keyword)
+              - group_label -> x-group-label (str: wraps siblings in <group> container)
+              - complexity -> x-complexity (int: >0 means advanced; omit for 0/default)
+              - taglist -> x-taglist (str: block type this id_* field registers into)
 
             For forward-compatibility, any unknown key is emitted as 'x-<key>' unless
             it already starts with 'x-' or is one of ('argument','anchor').
@@ -103,6 +107,10 @@ def DakotaField(*, dakota: dict | None = None, **field_kwargs):
             "anchor": "anchor",
             "pointer_group": "x-pointer-group",
             "pointer_union": "x-pointer-union",
+            "group": "x-group",
+            "group_label": "x-group-label",
+            "complexity": "x-complexity",
+            "taglist": "x-taglist",
         }
         for k, v in dakota.items():
             if v is None:

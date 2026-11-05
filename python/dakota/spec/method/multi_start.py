@@ -136,6 +136,7 @@ class MultiStartSelection(MethodSelection):
 
     multi_start: MultiStartConfig = DakotaField(
         dakota={
+            "group": "Optimization: Other",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

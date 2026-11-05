@@ -228,12 +228,20 @@ class DakotaXmlGenerator:
     ) -> ET.Element:
         keyword = ET.Element(ns("keyword"))
         keyword.set("name", name)
-        keyword.set("id", "_".join(path))
+        keyword.set("id", name)
         keyword.set("code", self._keyword_code(schema_node))
         keyword.set("label", self._keyword_label(schema_node, name))
         keyword.set("maxOccurs", max_occurs)
         if not required:
             keyword.set("minOccurs", "0")
+
+        group = schema_node.get("x-group")
+        if group:
+            keyword.set("group", group)
+
+        complexity = schema_node.get("x-complexity")
+        if complexity:
+            keyword.set("complexity", str(complexity))
 
         aliases = schema_node.get("x-aliases", [])
         if isinstance(aliases, str):
@@ -247,7 +255,11 @@ class DakotaXmlGenerator:
             keyword.set("argument", argument_name)
             argument_schema = self.resolver.find_argument_schema(schema_node)
             if argument_schema is not None:
-                keyword.append(self.build_param(argument_schema))
+                param = self.build_param(argument_schema)
+                in_taglist = schema_node.get("x-block-pointer")
+                if in_taglist:
+                    param.set("in_taglist", in_taglist)
+                keyword.append(param)
                 self._propagate_default(keyword, argument_schema)
         elif self._node_has_direct_param(schema_node):
             keyword.append(self.build_param(schema_node))
@@ -268,6 +280,12 @@ class DakotaXmlGenerator:
         default = self._default_string(schema_node)
         if default is not None:
             param.set("default", default)
+        in_taglist = schema_node.get("x-block-pointer")
+        if in_taglist:
+            param.set("in_taglist", in_taglist)
+        taglist = schema_node.get("x-taglist")
+        if taglist:
+            param.set("taglist", taglist)
         return param
 
     def build_choice(
@@ -329,28 +347,67 @@ class DakotaXmlGenerator:
         required_names = set(object_schema.get("required", []))
         computed_names = self.resolver.computed_field_names(schema_node)
         argument_name = schema_node.get("argument")
+
+        # Build ordered emission list, grouping consecutive fields that share
+        # an x-group-label into a single <group label="..."> container.
+        emission_items: list = []  # ("group", label, items) | ("item", name, schema, required)
+        current_label: str | None = None
+        current_group_items: list = []
+
         for child_name, child_schema in object_schema.get("properties", {}).items():
             if child_name in computed_names or child_name == argument_name:
                 continue
             if self.resolver.is_internal_only(child_schema):
                 continue
+            label = child_schema.get("x-group-label")
+            if label != current_label:
+                if current_label is not None:
+                    emission_items.append(("group", current_label, current_group_items))
+                else:
+                    emission_items.extend(
+                        ("item", n, s, r) for n, s, r in current_group_items
+                    )
+                current_label = label
+                current_group_items = []
+            current_group_items.append((child_name, child_schema, child_name in required_names))
 
-            child_path = path + (child_name,)
-            child_required = child_name in required_names
+        if current_label is not None:
+            emission_items.append(("group", current_label, current_group_items))
+        else:
+            emission_items.extend(("item", n, s, r) for n, s, r in current_group_items)
 
-            if child_schema.get("anchor") and self.resolver.is_choice_node(child_schema):
-                group_tag = "required" if child_required else "optional"
-                group = ET.SubElement(keyword, ns(group_tag))
-                group.append(self.build_choice(schema_node=child_schema, path=child_path))
-                continue
-
-            child_keyword = self.build_keyword(
-                name=child_name,
-                schema_node=child_schema,
-                required=child_required,
-                path=child_path,
-            )
-            keyword.append(child_keyword)
+        for entry in emission_items:
+            if entry[0] == "group":
+                _, label, children = entry
+                group_elem = ET.SubElement(keyword, ns("group"))
+                group_elem.set("label", label)
+                for child_name, child_schema, child_required in children:
+                    child_path = path + (child_name,)
+                    if child_schema.get("anchor") and self.resolver.is_choice_node(child_schema):
+                        group_tag = "required" if child_required else "optional"
+                        wrapper = ET.SubElement(group_elem, ns(group_tag))
+                        wrapper.append(self.build_choice(schema_node=child_schema, path=child_path))
+                    else:
+                        group_elem.append(self.build_keyword(
+                            name=child_name,
+                            schema_node=child_schema,
+                            required=child_required,
+                            path=child_path,
+                        ))
+            else:
+                _, child_name, child_schema, child_required = entry
+                child_path = path + (child_name,)
+                if child_schema.get("anchor") and self.resolver.is_choice_node(child_schema):
+                    group_tag = "required" if child_required else "optional"
+                    wrapper = ET.SubElement(keyword, ns(group_tag))
+                    wrapper.append(self.build_choice(schema_node=child_schema, path=child_path))
+                else:
+                    keyword.append(self.build_keyword(
+                        name=child_name,
+                        schema_node=child_schema,
+                        required=child_required,
+                        path=child_path,
+                    ))
 
     def _append_children_from_array(
         self, keyword: ET.Element, array_schema: dict[str, Any], path: tuple[str, ...]
@@ -367,26 +424,67 @@ class DakotaXmlGenerator:
         required_names = set(object_schema.get("required", []))
         computed_names = self.resolver.computed_field_names(items)
         argument_name = items.get("argument")
+
+        emission_items: list = []
+        current_label: str | None = None
+        current_group_items: list = []
+
         for child_name, child_schema in object_schema.get("properties", {}).items():
             if child_name in computed_names or child_name == argument_name:
                 continue
             if self.resolver.is_internal_only(child_schema):
                 continue
-            child_path = path + (child_name,)
-            child_required = child_name in required_names
-            if child_schema.get("anchor") and self.resolver.is_choice_node(child_schema):
-                group_tag = "required" if child_required else "optional"
-                group = ET.SubElement(keyword, ns(group_tag))
-                group.append(self.build_choice(schema_node=child_schema, path=child_path))
-                continue
-            keyword.append(
-                self.build_keyword(
-                    name=child_name,
-                    schema_node=child_schema,
-                    required=child_required,
-                    path=child_path,
-                )
-            )
+            label = child_schema.get("x-group-label")
+            if label != current_label:
+                if current_label is not None:
+                    emission_items.append(("group", current_label, current_group_items))
+                else:
+                    emission_items.extend(
+                        ("item", n, s, r) for n, s, r in current_group_items
+                    )
+                current_label = label
+                current_group_items = []
+            current_group_items.append((child_name, child_schema, child_name in required_names))
+
+        if current_label is not None:
+            emission_items.append(("group", current_label, current_group_items))
+        else:
+            emission_items.extend(("item", n, s, r) for n, s, r in current_group_items)
+
+        for entry in emission_items:
+            if entry[0] == "group":
+                _, label, children = entry
+                group_elem = ET.SubElement(keyword, ns("group"))
+                group_elem.set("label", label)
+                for child_name, child_schema, child_required in children:
+                    child_path = path + (child_name,)
+                    if child_schema.get("anchor") and self.resolver.is_choice_node(child_schema):
+                        group_tag = "required" if child_required else "optional"
+                        wrapper = ET.SubElement(group_elem, ns(group_tag))
+                        wrapper.append(self.build_choice(schema_node=child_schema, path=child_path))
+                    else:
+                        group_elem.append(self.build_keyword(
+                            name=child_name,
+                            schema_node=child_schema,
+                            required=child_required,
+                            path=child_path,
+                        ))
+            else:
+                _, child_name, child_schema, child_required = entry
+                child_path = path + (child_name,)
+                if child_schema.get("anchor") and self.resolver.is_choice_node(child_schema):
+                    group_tag = "required" if child_required else "optional"
+                    wrapper = ET.SubElement(keyword, ns(group_tag))
+                    wrapper.append(self.build_choice(schema_node=child_schema, path=child_path))
+                else:
+                    keyword.append(
+                        self.build_keyword(
+                            name=child_name,
+                            schema_node=child_schema,
+                            required=child_required,
+                            path=child_path,
+                        )
+                    )
 
     def _keyword_label(self, schema_node: dict[str, Any], name: str) -> str:
         resolved = self.resolver._resolve_singleton_node(schema_node)

@@ -103,6 +103,7 @@ class RichardsonExtrapSelection(MethodSelection):
 
     richardson_extrap: RichardsonExtrapConfig = DakotaField(
         dakota={
+            "group": "Verification Studies",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",

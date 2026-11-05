@@ -23,6 +23,7 @@ class DotSqpSelection(MethodSelection):
 
     dot_sqp: DotSqpConfig = DakotaField(
         dakota={
+            "group": "Optimization: Local, Derivative-based",
             "materialization": [
                 {
                     "ir_key": "method.algorithm",
