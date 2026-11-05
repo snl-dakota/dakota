@@ -102,6 +102,20 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
           --perl "${PERL_EXECUTABLE}"
           --runner "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl"
           --diff "${CMAKE_CURRENT_SOURCE_DIR}/dakota_diff.perl")
+      add_test(NAME parser_strip_${case_id}
+        COMMAND "${Python3_EXECUTABLE}"
+          "${CMAKE_CURRENT_SOURCE_DIR}/python_parity/run_parser_strip.py"
+          --case "${case_id}"
+          --source "${CMAKE_CURRENT_SOURCE_DIR}"
+          --build-test "${CMAKE_CURRENT_BINARY_DIR}"
+          --work "${CMAKE_CURRENT_BINARY_DIR}/parser_strip/${case_id}"
+          --dakota "$<TARGET_FILE:dakota>"
+          --dakota-parser "$<TARGET_FILE:dakota_parser>"
+          --driver "$<TARGET_FILE:text_book>"
+          --plugin "${Dakota_BINARY_DIR}/src/plugins/build/libidentity_map${CMAKE_SHARED_LIBRARY_SUFFIX}"
+          --python "${Python3_EXECUTABLE}"
+          --python-path "${DAKOTA_PYTHON_PATH}"
+          --strip-script "${Dakota_SOURCE_DIR}/tools/strip_inserted_context.py")
       string(JSON case_timeout ERROR_VARIABLE timeout_error
         GET "${python_cases}" ${index} timeout)
       if(timeout_error)
@@ -109,6 +123,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       endif()
       set_tests_properties(python_parity_${case_id} PROPERTIES
         LABELS "PythonParity;SerialTest" TIMEOUT ${case_timeout})
+      set_tests_properties(parser_strip_${case_id} PROPERTIES
+        LABELS "ParserStrip;SerialTest" TIMEOUT ${case_timeout})
     endforeach()
   endif()
 

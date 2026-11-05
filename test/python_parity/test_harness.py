@@ -8,7 +8,10 @@ import sys
 import tempfile
 import unittest
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 from run_pair import execute, result_structure, compare_outputs, _normalize_approx_ids
+from run_parser_strip import write_report
 
 SOURCE = Path(__file__).resolve().parents[1]
 PERL = shutil.which("perl")
@@ -312,10 +315,21 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             )
             tests = json.loads(result.stdout)["tests"]
             self.assertEqual(len(tests), count)
+            python_labels = 0
+            parser_labels = 0
             for test in tests:
                 props = {p["name"]: p["value"] for p in test["properties"]}
-                self.assertEqual(props["LABELS"], ["PythonParity", "SerialTest"])
+                if test["name"].startswith("python_parity_"):
+                    self.assertEqual(props["LABELS"], ["PythonParity", "SerialTest"])
+                    python_labels += 1
+                elif test["name"].startswith("parser_strip_"):
+                    self.assertEqual(props["LABELS"], ["ParserStrip", "SerialTest"])
+                    parser_labels += 1
+                else:
+                    self.fail(f"Unexpected test name: {test['name']}")
                 self.assertEqual(props["TIMEOUT"], 1200)
+            self.assertEqual(python_labels, count)
+            self.assertEqual(parser_labels, count)
 
     def test_extract_original_subtests(self):
         for number, method in ((0, "vector"), (3, "list"), (4, "centered")):
@@ -368,6 +382,13 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
         # Originals must keep their real labels
         self.assertIn("APPROX_INTERFACE_1", a.read_text())
         self.assertIn("APPROX_INTERFACE_2", b.read_text())
+
+    def test_parser_strip_report_format(self):
+        write_report(self.work, "example", 7, 1.234, "PASS", "parser -> strip -> dakota succeeded")
+        report = (self.work / "parser_strip_report.out").read_text()
+        self.assertIn("parser_strip_example (subtest 7)", report)
+        self.assertIn("PASS test 7: parser -> strip -> dakota succeeded", report)
+        self.assertIn("duration_seconds: 1.234", report)
 
 
 if __name__ == "__main__":
