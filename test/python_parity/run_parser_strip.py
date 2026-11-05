@@ -94,6 +94,7 @@ def main():
         "python",
         "python-path",
         "strip-script",
+        "schema",
     ):
         parser.add_argument("--" + name, required=True)
     parser.add_argument("--build-test", required=False, default=None)
@@ -145,7 +146,16 @@ def main():
         validated_json.write_text((work / "parser.stdout").read_text(encoding="utf-8"), encoding="utf-8")
 
         execute(
-            [args.python, "-I", args.strip_script, str(validated_json), str(stripped_json), "--verbose"],
+            [
+                args.python,
+                "-I",
+                args.strip_script,
+                "--schema",
+                args.schema,
+                str(validated_json),
+                str(stripped_json),
+                "--verbose",
+            ],
             work,
             "strip",
             env,

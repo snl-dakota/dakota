@@ -115,7 +115,8 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
           --plugin "${Dakota_BINARY_DIR}/src/plugins/build/libidentity_map${CMAKE_SHARED_LIBRARY_SUFFIX}"
           --python "${Python3_EXECUTABLE}"
           --python-path "${DAKOTA_PYTHON_PATH}"
-          --strip-script "${Dakota_SOURCE_DIR}/tools/strip_inserted_context.py")
+          --strip-script "${Dakota_SOURCE_DIR}/tools/strip_inserted_context.py"
+          --schema "${Dakota_SOURCE_DIR}/src/dakota.json")
       string(JSON case_timeout ERROR_VARIABLE timeout_error
         GET "${python_cases}" ${index} timeout)
       if(timeout_error)
