@@ -823,7 +823,7 @@ if(HAVE_EXT_PYTHON_METHOD)
   if (APPLE)
     set_target_properties(ext_method PROPERTIES
       LINK_FLAGS "-undefined dynamic_lookup"
-      INSTALL_RPATH "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
+      INSTALL_RPATH "@loader_path;@loader_path/../../../../../lib;@loader_path/../../../../../lib64;@loader_path/../../../../../bin")
   elseif (UNIX)
     set_target_properties(ext_method PROPERTIES INSTALL_RPATH
       "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
@@ -1306,7 +1306,7 @@ if(DAKOTA_PYTHON_WRAPPER)
   if (APPLE)
     set_target_properties(environment PROPERTIES
       LINK_FLAGS "-undefined dynamic_lookup"
-      INSTALL_RPATH "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
+      INSTALL_RPATH "@loader_path;@loader_path/../../../../../lib;@loader_path/../../../../../lib64;@loader_path/../../../../../bin")
   elseif (UNIX)
     set_target_properties(environment PROPERTIES INSTALL_RPATH
       "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
@@ -1354,7 +1354,7 @@ if(DAKOTA_PYTHON_STUDY)
   if (APPLE)
     set_target_properties(_study PROPERTIES
       LINK_FLAGS "-undefined dynamic_lookup"
-      INSTALL_RPATH "@rpath;@rpath/../../../../../lib;@rpath/../../../../../lib64;@rpath/../../../../../bin")
+      INSTALL_RPATH "@loader_path;@loader_path/../../../../../lib;@loader_path/../../../../../lib64;@loader_path/../../../../../bin")
   elseif (UNIX)
     set_target_properties(_study PROPERTIES INSTALL_RPATH
       "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")

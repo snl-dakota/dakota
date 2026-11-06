@@ -130,7 +130,7 @@ if(DAKOTA_PYTHON_SURROGATES)
   endforeach()
   if (APPLE)
     set_target_properties(surrogates PROPERTIES INSTALL_RPATH
-      "@rpath;@rpath/../../../../../lib;@rpath/../../../../../bin")
+      "@loader_path;@loader_path/../../../../../lib;@loader_path/../../../../../lib64;@loader_path/../../../../../bin")
   elseif (UNIX)
     set_target_properties(surrogates PROPERTIES INSTALL_RPATH
       "\$ORIGIN;\$ORIGIN/../../../../../lib;\$ORIGIN/../../../../../lib64;\$ORIGIN/../../../../../bin")
