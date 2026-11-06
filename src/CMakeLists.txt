@@ -1070,16 +1070,17 @@ list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_EXTPROJ_LIBS})
 # We do not put Boost targets in EXT_TPL_LIBS
 list(APPEND DAKOTA_ALL_LIBS ${EXT_TPL_LIBS})
 
-# dakota_src uses symbols from all vendored package and external-project
-# libraries. Linking them here embeds DT_NEEDED entries in libdakota_src.so
-# so the dynamic linker loads them whenever libdakota_src.so is loaded —
-# including from Python extension modules via dlopen, which doesn't pre-load
-# these libraries the way the dakota executable does through DAKOTA_ALL_LIBS.
-# set_property is used (not target_link_libraries) so these implementation-only
-# deps don't become part of the exported interface, which would require all of
-# DAKOTA_PKG_LIBS to be in the DakotaTargets export set.
+# dakota_src uses symbols from all vendored package, external-project, and
+# external TPL libraries. Linking them here embeds DT_NEEDED entries in
+# libdakota_src.so so the dynamic linker loads them whenever libdakota_src.so
+# is loaded — including from Python extension modules via dlopen, which doesn't
+# pre-load these libraries the way the dakota executable does through
+# DAKOTA_ALL_LIBS. EXT_TPL_LIBS covers GSL (needed by libqueso.so), LAPACK/BLAS
+# (needed by libpecos_src.so/libnpsol.so), MPI, HDF5, etc.
+# set_property is used (not target_link_libraries) because LINK_LIBRARIES is not
+# exported, so items need not be in the DakotaTargets export set.
 set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES
-  ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${HDF5_CXX_LIBRARIES})
+  ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${EXT_TPL_LIBS})
 
 # --- Explicit dependencies for Dakota core libraries
 
