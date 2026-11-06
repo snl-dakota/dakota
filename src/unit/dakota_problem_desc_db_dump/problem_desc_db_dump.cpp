@@ -13,8 +13,6 @@
 #include <gtest/gtest.h>
 #include <nlohmann/json.hpp>
 
-#include <filesystem>
-#include <fstream>
 
 namespace Dakota {
 namespace {
@@ -91,25 +89,9 @@ TEST(problem_desc_db_dump_tests, ir_state_dump_preserves_native_ir_keys)
 TEST(problem_desc_db_dump_tests, problem_desc_db_dump_prefers_ir_state_when_present)
 {
   ProblemDescDB db(1, 0);
-  const auto input_path =
-    std::filesystem::temp_directory_path() / "dakota_problem_desc_db_dump_ir_input.json";
-  {
-    std::ofstream input(input_path);
-    ASSERT_TRUE(input.good());
-    input << "{\n"
-             "  \"environment\": {}\n"
-             "}\n";
-  }
+  db.enable_json_input(json{{"environment", json::object()}});
 
-  db.enable_json_input(input_path.string());
-
-  const auto out_path =
-    std::filesystem::temp_directory_path() / "dakota_problem_desc_db_dump_ir_preferred.json";
-  db.write_json_dump(out_path.string());
-
-  std::ifstream in(out_path);
-  ASSERT_TRUE(in.good());
-  json dumped = json::parse(in);
+  const json dumped = dump_problem_desc_db_json(db);
 
   ASSERT_EQ(dumped["_meta"]["implementation"], "ir_state");
   EXPECT_EQ(dumped["_meta"]["omitted_keys"], json::array());
@@ -184,35 +166,13 @@ TEST(problem_desc_db_dump_tests, replacing_ir_study_replaces_active_blocks)
 TEST(problem_desc_db_dump_tests, ir_backed_queries_respect_block_locks)
 {
   ProblemDescDB db(1, 0);
-  const auto input_path =
-    std::filesystem::temp_directory_path() / "dakota_problem_desc_db_locking_input.json";
-  {
-    std::ofstream input(input_path);
-    ASSERT_TRUE(input.good());
-    input << "{\n"
-             "  \"method\": [\n"
-             "    {\n"
-             "      \"bayes_calibration\": {\n"
-             "        \"model_pointer\": \"HIERARCH\",\n"
-             "        \"sub_method\": {\n"
-             "          \"queso\": {\n"
-             "            \"chain_samples\": 10\n"
-             "          }\n"
-             "        }\n"
-             "      }\n"
-             "    }\n"
-             "  ],\n"
-             "  \"model\": [\n"
-             "    {\n"
-             "      \"surrogate\": {\n"
-             "        \"id_model\": \"HIERARCH\"\n"
-             "      }\n"
-             "    }\n"
-             "  ]\n"
-             "}\n";
-  }
-
-  db.enable_json_input(input_path.string());
+  db.enable_json_input(json::parse(R"({
+    "method": [{"bayes_calibration": {
+      "model_pointer": "HIERARCH",
+      "sub_method": {"queso": {"chain_samples": 10}}
+    }}],
+    "model": [{"surrogate": {"id_model": "HIERARCH"}}]
+  })"));
 
   EXPECT_ANY_THROW(
     {
