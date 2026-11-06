@@ -163,7 +163,7 @@ def main():
         )
 
         execute(
-            [args.dakota, "-i", str(stripped_json.name), "-o", "dakota.out", "-e", "dakota.err"],
+            [args.dakota, "-json", str(stripped_json.name), "-o", "dakota.out", "-e", "dakota.err"],
             work,
             "dakota",
             env,
