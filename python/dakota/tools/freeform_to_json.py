@@ -6,7 +6,7 @@ The conversion pipeline:
   3. Write the clean JSON to the output path
 
 The result is a JSON input file that Dakota can accept directly with
-``dakota -i <file>.json``.
+``dakota -json <file>.json``.
 
 Usage (command line)::
 

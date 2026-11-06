@@ -2,7 +2,7 @@
 """Generate strip_paths.json from src/dakota.json.
 
 Walks the JSON schema and produces a structured path list that
-strip_inserted_context.py / dakota.tools._strip uses to remove
+dakota.tools._strip uses to remove
 validator-inserted fields from validated JSON before passing it
 back to dakota as input.
 

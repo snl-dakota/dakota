@@ -89,3 +89,17 @@ construction for Dakota components.
    model `IRStore`, so each class keeps one configuration body. Keys missing
    from an IRStore yield value-initialized defaults; this relies on the
    materializer's contract defaults for every key read.
+
+9. `default_set_probabilities`
+   (`packages/dakota_parser/dakota_validation/src/dakota_variable_validators.cpp`)
+   renormalizes `set_probabilities` whenever their floating-point sum is not
+   exactly `1.0`, so the normalization is not idempotent. For example,
+   `.4 .3 .2 .1` sums to `0.9999999999999999` and is rewritten to
+   `0.4000000000000001 ...`, which sums to `1.0000000000000002`. Validating that
+   output again (as happens when `dakota-to-json` output is run with
+   `dakota -json`) shifts the values by a few more ulps.
+   Workaround: the `gen_json_*` CTests (`test/gen_json/run_gen_json.py`)
+   compare IR floats with a relative tolerance of `1e-14` instead of exactly.
+   Fix: skip normalization when `|sum - 1|` is within a few ulps (e.g.
+   `8 * DBL_EPSILON * n`), then make the IR comparison exact again. This was
+   deferred to avoid ulp-level baseline changes close to a release.
