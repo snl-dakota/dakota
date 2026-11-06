@@ -76,8 +76,9 @@ public:
   /// and a default destination to use when no redirection (or destruct)
   ConsoleRedirector(std::ostream* & dakota_stream, std::ostream* default_dest);
 
-  /// when the redirector stack is destroyed, it will rebind the
-  /// output handle to the default ostream, then destroy open files
+  /// when the redirector stack is destroyed, it will rebind the output
+  /// handle to the default ostream if the handle points at one of its own
+  /// streams, then destroy open files
   ~ConsoleRedirector();
 
   /// push back the default or repeat the last pushed file stream

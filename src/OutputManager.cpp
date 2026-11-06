@@ -1091,8 +1091,15 @@ ConsoleRedirector::~ConsoleRedirector()
 #ifdef OUTMGR_DEBUG
   std::cerr << "Destructing ConsoleRedirector setting handle " << ostreamHandle
 	    << " to default dest " << defaultOStream << std::endl;
-#endif 
-  ostreamHandle = defaultOStream;
+#endif
+  // Several OutputManagers (e.g. Python Study objects) can be live at once and
+  // share the global Cout/Cerr handle; only rebind it if it still points at a
+  // stream this redirector owns, so a newer manager's redirect isn't clobbered.
+  for (const auto& dest : ostreamDestinations)
+    if (dest->output_stream() == ostreamHandle) {
+      ostreamHandle = defaultOStream;
+      break;
+    }
 }
 
 
@@ -1155,11 +1162,18 @@ void ConsoleRedirector::push_back(const String& output_filename)
 
 void ConsoleRedirector::pop_back()
 {
-  if (!ostreamDestinations.empty())
-    ostreamDestinations.pop_back();
-  else 
+  if (ostreamDestinations.empty()) {
     Cerr << "\nWarning: Attempt to pop non-existent console output destination!"
 	 << std::endl;
+    return;
+  }
+
+  // Leave the handle alone if another live redirector has rebound it
+  bool owns_handle
+    = (ostreamDestinations.back()->output_stream() == ostreamHandle);
+  ostreamDestinations.pop_back();
+  if (!owns_handle)
+    return;
 
   // if stack is empty, rebind to the default
   if (ostreamDestinations.empty())
