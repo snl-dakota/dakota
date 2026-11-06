@@ -320,7 +320,7 @@ if(DAKOTA_HAVE_HDF5)
   add_definitions("-DDAKOTA_HAVE_HDF5")
   list(APPEND EXT_TPL_INCDIRS ${HDF5_INCLUDE_DIRS})
   list(APPEND EXT_TPL_LIBDIRS ${HDF5_LIBRARY_DIRS})
-  list(APPEND EXT_TPL_LIBS ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES})
+  list(APPEND EXT_TPL_LIBS ${HDF5_HL_LIBRARIES} ${HDF5_LIBRARIES} ${HDF5_CXX_LIBRARIES})
 endif(DAKOTA_HAVE_HDF5)
 
 
@@ -1026,6 +1026,7 @@ if(DAKOTA_MODULE_SURROGATES)
   list(APPEND DAKOTA_LIBS dakota_surrogates)
 endif()
 
+
 DakotaApplyMPISettings(dakota_src)
 if(DAKOTA_DISABLE_FPE_TRAPS)
   target_compile_definitions(dakota_src PUBLIC DAKOTA_DISABLE_FPE_TRAPS)
@@ -1069,6 +1070,16 @@ list(APPEND DAKOTA_ALL_LIBS ${DAKOTA_EXTPROJ_LIBS})
 # We do not put Boost targets in EXT_TPL_LIBS
 list(APPEND DAKOTA_ALL_LIBS ${EXT_TPL_LIBS})
 
+# dakota_src uses symbols from all vendored package and external-project
+# libraries. Linking them here embeds DT_NEEDED entries in libdakota_src.so
+# so the dynamic linker loads them whenever libdakota_src.so is loaded —
+# including from Python extension modules via dlopen, which doesn't pre-load
+# these libraries the way the dakota executable does through DAKOTA_ALL_LIBS.
+# set_property is used (not target_link_libraries) so these implementation-only
+# deps don't become part of the exported interface, which would require all of
+# DAKOTA_PKG_LIBS to be in the DakotaTargets export set.
+set_property(TARGET dakota_src APPEND PROPERTY LINK_LIBRARIES
+  ${DAKOTA_PKG_LIBS} ${DAKOTA_EXTPROJ_LIBS} ${HDF5_CXX_LIBRARIES})
 
 # --- Explicit dependencies for Dakota core libraries
 

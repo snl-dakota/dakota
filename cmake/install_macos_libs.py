@@ -6,11 +6,15 @@ import stat
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from typing import List, Callable
 
 
-# Scan for and, as needed, update dependencies of executables in these subdirectories
-executable_dirs = [
+# Directories whose Mach-O files are scanned to copy missing external TPL
+# dylibs into bin/.  Python extensions are excluded: their deps live in lib/
+# (already handled) so they add no new files to copy, but recursing through
+# libdakota_src.dylib's now-large DT_NEEDED list for each .so is very slow.
+copy_scan_dirs = [
     "bin",
     "lib",
     "share/dakota/test",
@@ -19,6 +23,13 @@ executable_dirs = [
     "share/dakota/examples/hopspack/3-degen-linear-constraints",
     "share/dakota/examples/hopspack/4-nonlinear-constraints",
     "share/dakota/examples/hopspack/5-multi-start",
+]
+
+# All Mach-O directories: receive RPATH cleanup and dep-name rewriting.
+# Includes Python extensions so their absolute build RPATHs are removed and
+# dependency references are rewritten to @rpath/name.
+executable_dirs = copy_scan_dirs + [
+    "share/dakota/Python",
 ]
 
 
@@ -183,41 +194,44 @@ def copy_external_deps(filename: str, copied: List[str], dest: str, exclude: Lis
                 copy_writable(dep, dest_filename)
                 newly_copied.append(dep)
                 logging.debug(f"Copy: {dep} copied")
-            newly_copied += copy_external_deps(dep, copied + newly_copied, dest, exclude)
+                newly_copied += copy_external_deps(dep, copied + newly_copied, dest, exclude)
     return newly_copied
 
 def change_external_deps(filename, sig_warnings):
-    """Change external dependencies to @rpath"""
+    """Change external dependencies to @rpath (single batched install_name_tool call)"""
     all_deps = get_dependencies(filename)
     no_sys = strip_system_locations(all_deps)
     deps_to_use = strip_ats(no_sys)
-    new_sig_warnings = []
+    if not deps_to_use:
+        return []
+    cmd = ["install_name_tool"]
     for dep in deps_to_use:
-        dep_name = pathlib.Path(dep).name
-        p = subprocess.run(["install_name_tool", "-change", dep, f"@rpath/{dep_name}", filename],
-                           text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        if p.returncode != 0:
-            logging.error(f"Changing the path of library {dep_name} in {filename} failed: {p.stderr}")
-        if "signature" in p.stderr:
-            logging.debug(f"Change External Deps: Code signature changed for {filename}")
-            if filename not in sig_warnings + new_sig_warnings:
-                new_sig_warnings.append(filename)
-    return new_sig_warnings
+        cmd += ["-change", dep, f"@rpath/{pathlib.Path(dep).name}"]
+    cmd.append(filename)
+    p = subprocess.run(cmd, text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    if p.returncode != 0:
+        logging.error(f"Changing deps in {filename} failed: {p.stderr}")
+    if "signature" in p.stderr and filename not in sig_warnings:
+        logging.debug(f"Change External Deps: Code signature changed for {filename}")
+        return [filename]
+    return []
 
 
 def remove_rpaths(file: str, rpaths: List[str], sig_warnings: List[str]) -> List[str]:
-    """Remove rpaths from file"""
-    new_sig_warnings = []
+    """Remove rpaths from file (single batched install_name_tool call)"""
+    if not rpaths:
+        return []
+    cmd = ["install_name_tool"]
     for rpath in rpaths:
-        p = subprocess.run(["install_name_tool", "-delete_rpath", rpath, file],
-                           text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        if p.returncode != 0:
-            logging.error(f"Remove RPATH: Deleting {rpath} from {file} failed: {p.stderr}")
-        if "signature" in p.stderr:
-            logging.debug(f"Remove RPATH: Code signature changed for {file}")
-            if file not in sig_warnings + new_sig_warnings:
-                new_sig_warnings.append(file)
-    return new_sig_warnings
+        cmd += ["-delete_rpath", rpath]
+    cmd.append(file)
+    p = subprocess.run(cmd, text=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    if p.returncode != 0:
+        logging.error(f"Remove RPATH: Deleting RPATHs from {file} failed: {p.stderr}")
+    if "signature" in p.stderr and file not in sig_warnings:
+        logging.debug(f"Remove RPATH: Code signature changed for {file}")
+        return [file]
+    return []
 
 
 def remove_external_rpaths(filename: str, sig_warnings: List[str]) -> None:
@@ -227,22 +241,37 @@ def remove_external_rpaths(filename: str, sig_warnings: List[str]) -> None:
     return remove_rpaths(filename, rpaths_to_remove, sig_warnings)
 
 
-def mach_o_files_in_dir(dir: str) -> List[str]:
-    """Return a list of Mach-O files in dir"""
-    p = subprocess.run("file --exclude ascii *", text=True, cwd=dir, stderr=subprocess.PIPE, stdout=subprocess.PIPE, shell=True)
-    if p.returncode != 0:
-        logging.error(f"Mach-O Scan: Error in {dir}: {p.stderr}")
+_MACHO_MAGIC = frozenset([
+    b'\xfe\xed\xfa\xce',  # 32-bit big-endian
+    b'\xce\xfa\xed\xfe',  # 32-bit little-endian
+    b'\xfe\xed\xfa\xcf',  # 64-bit big-endian
+    b'\xcf\xfa\xed\xfe',  # 64-bit little-endian
+    b'\xca\xfe\xba\xbe',  # fat binary (universal)
+    b'\xbe\xba\xfe\xca',  # fat binary big-endian
+])
 
-    mach_o_files = []
-    for line in p.stdout.split("\n"):
-        if not line:
-            continue
-        filename_and_note, description = line.split(":", 1) # sometimes description contains :
-        filename = filename_and_note.split()[0]
-        if "Mach-O" in description:
-            logging.debug(f"Macho-O: In {dir}, {filename} is an executable")
-            mach_o_files.append(filename)
-    return mach_o_files  
+
+def _is_mach_o(filepath: str) -> bool:
+    try:
+        with open(filepath, 'rb') as f:
+            return f.read(4) in _MACHO_MAGIC
+    except (IOError, PermissionError, IsADirectoryError):
+        return False
+
+
+def mach_o_files_in_dir(dir: str) -> List[str]:
+    """Return a list of Mach-O files in dir (no subprocess)"""
+    try:
+        entries = os.listdir(dir)
+    except (PermissionError, NotADirectoryError):
+        return []
+    result = []
+    for name in entries:
+        path = os.path.join(dir, name)
+        if os.path.isfile(path) and _is_mach_o(path):
+            logging.debug(f"Mach-O: In {dir}, {name} is a Mach-O binary")
+            result.append(name)
+    return result
     
 
 def apply_to_dirs(dir_list: List[str], state: List[str], f: Callable,  *args) -> List[str]:
@@ -257,13 +286,11 @@ def apply_to_dirs(dir_list: List[str], state: List[str], f: Callable,  *args) ->
     """
     updated_state = []
     for dir in dir_list:
-        for (dirpath, dirnames, filenames) in os.walk(dir):
+        for (dirpath, _dirnames, _filenames) in os.walk(dir):
             mach_o_filenames = mach_o_files_in_dir(dirpath)
-            use_filenames = mach_o_filenames if mach_o_filenames else filenames
-            for filename in use_filenames:
+            for filename in mach_o_filenames:
                 filepath = os.path.join(dirpath, filename)
                 updated_state += f(filepath, state + updated_state, *args)
-            updated_state += apply_to_dirs(dirnames, state + updated_state, f, *args)
     return updated_state
 
 
@@ -280,18 +307,24 @@ def change_ids(filenames: List[str], dest_dir: str, sig_warnings: List[str]) -> 
     return new_sig_warnings
 
 
-def fix_code_signatures(files: List[str]) -> None:
-    """Re-sign files
-
-    source: https://stackoverflow.com/questions/51833310/what-is-killed9-and-how-to-fix-in-macos-terminal 
-    """
-    for file in files:
-        p = subprocess.run(["codesign", "--sign", "-", "--force", "--preserve-metadata=entitlements,requirements,flags,runtime", file],
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        if p.returncode != 0:
-            logging.error(f"Couldn't re-sign {file}: {p.stderr}")
+def _sign_one(file: str) -> None:
+    p = subprocess.run(
+        ["codesign", "--sign", "-", "--force",
+         "--preserve-metadata=entitlements,requirements,flags,runtime", file],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if p.returncode != 0:
+        logging.error(f"Couldn't re-sign {file}: {p.stderr}")
+    else:
         logging.debug(f"Re-signed {file}")
-        
+
+
+def fix_code_signatures(files: List[str]) -> None:
+    """Re-sign files in parallel (codesign is the main packaging bottleneck)"""
+    if not files:
+        return
+    workers = min(len(files), os.cpu_count() or 4)
+    with ThreadPoolExecutor(max_workers=workers) as executor:
+        list(executor.map(_sign_one, files))
 
 
 if __name__ == '__main__':
@@ -303,27 +336,21 @@ if __name__ == '__main__':
     logging.info(f"PWD is {os.getcwd()}")
     logging.info(f"Will scan dependencies of executables and libraries in {', '.join(executable_dirs)}")
 
+    copy_black_list = [str(pathlib.Path("lib").resolve()),
+                       str(pathlib.Path("bin").resolve())]
 
-    # don't copy files from lib/, which are targets built by cmake, to bin/
-    copy_black_list = [str(pathlib.Path("lib").resolve())]
-
-    # Recursively copy the external dependencies of targets to the bin folder
-    copied = apply_to_dirs(executable_dirs, [], copy_external_deps, "bin", copy_black_list)
+    copied = apply_to_dirs(copy_scan_dirs, [], copy_external_deps, "bin", copy_black_list)
     logging.info("Dependency copying completed")
- 
-    # Update the library ids of copied files
+
     sig_warnings = change_ids(copied, "bin", [])
     logging.info("Library IDs of copied dependencies updated")
-     
-    # Remove absolute RPATHs from all executables and libs
+
     sig_warnings += apply_to_dirs(executable_dirs, sig_warnings, remove_external_rpaths)
     logging.info("External RPATHs removed from executables and libraries")
 
-    # Convert library dependencies of all executables and libraries to @rpath/foo.dylib
     sig_warnings += apply_to_dirs(executable_dirs, sig_warnings, change_external_deps)
     logging.info("Paths of dependencies updated to @rpath/name")
 
-    # Updating executables and libs may have invalidated some of their signatures. Fix them.
     fix_code_signatures(sig_warnings)
     logging.info("Code re-signed")
     
