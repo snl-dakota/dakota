@@ -17,6 +17,17 @@ add_library(jni_dakota_surrogates SHARED
 target_include_directories(jni_dakota_surrogates PUBLIC ${JNI_INCLUDE_DIRS})
 target_link_libraries(jni_dakota_surrogates PUBLIC dakota_surrogates)
 
+# On macOS, dakota_surrogates intentionally omits libpython (using
+# -undefined dynamic_lookup instead) so it can be safely loaded inside a
+# statically-linked Python process without spawning a second interpreter.
+# That INTERFACE condition only injects pybind11::embed for EXECUTABLE
+# consumers, not SHARED libraries.  Since this JNI dylib is always loaded
+# from Java (never from Python), we must explicitly pull in libpython so
+# that Python symbols are present when the JVM calls dlopen.
+if(APPLE AND DAKOTA_PYBIND11 AND DAKOTA_PYTHON_SURROGATES)
+  target_link_libraries(jni_dakota_surrogates PRIVATE pybind11::embed)
+endif()
+
 install(TARGETS jni_dakota_surrogates EXPORT ${ExportTarget}
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
