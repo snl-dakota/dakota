@@ -31,7 +31,39 @@ if ds is not None:
     from dakota.spec.model import SingleConfig, NestedConfig
     from dakota.spec.responses import ResponsesConfig
     from dakota.spec.variables import VariablesConfig
-    from dakota.study.di_construction_demo import INTERFACE, METHOD, RESPONSES, VARIABLES
+    METHOD = {
+        "sample_type": {"lhs": True},
+        "samples": 10,
+        "seed": 1234,
+    }
+    VARIABLES = {
+        "active": {"all": True},
+        "uniform_uncertain": {
+            "count": 2,
+            "descriptors": ["x1", "x2"],
+            "lower_bounds": [0.0, 0.0],
+            "upper_bounds": [1.0, 1.0],
+        },
+    }
+    RESPONSES = {
+        "response_type": {"response_functions": {"count": 1}},
+        "descriptors": ["f"],
+        "gradient_type": {"no_gradients": True},
+        "hessian_type": {"no_hessians": True},
+    }
+    INTERFACE = {
+        "analysis_drivers": {
+            "drivers": ["text_book"],
+            "interface_type": {
+                "fork": {
+                    "parameters_file": "params.in",
+                    "results_file": "results.out",
+                    "file_save": True,
+                }
+            }
+        },
+        "deactivate": {"restart_file": True},
+    }
 
 
 def _callable_signature_text(function):
