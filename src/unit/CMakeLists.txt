@@ -283,6 +283,36 @@ if(DAKOTA_PYTHON_STUDY)
   endif()
 endif()
 
+if(DAKOTA_PYTHON_WRAPPER)
+  add_test(NAME dakota_python_tools_strip
+    COMMAND ${Python3_EXECUTABLE} -m unittest
+            test_strip_inserted_context -v
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  set_property(TEST dakota_python_tools_strip PROPERTY LABELS Unit Python)
+  if(WIN32)
+    set_property(TEST dakota_python_tools_strip PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_tools_strip PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+
+  add_test(NAME dakota_python_tools_freeform_to_json
+    COMMAND ${Python3_EXECUTABLE} -m unittest
+            test_freeform_to_json -v
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+  set_property(TEST dakota_python_tools_freeform_to_json PROPERTY LABELS Unit Python)
+  if(WIN32)
+    set_property(TEST dakota_python_tools_freeform_to_json PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH};$ENV{PYTHONPATH}")
+  else()
+    set_property(TEST dakota_python_tools_freeform_to_json PROPERTY
+      ENVIRONMENT "PYTHONPATH=${DAKOTA_PYTHON_PATH}:$ENV{PYTHONPATH}")
+  endif()
+endif()
+
 
 # Pecos is an unconditional Dakota dependency
 include_directories(${Pecos_SOURCE_DIR}/src)

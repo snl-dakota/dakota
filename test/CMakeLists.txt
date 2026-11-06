@@ -102,6 +102,21 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
           --perl "${PERL_EXECUTABLE}"
           --runner "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl"
           --diff "${CMAKE_CURRENT_SOURCE_DIR}/dakota_diff.perl")
+      add_test(NAME gen_json_${case_id}
+        COMMAND "${Python3_EXECUTABLE}"
+          "${CMAKE_CURRENT_SOURCE_DIR}/gen_json/run_gen_json.py"
+          --case "${case_id}"
+          --manifest "python_parity/cases.json"
+          --source "${CMAKE_CURRENT_SOURCE_DIR}"
+          --work "${CMAKE_CURRENT_BINARY_DIR}/gen_json/${case_id}"
+          --dakota "$<TARGET_FILE:dakota>"
+          --dakota-parser "$<TARGET_FILE:dakota_parser>"
+          --driver "$<TARGET_FILE:text_book>"
+          --plugin "${Dakota_BINARY_DIR}/src/plugins/build/libidentity_map${CMAKE_SHARED_LIBRARY_SUFFIX}"
+          --python "${Python3_EXECUTABLE}"
+          --python-path "${DAKOTA_PYTHON_PATH}"
+          --perl "${PERL_EXECUTABLE}"
+          --runner "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl")
       string(JSON case_timeout ERROR_VARIABLE timeout_error
         GET "${python_cases}" ${index} timeout)
       if(timeout_error)
@@ -109,6 +124,40 @@ if(BUILD_TESTING AND DAKOTA_ENABLE_TESTS)
       endif()
       set_tests_properties(python_parity_${case_id} PROPERTIES
         LABELS "PythonParity;SerialTest" TIMEOUT ${case_timeout})
+      set_tests_properties(gen_json_${case_id} PROPERTIES
+        LABELS "GenJson;SerialTest" TIMEOUT ${case_timeout})
+    endforeach()
+
+    # Extra dakota-to-json IR checks targeting inferred bounds and initial points.
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+      "${CMAKE_CURRENT_SOURCE_DIR}/gen_json/cases.json")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/gen_json/cases.json" gen_json_cases)
+    string(JSON gen_json_case_count LENGTH "${gen_json_cases}")
+    math(EXPR gen_json_case_last "${gen_json_case_count} - 1")
+    foreach(index RANGE ${gen_json_case_last})
+      string(JSON case_id GET "${gen_json_cases}" ${index} id)
+      add_test(NAME gen_json_${case_id}
+        COMMAND "${Python3_EXECUTABLE}"
+          "${CMAKE_CURRENT_SOURCE_DIR}/gen_json/run_gen_json.py"
+          --case "${case_id}"
+          --manifest "gen_json/cases.json"
+          --source "${CMAKE_CURRENT_SOURCE_DIR}"
+          --work "${CMAKE_CURRENT_BINARY_DIR}/gen_json/${case_id}"
+          --dakota "$<TARGET_FILE:dakota>"
+          --dakota-parser "$<TARGET_FILE:dakota_parser>"
+          --driver "$<TARGET_FILE:text_book>"
+          --plugin "${Dakota_BINARY_DIR}/src/plugins/build/libidentity_map${CMAKE_SHARED_LIBRARY_SUFFIX}"
+          --python "${Python3_EXECUTABLE}"
+          --python-path "${DAKOTA_PYTHON_PATH}"
+          --perl "${PERL_EXECUTABLE}"
+          --runner "${CMAKE_CURRENT_BINARY_DIR}/dakota_test.perl")
+      string(JSON case_timeout ERROR_VARIABLE timeout_error
+        GET "${gen_json_cases}" ${index} timeout)
+      if(timeout_error)
+        set(case_timeout 1200)
+      endif()
+      set_tests_properties(gen_json_${case_id} PROPERTIES
+        LABELS "GenJson;SerialTest" TIMEOUT ${case_timeout})
     endforeach()
   endif()
 

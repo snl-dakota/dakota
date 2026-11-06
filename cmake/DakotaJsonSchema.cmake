@@ -20,6 +20,23 @@ if(DAKOTA_GENERATE_JSON_SCHEMA OR DAKOTA_CHECK_JSON_SCHEMA)
         -P "${Dakota_SOURCE_DIR}/cmake/CheckDakotaJsonSchema.cmake")
   endif()
 
+  set(dakota_generated_strip_paths
+    "${Dakota_BINARY_DIR}/generated/schema/strip_paths.json")
+  set(dakota_strip_paths_source
+    "${Dakota_SOURCE_DIR}/python/dakota/tools/strip_paths.json")
+
+  if(DAKOTA_GENERATE_JSON_SCHEMA)
+    set(dakota_strip_paths_update_command
+      COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+        "${dakota_generated_strip_paths}" "${dakota_strip_paths_source}")
+  else()
+    set(dakota_strip_paths_update_command
+      COMMAND "${CMAKE_COMMAND}"
+        "-DGENERATED_SCHEMA=${dakota_generated_strip_paths}"
+        "-DSOURCE_SCHEMA=${dakota_strip_paths_source}"
+        -P "${Dakota_SOURCE_DIR}/cmake/CheckDakotaJsonSchema.cmake")
+  endif()
+
   # This target intentionally runs whenever it participates in a build. The
   # source-tree schema is only touched when its generated contents differ, so
   # unchanged models do not trigger downstream parser regeneration.
@@ -29,7 +46,12 @@ if(DAKOTA_GENERATE_JSON_SCHEMA OR DAKOTA_CHECK_JSON_SCHEMA)
     COMMAND "${Python3_EXECUTABLE}" -c
       "import json, sys; sys.path.insert(0, r'${Dakota_SOURCE_DIR}/python'); from dakota.spec import DakotaStudy; schema = DakotaStudy.model_json_schema(mode='validation'); open(r'${dakota_generated_schema}', 'w').write(json.dumps(schema, indent=4))"
     ${dakota_schema_update_command}
-    BYPRODUCTS "${dakota_generated_schema}"
+    COMMAND "${Python3_EXECUTABLE}" -I
+      "${Dakota_SOURCE_DIR}/tools/generate_strip_paths.py"
+      --schema "${DAKOTA_SCHEMA_PATH}"
+      --output "${dakota_generated_strip_paths}"
+    ${dakota_strip_paths_update_command}
+    BYPRODUCTS "${dakota_generated_schema}" "${dakota_generated_strip_paths}"
     DEPENDS ${dakota_schema_python_sources}
     WORKING_DIRECTORY "${Dakota_SOURCE_DIR}/src"
     VERBATIM

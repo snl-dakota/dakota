@@ -8,7 +8,11 @@ import sys
 import tempfile
 import unittest
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(1, str(Path(__file__).resolve().parents[1] / "gen_json"))
+
 from run_pair import execute, result_structure, compare_outputs, _normalize_approx_ids
+from run_gen_json import json_differences, write_report
 
 SOURCE = Path(__file__).resolve().parents[1]
 PERL = shutil.which("perl")
@@ -271,7 +275,10 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             SOURCE / "python_parity/cases.json",
             project / "python_parity/cases.json",
         )
+        (project / "gen_json").mkdir()
+        shutil.copy2(SOURCE / "gen_json/cases.json", project / "gen_json/cases.json")
         cases = json.loads((SOURCE / "python_parity/cases.json").read_text())
+        gen_json_count = len(json.loads((SOURCE / "gen_json/cases.json").read_text()))
         feature_names = sorted(
             {feature for case in cases for feature in case.get("requires_features", [])}
         )
@@ -279,16 +286,17 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
             "cmake_minimum_required(VERSION 3.23)\nproject(Registration NONE)\nenable_testing()\n"
             "add_executable(dakota IMPORTED)\nset_target_properties(dakota PROPERTIES IMPORTED_LOCATION /bin/true)\n"
             "add_executable(text_book IMPORTED)\nset_target_properties(text_book PROPERTIES IMPORTED_LOCATION /bin/true)\n"
+            "add_executable(dakota_parser IMPORTED)\nset_target_properties(dakota_parser PROPERTIES IMPORTED_LOCATION /bin/true)\n"
             + "".join(f'option({name} "{name}" ON)\n' for name in feature_names)
             + "set(Python3_EXECUTABLE /usr/bin/python3)\nset(PERL_EXECUTABLE /usr/bin/perl)\n"
             + cmake[start:end]
         )
         case_count = len(cases)
         unconditional = sum(not case.get("requires_features") for case in cases)
-        for enabled, features, count in (
-            ("ON", "ON", case_count),
-            ("ON", "OFF", unconditional),
-            ("OFF", "ON", 0),
+        for enabled, features, count, gen_json_expected in (
+            ("ON", "ON", case_count, case_count + gen_json_count),
+            ("ON", "OFF", unconditional, unconditional + gen_json_count),
+            ("OFF", "ON", 0, 0),
         ):
             build = self.work / (enabled + features)
             subprocess.run(
@@ -311,11 +319,22 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
                 text=True,
             )
             tests = json.loads(result.stdout)["tests"]
-            self.assertEqual(len(tests), count)
+            self.assertEqual(len(tests), count + gen_json_expected)
+            python_labels = 0
+            gen_json_labels = 0
             for test in tests:
                 props = {p["name"]: p["value"] for p in test["properties"]}
-                self.assertEqual(props["LABELS"], ["PythonParity", "SerialTest"])
+                if test["name"].startswith("python_parity_"):
+                    self.assertEqual(props["LABELS"], ["PythonParity", "SerialTest"])
+                    python_labels += 1
+                elif test["name"].startswith("gen_json_"):
+                    self.assertEqual(props["LABELS"], ["GenJson", "SerialTest"])
+                    gen_json_labels += 1
+                else:
+                    self.fail(f"Unexpected test name: {test['name']}")
                 self.assertEqual(props["TIMEOUT"], 1200)
+            self.assertEqual(python_labels, count)
+            self.assertEqual(gen_json_labels, gen_json_expected)
 
     def test_extract_original_subtests(self):
         for number, method in ((0, "vector"), (3, "list"), (4, "centered")):
@@ -368,6 +387,26 @@ Estimated integral of response_fn_1 = 1.0000000000e-01
         # Originals must keep their real labels
         self.assertIn("APPROX_INTERFACE_1", a.read_text())
         self.assertIn("APPROX_INTERFACE_2", b.read_text())
+
+    def test_gen_json_report_format(self):
+        write_report(self.work, "example", 7, 1.234, "PASS", "identical IR")
+        report = (self.work / "gen_json_report.out").read_text()
+        self.assertIn("gen_json_example (subtest 7)", report)
+        self.assertIn("PASS test 7: identical IR", report)
+        self.assertIn("duration_seconds: 1.234", report)
+
+    def test_gen_json_ir_differences(self):
+        base = {"variables[0].uncertain.initial_point_flag": False,
+                "variables[0].normal_uncertain.lower_bounds": [-3.0]}
+        self.assertEqual(json_differences(base, dict(base)), [])
+        test = {"variables[0].uncertain.initial_point_flag": True,
+                "variables[0].normal_uncertain.lower_bounds": [-3.0],
+                "environment.extra": 1}
+        self.assertEqual(
+            json_differences(base, test),
+            ["$.environment.extra: only in JSON-input IR",
+             "$.variables[0].uncertain.initial_point_flag: False != True"],
+        )
 
 
 if __name__ == "__main__":

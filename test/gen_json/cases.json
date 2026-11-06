@@ -1,0 +1,38 @@
+[
+  {
+    "id": "pstudy_allvars_s0",
+    "input": "dakota_pstudy_allvars.in",
+    "subtest": 0,
+    "purpose": "defaulted initial points for every variable type are stripped and re-derived"
+  },
+  {
+    "id": "pstudy_allvars_s2",
+    "input": "dakota_pstudy_allvars.in",
+    "subtest": 2,
+    "purpose": "defaulted normal/lognormal bounds stripped; parameter study grid uses inferred bounds"
+  },
+  {
+    "id": "rosen_pce_s20",
+    "input": "dakota_uq_rosenbrock_pce.in",
+    "subtest": 20,
+    "purpose": "user-specified normal bounds survive conversion (bounded normal)"
+  },
+  {
+    "id": "rosen_pce_s22",
+    "input": "dakota_uq_rosenbrock_pce.in",
+    "subtest": 22,
+    "purpose": "user-specified lognormal bounds survive conversion (bounded lognormal)"
+  },
+  {
+    "id": "logratio_s4",
+    "input": "dakota_logratio.in",
+    "subtest": 4,
+    "purpose": "defaulted initial point stripped; MPP search starts from u = 1"
+  },
+  {
+    "id": "logratio_s5",
+    "input": "dakota_logratio.in",
+    "subtest": 5,
+    "purpose": "user initial point survives conversion; MPP search starts from it"
+  }
+]

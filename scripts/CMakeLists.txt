@@ -8,6 +8,9 @@
 #  _______________________________________________________________________
 
 install(PROGRAMS "dprepro.perl" DESTINATION "bin")
+if(NOT MSVC)
+  install(PROGRAMS "dakota-to-json" DESTINATION "bin")
+endif()
 # dakota.bat is useful in both native and Cygwin due to command prompt usage
 add_subdirectory("pyprepro")
 if (MSVC OR CYGWIN)

@@ -1,0 +1,4 @@
+#!/usr/bin/env python3
+from dakota.tools.freeform_to_json import main
+import sys
+sys.exit(main())

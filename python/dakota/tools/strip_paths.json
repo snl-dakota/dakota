@@ -1,0 +1,544 @@
+{
+  "generated_from_schema": "e00afadafc78967d93c0c73e2687b7d859f42c7e359f3fbe97cab21da689775d",
+  "block_rules": [
+    {
+      "nav": [
+        "variables",
+        "discrete_design_set",
+        "integer"
+      ],
+      "always_strip": [
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_design_set",
+        "string"
+      ],
+      "always_strip": [
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_design_set",
+        "real"
+      ],
+      "always_strip": [
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "normal_uncertain"
+      ],
+      "always_strip": [
+        "inferred_lower_bounds",
+        "inferred_upper_bounds",
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": [
+        {
+          "ordinary": "lower_bounds",
+          "inferred": "inferred_lower_bounds"
+        },
+        {
+          "ordinary": "upper_bounds",
+          "inferred": "inferred_upper_bounds"
+        }
+      ]
+    },
+    {
+      "nav": [
+        "variables",
+        "lognormal_uncertain"
+      ],
+      "always_strip": [
+        "inferred_upper_bounds",
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": [
+        {
+          "ordinary": "upper_bounds",
+          "inferred": "inferred_upper_bounds"
+        }
+      ]
+    },
+    {
+      "nav": [
+        "variables",
+        "uniform_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "loguniform_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "triangular_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "exponential_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "beta_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "gamma_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "gumbel_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "frechet_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "weibull_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "histogram_bin_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "poisson_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "binomial_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "negative_binomial_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "geometric_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "hypergeometric_uncertain"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "histogram_point_uncertain",
+        "integer"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "histogram_point_uncertain",
+        "string"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "histogram_point_uncertain",
+        "real"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "continuous_interval_uncertain"
+      ],
+      "always_strip": [
+        "inferred_lower_bounds",
+        "inferred_upper_bounds",
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_interval_uncertain"
+      ],
+      "always_strip": [
+        "inferred_lower_bounds",
+        "inferred_upper_bounds",
+        "initial_point_user_provided"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_uncertain_set",
+        "integer"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_uncertain_set",
+        "string"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_uncertain_set",
+        "real"
+      ],
+      "always_strip": [
+        "initial_point_user_provided",
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [
+        {
+          "field": "initial_point",
+          "flag": "initial_point_user_provided"
+        }
+      ],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_state_set",
+        "integer"
+      ],
+      "always_strip": [
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_state_set",
+        "string"
+      ],
+      "always_strip": [
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [],
+      "strip_if_inferred_differs": []
+    },
+    {
+      "nav": [
+        "variables",
+        "discrete_state_set",
+        "real"
+      ],
+      "always_strip": [
+        "lower_bounds",
+        "upper_bounds"
+      ],
+      "strip_if_flag_false": [],
+      "strip_if_inferred_differs": []
+    }
+  ]
+}
