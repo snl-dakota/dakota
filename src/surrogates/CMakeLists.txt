@@ -67,11 +67,14 @@ target_link_libraries(dakota_surrogates PUBLIC ${Teuchos_LIBRARIES})
 
 if(DAKOTA_PYBIND11 AND DAKOTA_PYTHON_SURROGATES)
   if(APPLE)
-    # Python embedding is an implementation detail of dakota_surrogates on
-    # macOS.  Do not propagate pybind11::embed to extension modules that link
-    # Dakota core libraries; macOS extensions should not inherit an
-    # embedding-style libpython link.
-    target_link_libraries(dakota_surrogates PRIVATE pybind11::embed)
+    # Don't link libpython into the dylib: inside a Python process whose
+    # interpreter is statically linked (e.g. conda), that loads a second,
+    # separate Python runtime and embedded-surrogate imports (numpy) crash.
+    # Python symbols resolve via -undefined dynamic_lookup instead; only
+    # executables, which must supply the interpreter, get libpython.
+    target_link_libraries(dakota_surrogates
+      PRIVATE pybind11::pybind11
+      INTERFACE "$<$<STREQUAL:$<TARGET_PROPERTY:TYPE>,EXECUTABLE>:pybind11::embed>")
   else()
     # Preserve devel's non-Apple link interface.  Some Linux builds rely on
     # this transitive link closure when assembling Dakota executables.
