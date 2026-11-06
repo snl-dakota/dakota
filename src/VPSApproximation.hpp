@@ -225,27 +225,27 @@ private:
         double zy;	/* SWB seed2 */
         size_t qlen;/* length of Q array */
     
-        size_t _n_dim; // dimension of the problem
-        double* _xmin; // lower left corner of the domain
-        double* _xmax; // Upper right corner of the domain
-        double  _diag; // diagonal of the domain
-    
+        size_t _n_dim{0}; // dimension of the problem
+        double* _xmin{nullptr}; // lower left corner of the domain
+        double* _xmax{nullptr}; // Upper right corner of the domain
+        double  _diag{0.0}; // diagonal of the domain
+
         // variables for VPS
-        size_t _num_inserted_points;
-        double** _sample_points; // points coordinates
-        double* _fval;           // a single function evaluation at each point
-        double** _fgrad;         // gradient vectors at each point
-        double*** _fhess;        // hessian matrix at each point
-        
-        size_t** _sample_neighbors;  // cell direct neighbors
-        size_t** _vps_ext_neighbors; // cell extended neighbors
-    
-    
-        size_t _vps_order, _num_GMRES;
-        size_t* _num_cell_basis_functions; // number of basis functions for each cell
-        double* _sample_vsize;  // furthest distance between seed and one of its Voronoi corners
-        double* _vps_dfar;       // furthest distance between a seed and its extended neighbors
-        double*** _sample_basis;  // centers of rbs for a given cell
+        size_t _num_inserted_points{0};
+        double** _sample_points{nullptr}; // points coordinates
+        double* _fval{nullptr};           // a single function evaluation at each point
+        double** _fgrad{nullptr};         // gradient vectors at each point
+        double*** _fhess{nullptr};        // hessian matrix at each point
+
+        size_t** _sample_neighbors{nullptr};  // cell direct neighbors
+        size_t** _vps_ext_neighbors{nullptr}; // cell extended neighbors
+
+
+        size_t _vps_order{0}, _num_GMRES{0};
+        size_t* _num_cell_basis_functions{nullptr}; // number of basis functions for each cell
+        double* _sample_vsize{nullptr};  // furthest distance between seed and one of its Voronoi corners
+        double* _vps_dfar{nullptr};       // furthest distance between a seed and its extended neighbors
+        double*** _sample_basis{nullptr};  // centers of rbs for a given cell
         
         double _max_vsize;     // size of biggest Voronoi cell
         double _disc_min_jump; // minimum jump for discontinuity detection
@@ -259,8 +259,8 @@ private:
         ///////////////////////////////////////////////////////////////////////////////
         // LS
         
-        size_t***  _vps_t; // LS_polynomials powers of the polynomial expansion
-        double**   _vps_w; // LS weights per point and basis function
+        size_t***  _vps_t{nullptr}; // LS_polynomials powers of the polynomial expansion
+        double**   _vps_w{nullptr}; // LS weights per point and basis function
 
         // GP
         SharedApproxData sharedData;
