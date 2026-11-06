@@ -146,13 +146,11 @@ if(APPLE)
   # so it works correctly for both executables (bin/) and dylibs loaded via
   # dlopen (e.g. Python extensions). @executable_path resolves to the launching
   # process's bin dir, which breaks when libraries are loaded from Python.
-  set(CMAKE_INSTALL_RPATH "@loader_path;@loader_path/../lib;@loader_path/../bin"
+  # A bare @loader_path is omitted: it's redundant with ../lib and ../bin for
+  # files in lib/ and bin/, and gfortran already embeds it in Fortran dylibs,
+  # so adding it at install time fails with a duplicate-LC_RPATH error.
+  set(CMAKE_INSTALL_RPATH "@loader_path/../lib;@loader_path/../bin"
     CACHE STRING "Set the RPATH in Dakota executables and libraries")
-  # Embed the install RPATH at link time so CMake skips install_name_tool
-  # rewriting at install time. Without this, CMake tries to add RPATH entries
-  # that some Fortran libraries already have, producing duplicate-path errors.
-  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE CACHE BOOL
-    "Use install RPATH during build (avoids duplicate-RPATH errors on macOS)")
 elseif(UNIX)
    set(CMAKE_INSTALL_RPATH "\$ORIGIN:\$ORIGIN/../lib:\$ORIGIN/../lib64:\$ORIGIN/../bin"
      CACHE STRING "Set the RPATH in Dakota executables and libraries")
