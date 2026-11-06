@@ -1,16 +1,16 @@
 Test Number 0 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.9999610564e-01 x1
-                      9.9999401065e-01 x2
+                      9.9995425366e-01 x1
+                      9.9990563258e-01 x2
 <<<<< Best objective function  =
-                      3.3893258019e-10
-<<<<< Best evaluation ID: 929
+                      2.9203430463e-09
+<<<<< Best evaluation ID: 992
 Test Number 1 succeeded
 <<<<< Function evaluation summary: 1000 total (1000 new, 0 duplicate)
 <<<<< Best parameters          =
-                      9.1830848325e-01 x1
-                      9.1721169983e-01 x2
+                      9.1815930931e-01 x1
+                      9.1812315581e-01 x2
 <<<<< Best objective function  =
-                     -1.0941295313e+00
-<<<<< Best evaluation ID: 493
+                     -1.0941309948e+00
+<<<<< Best evaluation ID: 352
