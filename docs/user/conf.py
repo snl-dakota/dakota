@@ -27,7 +27,7 @@ from lexer.dakota import DakotaLexer
 # -- Project information -----------------------------------------------------
 
 project = 'dakota'
-copyright = '2025, Sandia National Laboratories'
+copyright = '2026, Sandia National Laboratories'
 author = 'Sandia National Laboratories'
 
 # The major project version, used as the replacement for
