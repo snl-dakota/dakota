@@ -36,7 +36,7 @@ Methods
     methods/global_interval_est
     methods/global_reliability
     methods/gpais
-    methods/hybrid
+    methods/hybrid_sequential
     methods/import_points
     methods/importance_sampling
     methods/list_parameter_study
