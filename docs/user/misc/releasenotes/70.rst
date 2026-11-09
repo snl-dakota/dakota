@@ -21,6 +21,12 @@ pointer-based ``id_*`` / ``*_pointer`` relationships with direct object
 references.  Kwargs and Pydantic model configurations are both supported for
 setting keyword options.
 
+The :ref:`dakota-to-json <input-tools-dakota-to-json>` command-line tool
+and its backing Python module ``dakota.tools.freeform_to_json`` can convert an
+existing freeform Dakota input to a JSON file that Dakota accepts directly
+with ``dakota -json`` and that can serve as a starting point for a
+Python-based study.
+
 To simplify the API, a few notable chnages were made to Dakota's input
 spec. These changes affect not only the API and JSON input formats, but
 also the freeform format.
@@ -36,6 +42,9 @@ option enabled.
 
 *Documentation:* :ref:`library-api` in the User's Manual (construction guide,
 tutorial, and Python reference).
+
+
+*Documentation:* in the User's Manual.
 
 
 **Improvements by Category**
