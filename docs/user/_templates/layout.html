@@ -137,21 +137,14 @@
         <div class="wy-side-nav-search" {% if theme_style_nav_header_background %} style="background: {{theme_style_nav_header_background}}" {% endif %}>
           {%- block sidebartitle %}
 
-          {%- if logo and theme_logo_only %}
+          {%- if logo_url and theme_logo_only %}
             <a href="{{ pathto(master_doc) }}">
           {%- else %}
             <a href="{{ pathto(master_doc) }}" class="icon icon-home"> {{ project }}
           {%- endif %}
 
-          {%- if logo %}
-            {#- Not strictly valid HTML, but it's the only way to display/scale
-                it properly, without weird scripting or heaps of work
-            #}
-            {%- if sphinx_version_info < (4, 0) -%}
-            <img src="{{ pathto('_static/' + logo, 1) }}" class="logo" alt="{{ _('Logo') }}"/>
-            {%- else %}
+          {%- if logo_url %}
             <img src="{{ logo_url }}" class="logo" alt="{{ _('Logo') }}"/>
-            {%- endif %}
           {%- endif %}
           </a>
 

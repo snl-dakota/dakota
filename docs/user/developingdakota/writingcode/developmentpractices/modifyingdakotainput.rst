@@ -1,6 +1,6 @@
-"""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""
 Modifying Dakota's Input Specification
-"""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""
 
 Dakota's canonical input grammar is defined by Pydantic models under
 ``python/dakota/spec``. The parser under
