@@ -1,16 +1,20 @@
 @import 'theme.css'; /* for the Read the Docs theme */
 
 div.wy-side-nav-search {
-    background-color: #b6f8fc;
+    background-color: #295D72;
 }
 
 div.wy-side-nav-search a {
-    color: #50bfc7;
+    color: #ffffff;
 }
 
 /* make sure version number doesn't disappear */
 .wy-side-nav-search > div.version {
-    color: #448FAA;
+    color: #75CBE0;
+}
+
+.wy-nav-top {
+    background-color: #295D72;
 }
 
 div.wy-nav-content {
