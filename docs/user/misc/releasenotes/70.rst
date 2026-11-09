@@ -1,0 +1,193 @@
+.. _releasenotes-70:
+
+""""""""""""""""""""""""""""
+Version 7.0 (2026/11/17)
+""""""""""""""""""""""""""""
+
+**Highlight: Python API**
+
+Dakota 7.0 introduces a Python API that allows studies to be
+constructed and run programmatically without writing a Dakota input file.
+Study components — methods, models, variables, interfaces — are ordinary
+Python or C++ objects, enabling Dakota to be embedded inside larger
+applications, automation pipelines, and agentic AI workflows. Python bindings
+are provided for nearly all iterators and models, including parameter studies,
+UQ sampling methods, calibration, optimization (including ROL, NOMAD, and
+NOWPAC/SNOWPAC), surrogate-based methods, ensemble surrogates, and
+meta-iterators.
+
+The APIs share the same configuration grammar as JSON input but replace
+pointer-based ``id_*`` / ``*_pointer`` relationships with direct object
+references.  Kwargs and Pydantic model configurations are both supported for
+setting keyword options.
+
+To simplify the API, a few notable chnages were made to Dakota's input
+spec. These changes affect not only the API and JSON input formats, but
+also the freeform format.
+
+First, the four surrogate types (global, local, multipoint, ensemble)  were
+promoted to model types. Instead of ``model surrogate global``, it's now 
+necessary to specify ``model global_surrogate``.
+
+Simiarly, ``method hybrid sequential`` was promoted to ``method hybrid_sequential``.
+
+*Enabling / Accessing:* Build Dakota with the ``DAKOTA_PYTHON_STUDY`` CMake
+option enabled.
+
+*Documentation:* :ref:`library-api` in the User's Manual (construction guide,
+tutorial, and Python reference).
+
+
+**Improvements by Category**
+
+*Interfaces, Input/Output*
+
+- JSON input files are now checked for required fields and array item types,
+  with improved validation of union member constants and alternatives.
+- Integer fields in both JSON and free-form input now require whole-number
+  values.
+- The JSON parser now correctly handles ``true``/``false`` and ``{}`` based on
+  the declared schema type.
+- ``import_points`` results are now correctly archived in HDF5 output.
+- Dakota will now raise an error when two concurrent studies would produce
+  colliding results output filenames.
+- ``ResultsManager`` and ``EvaluationStore`` instances are now study-specific,
+  enabling safe concurrent use in library API contexts.
+- Fixed an HDF5 close issue that could leave output files in an inconsistent
+  state.
+
+*Models*
+
+- Surrogate model types are now promoted to first-class model types in the
+  input grammar and documentation (e.g. ``model surrogate global`` is now
+  ``model global_surrogate``.
+- Fixed: honor per-component ASV for field approximations.
+- Fixed: out-of-range model form in ``NonDExpansion`` online cost averaging.
+
+*Optimization Methods*
+
+- **ROL** (Rapid Optimization Library): Updated to use Trilinos 16.2. The old
+  monolithic ROL interface has been removed; the modular interface is now the
+  only supported path. Evaluation cache management moved to ``ROLOptimizer``;
+  several memory errors identified by valgrind have been fixed.
+- **EGO** (Efficient Global Optimizer): Fixed a bug where merit-function
+  updates after convergence corrupted best-point selection when nonlinear
+  constraints are present (contributed by Werner Van Geit).
+- Fixed: CONMIN constraint maps are now reset correctly between multiple
+  successive runs.
+- Fixed: NOMAD best-point loop now correctly indexes ``discRealVars[j]``.
+- Fixed: In least-squares calibration with nonlinear constraints and scaling
+  enabled, ``LeastSq::post_run`` was unscaling best-point constraints from
+  ``iter_resp`` (the model's last evaluation) rather than from the
+  solver-cached best response in ``best_resp``, overwriting correct best
+  constraints with stale values. The fix stages the scaled best constraints
+  from ``best_resp`` into ``iter_resp`` before the in-place unscale.
+
+*UQ Methods*
+
+- **Adaptive Sampling**: Fixed multiple pre-existing correctness bugs including
+  constant-liar pop count, duplicate batch picks, and topology fallback
+  distances. Asynchronous evaluation support added.
+- Fixed: In the per-response-file branch of ``ExperimentData::load_experiment``,
+  omitting ``experiment_variance_type`` left ``sigma_scalars`` zero-filled,
+  caching a zero covariance determinant (log det = −∞) that corrupts the
+  Bayesian log-likelihood for every sample. Per-response-file inputs now
+  default to unit variance, matching the scalar-data-file branch.
+- Fixed: ``Variables::load`` now validates each array length from the restart
+  archive against the ``SharedVariablesData``-derived counts and aborts with
+  an error on mismatch, preventing out-of-bounds Teuchos views from a restart
+  file whose variable counts are inconsistent with the current input.
+- Fixed: In ``NestedModel::iterator_response_overlay``, the identity-map
+  branch for secondary (constraint) gradients was writing ``mapped_grad[m_index]``
+  inside the loop over derivative variables ``j``, leaving most gradient entries
+  zero and writing out of bounds when ``m_index >= num_mapped_deriv_vars``.
+  The index is now ``mapped_grad[j]``, matching the primary identity branch.
+- Fixed: In ``Constraints::reshape_update_linear``, contracting from an ALL
+  view to a non-ALL view with both linear inequality and equality constraints
+  present used two separate ``cv``-section loops that shared ``curr_cntr``/
+  ``prev_cntr``, causing the equality matrix to be copied from the wrong
+  columns and indexing past ``num_av``. Both matrices are now copied in a
+  single loop per column section.
+
+*Solution Verification*
+
+- Fixed: ``RichExtrapVerification::converge_order`` and ``converge_qoi``
+  initialized the convergence tolerance, iteration counter, and (for
+  ``converge_order``) ``prev_order`` once outside the per-factor loop.
+  After the first factor converged, all subsequent factors skipped
+  refinement entirely and ``extrapolate_result`` reported uninitialized
+  ``convOrder``/``extrapQOI``/``numErrorQOI`` values.  Each factor now
+  resets these variables independently at the start of its refinement loop.
+
+*Sensitivity Analysis*
+
+- The :dakkw:`method-sampling-variance_based_decomp-vbd_sampling_method-binned`
+  approach to variance-based decomposition now works with discrete variables.
+
+*Calibration*
+
+- Documentation added explaining how Dakota computes confidence intervals on
+  calibration parameters, including derivation, numerical computation, and
+  assumptions. See the NLS confidence intervals section of the Theory Manual.
+
+*Hybrid Methods*
+
+- ``hybrid_collaborative`` and ``hybrid_embedded`` method types have been
+  removed. Hybrid sub-methods are now promoted to first-class method types and
+  should be specified directly. Use ``hybrid_sequential`` (keyword
+  ``method > hybrid > sequential``) for sequential hybrid strategies.
+
+**Miscellaneous Enhancements and Bugfixes**
+
+- DOT optimizer: bumped to version 3.71; ALPSAV state is now saved between
+  calls, correcting behavior in constrained problems.
+- Fixed uninitialized pointer issues identified across several model
+  constructors.
+- Fixed ``pyprepro`` function name typo.
+- ``ext_python`` module moved from ``src/`` to the ``python/`` package.
+- Resolved duplicate-RPATH install errors and build-tree RPATH issues on macOS.
+- Fixed Python API shared library loading on macOS and Linux.
+- ``libpython`` is no longer linked into ``libdakota_surrogates`` on macOS
+  (resolves JNI linking issues).
+- ``EXT_TPL_LIBS`` is now linked into ``libdakota_src.so`` to enable Python
+  import.
+- Added a ``make install-python`` CMake target that installs the Dakota Python
+  package into the active Python environment (run ``make install`` first).
+- ``dakota_parser`` now inherits C++ compiler flags from the parent build and
+  probes for Python 3 automatically.
+- Legacy input ``Data`` classes have been removed; construction throughout
+  Dakota now uses the ``IRStore`` path, laying the foundation for fully
+  decoupled library-API component construction.
+- ``DL_Solver`` dynamically loadable solver interface has been removed.
+
+**Deprecated and Changed**
+
+- **NIDR parser removed.** The ``-parser legacy`` command-line argument is no
+  longer available. All input, whether free-form or JSON, is processed by the
+  new parser.
+- **``hybrid_collaborative`` and ``hybrid_embedded`` removed.** Workflows using
+  these types must be migrated to use their constituent methods directly, or to
+  ``hybrid_sequential``.
+- **C++20 required.** The minimum C++ standard for building Dakota has been
+  raised from C++17 to C++20.
+- **Boost minimum raised to 1.75.**
+- **Trilinos updated to 16.2** (required when ROL is enabled).
+
+**Compatibility**
+
+- A C++20-capable compiler is now required to build Dakota from source.
+- Boost 1.75 or newer is required.
+- Trilinos 16.2 or newer is required when building with ROL enabled.
+- Python 3.9 or newer is needed to build Dakota.
+- Python 3.10 or newer and Pydantic 2.12 or newer are required to regenerate or
+  modify Dakota's input grammar (``python/dakota/spec/``).
+- The ``-parser legacy`` command-line flag has been removed; input files that
+  relied on NIDR-specific parsing behavior may need minor adjustment.
+
+**Other Notes and Known Issues**
+
+- The library APIs are public and supported but are still evolving; interfaces
+  may change in upcoming releases.
+- Support for plugging in user-supplied methods, models, and surrogates from
+  third-party libraries is planned for a future release, as is availability of
+  the Python API through PyPI.
