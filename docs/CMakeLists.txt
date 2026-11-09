@@ -130,9 +130,9 @@ add_custom_target(docs-user-samples DEPENDS ${_gen_inputs_var_out} ${_gen_interf
 
 function(insert_dakota_version _conf_py_filename)
   file(READ "${_conf_py_filename}" _conf_data)
-  string(REGEX REPLACE "version = '[0-9]+\\.[0-9]+'"
+  string(REGEX REPLACE "version = '[^']*'"
     "version = '${Dakota_VERSION_PAIR}'" _conf_data "${_conf_data}")
-  string(REGEX REPLACE "release = '[0-9]+\\.[0-9]+\\.[0-9]+\\+?'"
+  string(REGEX REPLACE "release = '[^']*'"
     "release = '${Dakota_VERSION_STRING}'" _conf_data "${_conf_data}")
   file(WRITE "${_conf_py_filename}" "${_conf_data}")
 endfunction()

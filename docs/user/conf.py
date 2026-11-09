@@ -26,8 +26,8 @@ from lexer.dakota import DakotaLexer
 
 # -- Project information -----------------------------------------------------
 
-project = 'dakota'
-copyright = '2025, Sandia National Laboratories'
+project = 'Dakota'
+copyright = '2026, Sandia National Laboratories'
 author = 'Sandia National Laboratories'
 
 # The major project version, used as the replacement for
@@ -35,7 +35,7 @@ author = 'Sandia National Laboratories'
 # something like 2.6.
 #
 # For Dakota this will be substituted at build time by CMake
-version = ''
+version = '6.24'
 
 # The full project version, used as the replacement for |release| and
 # e.g. in the HTML templates. For example, for the Python
@@ -43,7 +43,7 @@ version = ''
 #
 # For Dakota this will be substituted at build time by CMake, and may
 # include an appended stable '+'
-release = ''
+release = '6.24.0+'
 
 
 # -- General configuration ---------------------------------------------------
@@ -95,7 +95,8 @@ html_css_files = [
     'css/sandiaheaderlite.css'
 ]
 
-html_logo = 'img/dakota_Arrow_Name_Tag_horiz_transparent.png'
+html_logo = 'img/DAKOTAWhiteWEB.png'
+html_favicon = 'img/DAKOTAFav32WEB.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
