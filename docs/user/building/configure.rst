@@ -322,7 +322,7 @@ Dakota uses the standard `CMake FindBoost
 <https://cmake.org/cmake/help/latest/module/FindBoost.html>`_; see its
 documentation for the most up to date options. To identify a
 non-system default Boost installation, set
-``BOOST_ROOT:PATH=/path/to/boost/1.70``, where the specified path
+``BOOST_ROOT:PATH=/path/to/boost/1.75``, where the specified path
 contains the ``include/`` and ``lib/`` directories.  Alternately, for
 split installations, set ``BOOST_INCLUDEDIR`` and
 ``BOOST_LIBRARYDIR``.
@@ -475,7 +475,7 @@ Compiling Dakota's QUESO sub-package requires:
 Environment: If the program ``gsl-config`` is not on your PATH, you'll
 either need to put it there, or set the environment variable export
 ``GSL_CONFIG=/usr/local/gsl/1.15/bin/gsl-config`` or similar. You may
-also need to ``export BOOST_ROOT=/usr/local/boost/1.70.0`` or similar
+also need to ``export BOOST_ROOT=/usr/local/boost/1.75.0`` or similar
 to make sure that QUESO and Dakota are built with the same Boost.
 
 The following CMake settings are necessary to enable QUESO: ::
@@ -538,6 +538,10 @@ Dakota Components
    * - DAKOTA_PYTHON_WRAPPER
      - OFF
      - Top-level Dakota Python interface (``dakota.environment`` wrapper)
+   * - DAKOTA_PYTHON_STUDY
+     - OFF
+     - Dakota DI/library-mode Python interface (``dakota.study`` wrapper);
+       requires Python >= 3.10 and Pydantic >= 2.12
    * - DAKOTA_PYTHON_SURROGATES
      - OFF
      - Python interface to surrogates modules
@@ -581,7 +585,7 @@ routinely tested.
    HAVE_PECOS, 	    ON,  "Currently required"
    HAVE_PSUADE,     ON,
    HAVE_QUESO, 	    OFF, "Off due to dependence on GPL-licensed GSL"
-   HAVE_QUESO_GPMSA,OFF,
+   HAVE_QUESO_GPMSA,ON,
    DAKOTA_HAVE_GSL, OFF, "Required when ``HAVE_QUESO=ON``"
    HAVE_ROL,        ON,
    HAVE_SPARSE_GRID,ON,

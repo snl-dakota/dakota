@@ -9,9 +9,9 @@ dependencies. See sections that follow for suggestions on how to
 satisfy them.
 
 Dakota regression test baselines are based on the recommended Dakota
-RHEL 8 configuration below. Regression tests will typically exhibit
+RHEL 9 configuration below. Regression tests will typically exhibit
 numerical differences when running on other platforms. For developers
-needing to reproduce RHEL 8 baselines on other platforms, e.g., for
+needing to reproduce RHEL 9 baselines on other platforms, e.g., for
 pre-push code verification, a Docker-based build/test process is also
 described in :ref:`devenvironment-main`.
 
@@ -32,26 +32,26 @@ Toolchains
      - Version
      - Notes
    * - `CMake <https://cmake.org/>`_
-     - >= 3.17
+     - >= 3.23
      - Required
    * - C Compiler
      - >= C99
      - Required
    * - C++ Compiler
-     - >= C++14
+     - >= C++20
      - Required
    * - Fortran Compiler
      - 77, 90
      - Required
    * - `Python <https://www.python.org/>`_
-     - >= 2.7 or >= 3.6
-     - Required; 3.6 or newer recommended 
+     - 3.x; >= 3.10 for ``DAKOTA_PYTHON_STUDY``
+     - Required; Python 3 only
    * - `Perl <https://www.perl.org/>`_
      - >= 5.16
      - Required
    * - Java JDK
      - = 11
-     - Optional; required for dakota.xml maintenance, generating user docs
+     - Optional; required for ``DAKOTA_JAVA_SURROGATES``
    * - Doxygen
      - = 1.8.20
      - Optional; required for generating C++ code docs
@@ -91,21 +91,21 @@ Packages
    * - Linear Algebra
      - any
      - Required, e.g., BLAS/LAPACK, MKL, Accelerate
-   * - `Boost <https://www.hdfgroup.org/>`_
-     - >= 1.70
+   * - `Boost <https://www.boost.org/>`_
+     - >= 1.75
      - Required; headers, plus libraries: filesystem, program_options,
        regex, serialization, system
    * - MPI
      - any
      - Optional, e.g., MPICH, OpenMPI
    * - `HDF5 <https://www.hdfgroup.org/>`_
-     - = 1.10.4 (Dakota may work with 1.10.x for x > 4; untested)
+     - >= 1.10.4
      - Optional; required for Dakota structured results output
    * - `h5py <https://www.h5py.org/>`_
      -
      - Optional; required to enable HDF5-based tests (recommended for
        developers)
-   * - `GSL <https://www.hdfgroup.org/>`_
+   * - `GSL <https://www.gnu.org/software/gsl/>`_
      - >= 1.15
      - Optional; required for QUESO Bayesian calibration, **induces
        GPL dependency**
@@ -178,48 +178,71 @@ dependencies using OS package managers, supplementing with compiling
 from source as needed.
 
 ------
-RHEL 8
+RHEL 9
 ------
 
-The following list of packages work for a trial Dakota build on CentOS
-or Rocky Linux 8 distro.
+The following packages work for building Dakota on RHEL 9, Rocky Linux 9,
+or AlmaLinux 9. This is the platform used for Dakota regression test
+baselines.
 
-Base Packages resulting in GCC 8.5.0, Python 3.6.8, CMake 3.20.2, and
-OpenMPI 4.1.1::
+First enable the EPEL and CodeReady Builder (CRB) repositories::
 
-   # yum or dnf install the following packages...
-   git make cmake gcc gcc-c++ gcc-gfortran python3 perl blas lapack openmpi openmpi-devel
-    
-   # Omit boost as will install 1.66
-   ## boost boost-devel
-    
-   # GSL only needed if enabling Dakota's QUESO library
-   gsl gsl-devel
-    
-   # NOTE: Java should only be needed if maintaining Dakota or building documentation
-   java-11-openjdk-devel
-    
-   # For Python features (optional)
-   python3-h5py python3-numpy
-    
-   # Enable the PowerTools repo via editing /etc/yum.repos.d/CentOS-PowerTools.repo and install
-   blas-devel lapack-devel
+   dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+   dnf config-manager --set-enabled crb
 
-EPEL Packages add HDF 1.10.5::
+Then install packages::
 
-   dnf install epel-release
-    
-   # Optional; also needs powertools for libsz and libaec deps
-   hdf5 hdf5-devel: 1.10.5
-    
-   # Optional python linked library:
-   python36-devel
+   dnf install \
+       cmake clang clang-tools-extra gcc-gfortran git make ninja-build patch perl \
+       atlas atlas-devel blas blas-devel lapack lapack-devel \
+       boost-devel \
+       openmpi openmpi-devel \
+       hdf5 hdf5-devel \
+       gsl gsl-devel \
+       python3.12 python3.12-devel python3.12-pip python3.12-setuptools
 
-Boost version >= 1.70 can be downloaded from boost.org and installed.
+   # Optional; only needed for DAKOTA_JAVA_SURROGATES
+   dnf install java-17-openjdk-devel
+
+   # Optional; only needed for generating C++ code docs
+   dnf install doxygen
+
+The ``boost-devel`` package from EPEL satisfies the >= 1.75 requirement.
+
+Python packages for HDF5-based tests are most easily installed in a
+virtual environment::
+
+   python3.12 -m venv /path/to/dakota-venv
+   source /path/to/dakota-venv/bin/activate
+   pip install h5py numpy scipy
+
+For documentation builds, also install Sphinx and required plugins into
+the same environment::
+
+   pip install sphinx myst-parser sphinx-rtd-theme sphinxcontrib-bibtex \
+       sphinx-copybutton sphinx-inline-tabs pydantic autodoc-pydantic
+
+OpenMPI binaries and libraries are installed under ``/usr/lib64/openmpi``
+and require either loading the environment module or setting paths
+manually before building or running Dakota::
+
+   module load mpi/openmpi-x86_64
+
+or equivalently::
+
+   export MPI_HOME=/usr/lib64/openmpi
+   export PATH=/usr/lib64/openmpi/bin:$PATH
 
 Basic build example::
 
-   cmake -D BOOST_INCLUDEDIR:PATH=/usr/include/boost170 -DBOOST_LIBRARYDIR:PATH=/usr/lib64/boost170 ../source
+   source /path/to/dakota-venv/bin/activate
+   module load mpi/openmpi-x86_64
+   cmake -D CMAKE_C_COMPILER=clang \
+         -D CMAKE_CXX_COMPILER=clang++ \
+         -D CMAKE_Fortran_COMPILER=gfortran \
+         -D DAKOTA_HAVE_MPI=ON \
+         -D DAKOTA_HAVE_HDF5=ON \
+         /path/to/dakota/source
 
 
 ------
@@ -270,150 +293,47 @@ approach currently.
 
    If you build your own toolchains, make sure that the TPLs are built
    with the compiler you intend to use for Dakota and not the system
-   compiler. It may be necessary to explicitly enable C++11 when
-   compiling Boost, particularly with GCC compilers.
+   compiler.
 
 
 .. _devenv-mac-clang-homebrew:
 
-**Verified on macOS 11 (Big Sur):** System Clang + GFortran
+**Verified on macOS Tahoe (Apple Silicon):** System Clang + GFortran + Homebrew
 
-Uses system-provided clang/clang++, perl, python, VecLib/Accelerate,
-with Homebrew GFortran. Demonstrated on Intel MacBook Pro (2020)
+Uses system-provided clang/clang++, VecLib/Accelerate for linear algebra,
+with Homebrew for the remaining dependencies.
 
-1. Follow the instructions on the homebrew website to install the
-   homebrew package manager.
+1. Follow the instructions on the `Homebrew <https://brew.sh>`_ website to
+   install Homebrew.
 
-2. Install packages:
+2. Install packages::
 
-   ::
+      brew install cmake gcc open-mpi boost@1.85 gsl hdf5 openjdk
 
-      brew install cmake gcc open-mpi boost gsl hdf5 openjdk@11
+   ``gcc`` is installed for GFortran only; C and C++ use Apple Clang.
+   ``boost@1.85`` is used rather than the unversioned ``boost`` formula
+   to ensure a known-working version.
 
-3. Sample basic build:
+3. Set ``JAVA_HOME`` for the CMake configure step (only needed for
+   ``DAKOTA_JAVA_SURROGATES``)::
 
-   ::
+      export JAVA_HOME=/opt/homebrew/opt/openjdk
 
-      cmake -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_Fortran_COMPILER=gfortran -D BOOST_ROOT:PATH=/usr/local -D DAKOTA_HAVE_MPI:BOOL=TRUE -D HAVE_QUESO:BOOL=TRUE -D DAKOTA_HAVE_GSL:BOOL=TRUE -D DAKOTA_HAVE_HDF5:BOOL=TRUE ../source
+4. Sample basic build (from the build directory)::
 
+      cmake \
+        -D CMAKE_Fortran_COMPILER=gfortran \
+        -D BOOST_ROOT=/opt/homebrew/Cellar/boost@1.85/1.85.0_3 \
+        -D DAKOTA_HAVE_MPI=ON \
+        -D DAKOTA_HAVE_HDF5=ON \
+        -D HDF5_ROOT=/opt/homebrew/Cellar/hdf5/2.2.0 \
+        -D DAKOTA_HAVE_GSL=ON \
+        -D GSL_ROOT_DIR=/opt/homebrew/Cellar/gsl/2.8 \
+        /path/to/dakota/source
 
-
-**Verified August 2020 (probably on OS X 10.15 Catalina):**
-
-Follow the instructions on the homebrew website to install the
-homebrew package manager.
-
-- Install the desired version of gcc from homebrew::
-
-     brew install gcc@7
-
-Boost:
-
-- Download a source package for Boost >= 1.70 and unpack it someplace.
-- Follow the instructions on the Boost website to build Boost.Build.
-- Create ~/user-config.jam with the following in it. (Switch gcc-7 to the desired version, if different)::
-
-     using darwin : : gcc-7 : <cxxflags>"-std=c++11" ;
-
-- At the top of the boost source directory, invoke b2 with the following options, making sure to replace/set ``$INSTALL_PATH`` and ``$BUILD_PATH`` to something convenient::
-
-     b2 link=static --without-python define=_GLIBCXX_USE_CXX11_ABI=1 --prefix=$INSTALL_PATH --build-dir=$BUILD_PATH install
+   Adjust the Cellar version numbers to match what Homebrew installed
+   (``brew info boost@1.85`` etc. will show the installed path).
+   CMake will use system Apple Clang for C and C++ by default.
+   Linear algebra is satisfied by the system VecLib/Accelerate framework.
 
 
-HDF5::
-
-   export CXX=<homebrew C++ compiler>
-   export CC=<homebrew C compiler>
-   export CXXFLAGS='-std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1'
-   ./configure --enable-cxx --prefix=<install location>
-   make install
-
-
-.. note::
-
-   When building Dakota with C++11, CMake
-   ``-D_GLIBCXX_USE_CXX11_ABI=1`` by default. You can see this by
-   running `make VERBOSE=1`. This define is `explained here
-   <https://gcc.gnu.org/onlinedocs/libstdc++/manual/using_dual_abi.html>`_. The
-   above configuration produces a compatible Boost build.
-
-   Alternately, one might be able to explicitly disable this by
-   adding ``-D_GLIBCXX_USE_CXX11_ABI=0`` to ``CMAKE_CXX_FLAGS``; CMake
-   is smart enough to pass that option to the compiler only once, with
-   it set to 0. Which of these is the best approach, building with the
-   define turned on or off, is currently unclear. Things just need to be
-   consistent.
-
-.. attention::
-
-   The following details for OS X 12.12 are outdated but serve an archival
-   role for providing hints for building on Mac OS X more generally.
-
-**Verified on OS X 10.12:** All homebrew approach. 
-
-1. Follow the instructions on the homebrew website to install the
-   homebrew package manager.
-
-2. Install gcc@5, which includes all needed compilers, with the
-   command
-
-   ::
-
-      brew install gcc@5
-
-3. Install CMake with the command
-
-   ::
-
-      brew install cmake
-
-4. Install Boost 1.55. It is necessary to instruct brew to build Boost
-   from source using the gcc-5 compiler.
-
-   ::
-
-      brew install --build-from-source --cc=gcc-5 boost@1.55
-
-5. Optional (needed for message-passing parallelism): Install OpenMPI
-   1.6, building it from source, too.
-
-   ::
-
-      brew install --build-from-source --cc=gcc-5 open-mpi@1.6
-
-6. Optional (needed to use bayes_calibration queso): GSL 1.16 from
-   source.
-
-   ::
-   
-      brew install --build-from-source --cc=gcc-5 gsl@1.16
-
-
-**Verified on OS X 10.9 -- 10.12:** CMake from DMG, XCode, GCC
-compilers from http://hpc.sourceforge.net. Use them to build Boost,
-OpenMPI, and GSL from source.
-
-
-.. _devenv-windows:
-
--------
-Windows
--------
-
-We regularly compile 64-bit Dakota binaries on Windows 10 64-bit with
-the following tools:
-
-- CMake: install using Windows installer from http://cmake.org
-- Microsoft Visual Studio Community 2019, update 11 (version 16.11)
-- The Intel Fortran Compiler from the Visual Studio Marketplace.
-- Python 3.10.6 
-- Strawberry Perl 5.32.1.1
-- Eclipse Temurin JDK 11 (LTS) HotSpot
-
-And packages:
-
-- BLAS/LAPACK: reference LAPACK 3.10.1 built statically with
-  MSVS/Intel Fortran, e.g., ``cmake -G "Visual Studio 16 2019" -A
-  x64 -D BUILD_SHARED_LIBS=FALSE``
-- Boost 1.71.0 binary package for MSVC 14.2
-- HDF5 1.10.8 built statically with MSVS
