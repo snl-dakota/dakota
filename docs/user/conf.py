@@ -35,7 +35,7 @@ author = 'Sandia National Laboratories'
 # something like 2.6.
 #
 # For Dakota this will be substituted at build time by CMake
-version = '6.24'
+version = '7.0'
 
 # The full project version, used as the replacement for |release| and
 # e.g. in the HTML templates. For example, for the Python
@@ -43,7 +43,7 @@ version = '6.24'
 #
 # For Dakota this will be substituted at build time by CMake, and may
 # include an appended stable '+'
-release = '6.24.0+'
+release = '7.0.0'
 
 
 # -- General configuration ---------------------------------------------------

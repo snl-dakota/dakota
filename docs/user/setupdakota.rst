@@ -224,6 +224,39 @@ Build from Source Code (Advanced)
 
 For custom installations, :ref:`download and build Dakota from source <compiling-main>`.
 
+.. _setupdakota-python:
+
+==================
+Python Environment
+==================
+
+Dakota's pre-built binaries include several compiled Python extension modules:
+
+- ``dakota.environment`` — Run Dakota studies using an input file
+- ``dakota.study`` — Full :ref:`Python API <library-api>`
+- ``dakota.surrogates`` — Python interface to the surrogates module
+- ``dakota.ext_method`` — external Python method support
+
+The above RHEL8, RHEL9, and macOS downloads for release 7.0 are compiled against **Python 3.13** 
+and will only load in a Python 3.13 interpreter. (Our Windows binaries currently are not distributed
+with full Python support.) If your system Python is a different version, you
+will need to create a dedicated Python 3.13 environment.
+`Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ is a convenient
+way to do this on any platform::
+
+   # Download and install Miniconda, then:
+   conda create -n dakota python=3.13
+   conda activate dakota
+
+With the environment active, install any additional packages you need.
+To use ``dakota.study``, Pydantic >= 2.12 is required::
+
+   pip install "pydantic>=2.12"
+
+Then set ``PYTHONPATH`` to include Dakota's Python directory as described in
+:ref:`Setting Your Environment <setupdakota-environment>`, or use the
+``install-python`` target if you built from source.
+
 .. _setupdakota-environment:
 
 ========================
