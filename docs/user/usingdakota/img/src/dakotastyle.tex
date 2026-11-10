@@ -1,0 +1,59 @@
+% Shared style for Dakota documentation figures.
+%
+% Each figure in this folder is a standalone document that starts with
+%   \documentclass[tikz,border=6pt]{standalone}
+%   \input{dakotastyle}
+% Change colors, fonts and node styles here, not in individual figures.
+%
+% Figures show block and keyword NAMES only, never JSON or freeform syntax,
+% so they stay valid for both input formats.
+%
+% Keep text at \normalsize or larger: figures are displayed about 700 px
+% wide, and smaller text becomes hard to read.
+
+\usepackage[T1]{fontenc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{positioning,fit,arrows.meta,calc,backgrounds}
+
+% Reproducible PDFs: no random trailer ID (render_figures.sh also pins dates).
+\pdftrailerid{}
+
+% ---- Colors --------------------------------------------------------------
+\definecolor{dakblue}{HTML}{1F5A96}   % Dakota blocks and arrows
+\definecolor{dakfill}{HTML}{E8F0F8}   % Dakota block fill
+\definecolor{envline}{HTML}{8C8C8C}   % grouping outlines (environment, driver)
+\definecolor{usercode}{HTML}{B5651D}  % things the user provides
+\definecolor{userfill}{HTML}{FBEFE3}  % fill for user-provided things
+\definecolor{fileline}{HTML}{6B6B6B}  % files
+\definecolor{textgray}{HTML}{555555}  % secondary labels
+
+% ---- Node and arrow styles ---------------------------------------------------
+\tikzset{
+  % A Dakota block or component (Method, Model, ...).
+  blk/.style={draw=dakblue, fill=dakfill, thick, rounded corners=3pt,
+              minimum width=26mm, minimum height=10mm, align=center,
+              font=\bfseries},
+  % Something the user writes or owns (simulation, analysis driver steps).
+  user/.style={draw=usercode, fill=userfill, thick, rounded corners=3pt,
+               minimum width=26mm, minimum height=10mm, align=center},
+  % A file, drawn as a page with a folded corner.
+  file/.style={draw=fileline, fill=white, thick, align=center,
+               minimum width=27mm, minimum height=12mm, inner xsep=5mm, inner ysep=4pt,
+               path picture={
+                 \fill[white] (path picture bounding box.north east)
+                   ++(-3mm,0) -- ++(3mm,0) -- ++(0,-3mm) -- cycle;
+                 \draw[fileline, thick] (path picture bounding box.north east)
+                   ++(-3mm,0) -- ++(0,-3mm) -- ++(3mm,0);
+               }},
+  % A dashed outline that groups other nodes; label it with "label=above:...".
+  group/.style={draw=envline, dashed, thick, rounded corners=8pt,
+                inner sep=5mm},
+  grouplabel/.style={font=\itshape, text=envline},
+  % Arrows.
+  arr/.style={-{Stealth[length=2.5mm]}, thick, dakblue},
+  userarr/.style={-{Stealth[length=2.5mm]}, thick, usercode},
+  % Text placed along an arrow.
+  lbl/.style={font=\normalsize, text=black, fill=white, inner sep=2pt},
+  note/.style={font=\itshape, text=textgray, align=center},
+}

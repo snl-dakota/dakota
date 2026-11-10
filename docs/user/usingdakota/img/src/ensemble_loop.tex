@@ -1,0 +1,40 @@
+% ensemble_loop: Dakota runs an ensemble of a black-box simulation.
+% Dakota sends variable values, the simulation returns responses, and the
+% table shows the ensemble that builds up (Rosenbrock, as in the tutorial's
+% rosen_multidim study: an 8 x 8 partition grid on [-2, 2], 81 runs).
+\documentclass[tikz,border=6pt]{standalone}
+\input{dakotastyle}
+
+\begin{document}
+\begin{tikzpicture}
+
+  \node[blk, minimum width=34mm, minimum height=22mm] (dakota)
+    {Dakota\\[2pt]{\normalfont chooses values,}\\{\normalfont analyzes results}};
+  \node[user, minimum width=34mm, minimum height=22mm, right=40mm of dakota] (sim)
+    {\textbf{Your simulation}\\[2pt](black box)};
+
+  \draw[arr] ([yshift=5mm]dakota.east) --
+    node[above, font=\normalsize] {variables in}
+    node[below, font=\normalsize] {x1, x2}
+    ([yshift=5mm]sim.west);
+  \draw[userarr] ([yshift=-5mm]sim.west) --
+    node[below, font=\normalsize] {responses out}
+    node[above, font=\normalsize] {f}
+    ([yshift=-5mm]dakota.east);
+
+  % The ensemble that builds up, one row per run.
+  \node[below=10mm of $(dakota.south)!0.5!(sim.south)$, anchor=north,
+        draw=fileline, thick, fill=white, inner sep=3pt] (table) {%
+    \renewcommand{\arraystretch}{1.15}%
+    \begin{tabular}{r r r r}
+      \textbf{run} & \textbf{x1} & \textbf{x2} & \textbf{f} \\ \hline
+      1  & \textminus2.0 & \textminus2.0 & 3609.0 \\
+      2  & \textminus1.5 & \textminus2.0 & 1812.5 \\
+      3  & \textminus1.0 & \textminus2.0 &  904.0 \\
+      \multicolumn{4}{c}{$\vdots$} \\
+      81 &  2.0 &  2.0 &  401.0 \\
+    \end{tabular}};
+  \node[note, above=1mm of table] {one row per run: the ensemble};
+
+\end{tikzpicture}
+\end{document}

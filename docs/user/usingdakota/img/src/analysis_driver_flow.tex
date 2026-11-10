@@ -1,0 +1,42 @@
+% analysis_driver_flow: what an analysis driver does in one evaluation,
+% shown for the black-box Rosenbrock example used in the tutorial.
+% Dakota writes a parameters file; the analysis driver pre-processes
+% (ros.template + dprepro -> ros.in), runs the code (rosenbrock_bb.py) and
+% post-processes (reads f from ros.out) into a results file that Dakota reads.
+% Replaces docs/user/usingdakota/img/CouplingSimulations1.png.
+\documentclass[tikz,border=6pt]{standalone}
+\input{dakotastyle}
+
+\begin{document}
+\begin{tikzpicture}[node distance=7mm]
+
+  % The analysis driver's three steps.
+  \node[user, minimum width=58mm, minimum height=14mm] (pre)
+    {\textbf{1. Pre-process}\\\texttt{ros.template} + dprepro \textrightarrow{} \texttt{ros.in}};
+  \node[user, minimum width=58mm, minimum height=14mm, below=of pre] (run)
+    {\textbf{2. Run your code}\\\texttt{rosenbrock\_bb.py}};
+  \node[user, minimum width=58mm, minimum height=14mm, below=of run] (post)
+    {\textbf{3. Post-process}\\read f from \texttt{ros.out}};
+  \draw[userarr] (pre) -- (run);
+  \draw[userarr] (run) -- (post);
+
+  \begin{scope}[on background layer]
+    \node[group, fit=(pre)(post), label={[grouplabel]above:Analysis driver}]
+      (driver) {};
+  \end{scope}
+
+  % Files Dakota exchanges with the analysis driver.
+  \node[file, left=12mm of driver.west |- pre, anchor=east] (params)
+    {Parameters\\file};
+  \node[file, right=12mm of driver.east |- post, anchor=west] (results)
+    {Results\\file};
+  \draw[userarr] (params) -- (pre);
+  \draw[userarr] (post) -- (results);
+
+  % Dakota.
+  \node[blk, minimum width=34mm, above=16mm of driver.north] (dakota) {Dakota};
+  \draw[arr] (dakota.west) -| node[pos=0.25, above, font=\normalsize] {writes} (params.north);
+  \draw[arr] (results.north) |- node[pos=0.75, above, font=\normalsize] {reads} (dakota.east);
+
+\end{tikzpicture}
+\end{document}
