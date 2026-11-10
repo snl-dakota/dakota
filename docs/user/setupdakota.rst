@@ -207,7 +207,7 @@ Installing for Windows
 
 Extract archive file into suitable install location, e.g. C:\\Dakota using the Windows extract utility.
 
-- In Windows Explorer window, highight Dakota.<release>.<platform>.zip file.
+- In Windows Explorer window, highlight Dakota.<release>.<platform>.zip file.
 - Right click and select "Extract All"
 - Select a destination, e.g. C:\\Dakota, and click the Extract button. In the instructions below, %dest_dir% refers to this destination directory. 
 

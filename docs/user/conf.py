@@ -26,7 +26,7 @@ from lexer.dakota import DakotaLexer
 
 # -- Project information -----------------------------------------------------
 
-project = 'dakota'
+project = 'Dakota'
 copyright = '2026, Sandia National Laboratories'
 author = 'Sandia National Laboratories'
 
