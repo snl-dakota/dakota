@@ -5,6 +5,7 @@ Miscellaneous
    :maxdepth: 1
    
    help
+   glossary
    aboutteam
    contributing
    contributors
