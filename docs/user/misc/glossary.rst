@@ -126,6 +126,12 @@ links to the page that covers the topic in depth.
       :term:`surrogates <surrogate>` or nest studies. See :dakkw:`model` and
       :ref:`models:main`.
 
+   outer-loop analysis
+      An analysis that runs a simulation many times, with Dakota choosing the
+      inputs for each run and analyzing the results, such as optimization,
+      uncertainty quantification, sensitivity analysis or calibration. See
+      :ref:`aboutdakota-main`.
+
    parameters file
       The file Dakota writes for each :term:`evaluation` through a
       :term:`fork interface`. It holds the current :term:`variables` values

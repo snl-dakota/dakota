@@ -7,6 +7,7 @@ Miscellaneous
    help
    glossary
    aboutteam
+   history
    contributing
    contributors
    license
