@@ -10,7 +10,7 @@ while also providing a more structured and machine-readable and writable alterna
 The JSON schema (that is, specification of the allowed structure and content of JSON input files)
 is defined by a set of Pydantic models, which are documented in :ref:`pydantic-docs`.
 It is not necessary to understand the models to use the JSON format. Most users will find it
-more helpful to refer this page and to Dakota's keyword reference documentation when constructing
+more helpful to refer to this page and to Dakota's keyword reference documentation when constructing
 JSON input files.
 
 Example JSON Input
@@ -104,7 +104,7 @@ A JSON format input file must contain a single object. As specified in the
   method configuration objects.
 * an optional ``model`` key (line 13), whose value is an array of length 0
   or more of model configuration objects.
-* required ``interface``,``responses``, and ``interface``  keys (lines 18, 30, 45),
+* required ``interface``, ``responses``, and ``variables`` keys (lines 18, 30, 45),
   whose values are arrays of length 1 or more of configuration objects for those
   blocks
 
@@ -114,8 +114,8 @@ Leaf Keywords
 ~~~~~~~~~~~~~
 
 Keywords that have no children ("leaf" keywords) receive
-a constant ``true`` argument. In the exapmle input in the
-preceeding section, they keys ``analytic_gradients`` (line 33) and
+a constant ``true`` argument. In the example input in the
+preceding section, the keys ``analytic_gradients`` (line 33) and
 ``no_hessians`` (line 35) are instances of this.
 
 Empty Objects
@@ -139,7 +139,7 @@ unambiguous. In the example, ``gradient_type`` (line 32) and ``hessian_type`` (l
 are examples of anchor keywords.
 
 In the :ref:`Keyword Reference <keyword-reference-area>`, `JSON Group Keys`
-are documented in each keywords child keyword table.
+are documented in each keyword's child keyword table.
 
 .. _`jsoninput:argumentkeys`:
 
@@ -166,7 +166,7 @@ Dakota input.
 Aliases, abbreviations, and other features
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Some of the convenience features supported in freeform inputs files do not
+Some of the convenience features supported in freeform input files do not
 work in JSON. These include keyword aliases (e.g. using `nond_sampling` in place of
 :dakkw:`method-sampling`), abbreviations (e.g. using `analysis_driver` when the full keyword is
 :dakkw:`interface-analysis_drivers`), :ref:`shortcut notations <inputfile_formatting_args>`

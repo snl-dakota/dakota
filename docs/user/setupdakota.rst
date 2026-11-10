@@ -294,8 +294,11 @@ re-build will be needed, not just a fresh install.
 
 .. code-block::
 
-   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui/Dakota_UI_6.19.0.app/Contents/MacOS:$PATH
+   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui/Dakota_UI_<version>.app/Contents/MacOS:$PATH
    export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/share/dakota/Python
+
+Replace ``Dakota_UI_<version>.app`` with the name of the GUI application in your
+installation. To see it, run ``ls $INSTALL_DIR/gui``.
 
 3. Save and close file.
 4. Update changes in your shell window.
@@ -320,8 +323,11 @@ re-build will be needed, not just a fresh install.
 
 .. code-block::
 
-   set path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $INSTALL_DIR/gui/Dakota_UI_6.19.0.app/Contents/MacOS $path)
+   set path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $INSTALL_DIR/gui/Dakota_UI_<version>.app/Contents/MacOS $path)
    setenv PYTHONPATH "${PYTHONPATH}:${INSTALL_DIR}/share/dakota/Python"
+
+Replace ``Dakota_UI_<version>.app`` with the name of the GUI application in your
+installation. To see it, run ``ls $INSTALL_DIR/gui``.
 
 3. Save and close file.
 4. Update changes in your shell window.

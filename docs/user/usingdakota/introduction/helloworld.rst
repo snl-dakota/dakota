@@ -17,7 +17,7 @@ First Steps
 
 .. code-block::
 
-   dakota -i rosen multidim.in -o rosen multidim.out > rosen multidim.stdout
+   dakota -i rosen_multidim.in -o rosen_multidim.out > rosen_multidim.stdout
 
 .. _helloworld-results:
 
@@ -30,7 +30,9 @@ Dakota outputs a large amount of information to help users track progress. Four 
 1. The **screen output** has been redirected to the file ``rosen_multidim.stdout``. The contents are messages from Dakota and notes about the progress of the iterator (i.e. method/algorithm).
 2. The **output file** ``rosen_multidim.out`` contains information about the function evaluations.
 3. ``rosen_multidim.dat`` is created due to the specification of a **tabular data file.** This summarizes the variables and responses for each function evaluation.
-4. ``dakota.rst`` is a **restart file**. If a Dakota analysis is interrupted, it can be often be restarted without losing all progress. Dakota has some data processing capabilities for output analysis. The output file will contain the relevant results. In this case, the output file has details about each of the 81 function evaluations. For more advanced or customized data processing or visualization, the tabular data file can be imported into another analysis tool.
+4. ``dakota.rst`` is a **restart file**. If a Dakota analysis is interrupted, it can often be restarted without losing all progress.
+
+Dakota has some data processing capabilities for output analysis. The output file will contain the relevant results. In this case, the output file has details about each of the 81 function evaluations. For more advanced or customized data processing or visualization, the tabular data file can be imported into another analysis tool.
 
 =========
 What now?
