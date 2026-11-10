@@ -18,90 +18,41 @@ Dakota Input File
    inputfile/inputstodakota
    inputfile/inputspec   
 
-.. note::
-   
-   If you are looking for video resources on Dakota's input file format, :ref:`click here <inputfile-videos>`.
+For an introduction to the six blocks of an input file and how they fit
+together, start with :ref:`studyanatomy-main`. The pages listed above cover
+each part of the input file in depth, and the two input formats,
+:ref:`JSON <jsoninput>` and :ref:`freeform <inputfile_formatting_main>`, have
+a page each. For video resources on the input file, see
+:ref:`inputfile-videos`.
 
-There are six specification blocks that may appear in Dakota input files. These are identified in the input file using the following
-keywords: variables, interface, responses, model, method, and environment. While, these keyword blocks can appear in any
-order in a Dakota input file, there is an inherent relationship that ties them together. The simplest form of that relationship is
-shown in :numref:`inputfile:figure01`:
+==================
+The six blocks
+==================
 
-.. figure:: img/InputBlocks.png
-   :name: inputfile:figure01
-   :alt: Relationship between the six blocks, for a simple study.
-   :width: 400
-   :align: center
-   
-   Relationship between the six blocks, for a simple study.
+- **Environment** (optional, at most one): settings for the whole study, such
+  as tabular data output (:dakkw:`environment-tabular_data`), Dakota's
+  graphical output (:dakkw:`environment-graphics`), and, in advanced studies,
+  the method that runs first (:dakkw:`environment-top_method_pointer`). See
+  :dakkw:`environment`.
+- **Method** (at least one): the algorithm and its options. Several method
+  blocks can appear in :ref:`advanced studies <adv_meth>`. See
+  :ref:`studytypes-main` and :dakkw:`method`.
+- **Model** (optional in simple studies): how variables are mapped through an
+  interface to responses. Surrogate-based studies and optimization under
+  uncertainty need more than one model. See :ref:`models:main`.
+- **Variables** (at least one): the parameters Dakota varies, classified as
+  design, uncertain or state variables, each continuous or discrete. See
+  :ref:`variables:main`.
+- **Interface** (at least one): how Dakota runs each evaluation, either a
+  function linked into Dakota (``direct``) or an external analysis driver run
+  with ``fork`` or ``system``. See :ref:`interfaces:main`,
+  :ref:`couplingtosimulations-main` and :ref:`advint`.
+- **Responses** (at least one): the responses returned to Dakota (objective
+  functions, calibration terms or response functions), any constraints, and
+  whether derivatives are available. See :ref:`responses:main`.
 
-It can be summarized as follows: **In each iteration of its algorithm, a method block requests a variables-to-responses mapping from its model, which the model fulfills through an interface.**
-
-.. literalinclude:: samples/rosen_multidim.in
-   :language: dakota
-   :tab-width: 2
-   :caption: Rosenbrock 2-D parameter study example: the Dakota input file.
-   :name: tutorial:rosenbrock_multidim
-
-As a concrete example, a simple Dakota input file, rosen_multidim.in, is shown above in :numref:`tutorial:rosenbrock_multidim`, for a two-dimensional
-parameter study on Rosenbrock’s function. This input file will be used to describe the basic format and syntax used in all
-Dakota input files.
-
-.. note::
-
-   To see the results of this study and more, consult the :ref:`Examples section <examples-gettingstarted-rosenbrock>`.
-   
-.. note::
-
-   While most Dakota analyses satisfy the relationship where a single method runs a single model, :ref:`advanced cases are possible <adv_meth>`.
-
-The first block of the input file is the **environment block.** This keyword block is used to specify the
-general Dakota settings such as Dakota’s graphical output (via the graphics flag) and the tabular data output (via the
-tabular data keyword). In advanced cases, it also identifies the top method pointer that will control the Dakota
-study. The environment block is optional, and at most one such block can appear in a Dakota input file.
-
-The **method block** of the input file specifies which iterative method Dakota will employ and associated method options. The
-keyword multidim parameter study in :numref:`tutorial:rosenbrock_multidim` calls for a multidimensional parameter study, while the keyword
-partitions specifies the number of intervals per variable (a method option). In this case, there will be eight intervals (nine
-data points) evaluated between the lower and upper bounds of both variables (bounds provided subsequently in the variables
-section), for a total of 81 response function evaluations. At least one method block is required, and multiple blocks may appear
-in Dakota input files for advanced studies.
-
-The :ref:`model block <models:main>` of the input file specifies the model that Dakota will use. A model provides the logical unit for determining
-how a set of variables is mapped through an interface into a set of responses when needed by an iterative method. In the
-default case, the model allows one to specify a single set of variables, interface, and responses. The model block is optional in
-this simple case. Alternatively, it can be explicitly defined as in :numref:`tutorial:rosenbrock_multidim`, where the keyword single specifies the use of
-a single model in the parameter study. If one wishes to perform more sophisticated studies such as surrogate-based analysis
-or optimization under uncertainty, the logical organization specified in the model block becomes critical in informing Dakota
-on how to manage the different components of such studies, and multiple model blocks are likely needed.
-
-The :ref:`variables block <variables:main>` of the input file specifies the number, type, and characteristics of the parameters that will be varied
-by Dakota. The variables can be classified as design variables, uncertain variables, or state variables. Design variables are
-typically used in optimization and calibration, uncertain variables are used in UQ and sensitivity studies, and state variables are
-usually fixed. In all three cases, variables can be continuous or discrete, with discrete having real, integer, and string subtypes.
-The variables section shown in :numref:`tutorial:rosenbrock_multidim`
-specifies that there are two continuous design variables. The sub-specifications for continuous design variables provide the
-descriptors “x1” and “x2” as well as lower and upper bounds for these variables. The information about the variables is
-organized in column format for readability. So, both variables x1 and x2 have a lower bound of -2.0 and an upper bound of
-2.0. At least one variables block is required, and multiple blocks may appear in Dakota input files for advanced studies.
-
-The :ref:`interface block <interfaces:main>` of the input file specifies the simulation code that will be used to map variables into responses as well
-as details on how Dakota will pass data to and from that code. In this example, the keyword direct is used to indicate
-the use of a function linked directly into Dakota, and data is passed directly between the two. The name of the function is
-identified by the analysis driver keyword. Alternatively, fork or system executions can be used to invoke instances
-of a simulation code that is external to Dakota as explained :ref:`here <couplingtosimulations-main>` and :ref:`here <advint>`.
-In this case, data is passed between Dakota and the simulation via text files. At least one interface block is required, and
-multiple blocks may appear in Dakota input files for advanced studies.
-
-The :ref:`responses block <responses:main>` of the input file specifies the types of data that the interface will return to Dakota. They are categorized
-primarily according to usage. Objective functions are used in optimization, calibration terms in calibration, and response
-functions in sensitivity analysis and UQ. For the example shown in :numref:`tutorial:rosenbrock_multidim`, the assignment ``response_functions = 1``
-indicates that there is only one response function. The responses block can include additional information returned by the
-interface. That includes constraints and derivative information. In this example, there are no
-constraints associated with Rosenbrock’s function, so the keywords for constraint specifications are omitted. The keywords
-no gradients and no hessians indicate that no derivatives will be provided to the method; none are needed for a
-parameter study. At least one responses block is required, and multiple blocks may appear in Dakota input files for advanced
-studies.
+To see a complete example input file and its results, see
+:ref:`examples-gettingstarted-rosenbrock`.
 
 .. _inputfile-videos:
 

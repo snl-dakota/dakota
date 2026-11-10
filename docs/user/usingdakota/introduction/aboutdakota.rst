@@ -33,7 +33,7 @@ statistics.
    Each run adds a row to the ensemble containing a given input--output pair.
 
 Any code that takes inputs and produces outputs can be interfaced with Dakota:
-black-box executables with input files, Python scripts, MATLAB functions, etc.
+black-box executables with input files, Python scripts, Matlab functions, etc.
 
 =====================================
 Build one interface, use many methods
@@ -133,8 +133,4 @@ in fields including defense, climate modeling, materials, nuclear power and
 renewable energy. Read more in :ref:`Dakota History and Motivation
 <history-main>`.
 
-..
-   TODO (Step 6): point "Next" at :ref:`studyanatomy-main` once that page
-   exists.
-
-**Next:** :ref:`helloworld-main`
+**Next:** :ref:`studyanatomy-main`
