@@ -1,0 +1,56 @@
+% information_flow: how information moves through a Dakota study.
+% The input file (JSON or freeform format) defines the blocks; inside the
+% Environment, the Method repeatedly asks the Model to map Variables through
+% the Interface to Responses; Dakota writes console, tabular and restart
+% output.
+\documentclass[tikz,border=6pt]{standalone}
+\input{dakotastyle}
+
+\begin{document}
+\begin{tikzpicture}[node distance=8mm and 6mm]
+
+  % Input file.
+  \node[file, minimum width=56mm] (input)
+    {\textbf{Dakota input file}\\(JSON or freeform format)};
+
+  % Method.
+  \node[blk, below=16mm of input] (method) {Method};
+
+  % Model, containing Variables -> Interface -> Responses.
+  \node[blk, below=20mm of method] (interface) {Interface};
+  \node[blk, left=of interface] (variables) {Variables};
+  \node[blk, right=of interface] (responses) {Responses};
+  \draw[arr] (variables) -- (interface);
+  \draw[arr] (interface) -- (responses);
+  \begin{scope}[on background layer]
+    \node[draw=dakblue, thick, fill=white, rounded corners=6pt, inner sep=4mm,
+          fit=(variables)(responses), label={[font=\bfseries, anchor=north,
+          yshift=-1mm]north:Model}, yshift=3mm, inner ysep=7mm] (model) {};
+  \end{scope}
+
+  % Method <-> Model: one evaluation request and its result.
+  \draw[arr] ([xshift=-6mm]method.south) --
+    node[left, font=\normalsize] {variable values}
+    ([xshift=-6mm]method.south |- model.north);
+  \draw[arr] ([xshift=6mm]method.south |- model.north) --
+    node[right, font=\normalsize] {response values}
+    ([xshift=6mm]method.south);
+
+  % Environment around everything Dakota runs.
+  \begin{scope}[on background layer]
+    \node[group, fit=(method)(model), label={[grouplabel, anchor=south west, xshift=3mm]north west:Environment}]
+      (env) {};
+  \end{scope}
+
+  \draw[arr] (input) -- (input |- env.north);
+
+  % Outputs.
+  \node[file, below=14mm of env.south, anchor=north] (tabular)
+    {Tabular\\data file};
+  \node[file, left=10mm of tabular] (console) {Console\\output};
+  \node[file, right=10mm of tabular] (restart) {Restart\\file};
+  \foreach \o in {console, tabular, restart}
+    \draw[arr] (env.south -| \o.north) -- (\o.north);
+
+\end{tikzpicture}
+\end{document}

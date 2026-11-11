@@ -51,7 +51,7 @@ set of manuals, this set of links may help you find what you're looking for...
 - Chapter 2: Dakota Tutorial
 
   - :ref:`2.1: Quickstart <helloworld-main>`
-  - :ref:`2.2: Dakota Input File Format <inputfile-main>`
+  - :ref:`2.2: Dakota Input File Format <studyanatomy-main>`
   - :ref:`2.3: Examples <examples-gettingstarted-main>`
   - :ref:`2.4: Dakota Command-Line Options <command-line-main>`
 

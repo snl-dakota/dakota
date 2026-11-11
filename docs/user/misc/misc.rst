@@ -5,7 +5,9 @@ Miscellaneous
    :maxdepth: 1
    
    help
+   glossary
    aboutteam
+   history
    contributing
    contributors
    license

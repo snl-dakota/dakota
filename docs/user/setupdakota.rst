@@ -1,8 +1,8 @@
 .. _setupdakota-main:
 
-"""""""""""""""
-Getting Started
-"""""""""""""""
+"""""""""""""""""""""""""""
+Download and Install Dakota
+"""""""""""""""""""""""""""
 
 .. _setupdakota-download:
 
@@ -207,7 +207,7 @@ Installing for Windows
 
 Extract archive file into suitable install location, e.g. C:\\Dakota using the Windows extract utility.
 
-- In Windows Explorer window, highight Dakota.<release>.<platform>.zip file.
+- In Windows Explorer window, highlight Dakota.<release>.<platform>.zip file.
 - Right click and select "Extract All"
 - Select a destination, e.g. C:\\Dakota, and click the Extract button. In the instructions below, %dest_dir% refers to this destination directory. 
 
@@ -327,8 +327,11 @@ re-build will be needed, not just a fresh install.
 
 .. code-block::
 
-   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui/Dakota_UI_6.19.0.app/Contents/MacOS:$PATH
+   export PATH=$INSTALL_DIR/bin:$INSTALL_DIR/share/dakota/test:$INSTALL_DIR/gui/Dakota_UI_<version>.app/Contents/MacOS:$PATH
    export PYTHONPATH=$PYTHONPATH:$INSTALL_DIR/share/dakota/Python
+
+Replace ``Dakota_UI_<version>.app`` with the name of the GUI application in your
+installation. To see it, run ``ls $INSTALL_DIR/gui``.
 
 3. Save and close file.
 4. Update changes in your shell window.
@@ -353,8 +356,11 @@ re-build will be needed, not just a fresh install.
 
 .. code-block::
 
-   set path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $INSTALL_DIR/gui/Dakota_UI_6.19.0.app/Contents/MacOS $path)
+   set path=($INSTALL_DIR/bin $INSTALL_DIR/share/dakota/test $INSTALL_DIR/gui/Dakota_UI_<version>.app/Contents/MacOS $path)
    setenv PYTHONPATH "${PYTHONPATH}:${INSTALL_DIR}/share/dakota/Python"
+
+Replace ``Dakota_UI_<version>.app`` with the name of the GUI application in your
+installation. To see it, run ``ls $INSTALL_DIR/gui``.
 
 3. Save and close file.
 4. Update changes in your shell window.

@@ -32,6 +32,7 @@ before delving into this section.
    :maxdepth: 1
    
    interfaces/simulationinterfaces
+   interfaces/analysisdriverdeepdive
    interfaces/buildingblackboxinterface
    interfaces/simulationinterfacecomponents
    interfaces/simulationfilemanagement

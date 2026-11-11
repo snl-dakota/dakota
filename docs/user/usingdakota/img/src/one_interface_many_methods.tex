@@ -1,0 +1,31 @@
+% one_interface_many_methods: build one interface (an analysis driver) to your
+% simulation, then apply any of Dakota's method families through it.
+\documentclass[tikz,border=6pt]{standalone}
+\input{dakotastyle}
+
+\begin{document}
+\begin{tikzpicture}[node distance=4mm]
+
+  % Method families, top to bottom.
+  \node[blk, minimum width=52mm] (ps)  {Parameter studies};
+  \node[blk, minimum width=52mm, below=of ps]  (sa)  {Sensitivity analysis};
+  \node[blk, minimum width=52mm, below=of sa]  (uq)  {Uncertainty quantification};
+  \node[blk, minimum width=52mm, below=of uq]  (opt) {Optimization};
+  \node[blk, minimum width=52mm, below=of opt] (cal) {Calibration};
+
+  \node[group, fit=(ps)(cal), label={[grouplabel]above:Use many methods}] (methods) {};
+
+  % One analysis driver, then the simulation.
+  \node[user, minimum width=30mm, minimum height=14mm, right=22mm of methods]
+    (driver) {\textbf{Analysis}\\\textbf{driver}};
+  \node[note, above=3mm of driver] {Build one interface};
+  \node[user, minimum width=30mm, minimum height=14mm, right=12mm of driver]
+    (sim) {\textbf{Your}\\\textbf{simulation}};
+
+  \foreach \m in {ps, sa, uq, opt, cal}
+    \draw[arr] (\m.east) -- ([xshift=-12mm]driver.west) -- (driver.west);
+
+  \draw[userarr, <->] (driver) -- (sim);
+
+\end{tikzpicture}
+\end{document}
