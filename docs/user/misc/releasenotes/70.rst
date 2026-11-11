@@ -12,9 +12,8 @@ Study components — methods, models, variables, interfaces — are ordinary
 Python or C++ objects, enabling Dakota to be embedded inside larger
 applications, automation pipelines, and agentic AI workflows. Python bindings
 are provided for nearly all iterators and models, including parameter studies,
-UQ sampling methods, calibration, optimization (including ROL, NOMAD, and
-NOWPAC/SNOWPAC), surrogate-based methods, ensemble surrogates, and
-meta-iterators.
+UQ methods, calibration, optimization, surrogate-based methods, ensemble surrogates, 
+and meta-iterators.
 
 The APIs share the same configuration grammar as JSON input but replace
 pointer-based ``id_*`` / ``*_pointer`` relationships with direct object
