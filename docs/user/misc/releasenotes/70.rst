@@ -46,6 +46,20 @@ tutorial, and Python reference).
 *Documentation:* in the User's Manual.
 
 
+**Highlight: Rewritten Introduction and Tutorial**
+
+The introductory and tutorial sections of the User's Manual have been
+completely rewritten. The new material covers how to run your first Dakota
+study step by step, how to connect your own simulation code as an analysis
+driver, and how the main study types differ, all with examples in both
+JSON and freeform input formats. Existing users will find the restructured
+content easier to navigate; new users get a more direct path from installation
+to a working study.
+
+*Documentation:* :ref:`helloworld-main` and :ref:`couplingtosimulations-main`
+in the User's Manual.
+
+
 **Improvements by Category**
 
 *Interfaces, Input/Output*
