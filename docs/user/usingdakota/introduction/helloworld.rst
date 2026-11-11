@@ -393,10 +393,7 @@ everything else unchanged:
       {
         "method": [
           {
-            "dace": {
-              "sub_method": {
-                "lhs": true
-              },
+            "sampling": {
               "samples": 20,
               "seed": 52983
             }
@@ -409,16 +406,14 @@ everything else unchanged:
    .. code-block:: dakota
 
       method
-        dace
-          lhs
+        sampling
           samples = 20
           seed = 52983
 
 Run Dakota again with the same command as in Part B. Instead of a grid,
-:dakkw:`method-dace` runs a design of experiments: 20 points spread through
-the range of ``x1`` and ``x2`` by Latin hypercube sampling. The new
-``rosen_multidim.dat`` has 20 rows. Fixing the ``seed`` makes the points the
-same each time you run.
+:dakkw:`method-sampling` runs 20 points spread through the range of ``x1``
+and ``x2`` by Latin hypercube sampling. The new ``rosen_multidim.dat`` has 20
+rows. Fixing the ``seed`` makes the points the same each time you run.
 
 You changed the method without touching your code or your analysis driver.
 That is the main idea behind Dakota: build one interface, then use many

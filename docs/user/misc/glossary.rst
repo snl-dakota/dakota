@@ -79,7 +79,7 @@ links to the page that covers the topic in depth.
       :ref:`interfaces:main`.
 
    evaluation concurrency
-      The number of :term:`evaluations <evaluation>` Dakota runs at the same
+      The (maximum) number of :term:`evaluations <evaluation>` Dakota runs at the same
       time. Set with :dakkw:`interface-asynchronous-evaluation_concurrency`
       under :dakkw:`interface-asynchronous`. See :ref:`parallel`.
 

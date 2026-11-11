@@ -291,25 +291,36 @@ ways:
      - Through files
      - Any code in any language. The default, and the focus of this page.
    * - :ref:`Python direct interface <advint:existingdirect:python>`
-     - In memory, as Python lists or NumPy arrays
+     - In memory, via ``Parameters`` and ``Results`` objects
      - Models already written in Python; very many or very fast evaluations,
        where file and process overhead dominates; returning analytic
-       gradients.
+       gradients. Use the ``@python_interface`` decorator from
+       ``dakota.interfacing`` for the friendliest API.
    * - :ref:`Library API <library-api>`
      - In memory, through C++ or Python calls
      - Embedding Dakota in your own application.
 
 With the Python direct interface, Dakota calls a function in your Python
-module, with no parameters or results files. Here is the same Rosenbrock
-function, in a file named ``rosen_direct.py``:
+module, with no parameters or results files. The recommended way to write
+that function is with the ``@python_interface`` decorator from
+``dakota.interfacing``, which passes friendly :class:`Parameters` and
+:class:`Results` objects instead of raw dictionaries. Here is the same
+Rosenbrock function, in a file named ``rosen_direct.py``:
 
 .. code-block:: python
 
-   def rosenbrock(params):
-       """Return Rosenbrock's function for the values Dakota supplies."""
-       x1, x2 = params["cv"]
-       f = 100.0 * (x2 - x1**2)**2 + (1.0 - x1)**2
-       return {"fns": [f]}
+   import dakota.interfacing as di
+
+   @di.python_interface
+   def rosenbrock(params, results):
+       x1 = params["x1"]
+       x2 = params["x2"]
+       results["response_fn_1"].function = 100.0 * (x2 - x1**2)**2 + (1.0 - x1)**2
+       return results
+
+The decorator handles all translation between Dakota's native parameter and
+result dictionaries and the higher-level objects, so your function works
+directly with named variables and named responses.
 
 The interface block names the module and function, and selects ``python``
 instead of ``fork``:
