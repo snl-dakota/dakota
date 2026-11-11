@@ -4,20 +4,31 @@
 JSON Format Input Files
 """""""""""""""""""""""
 
-In addition to Dakota's freeform input file format, studies may be configured using
-JSON format input files. The JSON format is designed to closely mimic the freeform format
-while also providing a more structured and machine-readable and writable alternative.
-The JSON schema (that is, specification of the allowed structure and content of JSON input files)
-is defined by a set of Pydantic models, which are documented in :ref:`pydantic-docs`.
-It is not necessary to understand the models to use the JSON format. Most users will find it
-more helpful to refer to this page and to Dakota's keyword reference documentation when constructing
+A Dakota input file can be written in JSON format. A JSON input file describes
+the same study as a :ref:`freeform input file <inputfile_formatting_main>`:
+the same six blocks and the same keywords, written as nested JSON objects.
+Because JSON is a standard format, scripts and other tools can easily
+generate, read and check Dakota studies written in it. Both formats are fully
+supported. For a side-by-side introduction to the two formats, see
+:ref:`studyanatomy-formats`.
+
+To run a JSON input file, use the ``-json`` command-line option:
+
+.. code-block:: console
+
+   dakota -json study.json
+
+The JSON schema (that is, the specification of the allowed structure and
+content of JSON input files) is defined by a set of Pydantic models, which are
+documented in :ref:`pydantic-docs`. You don't need to understand the models
+to use the JSON format. Most users will find this page and Dakota's
+:ref:`Keyword Reference <keyword-reference-area>` more helpful when writing
 JSON input files.
 
 Example JSON Input
 ------------------
 
-The following example will be used to illustrate some of the important features of Dakota's JSON format,
-including how it differs from the freeform format.
+The following example illustrates the main features of Dakota's JSON format.
 
 
 .. code-block:: json
@@ -106,7 +117,7 @@ A JSON format input file must contain a single object. As specified in the
   or more of model configuration objects.
 * required ``interface``, ``responses``, and ``variables`` keys (lines 18, 30, 45),
   whose values are arrays of length 1 or more of configuration objects for those
-  blocks
+  blocks.
 
 The structure of the overall study is specified by the `DakotaStudy` model.
 
@@ -116,7 +127,7 @@ Leaf Keywords
 Keywords that have no children ("leaf" keywords) receive
 a constant ``true`` argument. In the example input in the
 preceding section, the keys ``analytic_gradients`` (line 33) and
-``no_hessians`` (line 35) are instances of this.
+``no_hessians`` (line 36) are instances of this.
 
 Empty Objects
 ~~~~~~~~~~~~~
@@ -131,12 +142,13 @@ keys are examples.
 Group keys
 ~~~~~~~~~~
 
-In many places where the freeform syntax allows mutually exclusive keyword
-groups, the JSON representation introduces explicit intermediate objects
-(`group keys` or `anchors`) to represent those choices. These do not appear
-in the traditional input format but are required in JSON to make the structure
-unambiguous. In the example, ``gradient_type`` (line 32) and ``hessian_type`` (line 35)
-are examples of anchor keywords.
+Where a study must choose one of several mutually exclusive keywords, the
+JSON format wraps the choice in an intermediate object, called a `group key`
+or `anchor`, that names what is being chosen. Group keys make the structure
+unambiguous. In the example, ``gradient_type`` (line 32) and ``hessian_type``
+(line 35) are group keys: each holds the one gradient or Hessian option the
+study uses. The freeform format has no group keys; there, the chosen keyword
+appears directly.
 
 In the :ref:`Keyword Reference <keyword-reference-area>`, `JSON Group Keys`
 are documented in each keyword's child keyword table.
@@ -146,15 +158,15 @@ are documented in each keyword's child keyword table.
 Argument keys
 ~~~~~~~~~~~~~
 
-In the freeform format, a keyword may both take a literal argument and
-contain child keywords. JSON does not support this pattern directly, so
-the literal argument is represented as a separate child field (an "argument"
-keyword). As a result, some values that appear inline in the traditional format
-become nested fields in JSON.
+Some keywords take a value and also have child keywords. A JSON object can't
+have both a value and children, so the keyword's own value goes in a separate
+child field, called an `argument key`. For example, ``count`` (line 48) holds
+the number of continuous design variables. In the freeform format, the same
+value is written directly after the keyword (``continuous_design = 2``).
 
-An example of an argument keyword is ``count`` (line 40), which denotes the number of
-continuous design variables. In the :ref:`Keyword Reference <keyword-reference-area>`,
-`Argument Keys` appear in the `Specification` section of each keyword's documentation.
+In the :ref:`Keyword Reference <keyword-reference-area>`,
+`Argument Keys` appear in the `Specification` section of each keyword's
+documentation.
 
 Nonfinite numbers
 ~~~~~~~~~~~~~~~~~
@@ -163,28 +175,33 @@ Nonfinite numbers such as `inf` and `nan` are not natively supported
 by JSON. They must be provided as quoted strings ("inf", "nan") in
 Dakota input.
 
-Aliases, abbreviations, and other features
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _`jsoninput:converting`:
+
+Converting Freeform Input Files
+-------------------------------
+
+If you already have freeform input files, Dakota's ``dakota_parser`` tool can
+convert them to JSON.
+
+Using ``dakota_parser``
+~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Begin with a working freeform input file.
+2. Run ``dakota_parser``, located in the ``bin`` folder of the Dakota install,
+   to generate the corresponding JSON:
+   ``dakota_parser <freeform dakota input> --json``
+3. Use the result as a starting point, modifying it as needed. The output
+   includes every setting, with default values filled in for the ones your
+   freeform file left out. You can delete the defaults you don't need, to
+   keep the file short.
+4. Refer to the Keyword Reference and Pydantic documentation to
+   understand and refine specific fields.
+
+Freeform features that JSON doesn't support
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Some of the convenience features supported in freeform input files do not
 work in JSON. These include keyword aliases (e.g. using `nond_sampling` in place of
 :dakkw:`method-sampling`), abbreviations (e.g. using `analysis_driver` when the full keyword is
 :dakkw:`interface-analysis_drivers`), :ref:`shortcut notations <inputfile_formatting_args>`
 such as `N*Value` and `L:S:U` sequences, and input file template pre-processing.
-
-Using ``dakota_parser`` to Bootstrap JSON Input
------------------------------------------------
-
-While it is possible to write JSON input files from scratch, it may sometimes
-be more convenient to start with a working freeform input file and convert it to JSON
-using Dakota's `dakota_parser` tool.
-
-1. Begin with a working traditional input file.
-2. Run `dakota_parser`, located in the `bin` folder of the Dakota install, to
-   generate the corresponding JSON: 
-   ``dakota_parser <freeform dakota input> --json``
-3. Use the result as a starting point, modifying it as needed.
-4. Refer to the Keyword Reference and Pydantic documentation to 
-   understand and refine specific fields.
-
-

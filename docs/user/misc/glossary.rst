@@ -50,7 +50,6 @@ links to the page that covers the topic in depth.
       :ref:`interfaces:direct`.
 
    dprepro
-   pyprepro
       A template processor included with Dakota. It fills a
       :term:`template file` with the variable values from a
       :term:`parameters file`, either from the command line or through the
@@ -147,6 +146,13 @@ links to the page that covers the topic in depth.
       The step of an :term:`analysis driver` that runs before your code. It
       puts the variable values from the :term:`parameters file` into your
       code's input, usually with a :term:`template file` and :term:`dprepro`.
+
+   pyprepro
+      A template processor included with Dakota. It fills in a
+      :term:`template file` with values you give it, and templates can use
+      Python features such as loops and conditionals. :term:`dprepro` uses the
+      same template engine, and also reads Dakota's :term:`parameters file`.
+      See :ref:`interfaces:dprepro-and-pyprepro`.
 
    Python direct interface
       An :term:`interface` in which Dakota calls a function in your Python
