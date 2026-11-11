@@ -420,8 +420,8 @@ exchanges parameter and result values with it through files:
 
 Nothing else in the study changes: the method, variables and responses are
 the same whether Rosenbrock's function is built in or comes from your own
-code. :ref:`couplingtosimulations-main` explains how to write an analysis
-driver.
+code. You'll build and run one in :ref:`helloworld-main`, and
+:ref:`couplingtosimulations-main` explains them in depth.
 
 Learn more: :ref:`interfaces:main`, :dakkw:`interface` keywords.
 
@@ -632,4 +632,4 @@ To see the results of this study, read
 :ref:`examples-gettingstarted-rosenbrock`, or run it yourself in
 :ref:`helloworld-main`.
 
-**Next:** :ref:`couplingtosimulations-main`
+**Next:** :ref:`helloworld-main`

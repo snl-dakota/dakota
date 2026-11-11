@@ -1,8 +1,8 @@
 .. _setupdakota-main:
 
-"""""""""""""""
-Getting Started
-"""""""""""""""
+"""""""""""""""""""""""""""
+Download and Install Dakota
+"""""""""""""""""""""""""""
 
 .. _setupdakota-download:
 
