@@ -13,6 +13,7 @@ Download Dakota
 -----------------
 Command Line Only
 -----------------
+- **7.0.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Linux (RHEL9)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.24.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.23.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.22.0** `macOS`__ | `Windows`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__ 
@@ -23,6 +24,12 @@ Command Line Only
 - **6.17.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Linux (RHEL8)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 - **6.16.0** `macOS`__ | `Windows`__ | `Linux (RHEL7)`__ | `Source (zip)`__ | `Source (tar.gz)`__
 
+.. __: https://github.com/snl-dakota/dakota/releases/download/v7.0.0/dakota-7.0.0-public-darwin.Darwin.arm64-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v7.0.0/dakota-7.0.0-public-windows.Windows.x64-cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v7.0.0/dakota-7.0.0-public-rhel8.Linux.x86_64-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v7.0.0/dakota-7.0.0-public-rhel9.Linux.x86_64-cli.tar.gz
+__ https://github.com/snl-dakota/dakota/releases/download/v7.0.0/dakota-7.0.0-public-src-cli.zip
+__ https://github.com/snl-dakota/dakota/releases/download/v7.0.0/dakota-7.0.0-public-src-cli.tar.gz
 .. __: https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-darwin.Darwin.arm64-cli.tar.gz
 __ https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-windows.Windows.x64-cli.zip
 __ https://github.com/snl-dakota/dakota/releases/download/v6.24.0/dakota-6.24.0-public-rhel8.Linux.x86_64-cli.tar.gz

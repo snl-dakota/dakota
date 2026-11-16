@@ -26,7 +26,7 @@ existing freeform Dakota input to a JSON file that Dakota accepts directly
 with ``dakota -json`` and that can serve as a starting point for a
 Python-based study.
 
-To simplify the API, a few notable chnages were made to Dakota's input
+To simplify the API, a few noteworthy changes were made to Dakota's input
 spec. These changes affect not only the API and JSON input formats, but
 also the freeform format.
 
@@ -36,8 +36,16 @@ necessary to specify ``model global_surrogate``.
 
 Simiarly, ``method hybrid sequential`` was promoted to ``method hybrid_sequential``.
 
-*Enabling / Accessing:* Build Dakota with the ``DAKOTA_PYTHON_STUDY`` CMake
-option enabled.
+*Enabling / Accessing:* 
+
+* Follow the instructions to 
+  :ref:`install a pre-built package <setupdakota-installation>`, including setting
+  your ``PYTHONPATH``. Dakota's compiled Python modules were built using
+  Python 3.13, and compatible only with this Major.minor version.
+
+* Or, build Dakota with the ``DAKOTA_PYTHON_STUDY`` CMake option enabled, and
+  build the ``install-python`` target to install Dakota's Python package into
+  your environment. A minimum of Python 3.10 is required.
 
 *Documentation:* :ref:`library-api` in the User's Manual (construction guide,
 tutorial, and Python reference).
