@@ -34,6 +34,107 @@ namespace Dakota {
 
 \section PydanticSpecOverview Overview
 
+\subsection PydanticSpecOverviewBackground Background: what the Pydantic models replaced
+
+Developers familiar with the previous Dakota input-spec workflow should
+know three things up front:
+
+<ol>
+<li><b>dakota.xml / NIDR is no longer the starting point for input-spec
+    changes.</b>  The Pydantic models in
+    \c dakota/python/dakota/spec are now the canonical specification of
+    Dakota's input grammar.  They serve the same purpose as \c dakota.xml
+    did: defining the hierarchy of Dakota keywords, one-of relationships,
+    expected argument types, constraints on arguments, and mappings from
+    keywords into Dakota's internal representation.  Grammar edits and
+    additions begin here.</li>
+
+<li><b>The Data classes have been replaced by an intermediate
+    representation (IR).</b>  User input is no longer stored as plain
+    member variables (ints, strings, \c vector<double>, etc.) on Data
+    class instances set by keyword handlers.  Instead it is stored in maps
+    keyed by string IR keys (also called ProblemDescDB keys).  The IR
+    plays the same role as the Data classes and is consumed by
+    \c ProblemDescDB in the same way.</li>
+
+<li><b>DAKOTA_GENERATE_JSON_SCHEMA is the new ENABLE_SPEC_MAINT.</b>
+    Configure Dakota with this CMake option turned on to regenerate
+    build artifacts from the Pydantic models.</li>
+</ol>
+
+\subsection PydanticSpecOverviewModels The Pydantic models
+
+A Pydantic model is a Python class whose fields carry type annotations
+and optional metadata.  Pydantic uses these annotations to <em>validate</em>
+a JSON document or nested Python dict: it verifies that the document is
+structurally correct and fills in any missing optional fields with their
+declared defaults.  The result is a validated model instance with a
+complete, type-checked representation of the user's input.
+
+The models for Dakota's input grammar live in \c dakota/python/dakota/spec/.
+They are organized by keyword block:
+<ul>
+<li>\c environment.py &mdash; environment block keywords</li>
+<li>\c method/ &mdash; a sub-package with one module per method
+    (e.g. \c method/sampling.py, \c method/polynomial_chaos.py)</li>
+<li>\c model.py &mdash; model block keywords</li>
+<li>\c variables.py &mdash; variables block keywords</li>
+<li>\c interface.py &mdash; interface block keywords</li>
+<li>\c responses.py &mdash; responses block keywords</li>
+<li>\c shared/ &mdash; mixins and sub-models reused across blocks</li>
+<li>\c base.py &mdash; \c DakotaBaseModel and supporting infrastructure</li>
+</ul>
+
+\subsection PydanticSpecOverviewFlow Information flow
+
+<b>At build time</b> CMake drives two code-generation passes from the
+Pydantic models:
+
+<ol>
+<li>The models are used to export a JSON schema
+    (\c dakota/src/dakota_study_schema.json).  The JSON schema is a
+    portable, language-neutral description of Dakota's input grammar,
+    similar in role to \c dakota.input.nspec.</li>
+
+<li>CMake generates C++ source files for the IR from the JSON schema.
+    These generated files are analogous to \c NIDRProblemDescDB: they
+    contain keyword handlers that populate the IR from validated user
+    input.  Two hand-maintained registry files are also inputs to this
+    step:
+    <ul>
+    <li>\c src/default_overrides_registry.json &mdash; IR key defaults that
+        cannot be derived from the Pydantic models (see
+        \ref PydanticSpecIrDefaults).</li>
+    <li>\c src/default_policy_registry.json &mdash; type-based fallback
+        defaults (zero, false, empty) for IR keys not covered by the
+        other sources.</li>
+    </ul>
+    CMake also generates C++ source files for the freeform input file
+    parser from the JSON schema.</li>
+</ol>
+
+<b>At run time</b> the input parser reads a \c .in file (or accepts JSON
+directly) and produces a validated JSON document.  The validation step
+verifies structure, inserts defaults, and computes derived fields such as
+inferred variable bounds.  IR handlers then walk the validated JSON and
+populate the IR, which \c ProblemDescDB exposes to the rest of Dakota.
+
+\subsection PydanticSpecOverviewWhatToEdit What to edit when updating the input spec
+
+For most grammar changes you will edit only the Pydantic models.  You
+will also need to edit \c src/default_overrides_registry.json if you
+add an IR key whose correct runtime default cannot be inferred from the
+model &mdash; for example, a key that the C++ side initializes to a non-zero
+enum value.  \c src/default_policy_registry.json is for type-wide
+fallback policies and rarely needs touching for individual keyword
+additions.  See \ref PydanticSpecIrDefaults for the full rules.
+
+After editing the models, regenerate the JSON schema and the IR source
+files (configure with \c DAKOTA_GENERATE_JSON_SCHEMA enabled, or run the
+codegen scripts directly; see step 7 of \ref PydanticSpecProcedure).
+
+\subsection PydanticSpecOverviewAbstractions Key abstractions
+
 The Pydantic models in \c dakota/python/dakota/spec constitute the canonical
 specification of Dakota's input grammar. Implement grammar edits and
 additions in these Python models and, where required, provide matching
@@ -445,8 +546,9 @@ typically require additional, handler-specific metadata beyond the generic
 IR defaults ensure a complete runtime IR even when users omit inputs.
 The generator merges three disjoint sources:
 
-- schema-extracted defaults recorded in
-  \c dakota/src/schema_defaults_extracted.json;
+- schema-extracted defaults, derived from \c default and \c x-model-default
+  annotations in the generated JSON schema and recorded in
+  \c schema_defaults_extracted.json;
 - explicit override defaults in
   \c dakota/src/default_overrides_registry.json;
   and
@@ -455,12 +557,38 @@ The generator merges three disjoint sources:
 
 The generator reads these via \c load_schema_defaults(),
 \c load_overrides(), and \c load_policies() and merges them into per-block
-IR contracts. Place
-a default in the Pydantic model when it is a grammar-level default.
-Use \c default_overrides_registry.json when the default is implementation-
-specific or not representable in schema. Use the policy registry for
-ordinary type zero/false/empty defaults. Ensure only one source claims
-an IR key; collisions cause \c generate_ir_tables.py to error.
+IR contracts.
+
+<b>What to edit and what not to:</b>
+\c schema_defaults_extracted.json is a generated file produced by
+\c extract_defaults_from_schema.py from the JSON schema; do not edit it by
+hand.  When you change Pydantic model defaults, re-run
+\c extract_defaults_from_schema.py (or trigger a cmake build) and commit the
+regenerated file.  The cmake build writes it to the binary directory;
+the committed source-tree copy at \c dakota/src/schema_defaults_extracted.json
+serves as a human-readable reference and is kept in sync by developers after
+schema changes.
+
+Note that Pydantic field defaults and IR key defaults are related but distinct
+concepts.  A \c DakotaField \c default or \c default_factory is a
+grammar-level default: it determines what value appears in the validated
+Pydantic model when the user omits that keyword.  An IR key default is what
+Dakota's intermediate representation is initialized to when no user input
+drives a write to that key.  \c extract_defaults_from_schema.py bridges the
+two: it walks the schema's \c default and \c x-model-default annotations
+together with \c x-materialization to derive which IR keys should inherit
+which values from grammar-level defaults.
+
+Use \c default_overrides_registry.json for IR key defaults that the schema
+extraction cannot correctly capture — for example, when the C++ implementation
+initializes a key to a non-zero or non-false value that differs from what
+extraction would infer, or when an IR key has no corresponding Pydantic field
+at all.  Use the policy registry for type-based fallback defaults
+(zero/false/empty) for IR keys that neither extraction nor the override
+registry covers.  Place a default in the Pydantic model when it is a
+grammar-level default visible to users; extraction will then derive the
+corresponding IR key default automatically.  Ensure only one source claims an
+IR key; collisions cause \c generate_ir_tables.py to error.
 
 \section PydanticSpecAddModel Adding a new method or model
 
