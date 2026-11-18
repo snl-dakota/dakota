@@ -97,10 +97,13 @@ They are organized by keyword block:
 Pydantic models:
 
 <ol>
-<li>The models are used to export a JSON schema
-    (\c dakota/src/dakota_study_schema.json) when the CMake variable DAKOTA_GENERATE_JSON_SCHEMA is on. 
-    The JSON schema is a portable, language-neutral description of Dakota's input grammar,
-    similar in role to \c dakota.input.nspec.</li>
+<li>When the CMake variable \c DAKOTA_GENERATE_JSON_SCHEMA is on, the
+    models are used to export a JSON schema, which is copied to
+    \c dakota/src/dakota.json if it changed.  The JSON schema is a
+    portable, language-neutral description of Dakota's input grammar,
+    similar in role to \c dakota.input.nspec.  \c src/dakota.json is
+    committed, so builds with the option off use the existing copy;
+    commit the regenerated file along with your model changes.</li>
 
 <li>CMake generates C++ source files for the IR from the JSON schema.
     These generated files are analogous to \c NIDRProblemDescDB: they
