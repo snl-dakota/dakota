@@ -43,7 +43,7 @@ version = '7.0'
 #
 # For Dakota this will be substituted at build time by CMake, and may
 # include an appended stable '+'
-release = '7.0.0'
+release = '7.0.0+'
 
 
 # -- General configuration ---------------------------------------------------

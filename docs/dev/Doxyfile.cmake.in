@@ -51,7 +51,7 @@ PROJECT_BRIEF          = "Explore and Predict with Confidence"
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/DAKOTA_Arrow_Name_77x55.png
+PROJECT_LOGO           = @CMAKE_CURRENT_SOURCE_DIR@/DAKOTAMarkWEB_55px.png
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -1216,7 +1216,7 @@ HTML_EXTRA_FILES       =
 # Minimum value: 0, maximum value: 359, default value: 220.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_HUE    = 197
+HTML_COLORSTYLE_HUE    = 195
 
 # The HTML_COLORSTYLE_SAT tag controls the purity (or saturation) of the colors
 # in the HTML output. For a value of 0 the output will use grayscales only. A
@@ -1224,7 +1224,7 @@ HTML_COLORSTYLE_HUE    = 197
 # Minimum value: 0, maximum value: 255, default value: 100.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_COLORSTYLE_SAT    = 120
+HTML_COLORSTYLE_SAT    = 150
 
 # The HTML_COLORSTYLE_GAMMA tag controls the gamma correction applied to the
 # luminance component of the colors in the HTML output. Values below 100

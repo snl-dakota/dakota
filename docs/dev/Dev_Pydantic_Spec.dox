@@ -53,7 +53,7 @@ know three things up front:
     representation (IR).</b>  User input is no longer stored as plain
     member variables (ints, strings, \c vector<double>, etc.) on Data
     class instances set by keyword handlers.  Instead it is stored in maps
-    keyed by string IR keys (also called ProblemDescDB keys).  The IR
+    keyed by string IR keys (ProblemDescDB keys).  The IR
     plays the same role as the Data classes and is consumed by
     \c ProblemDescDB in the same way.</li>
 
@@ -87,7 +87,7 @@ They are organized by keyword block:
 <li>\c variables.py &mdash; variables block keywords</li>
 <li>\c interface.py &mdash; interface block keywords</li>
 <li>\c responses.py &mdash; responses block keywords</li>
-<li>\c shared/ &mdash; mixins and sub-models reused across blocks</li>
+<li>\c shared/ &mdash; mixins and sub-models reused across blocks. XML entities were translated to classes in shared/. Inclusion of a shared model usually occurs through inheritance.</li>
 <li>\c base.py &mdash; \c DakotaBaseModel and supporting infrastructure</li>
 </ul>
 
@@ -98,8 +98,8 @@ Pydantic models:
 
 <ol>
 <li>The models are used to export a JSON schema
-    (\c dakota/src/dakota_study_schema.json).  The JSON schema is a
-    portable, language-neutral description of Dakota's input grammar,
+    (\c dakota/src/dakota_study_schema.json) when the CMake variable DAKOTA_GENERATE_JSON_SCHEMA is on. 
+    The JSON schema is a portable, language-neutral description of Dakota's input grammar,
     similar in role to \c dakota.input.nspec.</li>
 
 <li>CMake generates C++ source files for the IR from the JSON schema.
