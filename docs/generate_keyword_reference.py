@@ -216,7 +216,17 @@ class KeywordReferenceGenerator:
 
         non_null_anyof = self.resolver.strip_null_anyof(schema_node)
         if self._is_choice_node(non_null_anyof):
-            return self._children_from_choice(parent_hierarchy, non_null_anyof, False, "")
+            # This page IS the choice group.  When the user writes this keyword, they
+            # must specify exactly one sub-keyword, so show "Required (Choose One)".
+            # Use x-json-group-key from the schema if present; for most non-anchored
+            # union pages (e.g. solution_mode) no such key exists because the choice
+            # is expressed directly as the value of the keyword with no intermediate
+            # wrapper key in the JSON.
+            group_name = schema_node.get("title", "")
+            json_group_key = schema_node.get("x-json-group-key", "")
+            return self._children_from_choice(
+                parent_hierarchy, non_null_anyof, True, json_group_key, group_name
+            )
 
         object_schema = self._get_object_schema(schema_node)
         if object_schema is None:
