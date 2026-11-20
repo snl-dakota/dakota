@@ -622,8 +622,8 @@ build_approximation(const RealVector&  c_l_bnds, const RealVector&  c_u_bnds,
 		    const IntVector&  di_l_bnds, const IntVector&  di_u_bnds,
 		    const RealVector& dr_l_bnds, const RealVector& dr_u_bnds)
 {
-  Cout << "ApproximationInterface::build_approximation() continuous bounds:\n"
-       << c_l_bnds << '\n' << c_u_bnds << std::endl;
+  //Cout << "ApproximationInterface::build_approximation() continuous bounds:\n"
+  //     << c_l_bnds << '\n' << c_u_bnds << std::endl;
 
   // initialize the data shared among approximation instances
   sharedData.set_bounds(c_l_bnds, c_u_bnds, di_l_bnds, di_u_bnds,

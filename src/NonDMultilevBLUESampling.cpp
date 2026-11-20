@@ -1772,7 +1772,7 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
 {
   initialize_rsm2a(cov_GG);  initialize_rsm2a(cov_GG_inv); // bypass if sized
 
-  size_t g, m, m2, num_models, qoi, num_G_gq;
+  size_t g, m, m2, num_models, qoi, num_G_gq, all_group = numGroups - 1;
   Real sum_G_gqm;  RealVector rcond(numFunctions);
   bool rcond_throttle  = (groupThrottleType == RCOND_TOLERANCE_THROTTLE ||
 			  groupThrottleType == RCOND_BEST_COUNT_THROTTLE),
@@ -1815,6 +1815,8 @@ compute_GG_covariance(const RealMatrixArray& sum_G,
         groupCovCondMap.insert(std::pair<Real,size_t>(average(rcond), g));
     }
   }
+  if (pilot && !covExportFilename.empty())
+    export_model_covariances(covExportFilename, cov_GG[all_group]);
 }
 
 
@@ -1854,6 +1856,8 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
 	cov_GG[g][qoi].shape(0);
     }
   }
+  if (pilot && !covExportFilename.empty())
+    export_model_covariances(covExportFilename, cov_GG[all_group]);
 
   // precompute 2D array of C_k inverses for numerical solver use
   // (Phi-inverse is dependent on N_G, but C-inverse is not)

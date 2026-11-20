@@ -159,6 +159,11 @@ void NonDACVSampling::approximate_control_variate_online_pilot()
     compute_allocations(acvSolnData);
     ++mlmfIter;  advance_relaxation();
   }
+  if (!covExportFilename.empty()) {
+    RealSymMatrixArray cov_MM;
+    split_covariances_to_model_covariances(covLL, covLH, varH, cov_MM);
+    export_model_covariances(covExportFilename, cov_MM);
+  }
 
   // Only QOI_STATISTICS requires application of oversample ratios and
   // estimation of moments; ESTIMATOR_PERFORMANCE can bypass this expense.
@@ -334,6 +339,11 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
   }
   if (incr_cost)
     increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
+  if (!covExportFilename.empty()) {
+    RealSymMatrixArray cov_MM;
+    split_covariances_to_model_covariances(covLL, covLH, varH, cov_MM);
+    export_model_covariances(covExportFilename, cov_MM);
+  }
 }
 
 
@@ -359,6 +369,11 @@ evaluate_pilot(IntRealMatrixMap& sum_L_pilot, IntRealVectorMap& sum_H_pilot,
     recover_online_cost(allResponses); //update_model_group_costs();
   if (incr_cost)
     increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
+  if (!covExportFilename.empty()) {
+    RealSymMatrixArray cov_MM;
+    split_covariances_to_model_covariances(covLL, covLH, varH, cov_MM);
+    export_model_covariances(covExportFilename, cov_MM);
+  }
 }
 
 
@@ -383,6 +398,32 @@ model_covariances_to_split_covariances(const RealSymMatrixArray& cov_MM,
 	cov_LL_q(i,j) = cov_MM_q(i,j); // prune final row,col
     }
     var_H[qoi] = cov_MM_q(numApprox,numApprox);
+  }
+}
+
+
+void NonDACVSampling::
+split_covariances_to_model_covariances(const RealSymMatrixArray& cov_LL,
+				       const RealVectorArray& cov_LH,
+				       const RealVector& var_H,
+				       RealSymMatrixArray& cov_MM)
+{
+  if (cov_MM.size() != numFunctions) cov_MM.resize(numFunctions);
+
+  // map shared covariance (all models) into groups with partial model sets
+  size_t qoi, i, j, num_models = numApprox + 1;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    RealSymMatrix& cov_MM_q = cov_MM[qoi];
+    if (cov_MM_q.numRows() != num_models)
+      cov_MM_q.shapeUninitialized(num_models);
+    const RealSymMatrix& cov_LL_q = cov_LL[qoi];
+    const RealVector&    cov_LH_q = cov_LH[qoi];
+    for (i=0; i<numApprox; ++i) {
+      cov_MM_q(numApprox,i) = cov_LH_q[i]; // final row
+      for (j=0; j<=i; ++j)
+	cov_MM_q(i,j) = cov_LL_q(i,j); // omit final row,col
+    }
+    cov_MM_q(numApprox,numApprox) = var_H[qoi];
   }
 }
 

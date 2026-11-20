@@ -174,11 +174,33 @@ import_model_covariances(const String& filename, RealSymMatrixArray& cov_MM)
       cov_MM_q.shapeUninitialized(all_models);
     // Note: Response::read_hessians() has more involved bracket input logic
     read_data(cov_stream, cov_MM_q, true); // delimiter brackets on
-    if (outputLevel >= NORMAL_OUTPUT) {
-      Cout << "Imported covariance for QoI " << q << ":\n";
+    if (outputLevel > SILENT_OUTPUT) {
+      Cout << "Imported all-model covariance matrix for QoI " << q << ":\n";
       write_data(Cout, cov_MM_q, true, true, true);
     }
   }
+
+  TabularIO::close_file(cov_stream, filename, "import_model_covariances");
+}
+
+
+void NonDNumericAllocSampling::
+export_model_covariances(const String& filename, RealSymMatrixArray& cov_MM)
+{
+  std::ofstream cov_stream;
+  TabularIO::open_file(cov_stream, filename, "export_model_covariances");
+
+  size_t q, all_models = numApprox + 1;
+  for (q=0; q<numFunctions; ++q) {
+    RealSymMatrix& cov_MM_q = cov_MM[q];
+    write_data(cov_stream, cov_MM_q, true, true, true); // delimiter brackets on
+    if (outputLevel >= VERBOSE_OUTPUT) {
+      Cout << "All-model covariance matrix exported for QoI " << q << ":\n";
+      write_data(Cout, cov_MM_q, true, true, true);
+    }
+  }
+
+  TabularIO::close_file(cov_stream, filename, "export_model_covariances");
 }
 
 

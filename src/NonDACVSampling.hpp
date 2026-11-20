@@ -260,6 +260,11 @@ private:
 					      RealSymMatrixArray& cov_LL,
 					      RealVectorArray& cov_LH,
 					      RealVector& var_H);
+  /// assemble covLL,covLH,varH into all-model covariance matrices for export
+  void split_covariances_to_model_covariances(const RealSymMatrixArray& cov_LL,
+					      const RealVectorArray& cov_LH,
+					      const RealVector& var_H,
+					      RealSymMatrixArray& cov_MM);
 
   void compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F);
   void compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F);
