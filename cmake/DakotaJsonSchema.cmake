@@ -60,21 +60,19 @@ if(DAKOTA_GENERATE_JSON_SCHEMA OR DAKOTA_CHECK_JSON_SCHEMA)
   set(dakota_generated_xml
     "${Dakota_BINARY_DIR}/generated/schema/dakota.generated.xml")
 
-  add_custom_command(
-    OUTPUT "${dakota_generated_xml}"
+  # This target intentionally runs whenever it participates in a build. The
+  # output file is always regenerated, so a make clean followed by make will
+  # always reproduce it without requiring changes to the schema source.
+  add_custom_target(dakota_xml_grammar ALL
     COMMAND "${CMAKE_COMMAND}" -E make_directory
       "${Dakota_BINARY_DIR}/generated/schema"
     COMMAND "${Python3_EXECUTABLE}"
       "${Dakota_SOURCE_DIR}/src/xml_codegen/generate_dakota_xml.py"
       --schema "${DAKOTA_SCHEMA_PATH}"
       --output "${dakota_generated_xml}"
-    DEPENDS
-      "${DAKOTA_SCHEMA_PATH}"
-      "${Dakota_SOURCE_DIR}/src/xml_codegen/generate_dakota_xml.py"
+    BYPRODUCTS "${dakota_generated_xml}"
     WORKING_DIRECTORY "${Dakota_SOURCE_DIR}/src"
     VERBATIM
   )
-
-  add_custom_target(dakota_xml_grammar DEPENDS "${dakota_generated_xml}")
   add_dependencies(dakota_xml_grammar dakota_json_schema)
 endif()
