@@ -1079,7 +1079,7 @@ void Response::read_hessians(std::istream& s, const ShortArray &asv,
     while(asv_idx < nf && !(asv[asv_idx] & 4)) asv_idx++;
     num_found++;
     if(num_found <= num_expected) {
-      Dakota::read_data(s, functionHessians[asv_idx]); // fault tolerant
+      Dakota::read_data(s, functionHessians[asv_idx], false); // fault tolerant
     } else { // get and discard 
       s.ignore(std::numeric_limits<int>::max(),']');
       s.putback(']');

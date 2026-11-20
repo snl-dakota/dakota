@@ -28,7 +28,11 @@ namespace Dakota {
 NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		std::shared_ptr<Model> model):
-  NonDNumericAllocSampling(problem_db, parallel_lib, model)
+  NonDNumericAllocSampling(problem_db, parallel_lib, model),
+  covImportFilename(
+    probDescDB.get<const String>("method.nond.import_model_covariances_file")),
+  covExportFilename(
+    probDescDB.get<const String>("method.nond.export_model_covariances_file"))
   //, multiStartACV(true)
 {
   mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
@@ -193,9 +197,6 @@ void NonDACVSampling::approximate_control_variate_offline_pilot()
   evaluate_pilot(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		 sum_HH_pilot, N_pilot, false);
   if (costSource != USER_COST_SPEC) update_model_group_costs();
-  compute_LH_statistics(sum_L_pilot[1], sum_H_pilot[1], sum_LL_pilot[1],
-			sum_LH_pilot[1], sum_HH_pilot, N_pilot, varH,
-			covLL, covLH);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -263,15 +264,11 @@ void NonDACVSampling::approximate_control_variate_pilot_projection()
   case OFFLINE_PILOT_PROJECTION: {
     SizetArray N_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_pilot, false);
-    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_pilot, varH,
-			  covLL, covLH);
     N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
     break;
   }
   default: // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
-    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
-			  varH, covLL, covLH);
     N_H_alloc = numSamples;
     break;
   }
@@ -306,25 +303,35 @@ evaluate_pilot(RealMatrix& sum_L_pilot, RealVector& sum_H_pilot,
 		      sum_HH_pilot);
   N_pilot.assign(numFunctions, 0);
 
-  shared_increment("acv_"); // spans ALL models, blocking
-  accumulate_acv_sums(sum_L_pilot,//_baselineH, sum_L_baselineL,
-		      sum_H_pilot, sum_LL_pilot, sum_LH_pilot, sum_HH_pilot,
-		      N_pilot);//, N_LL_pilot);
+  if (covImportFilename.empty()) {
+    shared_increment("acv_"); // spans ALL models, blocking
+    accumulate_acv_sums(sum_L_pilot,//_baselineH, sum_L_baselineL,
+			sum_H_pilot, sum_LL_pilot, sum_LH_pilot, sum_HH_pilot,
+			N_pilot);//, N_LL_pilot);
 
-  // TO DO: allow pilot to vary for C vs c.  numSamples logic after pilot
-  // (mlmfIter >= 1) will require _baseline{L,H}
-  //if (lf_pilot > hf_pilot) {
-  //  numSamples = lf_pilot - hf_pilot;
-  //  shared_approx_increment("acv_"); // spans all approx models
-  //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
-  //                      N_L_baselineL);
-  //  if (incr_cost)
-  //    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox,
-  //			            equivHFEvals);
-  //}
+    // TO DO: allow pilot to vary for C vs c.  numSamples logic after pilot
+    // (mlmfIter >= 1) will require _baseline{L,H}
+    //if (lf_pilot > hf_pilot) {
+    //  numSamples = lf_pilot - hf_pilot;
+    //  shared_approx_increment("acv_"); // spans all approx models
+    //  accumulate_acv_sums(sum_L_baselineL, sum_LL,//_baselineL,
+    //                      N_L_baselineL);
+    //  if (incr_cost)
+    //    increment_equivalent_cost(numSamples, sequenceCost, 0, numApprox,
+    //			            equivHFEvals);
+    //}
 
-  if (costSource != USER_COST_SPEC) // don't update group costs (GenACV)
-    recover_online_cost(allResponses); //update_model_group_costs();
+    compute_LH_statistics(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+			  sum_HH_pilot, N_pilot, varH, covLL, covLH);
+
+    if (costSource != USER_COST_SPEC) // don't update group costs (GenACV)
+      recover_online_cost(allResponses); //update_model_group_costs();
+  }
+  else {
+    RealSymMatrixArray cov_MM(numFunctions); // each matrix \in nmApprox+1
+    import_model_covariances(covImportFilename, cov_MM);
+    model_covariances_to_split_covariances(cov_MM, covLL, covLH, varH);
+  }
   if (incr_cost)
     increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
 }
@@ -344,10 +351,39 @@ evaluate_pilot(IntRealMatrixMap& sum_L_pilot, IntRealVectorMap& sum_H_pilot,
   accumulate_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		      sum_HH_pilot, N_pilot);
 
+  compute_LH_statistics(sum_L_pilot[1], sum_H_pilot[1], sum_LL_pilot[1],
+			sum_LH_pilot[1], sum_HH_pilot, N_pilot,
+			varH, covLL, covLH);
+
   if (costSource != USER_COST_SPEC) // don't update group costs (GenACV)
     recover_online_cost(allResponses); //update_model_group_costs();
   if (incr_cost)
     increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
+}
+
+
+void NonDACVSampling::
+model_covariances_to_split_covariances(const RealSymMatrixArray& cov_MM,
+				       RealSymMatrixArray& cov_LL,
+				       RealVectorArray& cov_LH,
+				       RealVector& var_H)
+{
+  initialize_LL_covariances(cov_LL);  initialize_LH_covariances(cov_LH);
+  if (var_H.length() != numFunctions) var_H.sizeUninitialized(numFunctions);
+
+  // map shared covariance (all models) into groups with partial model sets
+  size_t qoi, i, j;
+  for (qoi=0; qoi<numFunctions; ++qoi) {
+    const RealSymMatrix& cov_MM_q = cov_MM[qoi];
+    RealSymMatrix& cov_LL_q = cov_LL[qoi];
+    RealVector&    cov_LH_q = cov_LH[qoi];
+    for (i=0; i<numApprox; ++i) {
+      cov_LH_q[i] = cov_MM_q(numApprox,i); // final row
+      for (j=0; j<=i; ++j)
+	cov_LL_q(i,j) = cov_MM_q(i,j); // prune final row,col
+    }
+    var_H[qoi] = cov_MM_q(numApprox,numApprox);
+  }
 }
 
 
@@ -1401,11 +1437,7 @@ compute_LH_covariance(const RealMatrix& sum_L_shared, const RealVector& sum_H,
 		      RealVectorArray& cov_LH, const UShortArray& approx_set)
 {
   size_t i, approx, num_approx = approx_set.size(), qoi;
-  if (cov_LH.size() != numFunctions)
-    cov_LH.resize(numFunctions);
-  for (i=0; i<numFunctions; ++i)
-    if (cov_LH[i].length() != numApprox) cov_LH[i].size(numApprox);
-    else                                 cov_LH[i] = 0.;
+  initialize_LH_covariances(cov_LH);
 
   for (i=0; i<num_approx; ++i) {
     approx = approx_set[i];
@@ -1428,14 +1460,7 @@ compute_LL_covariance(const RealMatrix& sum_L_shared,
 		      RealSymMatrixArray& cov_LL, const UShortArray& approx_set)
 {
   size_t qoi, i, j, approx, approx2;
-  if (cov_LL.size() != numFunctions) {
-    cov_LL.resize(numFunctions);
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      cov_LL[qoi].shape(numApprox); // leave at full size, but inactive = 0
-  }
-  else
-    for (qoi=0; qoi<numFunctions; ++qoi)
-      cov_LL[qoi] = 0.;
+  initialize_LL_covariances(cov_LL);
 
   Real sum_L_aq;  size_t N_sh_q, num_approx = approx_set.size();
   for (qoi=0; qoi<numFunctions; ++qoi) {

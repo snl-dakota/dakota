@@ -16,7 +16,7 @@ from dakota.spec.shared.misc import (
     MethodOptionalModelPointerMixin,
     MethodSeedSequenceMixin,
     MethodThreeOptionalKeywordsMixin,
-    MlmfSolutionModeMixin,
+    MlmfSolutionModeIOMixin,
     RngOptionsContext2Mixin,
 )
 from dakota.spec.shared.sampling import (
@@ -215,7 +215,7 @@ class ApproximateControlVariateSearchModelGraphs(DakotaBaseModel):
 class ApproximateControlVariateConfig(
     MethodThreeOptionalKeywordsMixin,
     MlmfPilotSamplesContext2Mixin,
-    MlmfSolutionModeMixin,
+    MlmfSolutionModeIOMixin,
     MethodMlmfSubProblemSolverMixin,
     MethodMlmfSolverMetricMixin,
     MethodSeedSequenceMixin,

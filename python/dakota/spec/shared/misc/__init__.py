@@ -4423,44 +4423,6 @@ class OnlinePilotFinalStatisticsQoiStatisticsDistributionComplementary(DakotaBas
     )
 
 
-class OnlineProjection(DakotaBaseModel):
-    "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample"
-
-    online_projection: Literal[True] = DakotaField(
-        default=True,
-        description="Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample",
-        dakota={
-            "materialization": [
-                {
-                    "ir_key": "method.nond.ensemble_pilot_solution_mode",
-                    "storage_type": "PRESENCE_ENUM",
-                    "stored_value": "ONLINE_PILOT_PROJECTION",
-                    "ir_value_type": "short",
-                }
-            ]
-        },
-    )
-
-
-class OfflineProjection(DakotaBaseModel):
-    "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample"
-
-    offline_projection: Literal[True] = DakotaField(
-        default=True,
-        description="Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample",
-        dakota={
-            "materialization": [
-                {
-                    "ir_key": "method.nond.ensemble_pilot_solution_mode",
-                    "storage_type": "PRESENCE_ENUM",
-                    "stored_value": "OFFLINE_PILOT_PROJECTION",
-                    "ir_value_type": "short",
-                }
-            ]
-        },
-    )
-
-
 class ExportApproxVarianceFileCustomAnnotatedConfig(DakotaBaseModel):
     "Selects custom-annotated tabular file format"
 
@@ -9170,50 +9132,6 @@ class MlmfFinalStatsMixin(DakotaBaseModel):
     )
 
 
-class OnlinePilotConfig(DakotaBaseModel):
-    "Specify a solution mode that includes the pilot cost within the sample allocation logic"
-
-    relaxation: (
-        Union[
-            OnlinePilotRelaxationFactorSequence,
-            OnlinePilotRelaxationFixedFactor,
-            OnlinePilotRelaxationRecursiveFactor,
-        ]
-        | None
-    ) = DakotaField(
-        default=None,
-        description="For an online pilot mode, apply under-relaxation to the shared sample increments",
-        dakota={"union_pattern": 2},
-    )
-    final_statistics: (
-        Union[
-            OnlinePilotFinalStatisticsEstimatorPerformance,
-            OnlinePilotFinalStatisticsQoiStatistics,
-        ]
-        | None
-    ) = DakotaField(
-        default=None,
-        description="Indicate the type of final statistics to be returned by a UQ method",
-        dakota={"union_pattern": 2},
-    )
-
-
-class OfflinePilotConfig(DakotaBaseModel):
-    "Specify a solution mode that excludes the pilot cost from sample allocation logic"
-
-    final_statistics: (
-        Union[
-            OnlinePilotFinalStatisticsEstimatorPerformance,
-            OfflinePilotFinalStatisticsQoiStatistics,
-        ]
-        | None
-    ) = DakotaField(
-        default=None,
-        description="Indicate the type of final statistics to be returned by a UQ method",
-        dakota={"union_pattern": 2},
-    )
-
-
 class ModelVarianceExportMixin(DakotaBaseModel):
     "Generated model for ModelVarianceExportMixin"
 
@@ -9563,6 +9481,34 @@ class MethodGpAlternativesWithExportContext1Mixin(DakotaBaseModel):
     )
 
 
+class OnlinePilotConfig(DakotaBaseModel):
+    "Specify a solution mode that includes the pilot cost within the sample allocation logic"
+
+    relaxation: (
+        Union[
+            OnlinePilotRelaxationFactorSequence,
+            OnlinePilotRelaxationFixedFactor,
+            OnlinePilotRelaxationRecursiveFactor,
+        ]
+        | None
+    ) = DakotaField(
+        default=None,
+        description="For an online pilot mode, apply under-relaxation to the shared sample increments",
+        dakota={"union_pattern": 2},
+    )
+    final_statistics: (
+        Union[
+            OnlinePilotFinalStatisticsEstimatorPerformance,
+            OnlinePilotFinalStatisticsQoiStatistics,
+        ]
+        | None
+    ) = DakotaField(
+        default=None,
+        description="Indicate the type of final statistics to be returned by a UQ method",
+        dakota={"union_pattern": 2},
+    )
+
+
 class OnlinePilot(DakotaBaseModel):
     "Specify a solution mode that includes the pilot cost within the sample allocation logic"
 
@@ -9583,6 +9529,22 @@ class OnlinePilot(DakotaBaseModel):
     )
 
 
+class OfflinePilotConfig(DakotaBaseModel):
+    "Specify a solution mode that excludes the pilot cost from sample allocation logic"
+
+    final_statistics: (
+        Union[
+            OnlinePilotFinalStatisticsEstimatorPerformance,
+            OfflinePilotFinalStatisticsQoiStatistics,
+        ]
+        | None
+    ) = DakotaField(
+        default=None,
+        description="Indicate the type of final statistics to be returned by a UQ method",
+        dakota={"union_pattern": 2},
+    )
+
+
 class OfflinePilot(DakotaBaseModel):
     "Specify a solution mode that excludes the pilot cost from sample allocation logic"
 
@@ -9600,6 +9562,162 @@ class OfflinePilot(DakotaBaseModel):
                 }
             ],
         },
+    )
+
+
+class OnlineProjectionImportConfig(DakotaBaseModel):
+    "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample (cost included)"
+
+    import_model_covariances_file: str | None = (
+        DakotaField(
+            default=None,
+            description="Import model covariances from a file instead of evaluating them from an online pilot sample",
+            dakota={
+                "materialization": [
+                    {
+                        "ir_key": "method.nond.import_model_covariances_file",
+                        "storage_type": "DIRECT_VALUE",
+                        "ir_value_type": "String",
+                    }
+                ]
+            },
+        )
+    )
+
+
+class OnlineProjectionImport(DakotaBaseModel):
+    "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample (cost included)"
+
+    online_projection: OnlineProjectionImportConfig = DakotaField(
+        default_factory=OnlineProjectionImportConfig,
+        description="Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample",
+        dakota={
+            "model_default": "OnlineProjectionConfig",
+            "materialization": [
+                {
+                    "ir_key": "method.nond.ensemble_pilot_solution_mode",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ONLINE_PILOT_PROJECTION",
+                    "ir_value_type": "short",
+                }
+            ]
+        },
+    )
+
+
+class OnlineProjection(DakotaBaseModel):
+    "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample (cost included)"
+
+    online_projection: Literal[True] = DakotaField(
+        default=True,
+        description="Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.nond.ensemble_pilot_solution_mode",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "ONLINE_PILOT_PROJECTION",
+                    "ir_value_type": "short",
+                }
+            ]
+        },
+    )
+
+
+class OfflineProjectionImportConfig(DakotaBaseModel):
+    "Specify a solution mode that excludes the pilot cost from sample allocation logic"
+
+    import_model_covariances_file: str | None = (
+        DakotaField(
+            default=None,
+            description="Import model covariances from a file instead of evaluating them from an offline pilot sample",
+            dakota={
+                "materialization": [
+                    {
+                        "ir_key": "method.nond.import_model_covariances_file",
+                        "storage_type": "DIRECT_VALUE",
+                        "ir_value_type": "String",
+                    }
+                ]
+            },
+        )
+    )
+
+
+class OfflineProjectionImport(DakotaBaseModel):
+    "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample (cost excluded)"
+
+    offline_projection: OfflineProjectionImportConfig = DakotaField(
+        default_factory=OfflineProjectionImportConfig,
+        description="Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample",
+        dakota={
+            "model_default": "OfflineProjectionConfig",
+            "materialization": [
+                {
+                    "ir_key": "method.nond.ensemble_pilot_solution_mode",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "OFFLINE_PILOT_PROJECTION",
+                    "ir_value_type": "short",
+                }
+            ]
+        },
+    )
+
+
+class OfflineProjection(DakotaBaseModel):
+    "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample (cost excluded)"
+
+    offline_projection: Literal[True] = DakotaField(
+        default=True,
+        description="Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.nond.ensemble_pilot_solution_mode",
+                    "storage_type": "PRESENCE_ENUM",
+                    "stored_value": "OFFLINE_PILOT_PROJECTION",
+                    "ir_value_type": "short",
+                }
+            ]
+        },
+    )
+
+
+class MlmfSolutionModeMixin(DakotaBaseModel):
+    "Generated model for MlmfSolutionModeMixin"
+
+    solution_mode: Union[
+        OnlinePilot, OfflinePilot, OnlineProjection, OfflineProjection
+    ] = DakotaField(
+        default_factory=OnlinePilot,
+        description="Solution mode for multilevel/multifidelity methods",
+        dakota={"union_pattern": 1, "model_default": "OnlinePilot"},
+    )
+
+
+class MlmfSolutionModeIOMixin(DakotaBaseModel):
+    "Generated model for MlmfSolutionModeIOMixin"
+    
+    solution_mode: Union[
+        OnlinePilot, OfflinePilot, OnlineProjectionImport, OfflineProjectionImport
+    ] = DakotaField(
+        default_factory=OnlinePilot,
+        description="Solution mode for multilevel/multifidelity methods",
+        dakota={"union_pattern": 1, "model_default": "OnlinePilot"},
+    )
+    
+    export_model_covariances_file: str | None = DakotaField(
+        default=None,
+        description="Export model covariances to a file after computation from a pilot sample",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.nond.export_model_covariances_file",
+                    "storage_type": "DIRECT_VALUE",
+                    "ir_value_type": "String",
+                }
+            ]
+        }
     )
 
 
@@ -9698,17 +9816,6 @@ class MethodGlobalSubProblemSolverContext1Ego(DakotaBaseModel):
         },
     )
 
-
-class MlmfSolutionModeMixin(DakotaBaseModel):
-    "Generated model for MlmfSolutionModeMixin"
-
-    solution_mode: Union[
-        OnlinePilot, OfflinePilot, OnlineProjection, OfflineProjection
-    ] = DakotaField(
-        default_factory=OnlinePilot,
-        description="Solution mode for multilevel/multifidelity methods",
-        dakota={"union_pattern": 1, "model_default": "OnlinePilot"},
-    )
 
 
 class MethodGlobalSubProblemSolverContext2Mixin(DakotaBaseModel):

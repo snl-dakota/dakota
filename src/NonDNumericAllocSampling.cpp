@@ -159,6 +159,29 @@ hf_indices(size_t& hf_form_index, size_t& hf_lev_index) const
 }
 
 
+void NonDNumericAllocSampling::
+import_model_covariances(const String& filename, RealSymMatrixArray& cov_MM)
+{
+  std::ifstream cov_stream;
+  TabularIO::open_file(cov_stream, filename, "import_model_covariances");
+
+  //initialize_rsma(cov_MM, false); // no init
+
+  size_t q, all_models = numApprox + 1;
+  for (q=0; q<numFunctions; ++q) {
+    RealSymMatrix& cov_MM_q = cov_MM[q];
+    if (cov_MM_q.numRows() != all_models)
+      cov_MM_q.shapeUninitialized(all_models);
+    // Note: Response::read_hessians() has more involved bracket input logic
+    read_data(cov_stream, cov_MM_q, true); // delimiter brackets on
+    if (outputLevel >= NORMAL_OUTPUT) {
+      Cout << "Imported covariance for QoI " << q << ":\n";
+      write_data(Cout, cov_MM_q, true, true, true);
+    }
+  }
+}
+
+
 void NonDNumericAllocSampling::shared_increment(String prepend)
 {
   if (mlmfIter == 0) Cout << "\nNon-hierarchical pilot sample: ";

@@ -289,31 +289,37 @@ void read_data(std::istream& s,
 }
 
 
-/// standard istream extraction operator for SerialSymDenseMatrix
+/// standard istream extraction operator for SerialDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void read_data(std::istream& s,
-               Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m)
+               Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& m,
+	       bool brackets)
 {
   // for istream, read full matrix
   OrdinalType i, j, nrows = m.numRows(), ncols = m.numCols();
   std::string token;
+  if (brackets) s >> token; // discard open bracket(s)
   for (i=0; i<nrows; ++i)
     for (j=0; j<ncols; ++j)
       { s >> token; m(i,j) = std::atof(token.c_str()); }
+  if (brackets) s >> token; // discard close bracket(s)
 }
 
 
 /// standard istream extraction operator for SerialSymDenseMatrix
 template <typename OrdinalType, typename ScalarType>
 void read_data(std::istream& s,
-               Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m)
+               Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& m,
+	       bool brackets)
 {
   // for istream, read full matrix
   OrdinalType i, j, nrows = m.numRows();
   std::string token;
+  if (brackets) s >> token; // discard open bracket(s)
   for (i=0; i<nrows; ++i)
     for (j=0; j<nrows; ++j)
       { s >> token; m(i,j) = std::atof(token.c_str()); }
+  if (brackets) s >> token; // discard close bracket(s)
 }
 
 
@@ -1835,7 +1841,7 @@ inline std::ostream& operator<<(std::ostream& s,
 template <typename OrdinalType, typename ScalarType>
 inline std::istream& operator>>(std::istream& s,
   Teuchos::SerialDenseMatrix<OrdinalType, ScalarType>& data)
-{ read_data(s, data); return s; }
+{ read_data(s, data, false); return s; }
 
 
 /// global std::ostream insertion operator for SerialDenseMatrix
@@ -1849,7 +1855,7 @@ inline std::ostream& operator<<(std::ostream& s,
 template <typename OrdinalType, typename ScalarType>
 inline std::istream& operator>>(std::istream& s,
   Teuchos::SerialSymDenseMatrix<OrdinalType, ScalarType>& data)
-{ read_data(s, data); return s; }
+{ read_data(s, data, false); return s; }
 
 
 /// global std::ostream insertion operator for SerialSymDenseMatrix

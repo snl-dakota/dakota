@@ -806,9 +806,6 @@ void NonDGenACVSampling::generalized_acv_offline_pilot()
   SizetArray N_shared_pilot;
   evaluate_pilot(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
 		 sum_HH_pilot, N_shared_pilot, false);
-  compute_LH_statistics(sum_L_pilot[1], sum_H_pilot[1], sum_LL_pilot[1],
-			sum_LH_pilot[1], sum_HH_pilot, N_shared_pilot,
-			varH, covLL, covLH);
 
   // -----------------------------------
   // Compute "online" sample increments:
@@ -908,14 +905,10 @@ void NonDGenACVSampling::generalized_acv_pilot_projection()
       pilotMgmtMode == OFFLINE_PILOT_PROJECTION) {
     SizetArray N_shared_pilot;
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot, false);
-    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_shared_pilot,
-			  varH, covLL, covLH);
     N_H_actual.assign(numFunctions, 0);  N_H_alloc = 0;
   }
   else { // ONLINE_PILOT_PROJECTION
     evaluate_pilot(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual, true);
-    compute_LH_statistics(sum_L, sum_H, sum_LL, sum_LH, sum_HH, N_H_actual,
-			  varH, covLL, covLH);
     N_H_alloc = numSamples;
   } /// TO DO: this code block is exact same as ACV
   inflate(N_H_alloc, NApproxAlloc, numApprox);
