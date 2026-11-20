@@ -9,6 +9,10 @@ namespace Dakota {
 <li> <a
     href="PydanticSpec.html#PydanticSpecProcedure">Procedure: Adding a New
     Keyword</a>
+<ul>
+<li> <a href="PydanticSpec.html#PydanticSpecProcedureOrdinary">Ordinary keyword</a></li>
+<li> <a href="PydanticSpec.html#PydanticSpecProcedureUnion">Keyword anchoring a Union</a></li>
+</ul>
 <li> <a href="PydanticSpec.html#PydanticSpecUnions">How Union fields
     are processed</a>
 <li> <a href="PydanticSpec.html#PydanticSpecDakotaField">DakotaField
@@ -165,7 +169,9 @@ section on demand.
 \subsection PydanticSpecProcedureOrdinary Ordinary keyword
 
 Most new keywords follow this pattern: declare the field, describe how it
-maps to the IR, regenerate, and test.
+maps to the IR, regenerate, and test.  If the keyword holds a one-of
+selection among named sub-options, also follow the additional steps in
+\ref PydanticSpecProcedureUnion.
 
 <ol>
 <li><b>Find the right model class.</b>
@@ -175,9 +181,79 @@ Locate the \c DakotaBaseModel subclass for the keyword's block and context
 See \ref PydanticSpecOverviewModels for the package layout.</li>
 
 <li><b>Declare the field.</b>
-Add a typed class attribute and declare it with \c DakotaField.  Supply a
-Python type annotation, a \c default or \c default_factory, and a
-\c description.  Add \c aliases if backward-compatible spellings are needed.
+Add a typed class attribute and declare it with \c DakotaField, working
+through three decisions.
+
+<b>Optionality.</b>  Choose based on what happens when the user omits the
+keyword:
+<ul>
+<li>Required — no \c default and no \c | None.  Pydantic enforces
+    presence.</li>
+<li>Optional with a grammar default — supply \c default=value or
+    \c default_factory=....  Omission inserts that default into the
+    validated model.</li>
+<li>Optional, absent means disabled — add \c | None to the annotation and
+    \c default=None.  Omission yields \c None.</li>
+</ul>
+
+<b>Type.</b>  Choose the annotation based on what the keyword accepts:
+\htmlonly
+<table border="1" cellspacing="0" cellpadding="4">
+<thead>
+<tr><th>Keyword form</th><th>Type annotation</th><th>Notes</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td>Flag (keyword alone, no argument)</td>
+  <td><code>Literal[True] | None</code></td>
+  <td>Typically uses presence-based materialization; common choices are
+      <code>PRESENCE_TRUE</code>, <code>PRESENCE_FALSE</code>, and
+      <code>PRESENCE_LITERAL</code>.</td>
+</tr>
+<tr>
+  <td>Integer argument</td>
+  <td><code>int</code> or <code>int | None</code></td>
+  <td>Typically uses <code>DIRECT_VALUE</code> materialization to store
+      the argument in the IR.</td>
+</tr>
+<tr>
+  <td>Real argument</td>
+  <td><code>DakotaFloat</code> or <code>DakotaFloat | None</code></td>
+  <td>Typically uses <code>DIRECT_VALUE</code> materialization.  Use
+      <code>DakotaFloat</code> (not plain <code>float</code>) for any
+      field that may hold <code>NaN</code>, <code>inf</code>, or
+      <code>-inf</code>.  See \endhtmlonly \ref PydanticSpecFloat \htmlonly.</td>
+</tr>
+<tr>
+  <td>String argument</td>
+  <td><code>str</code> or <code>str | None</code></td>
+  <td>Typically uses <code>DIRECT_VALUE</code> materialization to store
+      the argument in the IR.</td>
+</tr>
+<tr>
+  <td>Multiple values</td>
+  <td><code>list[int]</code>, <code>list[str]</code>, etc.</td>
+  <td>Typically uses <code>DIRECT_VALUE</code> materialization to store
+      the argument list in the IR.</td>
+</tr>
+<tr>
+  <td>Sub-keywords (nested block)</td>
+  <td>A <code>DakotaBaseModel</code> subclass</td>
+  <td>A keyword cannot have both a literal argument and sub-keywords.</td>
+</tr>
+<tr>
+  <td>One-of selection (mutually exclusive sub-options)</td>
+  <td><code>Union[BranchA, BranchB]</code></td>
+  <td>See \endhtmlonly \ref PydanticSpecProcedureUnion \htmlonly for the
+      additional steps.</td>
+</tr>
+</tbody>
+</table>
+\endhtmlonly
+
+<b>Annotation details.</b>  Supply \c description.  Add \c aliases for
+backward-compatible spellings.  Add Pydantic constraint kwargs (\c gt,
+\c ge, \c lt, \c le, \c min_length, etc.) where applicable.
 See \ref PydanticSpecDakotaField.</li>
 
 <li><b>Add materialization metadata.</b>
@@ -210,10 +286,11 @@ integration tests that exercise the keyword through \c ProblemDescDB reads.
 Update example inputs and documentation as needed.</li>
 </ol>
 
-\subsection PydanticSpecProcedureUnion Keyword in a Union
+\subsection PydanticSpecProcedureUnion Keyword anchoring a Union
 
-Union fields express one-of semantics: the user picks exactly one branch.
-Follow the ordinary keyword steps above, plus:
+A keyword anchors a Union when its value is a one-of selection among
+mutually exclusive named sub-options.  Follow the ordinary keyword steps
+above, with these additions:
 
 <ol>
 <li><b>Choose a union pattern.</b>
@@ -222,16 +299,19 @@ default branch, and what an empty \c {} means.  See
 \ref PydanticSpecUnions for the six patterns and their semantics.</li>
 
 <li><b>Declare the field as a Union type.</b>
-Annotate the field with \c Union[BranchA, BranchB, ...] (and \c | \c None
+Annotate the field with \c Union[BranchA, BranchB] (and \c | None
 if omission is permitted).  Set \c union_pattern in the \c dakota dict and,
 if the pattern specifies a default branch, set \c model_default to its name.
 Keep the Python annotation, \c default/\c default_factory, \c union_pattern,
 and \c model_default consistent with each other.</li>
 
-<li><b>Put materialization on the branch models, not the Union field.</b>
-Each branch model (e.g. \c TrendLinear, \c TrendNone) carries its own
-\c DakotaField materialization entries.  The Union field itself typically
-carries no materialization.</li>
+<li><b>Place materialization correctly.</b>
+Each branch model carries \c DakotaField materialization entries for the
+values it contributes.  The Union field itself may also carry
+materialization when its own presence or absence should write to the IR —
+for example, a \c PRESENCE_TRUE entry to set an enabled flag regardless of
+which branch the user selects.  If the Union field has no such effect on
+the IR, it carries no materialization.</li>
 </ol>
 
 \subsection PydanticSpecProcedureSpecial Less common cases
@@ -260,57 +340,258 @@ See \ref PydanticSpecValidation.</li>
 
 \section PydanticSpecUnions How Union fields are processed
 
-Dakota recognizes several \c Union patterns to express one-of semantics.
-The \c DakotaBaseModel layer applies a model-level validator to enforce
-single-branch selection for \c Union fields represented as single-field
-wrapper models. The wrapper field name is the user-visible discriminator.
+\subsection PydanticSpecUnionWhy Why different patterns are necessary
 
-Example:
-\code
-trend: Union[TrendNone, ExperimentalGPTrendConstant, ExperimentalGPTrendLinear]
-\endcode
+Pydantic's built-in Union handling is structural: it tries each branch type
+in order and accepts the first that validates.  That mechanism handles type
+discrimination but loses two things Dakota requires.
 
-Accepted user input is a single-key dictionary matching a branch wrapper,
-for example \c {"linear": {...}} or \c {"none": true}.
+<b>Explicit omission semantics.</b>  Dakota's grammar distinguishes between
+a keyword that is absent (feature disabled, or a grammar-level default kicks
+in) and one that is present without arguments (feature enabled with C++
+defaults).  Structural discrimination gives no hook for this distinction.
+The six patterns encode the full set of combinations through the Python type
+annotation and \c default / \c default_factory choices, so that code
+generators can emit correct IR defaults for every reachable state.
+
+<b>Named discriminators for code generation.</b>  Every Union branch in
+Dakota is a <em>single-field wrapper model</em> whose one field name is the
+user-visible keyword.  For example, the \c trend Union field has branches
+\c TrendNone (field name: \c none), \c ExperimentalGPTrendLinear (field
+name: \c linear), and so on.  The model class name serves as a stable handle
+in \c model_default, in schema annotations, and in generated IR write tables.
+Structural discrimination would require guessing at field shapes, which is
+fragile as models evolve.
+
+Accepted user input for a Union field is therefore a single-key dictionary
+whose key matches one branch's field name, for example \c {"linear": true}
+or \c {"retry": 3}.  \c DakotaBaseModel adds a model-level validator that
+rejects input containing more than one branch key.
+
+The \c dict branch that appears in Patterns 3, 5, and 6 is a deliberate
+catch-all sentinel matching an empty dictionary \c {}, which represents
+"feature enabled with no explicit sub-selection."  Without it, there would
+be no way to express "turn this on but supply no arguments" without inventing
+a spurious flag field.
+
+Always record \c union_pattern in the \c DakotaField \c dakota dict.  This
+documents the intended semantics for other developers and allows code
+generators to emit the correct IR defaults for omitted branches.
 
 \subsection PydanticSpecUnionPattern1 Pattern 1: Optional with model default
 
-Python shape: \c Union[OptionA,...] with a model \c default_factory.
+Python shape: \c Union[OptionA, OptionB] with a \c default_factory.
 
-Semantics: omission yields a meaningful default branch.
+Semantics: omission yields a meaningful default branch selected at grammar
+time.
+
+Use this when there is a sensible built-in choice that most users will not
+need to override.
+
+Example — GP surrogate trend function (\c model.py \c ExperimentalGPConfig):
+
+\code
+# Each branch wraps exactly one user-visible keyword.
+class TrendNone(DakotaBaseModel):
+    none: Literal[True] = DakotaField(default=True, ...)
+
+class ExperimentalGPTrendLinear(DakotaBaseModel):
+    linear: Literal[True] = DakotaField(default=True, ...)
+
+class ExperimentalGPTrendReducedQuadratic(DakotaBaseModel):
+    reduced_quadratic: Literal[True] = DakotaField(default=True, ...)
+
+# Union field uses default_factory to name the default branch.
+trend: Union[
+    TrendNone,
+    ExperimentalGPTrendLinear,
+    ExperimentalGPTrendReducedQuadratic,
+] = DakotaField(
+    default_factory=ExperimentalGPTrendReducedQuadratic,
+    description="Polynomial trend function",
+    dakota={"union_pattern": 1, "model_default": "ExperimentalGPTrendReducedQuadratic"},
+)
+\endcode
+
+<ul>
+<li>Omitting \c trend silently selects \c reduced_quadratic.</li>
+<li>Writing <tt>trend reduced_quadratic</tt> selects the same branch explicitly.</li>
+<li>Writing <tt>trend linear</tt> selects \c ExperimentalGPTrendLinear.</li>
+<li>Writing <tt>trend none</tt> disables the trend function.</li>
+</ul>
+
+The \c model_default string must equal the class name of the
+\c default_factory exactly; the code generator uses it to record the
+grammar-level default in the JSON schema.
 
 \subsection PydanticSpecUnionPattern2 Pattern 2: Optional with no default branch
 
-Python shape: \c Union[OptionA,...] | None with \c default=None.
+Python shape: \c Union[OptionA, OptionB] | None with \c default=None.
 
-Semantics: omission disables the feature.
+Semantics: omission disables the feature; the user must write a branch
+keyword to enable it.
+
+Use this for optional features that are off by default with no meaningful
+auto-selection.
+
+Example — MARS surrogate interpolation type (\c model.py \c MarsConfig):
+
+\code
+# Branch wrapper models; the field name on each is the user-visible keyword.
+class InterpLinear(DakotaBaseModel):
+    linear: Literal[True] = DakotaField(default=True, ...)
+
+class InterpCubic(DakotaBaseModel):
+    cubic: Literal[True] = DakotaField(default=True, ...)
+
+interpolation: Union[InterpLinear, InterpCubic] | None = DakotaField(
+    default=None,
+    description="MARS model interpolation type",
+    dakota={"union_pattern": 2},
+)
+\endcode
+
+<ul>
+<li>Omitting \c interpolation leaves it disabled (\c None).</li>
+<li>Writing <tt>interpolation linear</tt> selects \c InterpLinear.</li>
+<li>Writing <tt>interpolation cubic</tt> selects \c InterpCubic.</li>
+</ul>
 
 \subsection PydanticSpecUnionPattern3 Pattern 3: Three-state optional with default branch
 
-Python shape: \c Union[OptionA,...,dict] | None with
-\c default_factory.
+Python shape: \c Union[OptionA, OptionB, dict] | None with a \c default_factory.
 
-Semantics: omission => disabled; \c {} => enabled with defaults; branch
-object => enabled with explicit configuration.
+Semantics: omission => disabled (\c None); \c {} => enabled with the
+grammar-level default branch (from \c default_factory); named branch =>
+enabled with explicit configuration.
+
+Use this when a feature has three semantically distinct states and there is a
+grammar-level default configuration worth recording in the schema.  The
+\c DakotaBaseModel validator converts omission to \c None before validation
+while converting \c {} to a \c default_factory instance, preserving all three
+states.
+
+This pattern is currently unused in the Dakota spec; it is documented here for
+features that may need it in future grammar additions.
+
+Hypothetical example:
+
+\code
+my_feature: Union[FeatureA, FeatureB, dict] | None = DakotaField(
+    default_factory=FeatureA,
+    description="Optional feature with grammar-level default",
+    dakota={"union_pattern": 3, "model_default": "FeatureA"},
+)
+\endcode
+
+<ul>
+<li>Omitting \c my_feature => \c None (disabled).</li>
+<li>Writing <tt>my_feature {}</tt> => enabled, \c FeatureA defaults applied.</li>
+<li>Writing <tt>my_feature { feature_b ... }</tt> => enabled, \c FeatureB selected.</li>
+</ul>
 
 \subsection PydanticSpecUnionPattern4 Pattern 4: Required Union
 
-Python shape: \c Union[OptionA,...].
+Python shape: \c Union[OptionA, OptionB] with no \c default and no \c | None.
 
-Semantics: user must select a branch.
+Semantics: user must select exactly one branch; omission is a validation
+error.
+
+Use this for top-level type-selection fields where every valid study
+requires an explicit choice.
+
+Example — response type (\c responses.py \c ResponsesConfig):
+
+\code
+class ObjectiveFunctions(DakotaBaseModel):
+    objective_functions: int = DakotaField(description="Number of objective functions", ...)
+
+class CalibrationTerms(DakotaBaseModel):
+    calibration_terms: int = DakotaField(description="Number of calibration terms", ...)
+
+class ResponseFunctions(DakotaBaseModel):
+    response_functions: int = DakotaField(description="Number of response functions", ...)
+
+response_type: Union[ObjectiveFunctions, CalibrationTerms, ResponseFunctions] = DakotaField(
+    description="Response Type",
+    dakota={"anchor": True, "union_pattern": 4},
+)
+\endcode
+
+<ul>
+<li>Omitting \c response_type raises a validation error.</li>
+<li>Writing <tt>objective_functions 2</tt> selects \c ObjectiveFunctions.</li>
+<li>Writing <tt>calibration_terms 3</tt> selects \c CalibrationTerms.</li>
+<li>Writing <tt>response_functions 4</tt> selects \c ResponseFunctions.</li>
+</ul>
 
 \subsection PydanticSpecUnionPattern5 Pattern 5: Three-state optional without grammar default
 
-Python shape: \c Union[OptionA,...,dict] | None with \c default=None.
+Python shape: \c Union[OptionA, OptionB, dict] | None with \c default=None.
 
-Semantics: omission => disabled; \c {} => implementation defaults; branch
-=> explicit.
+Semantics: omission => disabled (\c None); \c {} => enabled with C++
+implementation defaults (no grammar-level default recorded in the schema);
+named branch => enabled with explicit configuration.
+
+Use this when a feature has an on/off state independent of its configuration
+and no grammar-level default makes sense — enabling it with an empty block
+defers entirely to the C++ side for initialization.
+
+Example — surrogate cross-validation (\c model.py \c Metrics):
+
+\code
+class Folds(DakotaBaseModel):
+    folds: int = DakotaField(description="Number of cross-validation folds", ...)
+
+class Percent(DakotaBaseModel):
+    percent: DakotaFloat = DakotaField(description="Percent of data per fold", ...)
+
+cross_validation: Union[Folds, Percent, dict] | None = DakotaField(
+    default=None,
+    description="Perform k-fold cross validation",
+    dakota={"union_pattern": 5, ...},
+)
+\endcode
+
+<ul>
+<li>Omitting \c cross_validation disables it (\c None).</li>
+<li>Writing <tt>cross_validation</tt> (bare keyword, no arguments) enables it with C++ defaults.</li>
+<li>Writing <tt>cross_validation folds = 10</tt> enables it with 10 folds.</li>
+<li>Writing <tt>cross_validation percent = 0.1</tt> enables it with 10% per fold.</li>
+</ul>
+
+The difference from Pattern 3: Pattern 5 has \c default=None (not a
+\c default_factory), so there is no grammar-level default branch and \c {}
+falls through to C++ initialization rather than invoking a factory.
 
 \subsection PydanticSpecUnionPattern6 Pattern 6: Required parent with optional subselection
 
-Python shape: \c Union[OptionA,...,dict].
+Python shape: \c Union[OptionA, OptionB, dict] with no \c | None.
 
-Semantics: parent must exist; \c {} is a valid "no subselection" choice.
+Semantics: the parent field must be present; \c {} is a valid "no
+subselection" choice; named branches add explicit sub-configuration.
+
+Use this when the enclosing feature is always required but internal
+sub-configuration is optional — the user must write the parent keyword but
+need not choose a sub-variant.
+
+This pattern is currently unused in the Dakota spec; it is documented here for
+future features that may need it.
+
+Hypothetical example:
+
+\code
+sub_config: Union[OptionA, OptionB, dict] = DakotaField(
+    description="Required parent; optional sub-selection",
+    dakota={"union_pattern": 6},
+)
+\endcode
+
+<ul>
+<li>Omitting \c sub_config raises a validation error (no \c | None).</li>
+<li>Writing <tt>sub_config {}</tt> enables it with no sub-selection.</li>
+<li>Writing <tt>sub_config { option_a ... }</tt> enables \c OptionA.</li>
+</ul>
 
 \subsection PydanticSpecUnionRuntime Runtime validation rules
 
@@ -330,9 +611,12 @@ Semantics: parent must exist; \c {} is a valid "no subselection" choice.
 
 <ul>
 <li>Record the intended pattern with \c union_pattern.</li>
-<li>Set \c model_default when the pattern specifies a default branch.</li>
+<li>Set \c model_default when the pattern specifies a default branch;
+    its value must equal the \c default_factory class name exactly.</li>
 <li>Keep the Python annotation, \c default/\c default_factory,
-    \c union_pattern, and \c model_default consistent.</li>
+    \c union_pattern, and \c model_default consistent with each other.</li>
+<li>Patterns 3 and 6 are currently unused; prefer Patterns 1, 2, 4, or 5
+    for new grammar unless neither fits.</li>
 </ul>
 
 \section PydanticSpecDakotaField DakotaField authoring
