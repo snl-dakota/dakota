@@ -84,12 +84,16 @@ Real TaylorApproximation::value(const Variables& vars)
   else { // build up approx value from constant and derivative terms
     const Pecos::SurrogateDataResp& anchor_sdr = approxData.anchor_response();
     Real approx_val = (bdo & 1) ? anchor_sdr.response_function() : 0.;
+    Cout << "Anchor approx_val = " << approx_val << '\n';
     if (bdo & 6) {
       const RealVector& x = vars.continuous_variables();
       const RealVector& x0
 	= approxData.anchor_variables().continuous_variables();
       const RealVector&    grad = anchor_sdr.response_gradient();
       const RealSymMatrix& hess = anchor_sdr.response_hessian();
+      Cout << "x:\n";  write_data(Cout, x);
+      Cout << "x0:\n"; write_data(Cout, x0);
+      Cout << "grad:\n" << grad << "hess:\n" << hess;
       size_t i, num_v = sharedDataRep->numVars;
       for (i=0; i<num_v; i++) {
 	Real dist_i = x[i] - x0[i];
@@ -100,6 +104,7 @@ Real TaylorApproximation::value(const Variables& vars)
 	    approx_val += dist_i * hess(i,j) * (x[j] - x0[j])/2.;
       }
     }
+    Cout << "Final approx_val = " << approx_val << '\n';
     return approx_val;
   }
 }
@@ -121,16 +126,21 @@ const RealVector& TaylorApproximation::gradient(const Variables& vars)
       else
 	approxGradient = 0.;
     }
+    Cout << "Anchor approx_grad:\n" << approxGradient << '\n';
     if (bdo & 4) { // include Hessian terms
       const RealVector& x = vars.continuous_variables();
       const RealVector& x0
 	= approxData.anchor_variables().continuous_variables();
       const RealSymMatrix& hess = anchor_sdr.response_hessian();
+      Cout << "x:\n";  write_data(Cout, x);
+      Cout << "x0:\n"; write_data(Cout, x0);
+      Cout << "hess:\n" << hess;
       size_t i, j, num_v = sharedDataRep->numVars;
       for (i=0; i<num_v; i++)
 	for (j=0; j<num_v; j++)
 	  approxGradient[i] += hess(i,j) * (x[j] - x0[j]);
     }
+    Cout << "Final approx_grad:\n" << approxGradient << '\n';
     return approxGradient;
   }
 }

@@ -16,7 +16,7 @@ from dakota.spec.shared.misc import (
     MethodSeedSequenceMixin,
     MethodThreeOptionalKeywordsMixin,
     MlmfGroupThrottleMixin,
-    MlmfSolutionModeMixin,
+    MlmfSolutionModeIOMixin,
     RngOptionsContext2Mixin,
 )
 from dakota.spec.shared.sampling import (
@@ -36,7 +36,7 @@ class MultilevelBlueConfig(
     MethodThreeOptionalKeywordsMixin,
     MlmfGroupThrottleMixin,
     MlmfGroupPilotSamplesMixin,
-    MlmfSolutionModeMixin,
+    MlmfSolutionModeIOMixin,
     MethodMlmfSubProblemSolverMixin,
     MethodMlmfSolverMetricMixin,
     MethodSeedSequenceMixin,

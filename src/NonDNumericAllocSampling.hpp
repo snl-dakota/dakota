@@ -162,6 +162,11 @@ protected:
   //- Heading: member functions
   //
 
+  void import_model_covariances(const String& filename,
+				RealSymMatrixArray& cov_MM);
+  void export_model_covariances(const String& filename,
+				RealSymMatrixArray& cov_MM);
+
   void shared_increment(String prepend);
   void shared_increment(String prepend, const UShortArray& approx_set);
   void shared_approx_increment(String prepend);

@@ -231,7 +231,9 @@ private:
   //void initialize_acv_covariances(IntRealSymMatrixArrayMap covLL,
   //				  IntRealMatrixMap& cov_LH,
   //				  IntRealVectorMap& var_H);
-
+  void initialize_LL_covariances(RealSymMatrixArray& cov_LL);
+  void initialize_LH_covariances(RealVectorArray& cov_LH);
+  
   // shared_increment() cases:
   void accumulate_acv_sums(RealMatrix& sum_L_baseline, RealVector& sum_H,
 			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
@@ -255,6 +257,17 @@ private:
   //void compute_L_variance(const RealMatrix& sum_L,
   // 			    const RealSymMatrixArray& sum_LL,
   // 			    const SizetArray& num_L, RealMatrix& var_L);
+
+  /// partition imported all-model covariance matrices into covLL,covLH,varH
+  void model_covariances_to_split_covariances(const RealSymMatrixArray& cov_MM,
+					      RealSymMatrixArray& cov_LL,
+					      RealVectorArray& cov_LH,
+					      RealVector& var_H);
+  /// assemble covLL,covLH,varH into all-model covariance matrices for export
+  void split_covariances_to_model_covariances(const RealSymMatrixArray& cov_LL,
+					      const RealVectorArray& cov_LH,
+					      const RealVector& var_H,
+					      RealSymMatrixArray& cov_MM);
 
   void compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F);
   void compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F);
@@ -315,6 +328,13 @@ private:
 
   /// final solution data for ACV (default DAG = {numApprox,...,numApprox})
   MFSolutionData acvSolnData;
+
+  /// filename for optional import of QoI covariances (computed offline in
+  /// lieu of managed pilot sampling)
+  String covImportFilename;
+  /// filename for optional export of QoI covariances (computed from
+  /// pilot sampling)
+  String covExportFilename;
 };
 
 
@@ -361,6 +381,30 @@ initialize_acv_counts(SizetArray& num_H, SizetSymMatrixArray& num_LL)
   num_LL.resize(numFunctions);
   for (size_t qoi=0; qoi<numFunctions; ++qoi)
     num_LL[qoi].shape(numApprox);
+}
+
+
+inline void NonDACVSampling::
+initialize_LL_covariances(RealSymMatrixArray& cov_LL)
+{
+  if (cov_LL.size() != numFunctions) {
+    cov_LL.resize(numFunctions);
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      cov_LL[qoi].shape(numApprox); // leave at full size, but inactive = 0
+  }
+  else
+    for (size_t qoi=0; qoi<numFunctions; ++qoi)
+      cov_LL[qoi] = 0.;
+}
+
+
+inline void NonDACVSampling::initialize_LH_covariances(RealVectorArray& cov_LH)
+{
+  if (cov_LH.size() != numFunctions)
+    cov_LH.resize(numFunctions);
+  for (size_t qoi=0; qoi<numFunctions; ++qoi)
+    if (cov_LH[qoi].length() != numApprox) cov_LH[qoi].size(numApprox);
+    else                                   cov_LH[qoi] = 0.;
 }
 
 

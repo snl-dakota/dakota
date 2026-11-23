@@ -1740,16 +1740,36 @@
                             "$ref": "#/$defs/OfflinePilot"
                         },
                         {
-                            "$ref": "#/$defs/OnlineProjection"
+                            "$ref": "#/$defs/OnlineProjectionImport"
                         },
                         {
-                            "$ref": "#/$defs/OfflineProjection"
+                            "$ref": "#/$defs/OfflineProjectionImport"
                         }
                     ],
                     "description": "Solution mode for multilevel/multifidelity methods",
                     "title": "Solution Mode",
                     "x-model-default": "OnlinePilot",
                     "x-union-pattern": 1
+                },
+                "export_model_covariances_file": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Export model covariances to a file after computation from a pilot sample",
+                    "title": "Export Model Covariances File",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.export_model_covariances_file",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "pilot_samples": {
                     "anyOf": [
@@ -55739,16 +55759,36 @@
                             "$ref": "#/$defs/OfflinePilot"
                         },
                         {
-                            "$ref": "#/$defs/OnlineProjection"
+                            "$ref": "#/$defs/OnlineProjectionImport"
                         },
                         {
-                            "$ref": "#/$defs/OfflineProjection"
+                            "$ref": "#/$defs/OfflineProjectionImport"
                         }
                     ],
                     "description": "Solution mode for multilevel/multifidelity methods",
                     "title": "Solution Mode",
                     "x-model-default": "OnlinePilot",
                     "x-union-pattern": 1
+                },
+                "export_model_covariances_file": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Export model covariances to a file after computation from a pilot sample",
+                    "title": "Export Model Covariances File",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.export_model_covariances_file",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
                 },
                 "pilot_samples": {
                     "anyOf": [
@@ -62426,7 +62466,7 @@
         },
         "OfflineProjection": {
             "additionalProperties": false,
-            "description": "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample",
+            "description": "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample (cost excluded)",
             "properties": {
                 "offline_projection": {
                     "const": true,
@@ -62445,6 +62485,55 @@
                 }
             },
             "title": "OfflineProjection",
+            "type": "object"
+        },
+        "OfflineProjectionImport": {
+            "additionalProperties": false,
+            "description": "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample (cost excluded)",
+            "properties": {
+                "offline_projection": {
+                    "$ref": "#/$defs/OfflineProjectionImportConfig",
+                    "description": "Specify a solution mode that estimates performance based on projecting initial correlation/variance estimates from an offline pilot sample",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.ensemble_pilot_solution_mode",
+                            "ir_value_type": "short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "OFFLINE_PILOT_PROJECTION"
+                        }
+                    ],
+                    "x-model-default": "OfflineProjectionConfig"
+                }
+            },
+            "title": "OfflineProjectionImport",
+            "type": "object"
+        },
+        "OfflineProjectionImportConfig": {
+            "additionalProperties": false,
+            "description": "Specify a solution mode that excludes the pilot cost from sample allocation logic",
+            "properties": {
+                "import_model_covariances_file": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Import model covariances from a file instead of evaluating them from an offline pilot sample",
+                    "title": "Import Model Covariances File",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.import_model_covariances_file",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                }
+            },
+            "title": "OfflineProjectionImportConfig",
             "type": "object"
         },
         "OffsetNormalConfig": {
@@ -62834,7 +62923,7 @@
         },
         "OnlineProjection": {
             "additionalProperties": false,
-            "description": "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample",
+            "description": "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample (cost included)",
             "properties": {
                 "online_projection": {
                     "const": true,
@@ -62853,6 +62942,55 @@
                 }
             },
             "title": "OnlineProjection",
+            "type": "object"
+        },
+        "OnlineProjectionImport": {
+            "additionalProperties": false,
+            "description": "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample (cost included)",
+            "properties": {
+                "online_projection": {
+                    "$ref": "#/$defs/OnlineProjectionImportConfig",
+                    "description": "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.ensemble_pilot_solution_mode",
+                            "ir_value_type": "short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "ONLINE_PILOT_PROJECTION"
+                        }
+                    ],
+                    "x-model-default": "OnlineProjectionConfig"
+                }
+            },
+            "title": "OnlineProjectionImport",
+            "type": "object"
+        },
+        "OnlineProjectionImportConfig": {
+            "additionalProperties": false,
+            "description": "Specify a solution mode that estimates performance based on projecting initial correlation / covariance estimates from an online pilot sample (cost included)",
+            "properties": {
+                "import_model_covariances_file": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Import model covariances from a file instead of evaluating them from an online pilot sample",
+                    "title": "Import Model Covariances File",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.import_model_covariances_file",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                }
+            },
+            "title": "OnlineProjectionImportConfig",
             "type": "object"
         },
         "Optimize": {

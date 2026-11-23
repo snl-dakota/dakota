@@ -33,7 +33,8 @@ public:
   //
 
   /// standard constructor
-  NonDMultilevBLUESampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib, 
+  NonDMultilevBLUESampling(ProblemDescDB& problem_db,
+			   ParallelLibrary& parallel_lib, 
 			   std::shared_ptr<Model> model);
   /// DI constructor
   NonDMultilevBLUESampling(std::shared_ptr<StudyServices> services,
@@ -257,6 +258,8 @@ private:
 			     RealSymMatrix2DArray& cov_GG,
 			     RealSymMatrix2DArray& cov_GG_inv, bool pilot=false, int moment=1);
 
+  void model_covariances_to_group_covariances(RealSymMatrix2DArray& cov_GG);
+
   void covariance_to_correlation_sq(const RealSymMatrixArray& cov_GG_g,
 				    RealMatrix& rho2_LH);
 
@@ -334,6 +337,13 @@ private:
 
   /// mode for pilot sampling: shared or independent
   short pilotGroupSampling;
+
+  /// filename for optional import of QoI covariances (computed offline in
+  /// lieu of managed pilot sampling)
+  String covImportFilename;
+  /// filename for optional export of QoI covariances (computed from
+  /// pilot sampling)
+  String covExportFilename;
 
   /// type of throttle for mitigating combinatorial growth in numGroups
   short groupThrottleType;
