@@ -38,45 +38,50 @@ NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
   mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
   //analyticEstVarDerivs = false; // for gradient verification in ACV,GenACV
 
-  if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
-    optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
-  else {                          //   budget constraint (maxFunctionEvals)
-    // truthFixedByPilot is a user-specified option for fixing the number of
-    // HF samples (to those in the pilot).  In this case, equivHF budget is
-    // allocated by optimizing r* for fixed N.
-    bool offline = (pilotMgmtMode == OFFLINE_PILOT ||
-		    pilotMgmtMode == OFFLINE_PILOT_PROJECTION);
-    optSubProblemForm = (truthFixedByPilot && !offline) ?
-      R_ONLY_LINEAR_CONSTRAINT : N_MODEL_LINEAR_CONSTRAINT;
-  }
-
-  if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "ACV sub-method selection = " << mlmfSubMethod
-	 << " sub-method formulation = "  << optSubProblemForm
-	 << " sub-problem solver = "      << optSubProblemSolver << std::endl;
-
-  // approximation set for ACV includes all approximations
-  // defining fullApproxSet allows reuse of functions across ACV and GenACV
-  fullApproxSet.resize(numApprox);
-  for (size_t i=0; i<numApprox; ++i)
-    fullApproxSet[i] = i;
-
-  load_pilot_sample(problem_db.get<const SizetArray>("method.nond.pilot_samples"),
-		    numGroups, pilotSamples);
-
-  size_t max_ps = find_max(pilotSamples);
-  if (max_ps) maxEvalConcurrency *= max_ps;
+  class_initialize(problem_db.get<const SizetArray>("method.nond.pilot_samples"));
 }
 
 
 NonDACVSampling::
 NonDACVSampling(std::shared_ptr<StudyServices> services, const IRStore& method_store,
 		std::shared_ptr<Model> model):
-  NonDNumericAllocSampling(std::move(services), method_store, model)
+  NonDNumericAllocSampling(std::move(services), method_store, model),
+  covImportFilename(
+    method_store.get<const String>("method.nond.import_model_covariances_file")),
+  covExportFilename(
+    method_store.get<const String>("method.nond.export_model_covariances_file"))
   //, multiStartACV(true)
 {
   mlmfSubMethod = method_store.get<unsigned short>("sub_method");
   //analyticEstVarDerivs = false; // for gradient verification in ACV,GenACV
+
+  class_initialize(method_store.get<SizetArray>("nond.pilot_samples"));
+}
+
+
+NonDACVSampling::class_initialize(const SizetArray& pilot_samples_spec)
+{
+  if (!covImportFilename.empty()) {
+    bool err_flag = false;
+    // this case prevented by current spec dependencies
+    // *** TO DO: add to OFFLINE_PILOT + EST_PERF?  Or prune QOI_STATS here?
+    if (pilotMgmtMode == ONLINE_PILOT) {
+      //|| (pilotMgmtMode  == OFFLINE_PILOT &&
+      //    finalStatsType == QOI_STATISTICS)) { // *** TO DO ***
+      Cerr << "Error: covariance import requires pilot projection mode\n       "
+	   << "(estimator performance without QoI statistics)." << std::endl;
+      err_flag = true;
+    }
+    // this case is possible
+    if (costSource == ONLINE_COST_RECOVERY ||
+	costSource == MIXED_COST_SPEC_RECOVERY) {
+      Cerr << "Error: online cost recovery unavailable when selecting "
+	   << "covariance import." << std::endl;
+      err_flag = true;
+    }
+    if (err_flag)
+      abort_handler(METHOD_ERROR);
+  }
 
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
     optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
@@ -101,8 +106,7 @@ NonDACVSampling(std::shared_ptr<StudyServices> services, const IRStore& method_s
   for (size_t i=0; i<numApprox; ++i)
     fullApproxSet[i] = i;
 
-  load_pilot_sample(method_store.get<SizetArray>("nond.pilot_samples"),
-                    numGroups, pilotSamples);
+  load_pilot_sample(pilot_samples_spec, numGroups, pilotSamples);
 
   size_t max_ps = find_max(pilotSamples);
   if (max_ps) maxEvalConcurrency *= max_ps;
@@ -397,16 +401,23 @@ evaluate_pilot(IntRealMatrixMap& sum_L_pilot, IntRealVectorMap& sum_H_pilot,
 		      sum_HH_pilot);
   N_pilot.assign(numFunctions, 0);
 
-  shared_increment("acv_"); // spans ALL models, blocking
-  accumulate_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
-		      sum_HH_pilot, N_pilot);
+  if (covImportFilename.empty()) {
+    shared_increment("acv_"); // spans ALL models, blocking
+    accumulate_acv_sums(sum_L_pilot, sum_H_pilot, sum_LL_pilot, sum_LH_pilot,
+			sum_HH_pilot, N_pilot);
 
-  compute_LH_statistics(sum_L_pilot[1], sum_H_pilot[1], sum_LL_pilot[1],
-			sum_LH_pilot[1], sum_HH_pilot, N_pilot,
-			varH, covLL, covLH);
+    compute_LH_statistics(sum_L_pilot[1], sum_H_pilot[1], sum_LL_pilot[1],
+			  sum_LH_pilot[1], sum_HH_pilot, N_pilot,
+			  varH, covLL, covLH);
 
-  if (costSource != USER_COST_SPEC) // don't update group costs (GenACV)
-    recover_online_cost(allResponses); //update_model_group_costs();
+    if (costSource != USER_COST_SPEC) // don't update group costs (GenACV)
+      recover_online_cost(allResponses); //update_model_group_costs();
+  }
+  else {
+    RealSymMatrixArray cov_MM(numFunctions); // each matrix \in nmApprox+1
+    import_model_covariances(covImportFilename, cov_MM);
+    model_covariances_to_split_covariances(cov_MM, covLL, covLH, varH);
+  }
   if (incr_cost)
     increment_equivalent_cost(numSamples,sequenceCost,0,numGroups,equivHFEvals);
   if (!covExportFilename.empty()) {

@@ -68,26 +68,14 @@ NonDMultilevBLUESampling(std::shared_ptr<StudyServices> services,
 
 
 void NonDMultilevBLUESampling::class_initialize(const SizetArray& pilot_samples)
-=======
-  pilotGroupSampling(problem_db.get<short>("method.nond.pilot_samples.mode")),
-  groupThrottleType(problem_db.get<short>("method.nond.group_throttle_type")),
-  groupSizeThrottle(
-    problem_db.get<unsigned short>("method.nond.group_size_throttle")),
-  rCondBestThrottle(problem_db.get<size_t>("method.nond.rcond_best_throttle")),
-  rCondTolThrottle(
-    problem_db.get<const Real>("method.nond.rcond_tol_throttle")),
-  covImportFilename(
-    probDescDB.get<const String>("method.nond.import_model_covariances_file")),
-  covExportFilename(
-    probDescDB.get<const String>("method.nond.export_model_covariances_file"))
->>>>>>> origin/import_covar
 {
   if (!covImportFilename.empty()) {
     bool err_flag = false;
     // this case prevented by current spec dependencies
     // *** TO DO: add to OFFLINE_PILOT + EST_PERF?  Or prune QOI_STATS here?
-    if (pilotMgmtMode == ONLINE_PILOT || (pilotMgmtMode  == OFFLINE_PILOT &&
-					  finalStatsType == QOI_STATISTICS)) {
+    if (pilotMgmtMode == ONLINE_PILOT) {
+      //|| (pilotMgmtMode  == OFFLINE_PILOT &&
+      //    finalStatsType == QOI_STATISTICS)) { // *** TO DO ***
       Cerr << "Error: covariance import requires pilot projection mode\n       "
 	   << "(estimator performance without QoI statistics)." << std::endl;
       err_flag = true;
@@ -415,7 +403,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 			    sequenceCost[numApprox], equivHFEvals);
   clear_batches();
   // extract moments
-  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot, // offline for covar
+  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot, // offline for covar *** TO DO: VIABLE FOR COVAR IMPORT? ***
 		   sum_G, sum_GG, NGroupActual);       // online for mu-hat
   // finalize
   finalize_counts(NGroupActual, NGroupAlloc);
@@ -615,7 +603,7 @@ evaluate_pilot(RealMatrixArray& sum_G_pilot, RealSymMatrix2DArray& sum_GG_pilot,
     break;
   case SHARED_PILOT: {
     numSamples = pilotSamples[all_group];
-    if (covImportFilename.empty()) { // *** BETTER SWITCH AFTER SPEC UPDATE?
+    if (covImportFilename.empty()) {
       shared_increment("blue_");
       // accumulate for one group only and reuse for group covariances
       RealMatrix&          sum_G_sh =    sum_G_pilot[all_group];
@@ -691,7 +679,7 @@ evaluate_pilot(IntRealMatrixArrayMap& sum_G_pilot,
     break;
   case SHARED_PILOT: {
     numSamples = pilotSamples[all_group];
-    if (covImportFilename.empty()) { // *** BETTER SWITCH AFTER SPEC UPDATE?
+    if (covImportFilename.empty()) {
       shared_increment("blue_");
       // accumulate for one group only and reuse for group covariances
       accumulate_blue_sums(sum_G_pilot, sum_GG_pilot, N_shared_pilot, all_group,
