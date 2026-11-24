@@ -9679,17 +9679,17 @@ class OfflineProjectionImportConfig(DakotaBaseModel):
     "Specify a solution mode that excludes the pilot cost from sample allocation logic"
 
     import_model_covariances_file: str | None = DakotaField(
-            default=None,
-            description="Import model covariances from a file instead of evaluating them from an offline pilot sample",
-            dakota={
-                "materialization": [
-                    {
-                        "ir_key": "method.nond.import_model_covariances_file",
-                        "storage_type": "DIRECT_VALUE",
-                        "ir_value_type": "String",
-                    }
-                ]
-            },
+        default=None,
+        description="Import model covariances from a file instead of evaluating them from an offline pilot sample",
+        dakota={
+            "materialization": [
+                {
+                    "ir_key": "method.nond.import_model_covariances_file",
+                    "storage_type": "DIRECT_VALUE",
+                    "ir_value_type": "String",
+                }
+            ]
+        },
     )
 
 

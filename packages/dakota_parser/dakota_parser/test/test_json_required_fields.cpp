@@ -869,3 +869,131 @@ responses
             << value << ": " << (errors.empty() ? "(none)" : errors[0]);
     }
 }
+
+// ============================================================================
+// Suite 8: SolutionModeOptionalSubKeyword
+// Regression for a bug where an optional sub-keyword inside a union variant
+// that uses a $ref config type was serialised as boolean true instead of {}
+// when no sub-keywords were written.  Specifically, offline_projection and
+// online_projection in MlmfSolutionModeIOMixin (used by
+// approximate_control_variate and multilevel_blue) have type
+// OfflineProjectionImportConfig / OnlineProjectionImportConfig — objects with
+// an optional import_model_covariances_file child.  When no child was written,
+// ast_to_json incorrectly produced true (because offline_projection is in
+// boolean_fields globally, from MlmfSolutionModeMixin's OfflineProjection
+// variant).  The fix checks the parent definition's context in addition to the
+// direct context_def when deciding whether a child is boolean.
+// ============================================================================
+
+namespace {
+
+// Shared blocks for Suite 8: a standard variables/interface/responses skeleton.
+constexpr const char* k_suite8_tail = R"(
+variables
+  uniform_uncertain = 2
+    lower_bounds = 0.0 0.0
+    upper_bounds = 1.0 1.0
+interface
+  analysis_drivers = 'text_book'
+    direct
+responses
+  response_functions = 1
+  no_gradients
+  no_hessians
+)";
+
+} // anonymous namespace
+
+// 8.1  ACV: offline_projection without import_model_covariances_file.
+//      Before the fix this produced "Field 'offline_projection' does not match
+//      schema type/const requirements (in ApproximateControlVariateConfig__solution_mode)".
+TEST(SolutionModeOptionalSubKeyword, AcvOfflineProjectionWithoutImportFile)
+{
+    const std::string input = std::string(R"(
+environment
+method
+  approximate_control_variate
+    acv_independent_sampling
+    solution_mode
+      offline_projection
+)") + k_suite8_tail;
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::read_freeform_input_string_to_json(input, output, errors);
+
+    EXPECT_TRUE(ok)
+        << "offline_projection without import_model_covariances_file should validate; "
+        << "first error: " << (errors.empty() ? "(none)" : errors[0]);
+
+    // offline_projection must serialise as an empty object {}, not as boolean true.
+    if (ok) {
+        const auto& sm =
+            output.at("method").at(0).at("approximate_control_variate").at("solution_mode");
+        ASSERT_TRUE(sm.contains("offline_projection"))
+            << "solution_mode should contain offline_projection";
+        EXPECT_TRUE(sm.at("offline_projection").is_object())
+            << "offline_projection should be {} in ACV context, not boolean true";
+    }
+}
+
+// 8.2  ACV: offline_projection with import_model_covariances_file (worked before
+//      the fix too; kept as a non-regression check).
+TEST(SolutionModeOptionalSubKeyword, AcvOfflineProjectionWithImportFile)
+{
+    const std::string input = std::string(R"(
+environment
+method
+  approximate_control_variate
+    acv_independent_sampling
+    solution_mode
+      offline_projection
+        import_model_covariances_file = 'covar.dat'
+)") + k_suite8_tail;
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::read_freeform_input_string_to_json(input, output, errors);
+
+    EXPECT_TRUE(ok)
+        << "offline_projection with import_model_covariances_file should validate; "
+        << "first error: " << (errors.empty() ? "(none)" : errors[0]);
+
+    if (ok) {
+        const auto& sm =
+            output.at("method").at(0).at("approximate_control_variate").at("solution_mode");
+        ASSERT_TRUE(sm.contains("offline_projection"));
+        EXPECT_TRUE(sm.at("offline_projection").is_object());
+        EXPECT_TRUE(sm.at("offline_projection").contains("import_model_covariances_file"));
+    }
+}
+
+// 8.3  ACV: online_projection without import_model_covariances_file (symmetric
+//      counterpart of 8.1 for the online variant).
+TEST(SolutionModeOptionalSubKeyword, AcvOnlineProjectionWithoutImportFile)
+{
+    const std::string input = std::string(R"(
+environment
+method
+  approximate_control_variate
+    acv_independent_sampling
+    solution_mode
+      online_projection
+)") + k_suite8_tail;
+
+    json output;
+    std::vector<std::string> errors;
+    bool ok = dakota::read_freeform_input_string_to_json(input, output, errors);
+
+    EXPECT_TRUE(ok)
+        << "online_projection without import_model_covariances_file should validate; "
+        << "first error: " << (errors.empty() ? "(none)" : errors[0]);
+
+    if (ok) {
+        const auto& sm =
+            output.at("method").at(0).at("approximate_control_variate").at("solution_mode");
+        ASSERT_TRUE(sm.contains("online_projection"));
+        EXPECT_TRUE(sm.at("online_projection").is_object())
+            << "online_projection should be {} in ACV context, not boolean true";
+    }
+}

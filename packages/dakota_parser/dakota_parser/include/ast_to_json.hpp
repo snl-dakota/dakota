@@ -275,14 +275,12 @@ inline json convert_keyword(const KeywordNode& kw, const std::string& parent_def
             // Resolve child's config type: try context_def, then parent_def fallback
             auto child_config = lookup_with_fallback(
                 ast_metadata::get_child_config_type, context_def, parent_def, child_effective);
-            // For boolean decisions, only trust the direct context_def lookup
-            std::string child_context_def = ast_metadata::get_child_config_type(context_def, child_effective);
-            
+
             // Check if this child belongs in an anchor field
             auto anchor_result = lookup_with_fallback(
                 ast_metadata::get_anchor_for_child, context_def, parent_def, child_effective);
             std::string anchor = anchor_result.value;
-            
+
             if (!anchor.empty()) {
                 if (!anchor_contents.count(anchor)) {
                     anchor_contents[anchor] = json::object();
@@ -290,10 +288,21 @@ inline json convert_keyword(const KeywordNode& kw, const std::string& parent_def
                 json child_json = convert_keyword(*child, child_config.source_def, kw_name);
                 anchor_contents[anchor][child_effective] = child_json;
             } else {
-                // Boolean check: only suppress via direct context_def, not fallback
+                // Suppress the boolean early-exit when the child is an object type:
+                // (a) the context directly knows it via a $ref (e.g. SamplingConfig →
+                //     principal_components → SamplingPrincipalComponents), or
+                // (b) the parent's union for kw_name has it as an object variant
+                //     (e.g. ACV solution_mode: offline_projection is an object, while
+                //     in MFS solution_mode it remains Literal[True]).
                 bool child_is_boolean = ast_metadata::is_boolean_field(child_effective);
-                if (child_is_boolean && !child_context_def.empty()) {
-                    child_is_boolean = false;
+                if (child_is_boolean) {
+                    const std::string direct_type =
+                        ast_metadata::get_child_config_type(context_def, child_effective);
+                    if (!direct_type.empty() ||
+                        ast_metadata::is_object_in_union_context(
+                            parent_def, kw_name, child_effective)) {
+                        child_is_boolean = false;
+                    }
                 }
                 
                 if (!child->has_children() && child_is_boolean &&

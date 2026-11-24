@@ -47,7 +47,8 @@ class ASTMetadataGenerator:
         self.definition_properties: Dict[str, Set[str]] = {}  # def_name -> set of all property names
         self.context_argument_fields_by_def: Dict[str, Dict[str, str]] = {}  # def_name -> {field_name -> argument_name}
         self.non_array_overrides: Dict[str, Set[str]] = {}  # def_name -> {fields that are NOT array here}
-        
+        self.union_object_children: Dict[str, Dict[str, Set[str]]] = {}  # def_name -> {field_name -> {child_names that are object types}}
+
     # --- Schema utility delegations (thin wrappers for backward compat) ---
     def resolve_ref(self, ref: str) -> Optional[dict]:
         return su.resolve(self.defs, ref)
@@ -360,6 +361,9 @@ class ASTMetadataGenerator:
                     if child_ref:
                         self.context_discriminator_configs.setdefault(def_name, {}). \
                             setdefault(vchild_name, child_ref)
+                        # Track that this child is an object type in this union field
+                        self.union_object_children.setdefault(def_name, {}). \
+                            setdefault(field_name, set()).add(vchild_name)
                     
                     # Propagate argument fields by definition
                     if varg:
@@ -748,6 +752,29 @@ class ASTMetadataGenerator:
         lines.append("    return array_arg_kws.count(kw_name) > 0;")
         lines.append("}")
         
+        # Union object children: (parent_def, field_name, child_name) -> bool
+        # True when child_name is an object type in the union for field_name within parent_def.
+        # Used to override boolean detection for union-pattern fields that have per-context types.
+        lines.append("// Returns true if child_name is an object type in the union for field_name in parent_def.")
+        lines.append("// Prevents false boolean classification when a keyword is Literal[True] in one mixin")
+        lines.append("// but an object type in another (e.g. offline_projection in ACV vs MFS).")
+        lines.append("inline bool is_object_in_union_context(const std::string& parent_def, const std::string& field_name, const std::string& child_name) {")
+        lines.append("    static const std::map<std::string, std::map<std::string, std::set<std::string>>> data = {")
+        for def_name, fields in sorted(self.union_object_children.items()):
+            lines.append(f'        {{"{def_name}", {{')
+            for field, children in sorted(fields.items()):
+                children_str = ", ".join(f'"{c}"' for c in sorted(children))
+                lines.append(f'            {{"{field}", {{{children_str}}}}},')
+            lines.append("        }},")
+        lines.append("    };")
+        lines.append("    auto it1 = data.find(parent_def);")
+        lines.append("    if (it1 == data.end()) return false;")
+        lines.append("    auto it2 = it1->second.find(field_name);")
+        lines.append("    if (it2 == it1->second.end()) return false;")
+        lines.append("    return it2->second.count(child_name) > 0;")
+        lines.append("}")
+        lines.append("")
+
         lines.append("} // namespace ast_metadata")
         lines.append("} // namespace dakota")
         lines.append("")
