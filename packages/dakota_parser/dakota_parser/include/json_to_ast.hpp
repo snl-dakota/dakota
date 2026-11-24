@@ -114,9 +114,12 @@ inline void add_children(KeywordNode& node, const json& obj,
         // Whether convert_keyword() writes this child, given without values,
         // as a boolean: its child loop tests the direct context_def for
         // children outside an anchor, then the child's own source_def.
+        // is_object_in_union_context overrides boolean for union-pattern fields
+        // where the child is an object type in this specific context.
         const bool boolean_form =
-            is_boolean_in_context(child, cfg.source_def) ||
-            (!anchored && is_boolean_in_context(child, context_def));
+            !ast_metadata::is_object_in_union_context(parent_def, kw_name, child) &&
+            (is_boolean_in_context(child, cfg.source_def) ||
+             (!anchored && is_boolean_in_context(child, context_def)));
         if (auto kw = keyword_from_json(child, child_val, cfg.source_def, kw_name,
                                         boolean_form, child_path, ctx))
             node.add_child(child, kw);
