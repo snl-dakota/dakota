@@ -68,10 +68,10 @@ NonDNumericAllocSampling(std::shared_ptr<StudyServices> services,
 			 std::shared_ptr<Model> model):
   NonDEnsembleSampling(std::move(services), method_store, model),
   activeBudget((Real)maxFunctionEvals),
-  //covImportFilename(method_store.get<const String>(
-  //  "nond.import_model_covariances_file")),
-  //covExportFilename(method_store.get<const String>(
-  //  "nond.export_model_covariances_file")),
+  covImportFilename(method_store.get<String>(
+    "nond.import_model_covariances_file")),
+  covExportFilename(method_store.get<String>(
+    "nond.export_model_covariances_file")),
   truthFixedByPilot(method_store.get<bool>("nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec

@@ -1839,14 +1839,11 @@ compute_GG_covariance(const RealMatrix& sum_G_g,
 	    pilotResponseContainer.getCovariance(all_group, m1, m2,qoi,moment) :
 	    responseContainer.getCovariance(all_group,      m1, m2,qoi,moment);
       }
-      model_covariances_to_group_covariances(cov_GG);
     }
-    else {
+    else
       cov_GG_gq.shape(0);
-      for (g=0; g<all_group; ++g)
-	cov_GG[g][qoi].shape(0);
-    }
   }
+  model_covariances_to_group_covariances(cov_GG);
   if (pilot && !covExportFilename.empty())
     export_model_covariances(covExportFilename, cov_GG[all_group]);
 
@@ -1866,16 +1863,21 @@ model_covariances_to_group_covariances(RealSymMatrix2DArray& cov_GG)
   RealSymMatrixArray& cov_GG_g = cov_GG[all_group];// last group, all models
   for (qoi=0; qoi<numFunctions; ++qoi) {
     RealSymMatrix& cov_GG_gq = cov_GG_g[qoi];
-    for (g=0; g<all_group; ++g) {
-      RealSymMatrix& cov_GG_mapped = cov_GG[g][qoi];
-      const UShortArray& group_g = modelGroups[g];
-      num_mapped = group_g.size();
-      if (cov_GG_mapped.numRows() != num_mapped)
-	cov_GG_mapped.shape(num_mapped);
-      for (m1=0; m1<num_mapped; ++m1) {
-	g1 = group_g[m1];
-	for (m2=0; m2<=m1; ++m2)
-	  cov_GG_mapped(m1,m2) = cov_GG_gq(g1, group_g[m2]);
+    if (cov_GG_gq.numRows() == 0)
+      for (g=0; g<all_group; ++g)
+	cov_GG[g][qoi].shape(0);
+    else {
+      for (g=0; g<all_group; ++g) {
+	RealSymMatrix& cov_GG_mapped = cov_GG[g][qoi];
+	const UShortArray& group_g = modelGroups[g];
+	num_mapped = group_g.size();
+	if (cov_GG_mapped.numRows() != num_mapped)
+	  cov_GG_mapped.shape(num_mapped);
+	for (m1=0; m1<num_mapped; ++m1) {
+	  g1 = group_g[m1];
+	  for (m2=0; m2<=m1; ++m2)
+	    cov_GG_mapped(m1,m2) = cov_GG_gq(g1, group_g[m2]);
+	}
       }
     }
   }

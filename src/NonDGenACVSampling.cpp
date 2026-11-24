@@ -1117,8 +1117,9 @@ genacv_raw_moments(const IntRealMatrixMap& sum_L_covar,
 
   const UShortArray& approx_set = activeModelSetIter->first;
   size_t qoi, approx, inflate_approx, num_approx = approx_set.size();
-  RealMatrix H_raw_mom(4, numFunctions);  RealVector beta(num_approx);
-  for (int mom=1; mom<=4; ++mom) {
+  int mom, num_mom = (covImportFilename.empty()) ? 4 : 1;
+  RealMatrix H_raw_mom(num_mom, numFunctions);  RealVector beta(num_approx);
+  for (mom=1; mom<=num_mom; ++mom) {
     const RealMatrix&          sum_L_m =    sum_L_covar.at(mom);
     const RealVector&          sum_H_m =    sum_H_covar.at(mom);
     const RealSymMatrixArray& sum_LL_m =   sum_LL_covar.at(mom);
