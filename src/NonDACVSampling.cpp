@@ -29,16 +29,10 @@ NonDACVSampling::
 NonDACVSampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_lib,
 		std::shared_ptr<Model> model):
   NonDNumericAllocSampling(problem_db, parallel_lib, model),
-  covImportFilename(
-    probDescDB.get<const String>("method.nond.import_model_covariances_file")),
-  covExportFilename(
-    probDescDB.get<const String>("method.nond.export_model_covariances_file"))
+  mlmfSubMethod(probDescDB.get<unsigned short>("method.sub_method"))
   //, multiStartACV(true)
 {
-  mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
-  //analyticEstVarDerivs = false; // for gradient verification in ACV,GenACV
-
-  class_initialize(problem_db.get<const SizetArray>("method.nond.pilot_samples"));
+  acv_initialize(problem_db.get<const SizetArray>("method.nond.pilot_samples"));
 }
 
 
@@ -46,43 +40,15 @@ NonDACVSampling::
 NonDACVSampling(std::shared_ptr<StudyServices> services, const IRStore& method_store,
 		std::shared_ptr<Model> model):
   NonDNumericAllocSampling(std::move(services), method_store, model),
-  covImportFilename(
-    method_store.get<const String>("method.nond.import_model_covariances_file")),
-  covExportFilename(
-    method_store.get<const String>("method.nond.export_model_covariances_file"))
+  mlmfSubMethod(method_store.get<unsigned short>("sub_method"))
   //, multiStartACV(true)
 {
-  mlmfSubMethod = method_store.get<unsigned short>("sub_method");
-  //analyticEstVarDerivs = false; // for gradient verification in ACV,GenACV
-
-  class_initialize(method_store.get<SizetArray>("nond.pilot_samples"));
+  acv_initialize(method_store.get<SizetArray>("nond.pilot_samples"));
 }
 
 
-NonDACVSampling::class_initialize(const SizetArray& pilot_samples_spec)
+void NonDACVSampling::acv_initialize(const SizetArray& pilot_samples_spec)
 {
-  if (!covImportFilename.empty()) {
-    bool err_flag = false;
-    // this case prevented by current spec dependencies
-    // *** TO DO: add to OFFLINE_PILOT + EST_PERF?  Or prune QOI_STATS here?
-    if (pilotMgmtMode == ONLINE_PILOT) {
-      //|| (pilotMgmtMode  == OFFLINE_PILOT &&
-      //    finalStatsType == QOI_STATISTICS)) { // *** TO DO ***
-      Cerr << "Error: covariance import requires pilot projection mode\n       "
-	   << "(estimator performance without QoI statistics)." << std::endl;
-      err_flag = true;
-    }
-    // this case is possible
-    if (costSource == ONLINE_COST_RECOVERY ||
-	costSource == MIXED_COST_SPEC_RECOVERY) {
-      Cerr << "Error: online cost recovery unavailable when selecting "
-	   << "covariance import." << std::endl;
-      err_flag = true;
-    }
-    if (err_flag)
-      abort_handler(METHOD_ERROR);
-  }
-
   if (maxFunctionEvals == SZ_MAX) // accuracy constraint (convTol)
     optSubProblemForm = N_MODEL_LINEAR_OBJECTIVE;
   else {                          //   budget constraint (maxFunctionEvals)
@@ -609,8 +575,8 @@ compute_acv_controls(const IntRealMatrixMap& sum_L_covar,
   // ------------------------------
   precompute_acv_controls(soln.solution_ratios());
 
-  size_t qoi;
-  for (int mom=1; mom<=4; ++mom) {
+  size_t qoi;  int mom, num_mom = (covImportFilename.empty()) ? 4 : 1;
+  for (mom=1; mom<=4; ++mom) {
     const RealMatrix&          sum_L_m =  sum_L_covar.at(mom);
     const RealVector&          sum_H_m =  sum_H_covar.at(mom);
     const RealSymMatrixArray& sum_LL_m = sum_LL_covar.at(mom);
@@ -633,21 +599,21 @@ compute_F_matrix_from_r(const RealVector& r_and_N, RealSymMatrix& F)
 
   switch (mlmfSubMethod) {
 
-  // NonDMultifidelitySampling uses the decoupled form for hierarchical
-  // DAGs (Eq. 16 in JCP ACV paper), bypassing the need for an F matrix.
-  // GenACV-MF uses the parametric G,g form.  The code below, included for
-  // completeness, is not active.
-  //case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
-  //  size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
-  //  for (i=0; i<num_am1; ++i) {
-  //    r_i = r_and_N[i]; r_ip1 = r_and_N[i+1];
-  //    F(i,i) = (r_i - r_ip1) / (r_i * r_ip1);
-  //    for (j=0; j<i; ++j) F(i,j) = 0.;
-  //  }
-  //  r_i = r_ip1; //r_ip1 = 1.;
-  //  F(num_am1,num_am1) = (r_i - 1.) / r_i;
-  //  break;
-  //}
+  // NonDMultifidelitySampling uses the decoupled form for hierarchical DAGs
+  // (Eq. 16 in JCP ACV paper), bypassing the need for an F matrix.  GenACV-MF
+  // uses the parametric G,g form.  The code below, included for completeness,
+  // is not active.
+  case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
+    size_t num_am1 = numApprox - 1;  Real r_i, r_ip1;
+    for (i=0; i<num_am1; ++i) {
+      r_i = r_and_N[i]; r_ip1 = r_and_N[i+1];
+      F(i,i) = (r_i - r_ip1) / (r_i * r_ip1);
+      for (j=0; j<i; ++j) F(i,j) = 0.;
+    }
+    r_i = r_ip1; //r_ip1 = 1.;
+    F(num_am1,num_am1) = (r_i - 1.) / r_i;
+    break;
+  }
 
   case SUBMETHOD_ACV_IS: { // Eq. 30
     Real ri_ratio;
@@ -727,6 +693,10 @@ compute_F_matrix_from_N(const RealVector& N, RealSymMatrix& F)
 
   Real N_i, N_A = N[numApprox];
   switch (mlmfSubMethod) {
+  // NonDMultifidelitySampling uses the decoupled form for hierarchical DAGs
+  // (Eq. 16 in JCP ACV paper), bypassing the need for an F matrix.  GenACV-MF
+  // uses the parametric G,g form.  The code below, included for completeness,
+  // is not active.
   case SUBMETHOD_MFMC: { // diagonal (see Eq. 16 in JCP ACV paper)
     size_t num_am1 = numApprox - 1;  Real N_ip1;
     for (i=0; i<num_am1; ++i) {

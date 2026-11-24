@@ -1737,7 +1737,7 @@
                             "$ref": "#/$defs/OnlinePilot"
                         },
                         {
-                            "$ref": "#/$defs/OfflinePilot"
+                            "$ref": "#/$defs/OfflinePilotImport"
                         },
                         {
                             "$ref": "#/$defs/OnlineProjectionImport"
@@ -55756,7 +55756,7 @@
                             "$ref": "#/$defs/OnlinePilot"
                         },
                         {
-                            "$ref": "#/$defs/OfflinePilot"
+                            "$ref": "#/$defs/OfflinePilotImport"
                         },
                         {
                             "$ref": "#/$defs/OnlineProjectionImport"
@@ -62462,6 +62462,71 @@
                 }
             },
             "title": "OfflinePilotFinalStatisticsQoiStatisticsConfig",
+            "type": "object"
+        },
+        "OfflinePilotImport": {
+            "additionalProperties": false,
+            "description": "Specify a solution mode that excludes the pilot cost from sample allocation logic",
+            "properties": {
+                "offline_pilot": {
+                    "$ref": "#/$defs/OfflinePilotImportConfig",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.ensemble_pilot_solution_mode",
+                            "ir_value_type": "short",
+                            "storage_type": "PRESENCE_ENUM",
+                            "stored_value": "OFFLINE_PILOT"
+                        }
+                    ],
+                    "x-model-default": "OfflinePilotImportConfig"
+                }
+            },
+            "title": "OfflinePilotImport",
+            "type": "object"
+        },
+        "OfflinePilotImportConfig": {
+            "additionalProperties": false,
+            "description": "Specify a solution mode that excludes the pilot cost from sample allocation logic",
+            "properties": {
+                "final_statistics": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/OnlinePilotFinalStatisticsEstimatorPerformance"
+                        },
+                        {
+                            "$ref": "#/$defs/OfflinePilotFinalStatisticsQoiStatistics"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Indicate the type of final statistics to be returned by a UQ method",
+                    "title": "Final Statistics",
+                    "x-union-pattern": 2
+                },
+                "import_model_covariances_file": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "null"
+                        }
+                    ],
+                    "default": null,
+                    "description": "Import model covariances from a file instead of evaluating them from an online pilot sample",
+                    "title": "Import Model Covariances File",
+                    "x-materialization": [
+                        {
+                            "ir_key": "method.nond.import_model_covariances_file",
+                            "ir_value_type": "String",
+                            "storage_type": "DIRECT_VALUE"
+                        }
+                    ]
+                }
+            },
+            "title": "OfflinePilotImportConfig",
             "type": "object"
         },
         "OfflineProjection": {

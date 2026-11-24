@@ -34,15 +34,10 @@ NonDMultilevBLUESampling(ProblemDescDB& problem_db,
   groupThrottleType(probDescDB.get<short>("method.nond.group_throttle_type")),
   groupSizeThrottle(probDescDB.get<unsigned short>("method.nond.group_size_throttle")),
   rCondBestThrottle(probDescDB.get<size_t>("method.nond.rcond_best_throttle")),
-  rCondTolThrottle(probDescDB.get<const Real>("method.nond.rcond_tol_throttle")),
-  covImportFilename(
-    probDescDB.get<const String>("method.nond.import_model_covariances_file")),
-  covExportFilename(
-    probDescDB.get<const String>("method.nond.export_model_covariances_file"))
+  rCondTolThrottle(probDescDB.get<const Real>("method.nond.rcond_tol_throttle"))
 {
-  mlmfSubMethod = problem_db.get<unsigned short>("method.sub_method");
-
-  class_initialize(problem_db.get<const SizetArray>("method.nond.pilot_samples"));
+  mlblue_initialize(
+    problem_db.get<const SizetArray>("method.nond.pilot_samples"));
 }
 
 
@@ -56,41 +51,14 @@ NonDMultilevBLUESampling(std::shared_ptr<StudyServices> services,
   groupSizeThrottle(method_store.get<unsigned short>("nond.group_size_throttle")),
   rCondBestThrottle(method_store.get<size_t>("nond.rcond_best_throttle")),
   rCondTolThrottle(method_store.get<Real>("nond.rcond_tol_throttle"))
-  covImportFilename(method_store.get<const String>(
-    "method.nond.import_model_covariances_file")),
-  covExportFilename(method_store.get<const String>(
-    "method.nond.export_model_covariances_file"))
 {
-  mlmfSubMethod = method_store.get<unsigned short>("sub_method");
-
-  class_initialize(method_store.get<SizetArray>("nond.pilot_samples"));
+  mlblue_initialize(method_store.get<SizetArray>("nond.pilot_samples"));
 }
 
 
-void NonDMultilevBLUESampling::class_initialize(const SizetArray& pilot_samples)
+void NonDMultilevBLUESampling::
+mlblue_initialize(const SizetArray& pilot_samples)
 {
-  if (!covImportFilename.empty()) {
-    bool err_flag = false;
-    // this case prevented by current spec dependencies
-    // *** TO DO: add to OFFLINE_PILOT + EST_PERF?  Or prune QOI_STATS here?
-    if (pilotMgmtMode == ONLINE_PILOT) {
-      //|| (pilotMgmtMode  == OFFLINE_PILOT &&
-      //    finalStatsType == QOI_STATISTICS)) { // *** TO DO ***
-      Cerr << "Error: covariance import requires pilot projection mode\n       "
-	   << "(estimator performance without QoI statistics)." << std::endl;
-      err_flag = true;
-    }
-    // this case is possible
-    if (costSource == ONLINE_COST_RECOVERY ||
-	costSource == MIXED_COST_SPEC_RECOVERY) {
-      Cerr << "Error: online cost recovery unavailable when selecting "
-	   << "covariance import." << std::endl;
-      err_flag = true;
-    }
-    if (err_flag)
-      abort_handler(METHOD_ERROR);
-  }
-
   //analyticEstVarDerivs = true; // now adopted for all numerical estimators
   //hardenNumericSoln    = true; // now adopted for all numerical estimators
 
@@ -104,9 +72,8 @@ void NonDMultilevBLUESampling::class_initialize(const SizetArray& pilot_samples)
     optSubProblemForm = N_GROUP_LINEAR_CONSTRAINT;
 
   if (outputLevel >= DEBUG_OUTPUT)
-    Cout << "ML BLUE sub-method selection = " << mlmfSubMethod
-         << " sub-method formulation = " << optSubProblemForm
-         << " sub-problem solver = "     << optSubProblemSolver << std::endl;
+    Cout << "ML BLUE sub-method formulation = " << optSubProblemForm
+         << " sub-problem solver = " << optSubProblemSolver << std::endl;
 
   // groupThrottleType is inferred for scalar spec so XML can be flattened
   if (!groupThrottleType) {
@@ -403,7 +370,7 @@ void NonDMultilevBLUESampling::ml_blue_offline_pilot()
 			    sequenceCost[numApprox], equivHFEvals);
   clear_batches();
   // extract moments
-  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot, // offline for covar *** TO DO: VIABLE FOR COVAR IMPORT? ***
+  blue_raw_moments(sum_G_pilot, sum_GG_pilot, N_pilot, // offline for covar
 		   sum_G, sum_GG, NGroupActual);       // online for mu-hat
   // finalize
   finalize_counts(NGroupActual, NGroupAlloc);
@@ -1390,8 +1357,9 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_online,
 {
   // For ONLINE_PILOT where covar and sums use latest accumulations
 
-  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
-  for (int mom=1; mom<=4; ++mom) {
+  int mom, num_mom = 4;
+  RealMatrix H_raw_mom(num_mom, numFunctions);  RealVectorArray mu_hat;
+  for (mom=1; mom<=num_mom; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     const RealMatrixArray&       sum_G_online_m  = sum_G_online.at(mom);
@@ -1436,9 +1404,10 @@ blue_raw_moments(const IntRealMatrixArrayMap& sum_G_offline,
   //   but mu-hat solves are inconsistent in online/offline data.
   // Prefer to avoid additional padding in linear constraints for online opt.
 
-  RealMatrix H_raw_mom(4, numFunctions);  RealVectorArray mu_hat;
   size_t all_group = numGroups - 1;
-  for (int mom=1; mom<=4; ++mom) {
+  int mom, num_mom = (covImportFilename.empty()) ? 4 : 1;
+  RealMatrix H_raw_mom(num_mom, numFunctions);  RealVectorArray mu_hat;
+  for (mom=1; mom<=num_mom; ++mom) {
     if (outputLevel >= NORMAL_OUTPUT)
       Cout << "Moment " << mom << " estimator:\n";
     const RealMatrixArray&       sum_G_online_m  = sum_G_online.at(mom);

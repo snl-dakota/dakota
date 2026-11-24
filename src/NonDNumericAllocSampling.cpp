@@ -47,32 +47,18 @@ NonDNumericAllocSampling(ProblemDescDB& problem_db,
 			std::shared_ptr<Model> model):
   NonDEnsembleSampling(problem_db, parallel_lib, model),
   activeBudget((Real)maxFunctionEvals),
+  covImportFilename(
+    probDescDB.get<const String>("method.nond.import_model_covariances_file")),
+  covExportFilename(
+    probDescDB.get<const String>("method.nond.export_model_covariances_file")),
   truthFixedByPilot(problem_db.get<bool>("method.nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
   reorderModelsOnTheFly(false), // active for MFMC
   recurConversion(false)        // protect cyclic estvar/estvar ratio conversion
 {
-  // solver(s) that perform the numerical solution for resource allocations
-  // > Note: this is not a hard error for analytic MFMC that doesn't require
-  //   fallback, but since this is a runtime detection, go ahead and enforce
-  //   that a numerical solution fallback is available.
-  optSubProblemSolver = sub_optimizer_select(
-    probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver"),
-    SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
-  if (!optSubProblemSolver) // error messages output by sub_optimizer_select()
-    abort_handler(METHOD_ERROR);
-
-  size_t num_forms_resolutions;
-  configure_enumeration(num_forms_resolutions, sequenceType);
-  numApprox = num_forms_resolutions - 1;
-  if (methodName != MULTILEVEL_BLUE) // else deferred until ML BLUE ctor
-    numGroups = num_forms_resolutions;
-
-  // Precedence: if solution costs provided, then we use them;
-  // else we rely on online cost recovery through response metadata
-  costSource = configure_cost(num_forms_resolutions, sequenceType,
-			      sequenceCost, costMetadataIndices);
+  nas_initialize(
+    probDescDB.get<unsigned short>("method.nond.opt_subproblem_solver")); 
 }
 
 
@@ -82,18 +68,28 @@ NonDNumericAllocSampling(std::shared_ptr<StudyServices> services,
 			 std::shared_ptr<Model> model):
   NonDEnsembleSampling(std::move(services), method_store, model),
   activeBudget((Real)maxFunctionEvals),
+  //covImportFilename(method_store.get<const String>(
+  //  "nond.import_model_covariances_file")),
+  //covExportFilename(method_store.get<const String>(
+  //  "nond.export_model_covariances_file")),
   truthFixedByPilot(method_store.get<bool>("nond.truth_fixed_by_pilot")),
   analyticEstVarDerivs(true),   // true for MFMC,ACV,GenACV,ML BLUE
   hardenNumericSoln(true),      // Cholesky option not currently exposed in spec
   reorderModelsOnTheFly(false), // active for MFMC
   recurConversion(false)        // protect cyclic estvar/estvar ratio conversion
 {
+  nas_initialize(
+    method_store.get<unsigned short>("nond.opt_subproblem_solver"));
+}
+
+
+void NonDNumericAllocSampling::nas_initialize(unsigned short solver)
+{
   // solver(s) that perform the numerical solution for resource allocations
   // > Note: this is not a hard error for analytic MFMC that doesn't require
   //   fallback, but since this is a runtime detection, go ahead and enforce
   //   that a numerical solution fallback is available.
-  optSubProblemSolver = sub_optimizer_select(
-    method_store.get<unsigned short>("nond.opt_subproblem_solver"),
+  optSubProblemSolver = sub_optimizer_select(solver,
     SUBMETHOD_DIRECT_NPSOL_OPTPP); // default is global + competed local
   if (!optSubProblemSolver) // error messages output by sub_optimizer_select()
     abort_handler(METHOD_ERROR);
@@ -108,6 +104,28 @@ NonDNumericAllocSampling(std::shared_ptr<StudyServices> services,
   // else we rely on online cost recovery through response metadata
   costSource = configure_cost(num_forms_resolutions, sequenceType,
                               sequenceCost, costMetadataIndices);
+
+  if (!covImportFilename.empty()) {
+    bool err_flag = false;
+    if (pilotMgmtMode == ONLINE_PILOT) { // disallowed by input spec
+      Cerr << "Error: covariance import requires pilot projection mode\n       "
+	   << "(estimator performance without QoI statistics)." << std::endl;
+      err_flag = true;
+    }
+    //else if (pilotMgmtMode  == OFFLINE_PILOT &&
+    //	       finalStatsType == QOI_STATISTICS)
+    // restrict to first moments based on available model covariances
+    // > ACV:     occurs in compute acv controls() and apply_controls()
+    // > ML BLUE: occurs in blue_raw_moments()
+    if (costSource == ONLINE_COST_RECOVERY ||
+	costSource == MIXED_COST_SPEC_RECOVERY) { // currently possible
+      Cerr << "Error: online cost recovery unavailable when selecting "
+	   << "covariance import." << std::endl;
+      err_flag = true;
+    }
+    if (err_flag)
+      abort_handler(METHOD_ERROR);
+  }
 }
 
 
@@ -738,12 +756,12 @@ apply_controls(const IntRealVectorMap& sum_H_baseline,
 	       const IntRealMatrixMap& sum_L_refined,
 	       const Sizet2DArray& N_L_refined, const RealVector2DArray& beta)
 {
-  RealMatrix H_raw_mom(4, numFunctions);
   // ----------------------------
   // Apply CV to estimate moments
   // ----------------------------
-  size_t approx, qoi;
-  for (int mom=1; mom<=4; ++mom) {
+  size_t approx, qoi;  int mom, num_mom = (covImportFilename.empty()) ? 4 : 1;
+  RealMatrix H_raw_mom(num_mom, numFunctions);
+  for (mom=1; mom<=num_mom; ++mom) {
     const RealVector& sum_H_base_m = sum_H_baseline.at(mom);
     const RealMatrix&   sum_L_sh_m =   sum_L_shared.at(mom);
     const RealMatrix&  sum_L_ref_m =  sum_L_refined.at(mom);

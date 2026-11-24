@@ -39,7 +39,7 @@ NonDMultifidelitySampling(ProblemDescDB& problem_db, ParallelLibrary& parallel_l
 {
   //analyticEstVarDerivs = true; // now adopted for all numerical estimators
   //hardenNumericSoln    = true; // now adopted for all numerical estimators
-  mlmfSubMethod          = SUBMETHOD_MFMC; // if needed for numerical solves
+  //mlmfSubMethod        = SUBMETHOD_MFMC; // if needed for numerical solves
 
   // reorderModelsOnTheFly affects finite_solution_bounds() so restrict
   // activation to MFMC:
@@ -71,7 +71,7 @@ NonDMultifidelitySampling(std::shared_ptr<StudyServices> services,
 {
   //analyticEstVarDerivs = true; // now adopted for all numerical estimators
   //hardenNumericSoln    = true; // now adopted for all numerical estimators
-  mlmfSubMethod          = SUBMETHOD_MFMC; // if needed for numerical solves
+  //mlmfSubMethod        = SUBMETHOD_MFMC; // if needed for numerical solves
 
   // reorderModelsOnTheFly affects finite_solution_bounds() so restrict
   // activation to MFMC:

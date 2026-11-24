@@ -562,14 +562,9 @@ protected:
   /// active indices for numerical solutions: varianceMinimizers[first][second]
   SizetSizetPair varMinIndices;
 
-  /// variance minimization algorithm selection: SUBMETHOD_MFMC or
-  /// SUBMETHOD_ACV_{IS,MF,RD}
-  unsigned short mlmfSubMethod;
-
   /// number of model groupings (pairings, pyramid levels,
   /// tensor-product enumerations) used for sample allocations
   size_t numGroups;
-
   /// the set of model groupings used by the estimator, e.g. ML BLUE
   UShort2DArray modelGroups;
   /// aggregate cost of a sample for each of a set of model groupings
@@ -579,6 +574,13 @@ protected:
   /// remaining budget for solution over active models/groups, following
   /// deduction of sunk (pilot) cost for inactive models/groups
   Real activeBudget;
+
+  /// filename for optional import of QoI covariances (computed offline in
+  /// lieu of managed pilot sampling)
+  String covImportFilename;
+  /// filename for optional export of QoI covariances (computed from
+  /// pilot sampling)
+  String covExportFilename;
 
   /// user specification to suppress any increments in the number of HF
   /// evaluations (e.g., because too expensive and no more can be performed)
@@ -609,6 +611,9 @@ private:
   //
   //- Heading: helper functions
   //
+
+  /// shared constructor initializer
+  void nas_initialize(unsigned short solver);
 
   /// flattens contours of estimator_variance_metric() using std::log
   Real log_estvar_metric(const RealVector& cd_vars);

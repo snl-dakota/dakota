@@ -69,6 +69,8 @@ protected:
   //- Heading: member functions
   //
 
+  void acv_initialize(const SizetArray& pilot_samples_spec);
+
   void initialize_acv_sums(RealMatrix& sum_L, RealVector& sum_H,
 			   RealSymMatrixArray& sum_LL, RealMatrix& sum_LH,
 			   RealVector& sum_HH);
@@ -166,6 +168,10 @@ protected:
   //
   //- Heading: Data
   //
+
+  /// variance minimization algorithm selection: SUBMETHOD_MFMC or
+  /// SUBMETHOD_ACV_{IS,MF,RD}
+  unsigned short mlmfSubMethod;
 
   /// covariances between each LF approximation and HF truth (the c
   /// vector in ACV); organized numFunctions x numApprox
@@ -328,13 +334,6 @@ private:
 
   /// final solution data for ACV (default DAG = {numApprox,...,numApprox})
   MFSolutionData acvSolnData;
-
-  /// filename for optional import of QoI covariances (computed offline in
-  /// lieu of managed pilot sampling)
-  String covImportFilename;
-  /// filename for optional export of QoI covariances (computed from
-  /// pilot sampling)
-  String covExportFilename;
 };
 
 

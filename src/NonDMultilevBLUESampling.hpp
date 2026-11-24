@@ -48,7 +48,6 @@ protected:
   //- Heading: Virtual function redefinitions
   //
 
-  void class_initialize(const SizetArray& pilot_samples);
   void  pre_run() override;
   void core_run() override;
   //void post_run(std::ostream& s) override;
@@ -102,6 +101,8 @@ protected:
   //
   //- Heading: member functions
   //
+
+  void mlblue_initialize(const SizetArray& pilot_samples);
 
   void compute_C_inverse(RealSymMatrix& cov_GG_gq,
 			 RealSymMatrix& cov_GG_inv_gq,
@@ -337,13 +338,6 @@ private:
 
   /// mode for pilot sampling: shared or independent
   short pilotGroupSampling;
-
-  /// filename for optional import of QoI covariances (computed offline in
-  /// lieu of managed pilot sampling)
-  String covImportFilename;
-  /// filename for optional export of QoI covariances (computed from
-  /// pilot sampling)
-  String covExportFilename;
 
   /// type of throttle for mitigating combinatorial growth in numGroups
   short groupThrottleType;
